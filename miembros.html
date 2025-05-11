@@ -60,6 +60,7 @@
       <ul id="listaBaja" class="list-group"></ul>
     </div>
   </div>  
+
   <!-- Modal -->
   <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -75,164 +76,107 @@
               <input type="text" name="nombre" class="form-control mb-2" placeholder="Nombre completo" required>
               <input type="number" name="edad" class="form-control mb-2" placeholder="Edad" required>
               <input type="text" name="codigo" class="form-control mb-2" placeholder="Código">
-              <input type="text" name="direccion" class="form-control mb-2" placeholder="Dirección">
-              <select name="sociedad" class="form-select mb-2">
-                <option>Jóvenes</option>
-                <option>Damas</option>
-                <option>Caballeros</option>
+              <input type="date" name="fechaNacimiento" class="form-control mb-2" placeholder="Fecha de nacimiento">
+              <select name="estadoCivil" class="form-select mb-2">
+                <option value="">Estado civil</option>
+                <option>Soltero</option>
+                <option>Casado</option>
+                <option>Viudo</option>
               </select>
-              <label for="foto">Foto:</label>
-              <input type="file" name="foto" class="form-control mb-2" id="foto" accept="image/*" onchange="mostrarImagen(event)">
-              <img id="imagenPrevia" src="" alt="Imagen previa" class="img-fluid" style="max-width: 100px; margin-top: 1rem; display: none;">
+              <input type="tel" name="telefono" class="form-control mb-2" placeholder="Teléfono">
+              <input type="text" name="direccion" class="form-control mb-2" placeholder="Dirección">
             </div>
-            <button type="submit" class="btn btn-primary">Guardar Miembro</button>
+
+            <div class="form-section">
+              <h6>Datos familiares</h6>
+              <input type="text" name="padre" class="form-control mb-2" placeholder="Padre">
+              <input type="text" name="madre" class="form-control mb-2" placeholder="Madre">
+              <input type="text" name="hermano1" class="form-control mb-2" placeholder="Hermano 1">
+              <input type="text" name="hermano2" class="form-control mb-2" placeholder="Hermano 2">
+              <input type="text" name="hermano3" class="form-control mb-2" placeholder="Hermano 3">
+              <button type="button" class="btn btn-secondary" onclick="agregarFamiliar()">Agregar familiar</button>
+            </div>
+
+            <div class="form-section">
+              <h6>Datos espirituales</h6>
+              <input type="date" name="fechaBautismo" class="form-control mb-2" placeholder="Fecha de bautismo">
+              <input type="text" name="lugarBautismo" class="form-control mb-2" placeholder="Lugar de bautismo">
+              <input type="date" name="fechaConversion" class="form-control mb-2" placeholder="Fecha de conversión">
+              <input type="text" name="lugarConversion" class="form-control mb-2" placeholder="Lugar de conversión">
+              <label for="bautizadoEspiritu">Bautizado por el Espíritu</label>
+              <select name="bautizadoEspiritu" class="form-select mb-2" onchange="toggleEspirituFields()">
+                <option value="">Seleccione</option>
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+              </select>
+              <div id="espirituFields" class="hidden">
+                <input type="date" name="fechaBautismoEspiritu" class="form-control mb-2" placeholder="Fecha de bautismo Espíritu">
+                <input type="text" name="lugarBautismoEspiritu" class="form-control mb-2" placeholder="Lugar de bautismo Espíritu">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           </form>
         </div>
       </div>
     </div>
-  </div>  
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-    // Cambiar el logo solo si el usuario es "ADMON"
-    const usuario = "ADMON";  // Cambia esto a una variable dinámica de tu sistema de autenticación
-    const logoElement = document.getElementById("logo");
-
-    // Verificar si ya hay un logo guardado en localStorage
-    const logoGuardado = localStorage.getItem("logo");
-    if (logoGuardado) {
-      logoElement.src = logoGuardado;  // Usar el logo guardado
+    // Función para agregar un familiar
+    function agregarFamiliar() {
+      const familiar = document.createElement("input");
+      familiar.type = "text";
+      familiar.name = "familiar";
+      familiar.classList.add("form-control", "mb-2");
+      familiar.placeholder = "Nuevo Familiar";
+      document.querySelector(".form-section").appendChild(familiar);
     }
 
-    if (usuario === "ADMON") {
-      // Hacer que el logo sea interactivo solo para "ADMON"
-      logoElement.addEventListener("click", function() {
-        const inputLogo = document.createElement('input');
-        inputLogo.type = 'file';
-        inputLogo.accept = 'image/*';
-        
-        // Abrir el selector de archivos cuando el logo sea clickeado
-        inputLogo.click();
-
-        // Cuando el usuario seleccione un archivo
-        inputLogo.addEventListener('change', function(event) {
-          const archivo = event.target.files[0];
-          
-          if (archivo) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-              const nuevoLogoURL = e.target.result;  // URL de la imagen cargada
-              logoElement.src = nuevoLogoURL;  // Cambiar el logo en la página
-
-              // Guardar la nueva URL del logo en localStorage
-              localStorage.setItem("logo", nuevoLogoURL);
-            };
-            
-            reader.readAsDataURL(archivo);  // Convertir la imagen a base64 para almacenarla
-          }
-        });
-      });
-    }
-
-    let miembros = JSON.parse(localStorage.getItem("miembros")) || [];
-    let baja = JSON.parse(localStorage.getItem("baja")) || [];
-
-    function cerrarSesion() {
-      alert("Sesión cerrada");
-    }
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("collapsed");
-    }
-    function mostrarMiembros() {
-      const tbody = document.getElementById("tablaMiembros");
-      tbody.innerHTML = "";
-      miembros.forEach((m, i) => {
-        tbody.innerHTML += `
-          <tr>
-            <td><img src="${m.foto || 'https://via.placeholder.com/50'}"></td>
-            <td>${m.nombre}</td>
-            <td contenteditable="true">${m.codigo}</td>
-            <td>${m.edad}</td>
-            <td>${m.direccion}</td>
-            <td>${m.sociedad}</td>
-            <td>
-              <button class="btn btn-sm btn-warning" onclick="editarMiembro(${i})"><i class="bi bi-pencil"></i></button>
-              <button class="btn btn-sm btn-secondary" onclick="imprimirPDF(${i})"><i class="bi bi-printer"></i></button>
-              <button class="btn btn-sm btn-danger" onclick="darDeBaja(${i})"><i class="bi bi-x-circle"></i></button>
-            </td>
-          </tr>`;
-      });
-    }
-    function editarMiembro(i) {
-      const m = miembros[i];
-      const form = document.forms["formMiembro"];
-      form.nombre.value = m.nombre;
-      form.edad.value = m.edad;
-      form.codigo.value = m.codigo;
-      form.direccion.value = m.direccion;
-      form.sociedad.value = m.sociedad;
-      document.getElementById('imagenPrevia').src = m.foto || '';
-      new bootstrap.Modal(document.getElementById('modalMiembro')).show();
-      miembros.splice(i, 1);
-    }
-    function imprimirPDF(i) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const m = miembros[i];
-      doc.text(`Ficha del Miembro`, 10, 10);
-      doc.text(`Nombre: ${m.nombre}`, 10, 20);
-      doc.text(`Edad: ${m.edad}`, 10, 30);
-      doc.text(`Código: ${m.codigo}`, 10, 40);
-      doc.text(`Dirección: ${m.direccion}`, 10, 50);
-      doc.text(`Sociedad: ${m.sociedad}`, 10, 60);
-      doc.save(`${m.nombre}.pdf`);
-    }
-    function darDeBaja(i) {
-      baja.push(miembros[i]);
-      miembros.splice(i, 1);
-      localStorage.setItem("baja", JSON.stringify(baja));
-      localStorage.setItem("miembros", JSON.stringify(miembros));
-      mostrarMiembros();
-    }
-    function mostrarMiembrosBaja() {
-      document.getElementById("miembrosBaja").classList.remove("hidden");
-      const lista = document.getElementById("listaBaja");
-      lista.innerHTML = "";
-      baja.forEach(m => {
-        lista.innerHTML += `<li class="list-group-item">${m.nombre} - ${m.codigo}</li>`;
-      });
-    }
-
-    function mostrarImagen(event) {
-      const reader = new FileReader();
-      reader.onload = function() {
-        const imgPreview = document.getElementById("imagenPrevia");
-        imgPreview.src = reader.result;
-        imgPreview.style.display = "block";
-      };
-      reader.readAsDataURL(event.target.files[0]);
+    // Función para mostrar u ocultar los campos del Espíritu Santo
+    function toggleEspirituFields() {
+      const espirituFields = document.getElementById("espirituFields");
+      const bautizadoEspiritu = document.querySelector('[name="bautizadoEspiritu"]').value;
+      if (bautizadoEspiritu === "si") {
+        espirituFields.classList.remove("hidden");
+      } else {
+        espirituFields.classList.add("hidden");
+      }
     }
 
     document.getElementById("formMiembro").addEventListener("submit", function(e) {
       e.preventDefault();
       const form = e.target;
-      const nuevo = {
+      const nuevoMiembro = {
         nombre: form.nombre.value,
         edad: form.edad.value,
         codigo: form.codigo.value,
+        fechaNacimiento: form.fechaNacimiento.value,
+        estadoCivil: form.estadoCivil.value,
+        telefono: form.telefono.value,
         direccion: form.direccion.value,
-        sociedad: form.sociedad.value,
-        foto: document.getElementById("imagenPrevia").src || ''
+        padre: form.padre.value,
+        madre: form.madre.value,
+        hermanos: [form.hermano1.value, form.hermano2.value, form.hermano3.value],
+        espiritu: form.bautizadoEspiritu.value,
+        fechaBautismo: form.fechaBautismo.value,
+        lugarBautismo: form.lugarBautismo.value,
+        fechaConversion: form.fechaConversion.value,
+        lugarConversion: form.lugarConversion.value,
+        fechaBautismoEspiritu: form.fechaBautismoEspiritu.value,
+        lugarBautismoEspiritu: form.lugarBautismoEspiritu.value
       };
-      miembros.push(nuevo);
-      localStorage.setItem("miembros", JSON.stringify(miembros));
-      form.reset();
-      document.getElementById("imagenPrevia").style.display = "none";
-      bootstrap.Modal.getInstance(document.getElementById("modalMiembro")).hide();
-      mostrarMiembros(); // Actualiza la tabla de miembros
-    });
 
-    mostrarMiembros(); // Al cargar la página, muestra los miembros almacenados
+      // Guarda la información del nuevo miembro (esto se puede mejorar con almacenamiento en localStorage o backend)
+      console.log(nuevoMiembro);
+      alert("Formulario guardado correctamente.");
+      // Cierra el modal y reinicia el formulario
+      bootstrap.Modal.getInstance(document.getElementById("modalMiembro")).hide();
+      form.reset();
+    });
   </script>
 </body>
 </html>
