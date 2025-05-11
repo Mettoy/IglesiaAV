@@ -35,12 +35,7 @@
       border-radius: 50%;
       display: block;
       margin: 0 auto 10px;
-    }
-
-    .sidebar input[type="file"] {
-      display: block;
-      margin: 5px auto;
-      color: #f7c948;
+      cursor: pointer;
     }
 
     .sidebar a {
@@ -85,6 +80,8 @@
       background-color: #fff;
       border-radius: 8px;
       padding: 10px;
+      width: 50px !important;
+      height: 50px !important;
     }
 
     @media (max-width: 768px) {
@@ -104,19 +101,19 @@
   <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
   <div class="sidebar" id="sidebar">
-    <img id="logo" src="https://via.placeholder.com/100" alt="Logo">
-    <input type="file" id="logoInput" accept="image/*">
+    <img id="logo" src="https://via.placeholder.com/100" alt="Logo" onclick="cambiarLogo()">
     <a href="#">Inicio</a>
     <a href="#">Miembros</a>
     <a href="#">Diezmos</a>
     <a href="#">Asistencia</a>
+    <a href="acceso.html">Añadir acceso</a>
   </div>
 
   <div class="content">
     <h2>Estadísticas Generales</h2>
     <div class="charts">
-      <canvas id="sociedadChart" width="300" height="300"></canvas>
-      <canvas id="asistenciaChart" width="300" height="300"></canvas>
+      <canvas id="sociedadChart" width="50" height="50"></canvas>
+      <canvas id="asistenciaChart" width="50" height="50"></canvas>
     </div>
   </div>
 
@@ -164,19 +161,21 @@
       },
       options: {
         plugins: {
-          legend: { labels: { color: '#0b0c2a' } }
+          legend: { display: false }
         }
       }
     });
 
     // Asistencia por miembro
+    const miembrosOrdenados = miembros.slice().sort((a, b) => a.nombre.localeCompare(b.nombre));
+
     new Chart(document.getElementById('asistenciaChart'), {
       type: 'bar',
       data: {
-        labels: miembros.map(m => m.nombre),
+        labels: miembrosOrdenados.map(m => m.nombre),
         datasets: [{
           label: 'Asistencia',
-          data: miembros.map(m => m.asistencia || 0),
+          data: miembrosOrdenados.map(m => m.asistencia || 0),
           backgroundColor: '#36a2eb'
         }]
       },
@@ -191,30 +190,40 @@
           }
         },
         plugins: {
-          legend: { labels: { color: '#f7c948' } }
+          legend: { display: false }
         }
       }
     });
 
-    // Cambiar logo desde dispositivo
-    const logoInput = document.getElementById('logoInput');
-    const logo = document.getElementById('logo');
-    logoInput.addEventListener('change', function () {
-      const file = this.files[0];
-      if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          logo.src = reader.result;
-          localStorage.setItem('logo', reader.result);
-        };
-        reader.readAsDataURL(file);
+    // Cambiar logo solo con contraseña de admin
+    function cambiarLogo() {
+      const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
+      if (clave !== "admin123") {
+        alert("Acceso denegado.");
+        return;
       }
-    });
 
-    // Cargar logo si existe
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = function () {
+        const file = this.files[0];
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            document.getElementById('logo').src = reader.result;
+            localStorage.setItem('logo', reader.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
+    }
+
+    // Cargar logo guardado
     const logoGuardado = localStorage.getItem('logo');
     if (logoGuardado) {
-      logo.src = logoGuardado;
+      document.getElementById('logo').src = logoGuardado;
     }
   </script>
 </body>
