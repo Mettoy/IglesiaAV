@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Inicio de Sesión</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input[type="text"] {
+      padding: 0.5rem;
+      width: 200px;
+      margin-bottom: 1rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+    }
+    .message {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-container">
+  <h2>Inicio de Sesión</h2>
+  <input type="text" id="username" placeholder="Nombre de usuario" />
+  <br>
+  <button onclick="login()">Ingresar</button>
+  <div class="message" id="message"></div>
+</div>
+
+<script>
+  const registeredUsers = ["admon"];
+
+  function login() {
+    const input = document.getElementById("username").value.trim().toLowerCase();
+    const messageDiv = document.getElementById("message");
+
+    if (input === "admon") {
+      messageDiv.textContent = "Bienvenido, Administrador.";
+      messageDiv.style.color = "green";
+    } else {
+      if (!registeredUsers.includes(input)) {
+        registeredUsers.push(input); // Se registra automáticamente
+        messageDiv.textContent = "Usuario registrado y sesión iniciada.";
+      } else {
+        messageDiv.textContent = "Sesión iniciada.";
+      }
+      messageDiv.style.color = "blue";
+    }
+  }
+</script>
+
+</body>
+</html>
