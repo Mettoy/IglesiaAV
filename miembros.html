@@ -204,40 +204,116 @@
   <!-- Modal para el formulario -->
   <div class="modal" id="modal-formulario">
     <div class="modal-content">
-      <!-- Contenido del formulario -->
-      <!-- El formulario actual ya está implementado -->
+      <h2>Registrar Miembro</h2>
+      <label for="foto">Foto</label>
+      <input type="file" id="foto" accept="image/*">
+
+      <label for="nombre">Nombre Completo</label>
+      <input type="text" id="nombre" placeholder="Ingrese el nombre completo">
+
+      <label for="codigo">Código</label>
+      <input type="text" id="codigo" placeholder="Ingrese el código">
+
+      <label for="genero">Género</label>
+      <select id="genero">
+        <option value="F">Femenino</option>
+        <option value="M">Masculino</option>
+      </select>
+
+      <label for="fecha-nacimiento">Fecha de Nacimiento</label>
+      <input type="date" id="fecha-nacimiento">
+
+      <label for="estado">Estado</label>
+      <select id="estado" onchange="mostrarCasillaConyuge()">
+        <option value="soltero">Soltero</option>
+        <option value="casado">Casado</option>
+        <option value="viudo">Viudo</option>
+      </select>
+
+      <div id="casilla-conyuge" style="display: none;">
+        <label for="nombre-conyuge">Nombre del Cónyuge</label>
+        <input type="text" id="nombre-conyuge" placeholder="Ingrese el nombre del cónyuge">
+      </div>
+
+      <label for="asociacion">Asociación</label>
+      <select id="asociacion">
+        <option value="caballeros">Caballeros</option>
+        <option value="damas">Damas</option>
+        <option value="jovenes">Jóvenes</option>
+      </select>
+
+      <label for="hijos">Hijos</label>
+      <input type="number" id="hijos" placeholder="Número de hijos">
+
+      <label for="fecha-aceptacion">Fecha de Aceptación</label>
+      <input type="date" id="fecha-aceptacion">
+
+      <label for="lugar-aceptacion">Lugar de Aceptación</label>
+      <input type="text" id="lugar-aceptacion" placeholder="Lugar donde aceptó">
+
+      <label for="bautizado">Bautizado</label>
+      <select id="bautizado" onchange="mostrarCasillaBautizo()">
+        <option value="no">No</option>
+        <option value="si">Sí</option>
+      </select>
+
+      <div id="casilla-bautizo" style="display: none;">
+        <label for="fecha-bautizo">Fecha de Bautizo</label>
+        <input type="date" id="fecha-bautizo">
+
+        <label for="lugar-bautizo">Lugar de Bautizo</label>
+        <input type="text" id="lugar-bautizo" placeholder="Lugar de bautizo">
+      </div>
+
+      <label for="espiritu-santo">Bautizado por el Espíritu Santo</label>
+      <select id="espiritu-santo" onchange="mostrarCasillaEspiritu()">
+        <option value="no">No</option>
+        <option value="si">Sí</option>
+      </select>
+
+      <div id="casilla-espiritu" style="display: none;">
+        <label for="lugar-espiritu">Lugar</label>
+        <input type="text" id="lugar-espiritu" placeholder="Lugar del Espíritu Santo">
+      </div>
+
       <button class="save-btn" onclick="guardarMiembro()">Guardar</button>
       <button class="cancel-btn" onclick="cerrarFormulario()">Cancelar</button>
     </div>
   </div>
 
   <script>
-    // Función para abrir/cerrar menú
-    function toggleMenu() {
-      const menu = document.getElementById("menu");
-      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    // Mostrar u ocultar casillas condicionales
+    function mostrarCasillaConyuge() {
+      const estado = document.getElementById("estado").value;
+      document.getElementById("casilla-conyuge").style.display = estado === "casado" ? "block" : "none";
     }
 
-    // Guardar miembro en la tabla
-    function guardarMiembro() {
-      const tabla = document.getElementById("tabla-miembros");
-      const fila = document.createElement("tr");
-      fila.innerHTML = `
-        <td>Foto</td>
-        <td>Nombre Completo</td>
-        <td>Código</td>
-        <td>Género</td>
-        <td>Fecha Nacimiento</td>
-        <td>Estado</td>
-        <td>Acciones</td>
-      `;
-      tabla.appendChild(fila);
-      cerrarFormulario();
+    function mostrarCasillaBautizo() {
+      const bautizado = document.getElementById("bautizado").value;
+      document.getElementById("casilla-bautizo").style.display = bautizado === "si" ? "block" : "none";
     }
 
-    // Función para cerrar formulario
+    function mostrarCasillaEspiritu() {
+      const espiritu = document.getElementById("espiritu-santo").value;
+      document.getElementById("casilla-espiritu").style.display = espiritu === "si" ? "block" : "none";
+    }
+
+    // Abrir y cerrar formulario modal
+    function abrirFormulario() {
+      document.getElementById("modal-formulario").style.display = "flex";
+    }
+
     function cerrarFormulario() {
       document.getElementById("modal-formulario").style.display = "none";
+      limpiarFormulario();
+    }
+
+    // Limpiar formulario
+    function limpiarFormulario() {
+      document.querySelectorAll(".modal-content input, .modal-content select").forEach(el => el.value = "");
+      document.getElementById("casilla-conyuge").style.display = "none";
+      document.getElementById("casilla-bautizo").style.display = "none";
+      document.getElementById("casilla-espiritu").style.display = "none";
     }
   </script>
 </body>
