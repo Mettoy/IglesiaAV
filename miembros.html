@@ -5,33 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Miembros</title>
     <style>
+        /* Estilos generales */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
+            padding: 0;
+            background-color: #041C32;
+            color: gold;
+            display: flex;
         }
 
+        /* Menú lateral pegable */
         .menu {
-            background-color: #333;
+            width: 250px;
+            background-color: #033860;
+            height: 100vh;
             padding: 10px;
-            text-align: center;
+            position: fixed;
+            left: -250px;
+            transition: left 0.3s;
         }
 
         .menu ul {
             list-style: none;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
             padding: 0;
         }
 
         .menu a {
-            color: white;
+            color: gold;
             text-decoration: none;
             font-size: 18px;
+            display: block;
+            padding: 10px;
         }
 
+        .menu-toggle {
+            position: absolute;
+            top: 10px;
+            right: -40px;
+            background-color: gold;
+            color: black;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        /* Contenedor Principal */
+        .contenido {
+            margin-left: 20px;
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        /* Barra de búsqueda y botón de añadir */
         .barra-superior {
             display: flex;
             align-items: center;
@@ -53,29 +78,32 @@
             cursor: pointer;
         }
 
+        /* Tabla estilo Excel */
         .tabla {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            background: #033860;
+            color: gold;
         }
 
         .tabla th, .tabla td {
-            border: 1px solid black;
+            border: 1px solid gold;
             padding: 8px;
             text-align: center;
         }
 
         .tabla th {
-            background-color: #ddd;
+            background-color: #02577A;
         }
 
+        /* Modal para formulario */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             justify-content: center;
             align-items: center;
         }
@@ -83,13 +111,16 @@
         .modal-contenido {
             background: white;
             padding: 20px;
-            width: 50%;
+            width: 30%;
             border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .cerrar {
             cursor: pointer;
-            float: right;
+            align-self: flex-end;
             font-size: 20px;
         }
 
@@ -100,12 +131,14 @@
             border: none;
             cursor: pointer;
         }
+
     </style>
 </head>
 <body>
 
-    <!-- Menú -->
-    <nav class="menu">
+    <!-- Menú Pegable -->
+    <nav class="menu" id="menu">
+        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
         <ul>
             <li><a href="inicio.html">Inicio</a></li>
             <li><a href="miembros.html">Miembros</a></li>
@@ -113,7 +146,8 @@
         </ul>
     </nav>
 
-    <main>
+    <!-- Contenido Principal -->
+    <div class="contenido">
         <h1>Lista de Miembros</h1>
 
         <!-- Barra de búsqueda y botón de añadir -->
@@ -144,12 +178,12 @@
                 <!-- Aquí irán los miembros -->
             </tbody>
         </table>
-    </main>
+    </div>
 
     <!-- Formulario emergente -->
     <div id="formulario" class="modal">
         <div class="modal-contenido">
-            <span class="cerrar">&times;</span>
+            <span class="cerrar" onclick="cerrarFormulario()">×</span>
             <h2>Añadir Miembro</h2>
             <form>
                 <label>Foto:</label>
@@ -193,42 +227,25 @@
                 <label>Iglesia donde aceptó:</label>
                 <input type="text" required>
 
-                <label>Bautizado:</label>
-                <select id="bautizado">
-                    <option>No</option>
-                    <option>Sí</option>
-                </select>
-                <input type="text" id="lugarBautizo" placeholder="Lugar de bautizo" style="display: none;">
-
-                <label>Bautizado por el Espíritu Santo:</label>
-                <select id="espirituSanto">
-                    <option>No</option>
-                    <option>Sí</option>
-                </select>
-                <input type="text" id="lugarEspiritu" placeholder="Lugar donde recibió el Espíritu Santo" style="display: none;">
-
-                <button type="button" class="boton-rojo">Cancelar</button>
+                <button type="button" class="boton-rojo" onclick="cerrarFormulario()">Cancelar</button>
                 <button type="submit" class="boton-verde">Guardar</button>
             </form>
         </div>
     </div>
 
     <script>
+        function toggleMenu() {
+            let menu = document.getElementById('menu');
+            menu.style.left = menu.style.left === "0px" ? "-250px" : "0px";
+        }
+
         document.getElementById('añadirBtn').addEventListener('click', () => {
             document.getElementById('formulario').style.display = 'flex';
         });
 
-        document.querySelector('.cerrar').addEventListener('click', () => {
+        function cerrarFormulario() {
             document.getElementById('formulario').style.display = 'none';
-        });
-
-        document.getElementById('bautizado').addEventListener('change', (e) => {
-            document.getElementById('lugarBautizo').style.display = e.target.value === 'Sí' ? 'block' : 'none';
-        });
-
-        document.getElementById('espirituSanto').addEventListener('change', (e) => {
-            document.getElementById('lugarEspiritu').style.display = e.target.value === 'Sí' ? 'block' : 'none';
-        });
+        }
     </script>
 
 </body>
