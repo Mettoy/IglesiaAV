@@ -1,252 +1,157 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Miembros</title>
-    <style>
-        /* Estilos generales */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #041C32;
-            color: gold;
-            display: flex;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Miembros</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0b0c2a; /* Fondo oscuro */
+      color: #f7c948; /* Texto amarillo */
+    }
 
-        /* Menú lateral pegable */
-        .menu {
-            width: 250px;
-            background-color: #033860;
-            height: 100vh;
-            padding: 10px;
-            position: fixed;
-            left: -250px;
-            transition: left 0.3s;
-        }
+    .container {
+      padding: 20px;
+    }
 
-        .menu ul {
-            list-style: none;
-            padding: 0;
-        }
+    .form-container {
+      background-color: #14153a; /* Fondo del formulario */
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
 
-        .menu a {
-            color: gold;
-            text-decoration: none;
-            font-size: 18px;
-            display: block;
-            padding: 10px;
-        }
+    .form-container label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #f7c948; /* Amarillo */
+    }
 
-        .menu-toggle {
-            position: absolute;
-            top: 10px;
-            right: -40px;
-            background-color: gold;
-            color: black;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
+    .form-container input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #1f214d; /* Fondo oscuro de los inputs */
+      color: white; /* Texto blanco */
+    }
 
-        /* Contenedor Principal */
-        .contenido {
-            margin-left: 20px;
-            flex-grow: 1;
-            padding: 20px;
-        }
+    .form-container button {
+      padding: 10px 15px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
 
-        /* Barra de búsqueda y botón de añadir */
-        .barra-superior {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+    .form-container .save-btn {
+      background-color: #f7c948; /* Botón amarillo */
+      color: #0b0c2a; /* Texto negro */
+    }
 
-        .barra-superior input {
-            flex: 1;
-            padding: 8px;
-            font-size: 16px;
-        }
+    .form-container .cancel-btn {
+      background-color: #c9302c; /* Botón rojo */
+      color: white;
+    }
 
-        .boton-verde {
-            background-color: green;
-            color: white;
-            padding: 10px;
-            border: none;
-            cursor: pointer;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #14153a; /* Fondo oscuro del cuadro */
+      color: white; /* Letras blancas */
+    }
 
-        /* Tabla estilo Excel */
-        .tabla {
-            width: 100%;
-            border-collapse: collapse;
-            background: #033860;
-            color: gold;
-        }
+    table th, table td {
+      text-align: left;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
 
-        .tabla th, .tabla td {
-            border: 1px solid gold;
-            padding: 8px;
-            text-align: center;
-        }
+    table th {
+      background-color: #1f214d; /* Encabezado más oscuro */
+    }
 
-        .tabla th {
-            background-color: #02577A;
-        }
-
-        /* Modal para formulario */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-contenido {
-            background: white;
-            padding: 20px;
-            width: 30%;
-            border-radius: 5px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .cerrar {
-            cursor: pointer;
-            align-self: flex-end;
-            font-size: 20px;
-        }
-
-        .boton-rojo {
-            background-color: red;
-            color: white;
-            padding: 10px;
-            border: none;
-            cursor: pointer;
-        }
-
-    </style>
+    table tbody tr:hover {
+      background-color: #1f214d; /* Efecto hover */
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <!-- Formulario -->
+    <div class="form-container" id="form-container">
+      <h2>Registrar Miembro</h2>
+      <label for="nombre">Nombre</label>
+      <input type="text" id="nombre" placeholder="Ingrese el nombre">
+      
+      <label for="edad">Edad</label>
+      <input type="number" id="edad" placeholder="Ingrese la edad">
+      
+      <label for="correo">Correo Electrónico</label>
+      <input type="email" id="correo" placeholder="Ingrese el correo">
 
-    <!-- Menú Pegable -->
-    <nav class="menu" id="menu">
-        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-        <ul>
-            <li><a href="inicio.html">Inicio</a></li>
-            <li><a href="miembros.html">Miembros</a></li>
-            <li><a href="contacto.html">Contacto</a></li>
-        </ul>
-    </nav>
-
-    <!-- Contenido Principal -->
-    <div class="contenido">
-        <h1>Lista de Miembros</h1>
-
-        <!-- Barra de búsqueda y botón de añadir -->
-        <div class="barra-superior">
-            <input type="text" id="busqueda" placeholder="Buscar miembro...">
-            <button id="añadirBtn" class="boton-verde">➕ Añadir</button>
-        </div>
-
-        <!-- Tabla estilo Excel -->
-        <table class="tabla">
-            <thead>
-                <tr>
-                    <th>Foto</th>
-                    <th>Nombre Completo</th>
-                    <th>Género</th>
-                    <th>Fecha de Nacimiento</th>
-                    <th>Dirección</th>
-                    <th>Estado</th>
-                    <th>Número de Teléfono</th>
-                    <th>Código de Miembro</th>
-                    <th>Hijos</th>
-                    <th>Nombre de Cónyuge</th>
-                    <th>Editar</th>
-                    <th>Imprimir</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Aquí irán los miembros -->
-            </tbody>
-        </table>
+      <button class="save-btn" onclick="guardarMiembro()">Guardar</button>
+      <button class="cancel-btn" onclick="cancelarFormulario()">Cancelar</button>
     </div>
 
-    <!-- Formulario emergente -->
-    <div id="formulario" class="modal">
-        <div class="modal-contenido">
-            <span class="cerrar" onclick="cerrarFormulario()">×</span>
-            <h2>Añadir Miembro</h2>
-            <form>
-                <label>Foto:</label>
-                <input type="file" accept="image/*">
+    <!-- Cuadro de información -->
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Edad</th>
+          <th>Correo</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-miembros">
+        <!-- Los miembros registrados aparecerán aquí -->
+      </tbody>
+    </table>
+  </div>
 
-                <label>Nombre Completo:</label>
-                <input type="text" required>
+  <script>
+    // Función para guardar un miembro
+    function guardarMiembro() {
+      const nombre = document.getElementById("nombre").value.trim();
+      const edad = document.getElementById("edad").value.trim();
+      const correo = document.getElementById("correo").value.trim();
+      const tabla = document.getElementById("tabla-miembros");
 
-                <label>Género:</label>
-                <button type="button">F</button>
-                <button type="button">M</button>
+      if (nombre && edad && correo) {
+        // Crear una nueva fila en la tabla
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${nombre}</td>
+          <td>${edad}</td>
+          <td>${correo}</td>
+        `;
+        tabla.appendChild(fila);
 
-                <label>Fecha de Nacimiento:</label>
-                <input type="date" required>
+        // Limpiar el formulario
+        limpiarFormulario();
+      } else {
+        alert("Por favor, complete todos los campos.");
+      }
+    }
 
-                <label>Dirección:</label>
-                <input type="text" required>
+    // Función para cancelar el formulario
+    function cancelarFormulario() {
+      const formContainer = document.getElementById("form-container");
+      limpiarFormulario();
+      alert("El formulario se ha cancelado y no se guardará información.");
+    }
 
-                <label>Estado:</label>
-                <select>
-                    <option>Soltero</option>
-                    <option>Casado</option>
-                    <option>Viudo</option>
-                </select>
-
-                <label>Número de Teléfono:</label>
-                <input type="text" required>
-
-                <label>Código de Miembro:</label>
-                <input type="text" required>
-
-                <label>Hijos:</label>
-                <input type="number" min="0">
-
-                <label>Nombre de Cónyuge (Opcional):</label>
-                <input type="text">
-
-                <label>Fecha de Aceptación:</label>
-                <input type="date" required>
-
-                <label>Iglesia donde aceptó:</label>
-                <input type="text" required>
-
-                <button type="button" class="boton-rojo" onclick="cerrarFormulario()">Cancelar</button>
-                <button type="submit" class="boton-verde">Guardar</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        function toggleMenu() {
-            let menu = document.getElementById('menu');
-            menu.style.left = menu.style.left === "0px" ? "-250px" : "0px";
-        }
-
-        document.getElementById('añadirBtn').addEventListener('click', () => {
-            document.getElementById('formulario').style.display = 'flex';
-        });
-
-        function cerrarFormulario() {
-            document.getElementById('formulario').style.display = 'none';
-        }
-    </script>
-
+    // Función para limpiar los campos del formulario
+    function limpiarFormulario() {
+      document.getElementById("nombre").value = "";
+      document.getElementById("edad").value = "";
+      document.getElementById("correo").value = "";
+    }
+  </script>
 </body>
 </html>
