@@ -2,101 +2,89 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inicio</title>
+  <title>Gráfico de Miembros por Sociedad</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      margin: 0;
-      font-family: 'Arial', sans-serif;
       background-color: #0b0c2a;
       color: #f7c948;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
     }
 
-    .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background-color: #14153a;
-      padding: 10px 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    .navbar img {
-      height: 50px;
-      border-radius: 50%;
-      transition: height 0.3s ease;
-    }
-
-    .menu-btn {
-      background-color: #f7c948;
-      border: none;
-      color: #0b0c2a;
-      font-weight: bold;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .menu {
-      display: none;
-      flex-direction: column;
-      background-color: #14153a;
-      position: absolute;
-      top: 70px;
-      left: 20px;
-      border-radius: 5px;
-      overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-      transition: opacity 0.3s ease;
-    }
-
-    .menu a {
-      text-decoration: none;
-      color: #f7c948;
-      padding: 12px 20px;
-      display: block;
-      transition: background 0.3s;
-    }
-
-    .menu a:hover {
-      background-color: #1f214d;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 600px) {
-      .navbar img {
-        height: 40px;
-      }
-
-      .menu {
-        top: 60px;
-        left: 10px;
-      }
+    canvas {
+      max-width: 400px;
+      margin: auto;
     }
   </style>
 </head>
 <body>
-
-  <div class="navbar">
-    <img src="https://scontent.fmga1-2.fna.fbcdn.net/v/t39.30808-1/376241453_327507783113581_221642316254197631_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=106&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=nVT_T-GKf3UQ7kNvwGdd8wy&_nc_oc=Adnzurey0khTsdiSdMxS2AVvob-NTLGIS6xXOLsgpWGLO4bn7arRfc2qqul13nuWnBU&_nc_zt=24&_nc_ht=scontent.fmga1-2.fna&_nc_gid=Ezt2Eb49Iq5zjjnvb_NOWA&oh=00_AfJMjahj-_3F-w0bGqW30nUnPBxavgOINKZ5PYy5Iu3aLA&oe=6826C069" alt="Logo">
-    <button class="menu-btn" onclick="toggleMenu()" aria-label="Abrir menú">Menú</button>
-  </div>
-
-  <div class="menu" id="menu">
-    <a href="miembros.html">Miembros</a>
-    <a href="diezmos.html">Diezmos</a>
-    <a href="liderazgo.html">Liderazgo</a>
-    <a href="asistencia.html">Asistencia</a>
-  </div>
+  <h2>Distribución de Miembros por Sociedad</h2>
+  <canvas id="sociedadChart"></canvas>
 
   <script>
-    function toggleMenu() {
-      const menu = document.getElementById('menu');
-      menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-      // Toggle opacity for smooth transition
-      menu.style.opacity = menu.style.display === 'flex' ? '1' : '0';
+    // Simulación: si no hay datos en localStorage, agregamos algunos por defecto
+    if (!localStorage.getItem('miembros')) {
+      const miembrosEjemplo = [
+        { nombre: "Ana", sociedad: "Damas" },
+        { nombre: "Luis", sociedad: "Caballeros" },
+        { nombre: "Carlos", sociedad: "Jóvenes" },
+        { nombre: "Marta", sociedad: "Damas" },
+        { nombre: "Pedro", sociedad: "Caballeros" },
+        { nombre: "Lucía", sociedad: "Jóvenes" },
+        { nombre: "José", sociedad: "Sociedad" }
+      ];
+      localStorage.setItem('miembros', JSON.stringify(miembrosEjemplo));
     }
-  </script>
 
+    // Obtener miembros desde localStorage
+    const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+
+    // Contar miembros por sociedad
+    const conteo = {
+      Sociedad: 0,
+      Jóvenes: 0,
+      Damas: 0,
+      Caballeros: 0
+    };
+
+    miembros.forEach(m => {
+      if (conteo[m.sociedad] !== undefined) {
+        conteo[m.sociedad]++;
+      }
+    });
+
+    // Crear gráfico
+    const ctx = document.getElementById('sociedadChart').getContext('2d');
+    const sociedadChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['Sociedad', 'Jóvenes', 'Damas', 'Caballeros'],
+        datasets: [{
+          label: 'Cantidad de Miembros',
+          data: [
+            conteo['Sociedad'],
+            conteo['Jóvenes'],
+            conteo['Damas'],
+            conteo['Caballeros']
+          ],
+          backgroundColor: ['#f7c948', '#36a2eb', '#ff6384', '#9966ff'],
+          borderColor: '#14153a',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#f7c948'
+            }
+          }
+        }
+      }
+    });
+  </script>
 </body>
 </html>
