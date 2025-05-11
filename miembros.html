@@ -171,54 +171,6 @@
       color: white;
       margin-left: 10px;
     }
-
-    .small-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .small-modal-content {
-      background-color: #14153a;
-      padding: 20px;
-      border-radius: 10px;
-      width: 300px;
-      text-align: center;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    }
-
-    .small-modal-content input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background-color: #1f214d;
-      color: white;
-    }
-
-    .small-modal-content button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .confirm-btn {
-      background-color: #f7c948;
-      color: #0b0c2a;
-    }
-
-    .cancel-btn {
-      background-color: #c9302c;
-      color: white;
-    }
   </style>
 </head>
 <body>
@@ -266,20 +218,22 @@
       <label for="nombre">Nombre Completo</label>
       <input type="text" id="nombre" placeholder="Ingrese el nombre completo">
 
-      <!-- Otros campos del formulario -->
+      <label for="acepto-jesus">Acepto a Jesús</label>
+      <select id="acepto-jesus" onchange="toggleConversionFields()">
+        <option value="si">Sí</option>
+        <option value="no">No</option>
+      </select>
+
+      <div id="conversion-fields">
+        <label for="fecha-conversion">Fecha de Conversión</label>
+        <input type="date" id="fecha-conversion">
+
+        <label for="lugar-conversion">Lugar de Conversión</label>
+        <input type="text" id="lugar-conversion" placeholder="Ingrese el lugar de conversión">
+      </div>
 
       <button class="save-btn" onclick="guardarMiembro()">Guardar</button>
       <button class="cancel-btn" onclick="cerrarFormulario()">Cancelar</button>
-    </div>
-  </div>
-
-  <!-- Modal pequeño para motivo de baja -->
-  <div class="small-modal" id="modal-baja">
-    <div class="small-modal-content">
-      <h3>Motivo de Baja</h3>
-      <input type="text" id="motivo-baja" placeholder="Escriba el motivo">
-      <button class="confirm-btn" onclick="confirmarBaja()">Confirmar</button>
-      <button class="cancel-btn" onclick="cerrarModalBaja()">Cancelar</button>
     </div>
   </div>
 
@@ -298,6 +252,13 @@
     function cerrarFormulario() {
       document.getElementById("modal-formulario").style.display = "none";
       limpiarFormulario();
+    }
+
+    // Mostrar u ocultar campos de conversión
+    function toggleConversionFields() {
+      const aceptoJesus = document.getElementById("acepto-jesus").value;
+      const conversionFields = document.getElementById("conversion-fields");
+      conversionFields.style.display = aceptoJesus === "no" ? "none" : "block";
     }
 
     // Guardar miembro
@@ -327,29 +288,6 @@
       `;
       tabla.appendChild(fila);
       cerrarFormulario();
-    }
-
-    // Dar de baja
-    function darDeBaja(elemento) {
-      document.getElementById("modal-baja").style.display = "flex";
-      elemento.dataset.row = elemento.closest("tr").rowIndex;
-    }
-
-    function cerrarModalBaja() {
-      document.getElementById("modal-baja").style.display = "none";
-    }
-
-    function confirmarBaja() {
-      const motivo = document.getElementById("motivo-baja").value.trim();
-      if (!motivo) {
-        alert("Por favor, escriba un motivo.");
-        return;
-      }
-
-      const tabla = document.getElementById("tabla-miembros");
-      const rowIndex = document.querySelector("[data-row]").dataset.row;
-      tabla.deleteRow(rowIndex);
-      cerrarModalBaja();
     }
 
     // Limpiar formulario
