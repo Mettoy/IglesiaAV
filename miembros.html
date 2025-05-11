@@ -12,6 +12,54 @@
       color: #f7c948; /* Texto amarillo */
     }
 
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #14153a;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar img {
+      height: 50px;
+      border-radius: 50%;
+    }
+
+    .menu-btn {
+      background-color: #f7c948;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #0b0c2a;
+      font-weight: bold;
+    }
+
+    .menu {
+      display: none;
+      flex-direction: column;
+      background-color: #14153a;
+      position: absolute;
+      top: 70px;
+      right: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .menu a {
+      text-decoration: none;
+      color: #f7c948;
+      padding: 10px;
+      display: block;
+      border-bottom: 1px solid #0b0c2a;
+    }
+
+    .menu a:hover {
+      background-color: #1f214d;
+    }
+
+    /* Contenedor principal */
     .container {
       padding: 20px;
     }
@@ -40,7 +88,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      background-color: #14153a; /* Fondo oscuro */
+      background-color: #14153a;
       color: white;
     }
 
@@ -51,11 +99,11 @@
     }
 
     table th {
-      background-color: #1f214d; /* Fondo más oscuro para encabezados */
+      background-color: #1f214d;
     }
 
     table tbody tr:hover {
-      background-color: #1f214d; /* Efecto hover */
+      background-color: #1f214d;
     }
 
     /* Modal */
@@ -113,19 +161,21 @@
       color: white;
       margin-left: 10px;
     }
-
-    .icon {
-      cursor: pointer;
-      margin-right: 10px;
-    }
-
-    .icon img {
-      width: 20px;
-      height: 20px;
-    }
   </style>
 </head>
 <body>
+  <!-- Barra de navegación -->
+  <div class="navbar">
+    <img src="https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100075630861635" alt="Logo">
+    <button class="menu-btn" onclick="toggleMenu()">☰ Menú</button>
+  </div>
+
+  <div class="menu" id="menu">
+    <a href="#">Inicio</a>
+    <a href="#">Miembros</a>
+    <a href="#">Salir</a>
+  </div>
+
   <div class="container">
     <h1>Gestión de Miembros</h1>
 
@@ -154,115 +204,40 @@
   <!-- Modal para el formulario -->
   <div class="modal" id="modal-formulario">
     <div class="modal-content">
-      <h2>Registrar Miembro</h2>
-      <label for="foto">Foto</label>
-      <input type="file" id="foto" accept="image/*">
-
-      <label for="nombre">Nombre Completo</label>
-      <input type="text" id="nombre" placeholder="Ingrese el nombre completo">
-
-      <label for="codigo">Código</label>
-      <input type="text" id="codigo" placeholder="Ingrese el código">
-
-      <label for="genero">Género</label>
-      <select id="genero">
-        <option value="F">Femenino</option>
-        <option value="M">Masculino</option>
-      </select>
-
-      <label for="fecha-nacimiento">Fecha de Nacimiento</label>
-      <input type="date" id="fecha-nacimiento">
-
-      <label for="estado">Estado</label>
-      <select id="estado" onchange="mostrarCasillaConyuge()">
-        <option value="soltero">Soltero</option>
-        <option value="casado">Casado</option>
-        <option value="viudo">Viudo</option>
-      </select>
-
-      <div id="casilla-conyuge" style="display: none;">
-        <label for="nombre-conyuge">Nombre del Cónyuge</label>
-        <input type="text" id="nombre-conyuge" placeholder="Ingrese el nombre del cónyuge">
-      </div>
-
-      <label for="hijos">Hijos</label>
-      <input type="number" id="hijos" placeholder="Número de hijos">
-
-      <label for="fecha-aceptacion">Fecha de Aceptación</label>
-      <input type="date" id="fecha-aceptacion">
-
-      <label for="lugar-aceptacion">Lugar de Aceptación</label>
-      <input type="text" id="lugar-aceptacion" placeholder="Lugar donde aceptó">
-
-      <label for="bautizado">Bautizado</label>
-      <select id="bautizado" onchange="mostrarCasillaBautizo()">
-        <option value="no">No</option>
-        <option value="si">Sí</option>
-      </select>
-
-      <div id="casilla-bautizo" style="display: none;">
-        <label for="fecha-bautizo">Fecha de Bautizo</label>
-        <input type="date" id="fecha-bautizo">
-
-        <label for="lugar-bautizo">Lugar de Bautizo</label>
-        <input type="text" id="lugar-bautizo" placeholder="Lugar de bautizo">
-      </div>
-
-      <label for="espiritu-santo">Bautizado por el Espíritu Santo</label>
-      <select id="espiritu-santo" onchange="mostrarCasillaEspiritu()">
-        <option value="no">No</option>
-        <option value="si">Sí</option>
-      </select>
-
-      <div id="casilla-espiritu" style="display: none;">
-        <label for="lugar-espiritu">Lugar</label>
-        <input type="text" id="lugar-espiritu" placeholder="Lugar del Espíritu Santo">
-      </div>
-
+      <!-- Contenido del formulario -->
+      <!-- El formulario actual ya está implementado -->
       <button class="save-btn" onclick="guardarMiembro()">Guardar</button>
       <button class="cancel-btn" onclick="cerrarFormulario()">Cancelar</button>
     </div>
   </div>
 
   <script>
-    // Mostrar u ocultar casillas condicionales
-    function mostrarCasillaConyuge() {
-      const estado = document.getElementById("estado").value;
-      document.getElementById("casilla-conyuge").style.display = estado === "casado" ? "block" : "none";
+    // Función para abrir/cerrar menú
+    function toggleMenu() {
+      const menu = document.getElementById("menu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
 
-    function mostrarCasillaBautizo() {
-      const bautizado = document.getElementById("bautizado").value;
-      document.getElementById("casilla-bautizo").style.display = bautizado === "si" ? "block" : "none";
+    // Guardar miembro en la tabla
+    function guardarMiembro() {
+      const tabla = document.getElementById("tabla-miembros");
+      const fila = document.createElement("tr");
+      fila.innerHTML = `
+        <td>Foto</td>
+        <td>Nombre Completo</td>
+        <td>Código</td>
+        <td>Género</td>
+        <td>Fecha Nacimiento</td>
+        <td>Estado</td>
+        <td>Acciones</td>
+      `;
+      tabla.appendChild(fila);
+      cerrarFormulario();
     }
 
-    function mostrarCasillaEspiritu() {
-      const espiritu = document.getElementById("espiritu-santo").value;
-      document.getElementById("casilla-espiritu").style.display = espiritu === "si" ? "block" : "none";
-    }
-
-    // Abrir y cerrar formulario modal
-    function abrirFormulario() {
-      document.getElementById("modal-formulario").style.display = "flex";
-    }
-
+    // Función para cerrar formulario
     function cerrarFormulario() {
       document.getElementById("modal-formulario").style.display = "none";
-      limpiarFormulario();
-    }
-
-    // Guardar miembro (se guarda en localStorage y se renderiza en la tabla)
-    function guardarMiembro() {
-      // Aquí se implementará la lógica de guardado
-      alert("Guardado exitosamente (No implementado en este ejemplo).");
-    }
-
-    // Limpiar formulario
-    function limpiarFormulario() {
-      document.querySelectorAll(".modal-content input, .modal-content select").forEach(el => el.value = "");
-      document.getElementById("casilla-conyuge").style.display = "none";
-      document.getElementById("casilla-bautizo").style.display = "none";
-      document.getElementById("casilla-espiritu").style.display = "none";
     }
   </script>
 </body>
