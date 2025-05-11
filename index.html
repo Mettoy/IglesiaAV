@@ -1,89 +1,61 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Adoración Viva</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar Sesión</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: black; /* Fondo negro */
-      color: white; /* Letras blancas */
+      background-color: #f2f2f2;
       display: flex;
-      height: 100vh;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
+      height: 100vh;
       margin: 0;
     }
     .login-container {
-      background: black; /* Fondo negro */
-      padding: 2rem;
+      background-color: white;
+      padding: 2em;
       border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
     }
     .login-container img {
-      width: 150px; /* Tamaño de la imagen */
-      border-radius: 50%; /* Imagen circular */
-      margin-bottom: 1rem; /* Espacio debajo de la imagen */
+      width: 100px;
+      margin-bottom: 1em;
     }
-    input[type="text"] {
-      padding: 0.5rem;
-      width: 200px;
-      margin-bottom: 1rem;
+    .login-container input {
+      width: 100%;
+      padding: 0.7em;
+      margin-bottom: 1em;
       border: 1px solid #ccc;
       border-radius: 5px;
+      font-size: 1em;
     }
-    button {
-      padding: 0.5rem 1rem;
-      background: white; /* Botón blanco */
-      color: black; /* Texto negro en el botón */
+    .login-container button {
+      width: 100%;
+      padding: 0.7em;
+      background-color: #4CAF50;
+      color: white;
       border: none;
       border-radius: 5px;
+      font-size: 1em;
       cursor: pointer;
     }
-    button:hover {
-      background: #ccc; /* Botón cambia a gris al pasar el cursor */
-    }
-    .message {
-      margin-top: 1rem;
-      font-weight: bold;
+    .login-container button:hover {
+      background-color: #45a049;
     }
   </style>
 </head>
 <body>
-
-<div class="login-container">
-  <!-- Imagen proporcionada -->
-  <img src="https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100075630861635" alt="Adoración Viva">
-  <h2>Bienvenido a Adoración Viva</h2>
-  <input type="text" id="username" placeholder="Ingrese su usuario" />
-  <br>
-  <button onclick="login()">Ingresar</button>
-  <div class="message" id="message"></div>
-</div>
-
-<script>
-  // Usuario con acceso total
-  const adminUser = "admon";
-
-  function login() {
-    const input = document.getElementById("username").value.trim().toLowerCase(); // Normaliza a minúsculas
-    const messageDiv = document.getElementById("message");
-
-    if (input === adminUser) {
-      // Si el usuario es "admon"
-      messageDiv.textContent = "Bienvenido, Administrador. Tienes acceso total.";
-      messageDiv.style.color = "green";
-    } else if (input) {
-      // Cualquier otro usuario
-      messageDiv.textContent = `Bienvenido, ${input}. Tienes acceso limitado.`;
-      messageDiv.style.color = "blue";
-    } else {
-      // Si no se ingresa nombre de usuario
-      messageDiv.textContent = "Por favor, ingresa un nombre de usuario.";
-      messageDiv.style.color = "red";
-    }
-  }
-</script>
-
+  <div class="login-container">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIA..." alt="Logo">
+    <form action="inicio.html" method="get">
+      <input type="text" name="usuario" placeholder="Ingrese usuario" required />
+      <button type="submit">Iniciar sesión</button>
+    </form>
+  </div>
 </body>
 </html>
