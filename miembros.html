@@ -30,6 +30,7 @@
         <table class="tabla">
             <thead>
                 <tr>
+                    <th>Foto</th>
                     <th>Nombre Completo</th>
                     <th>Género</th>
                     <th>Fecha de Nacimiento</th>
@@ -39,6 +40,8 @@
                     <th>Código de Miembro</th>
                     <th>Hijos</th>
                     <th>Nombre de Cónyuge</th>
+                    <th>Editar</th>
+                    <th>Imprimir</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,6 +56,9 @@
             <span class="cerrar">&times;</span>
             <h2>Añadir Miembro</h2>
             <form>
+                <label>Foto:</label>
+                <input type="file" accept="image/*">
+
                 <label>Nombre Completo:</label>
                 <input type="text" required>
 
@@ -105,7 +111,8 @@
                 </select>
                 <input type="text" id="lugarEspiritu" placeholder="Lugar donde recibió el Espíritu Santo" style="display: none;">
 
-                <button type="submit">Guardar</button>
+                <button type="button" class="boton-rojo">Cancelar</button>
+                <button type="submit" class="boton-verde">Guardar</button>
             </form>
         </div>
     </div>
