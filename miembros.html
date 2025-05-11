@@ -5,54 +5,19 @@
   <title>Miembros - Adoración Viva</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body {
-      display: flex;
-      min-height: 100vh;
-      background-color: #0a0a23;
-      color: white;
-    }
-    .sidebar {
-      width: 250px;
-      background-color: #111;
-      transition: all 0.3s;
-    }
-    .sidebar.collapsed {
-      width: 60px;
-    }
-    .sidebar img {
-      width: 100px;
-      margin: 1rem auto;
-      display: block;
-      border-radius: 10px;
-    }
-    .sidebar a {
-      color: white;
-      padding: 10px;
-      display: block;
-      text-decoration: none;
-    }
-    .sidebar a:hover {
-      background-color: #333;
-    }
-    .main {
-      flex-grow: 1;
-      padding: 2rem;
-      width: 100%;
-    }
-    .search-bar {
-      margin-bottom: 1rem;
-    }
-    .form-section {
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background-color: #f8f9fa;
-    }
-    .hidden {
-      display: none;
-    }
+    body { display: flex; min-height: 100vh; background-color: #0a0a23; color: white; }
+    .sidebar { width: 250px; background-color: #111; transition: all 0.3s; }
+    .sidebar.collapsed { width: 60px; }
+    .sidebar img { width: 100px; margin: 1rem auto; display: block; border-radius: 10px; }
+    .sidebar a { color: white; padding: 10px; display: block; text-decoration: none; }
+    .sidebar a:hover { background-color: #333; }
+    .main { flex-grow: 1; padding: 2rem; width: 100%; }
+    .search-bar { margin-bottom: 1rem; }
+    .form-section { margin-bottom: 1rem; padding: 1rem; border: 1px solid #444; border-radius: 5px; background-color: #1c1c2e; color: white; }
+    .hidden { display: none; }
+    .table img { width: 40px; height: 40px; border-radius: 50%; }
   </style>
 </head>
 <body>
@@ -60,19 +25,17 @@
     <button class="btn btn-dark w-100" onclick="toggleSidebar()">
       <i class="bi bi-list"></i>
     </button>
-    <img src="https://scontent.fmga1-2.fna.fbcdn.net/v/t39.30808-1/376241453_327507783113581_221642316254197631_n.jpg?stp=dst-jpg_s200x200_tt6&..." alt="Adoración Viva">
+    <img src="https://via.placeholder.com/100" alt="Adoración Viva">
     <a href="#">Inicio</a>
     <a href="#">Diezmos</a>
+    <a href="#" onclick="mostrarMiembrosBaja()">Miembros de baja</a>
     <a href="#" onclick="cerrarSesion()">Salir</a>
-  </div>  <div class="main">
+  </div>
+  <div class="main">
     <h2>Listado de Miembros</h2>
     <div class="search-bar row g-2">
-      <div class="col-md-4">
-        <input type="text" class="form-control" placeholder="Buscar por nombre">
-      </div>
-      <div class="col-md-4">
-        <input type="text" class="form-control" placeholder="Buscar por código">
-      </div>
+      <div class="col-md-4"><input type="text" class="form-control" placeholder="Buscar por nombre"></div>
+      <div class="col-md-4"><input type="text" class="form-control" placeholder="Buscar por código"></div>
       <div class="col-md-4">
         <select class="form-select">
           <option value="">Buscar por sociedad</option>
@@ -82,88 +45,129 @@
         </select>
       </div>
     </div>
-    <button class="btn btn-success my-3" data-bs-toggle="modal" data-bs-target="#modalMiembro">Agregar Miembro</button><!-- Aquí puedes incluir la tabla si la necesitas -->
-
-<!-- Modal -->
-<div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content text-black">
-      <div class="modal-header">
-        <h5 class="modal-title">Ficha del Miembro</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <form id="formMiembro">
-          <!-- Datos personales -->
-          <div class="form-section">
-            <h6>Datos personales</h6>
-            <input type="text" class="form-control mb-2" placeholder="Nombre completo" required>
-            <input type="number" class="form-control mb-2" placeholder="Edad" required>
-            <input type="date" class="form-control mb-2" placeholder="Fecha de nacimiento">
-            <select class="form-select mb-2">
-              <option>Soltero</option>
-              <option>Casado</option>
-              <option>Viudo</option>
-            </select>
-            <input type="text" class="form-control mb-2" placeholder="Dirección">
-            <input type="tel" class="form-control mb-2" placeholder="Número de teléfono">
-            <select class="form-select mb-2">
-              <option>Jóvenes</option>
-              <option>Damas</option>
-              <option>Caballeros</option>
-            </select>
-          </div>
-          <!-- Familiares -->
-          <div class="form-section">
-            <h6>Familiares</h6>
-            <input type="text" class="form-control mb-2" placeholder="Padre">
-            <input type="text" class="form-control mb-2" placeholder="Madre">
-            <input type="text" class="form-control mb-2" placeholder="Hermano(a)">
-          </div>
-          <!-- Religiosos -->
-          <div class="form-section">
-            <h6>Datos Religiosos</h6>
-            <input type="date" class="form-control mb-2" placeholder="Fecha de aceptación">
-            <input type="text" class="form-control mb-2" placeholder="Lugar de aceptación">
-            <select class="form-select mb-2" id="bautizado" onchange="toggleBautismo()">
-              <option value="no">Bautizado</option>
-              <option value="si">Sí</option>
-              <option value="no">No</option>
-            </select>
-            <div id="camposBautismo" class="hidden">
-              <input type="date" class="form-control mb-2" placeholder="Fecha de bautismo">
-              <input type="text" class="form-control mb-2" placeholder="Lugar de bautismo">
+    <button class="btn btn-success my-3" data-bs-toggle="modal" data-bs-target="#modalMiembro">Agregar Miembro</button>
+    <table class="table table-dark table-bordered align-middle">
+      <thead>
+        <tr>
+          <th>Foto</th><th>Nombre completo</th><th>Código</th><th>Edad</th><th>Dirección</th><th>Sociedad</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaMiembros"></tbody>
+    </table>
+    <div id="miembrosBaja" class="hidden">
+      <h4>Miembros dados de baja</h4>
+      <ul id="listaBaja" class="list-group"></ul>
+    </div>
+  </div>  <!-- Modal -->  <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content text-black">
+        <div class="modal-header">
+          <h5 class="modal-title">Ficha del Miembro</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formMiembro">
+            <div class="form-section">
+              <h6>Datos personales</h6>
+              <input type="text" name="nombre" class="form-control mb-2" placeholder="Nombre completo" required>
+              <input type="number" name="edad" class="form-control mb-2" placeholder="Edad" required>
+              <input type="text" name="codigo" class="form-control mb-2" placeholder="Código">
+              <input type="text" name="direccion" class="form-control mb-2" placeholder="Dirección">
+              <select name="sociedad" class="form-select mb-2">
+                <option>Jóvenes</option>
+                <option>Damas</option>
+                <option>Caballeros</option>
+              </select>
             </div>
-            <select class="form-select mb-2" id="espiritu" onchange="toggleEspiritu()">
-              <option value="no">Bautizado por el Espíritu</option>
-              <option value="si">Sí</option>
-              <option value="no">No</option>
-            </select>
-            <div id="campoEspiritu" class="hidden">
-              <input type="text" class="form-control mb-2" placeholder="Lugar de bautismo por el Espíritu">
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary">Guardar Miembro</button>
-        </form>
+            <button type="submit" class="btn btn-primary">Guardar Miembro</button>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-
   </div>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  <script>
+    let miembros = JSON.parse(localStorage.getItem("miembros")) || [];
+    let baja = JSON.parse(localStorage.getItem("baja")) || [];
+
     function cerrarSesion() {
       alert("Sesión cerrada");
     }
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("collapsed");
     }
-    function toggleBautismo() {
-      const select = document.getElementById("bautizado");
-      document.getElementById("camposBautismo").classList.toggle("hidden", select.value !== "si");
+    function mostrarMiembros() {
+      const tbody = document.getElementById("tablaMiembros");
+      tbody.innerHTML = "";
+      miembros.forEach((m, i) => {
+        tbody.innerHTML += `
+          <tr>
+            <td><img src="https://via.placeholder.com/50"></td>
+            <td>${m.nombre}</td>
+            <td contenteditable="true">${m.codigo}</td>
+            <td>${m.edad}</td>
+            <td>${m.direccion}</td>
+            <td>${m.sociedad}</td>
+            <td>
+              <button class="btn btn-sm btn-warning" onclick="editarMiembro(${i})"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-secondary" onclick="imprimirPDF(${i})"><i class="bi bi-printer"></i></button>
+              <button class="btn btn-sm btn-danger" onclick="darDeBaja(${i})"><i class="bi bi-x-circle"></i></button>
+            </td>
+          </tr>`;
+      });
     }
-    function toggleEspiritu() {
-      const select = document.getElementById("espiritu");
-      document.getElementById("campoEspiritu").classList.toggle("hidden", select.value !== "si");
+    function editarMiembro(i) {
+      const m = miembros[i];
+      const form = document.forms["formMiembro"];
+      form.nombre.value = m.nombre;
+      form.edad.value = m.edad;
+      form.codigo.value = m.codigo;
+      form.direccion.value = m.direccion;
+      form.sociedad.value = m.sociedad;
+      new bootstrap.Modal(document.getElementById('modalMiembro')).show();
+      miembros.splice(i, 1);
     }
+    function imprimirPDF(i) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const m = miembros[i];
+      doc.text(`Ficha del Miembro`, 10, 10);
+      doc.text(`Nombre: ${m.nombre}`, 10, 20);
+      doc.text(`Edad: ${m.edad}`, 10, 30);
+      doc.text(`Código: ${m.codigo}`, 10, 40);
+      doc.text(`Dirección: ${m.direccion}`, 10, 50);
+      doc.text(`Sociedad: ${m.sociedad}`, 10, 60);
+      doc.save(`${m.nombre}.pdf`);
+    }
+    function darDeBaja(i) {
+      baja.push(miembros[i]);
+      miembros.splice(i, 1);
+      localStorage.setItem("baja", JSON.stringify(baja));
+      localStorage.setItem("miembros", JSON.stringify(miembros));
+      mostrarMiembros();
+    }
+    function mostrarMiembrosBaja() {
+      document.getElementById("miembrosBaja").classList.remove("hidden");
+      const lista = document.getElementById("listaBaja");
+      lista.innerHTML = "";
+      baja.forEach(m => {
+        lista.innerHTML += `<li class="list-group-item">${m.nombre} - ${m.codigo}</li>`;
+      });
+    }
+    document.getElementById("formMiembro").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const nuevo = {
+        nombre: form.nombre.value,
+        edad: form.edad.value,
+        codigo: form.codigo.value,
+        direccion: form.direccion.value,
+        sociedad: form.sociedad.value
+      };
+      miembros.push(nuevo);
+      localStorage.setItem("miembros", JSON.stringify(miembros));
+      form.reset();
+      bootstrap.Modal.getInstance(document.getElementById("modalMiembro")).hide();
+      mostrarMiembros();
+    });
+    mostrarMiembros();
   </script></body>
 </html>
