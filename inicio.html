@@ -2,89 +2,220 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Gráfico de Miembros por Sociedad</title>
+  <title>Panel de Estadísticas</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
+      margin: 0;
+      font-family: Arial, sans-serif;
       background-color: #0b0c2a;
       color: #f7c948;
-      font-family: Arial, sans-serif;
-      text-align: center;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 200px;
+      background-color: #14153a;
+      height: 100vh;
+      padding-top: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+      position: fixed;
+      left: 0;
+      top: 0;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar.hide {
+      transform: translateX(-100%);
+    }
+
+    .sidebar img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: block;
+      margin: 0 auto 10px;
+    }
+
+    .sidebar input[type="file"] {
+      display: block;
+      margin: 5px auto;
+      color: #f7c948;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 10px 20px;
+      color: #f7c948;
+      text-decoration: none;
+    }
+
+    .sidebar a:hover {
+      background-color: #1f214d;
+    }
+
+    .content {
+      margin-left: 200px;
       padding: 20px;
+      flex-grow: 1;
+    }
+
+    .menu-toggle {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: #f7c948;
+      color: #0b0c2a;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 5px;
+      z-index: 10;
+    }
+
+    .charts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 60px;
     }
 
     canvas {
-      max-width: 400px;
-      margin: auto;
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        margin-left: 0;
+      }
+
+      .sidebar {
+        position: absolute;
+        z-index: 5;
+      }
     }
   </style>
 </head>
 <body>
-  <h2>Distribución de Miembros por Sociedad</h2>
-  <canvas id="sociedadChart"></canvas>
+
+  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+  <div class="sidebar" id="sidebar">
+    <img id="logo" src="https://via.placeholder.com/100" alt="Logo">
+    <input type="file" id="logoInput" accept="image/*">
+    <a href="#">Inicio</a>
+    <a href="#">Miembros</a>
+    <a href="#">Diezmos</a>
+    <a href="#">Asistencia</a>
+  </div>
+
+  <div class="content">
+    <h2>Estadísticas Generales</h2>
+    <div class="charts">
+      <canvas id="sociedadChart" width="300" height="300"></canvas>
+      <canvas id="asistenciaChart" width="300" height="300"></canvas>
+    </div>
+  </div>
 
   <script>
-    // Simulación: si no hay datos en localStorage, agregamos algunos por defecto
-    if (!localStorage.getItem('miembros')) {
-      const miembrosEjemplo = [
-        { nombre: "Ana", sociedad: "Damas" },
-        { nombre: "Luis", sociedad: "Caballeros" },
-        { nombre: "Carlos", sociedad: "Jóvenes" },
-        { nombre: "Marta", sociedad: "Damas" },
-        { nombre: "Pedro", sociedad: "Caballeros" },
-        { nombre: "Lucía", sociedad: "Jóvenes" },
-        { nombre: "José", sociedad: "Sociedad" }
-      ];
-      localStorage.setItem('miembros', JSON.stringify(miembrosEjemplo));
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('hide');
     }
 
-    // Obtener miembros desde localStorage
+    // Simular datos si no existen
+    if (!localStorage.getItem('miembros')) {
+      const miembros = [
+        { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
+        { nombre: "Luis", sociedad: "Caballeros", asistencia: 6 },
+        { nombre: "Carlos", sociedad: "Jóvenes", asistencia: 7 },
+        { nombre: "Marta", sociedad: "Damas", asistencia: 9 },
+        { nombre: "Pedro", sociedad: "Caballeros", asistencia: 5 },
+        { nombre: "Lucía", sociedad: "Jóvenes", asistencia: 10 },
+        { nombre: "José", sociedad: "Sociedad", asistencia: 4 }
+      ];
+      localStorage.setItem('miembros', JSON.stringify(miembros));
+    }
+
     const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
 
-    // Contar miembros por sociedad
-    const conteo = {
-      Sociedad: 0,
-      Jóvenes: 0,
-      Damas: 0,
-      Caballeros: 0
+    // Conteo por sociedad
+    const conteoSociedad = {
+      Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0
     };
-
     miembros.forEach(m => {
-      if (conteo[m.sociedad] !== undefined) {
-        conteo[m.sociedad]++;
+      if (conteoSociedad[m.sociedad] !== undefined) {
+        conteoSociedad[m.sociedad]++;
       }
     });
 
-    // Crear gráfico
-    const ctx = document.getElementById('sociedadChart').getContext('2d');
-    const sociedadChart = new Chart(ctx, {
+    new Chart(document.getElementById('sociedadChart'), {
       type: 'pie',
       data: {
-        labels: ['Sociedad', 'Jóvenes', 'Damas', 'Caballeros'],
+        labels: Object.keys(conteoSociedad),
         datasets: [{
-          label: 'Cantidad de Miembros',
-          data: [
-            conteo['Sociedad'],
-            conteo['Jóvenes'],
-            conteo['Damas'],
-            conteo['Caballeros']
-          ],
+          data: Object.values(conteoSociedad),
           backgroundColor: ['#f7c948', '#36a2eb', '#ff6384', '#9966ff'],
           borderColor: '#14153a',
           borderWidth: 2
         }]
       },
       options: {
-        responsive: true,
         plugins: {
-          legend: {
-            labels: {
-              color: '#f7c948'
-            }
-          }
+          legend: { labels: { color: '#0b0c2a' } }
         }
       }
     });
+
+    // Asistencia por miembro
+    new Chart(document.getElementById('asistenciaChart'), {
+      type: 'bar',
+      data: {
+        labels: miembros.map(m => m.nombre),
+        datasets: [{
+          label: 'Asistencia',
+          data: miembros.map(m => m.asistencia || 0),
+          backgroundColor: '#36a2eb'
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            ticks: { color: '#f7c948' },
+            beginAtZero: true
+          },
+          x: {
+            ticks: { color: '#f7c948' }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: '#f7c948' } }
+        }
+      }
+    });
+
+    // Cambiar logo desde dispositivo
+    const logoInput = document.getElementById('logoInput');
+    const logo = document.getElementById('logo');
+    logoInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          logo.src = reader.result;
+          localStorage.setItem('logo', reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Cargar logo si existe
+    const logoGuardado = localStorage.getItem('logo');
+    if (logoGuardado) {
+      logo.src = logoGuardado;
+    }
   </script>
 </body>
 </html>
