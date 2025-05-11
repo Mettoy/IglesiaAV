@@ -62,14 +62,23 @@
 </div>
 
 <script>
+  // Usuario con acceso total
+  const adminUser = "admon";
+
   function login() {
-    const input = document.getElementById("username").value.trim();
+    const input = document.getElementById("username").value.trim().toLowerCase(); // Normaliza a minúsculas
     const messageDiv = document.getElementById("message");
 
-    if (input) {
-      messageDiv.textContent = `Bienvenido, ${input}`;
+    if (input === adminUser) {
+      // Si el usuario es "admon"
+      messageDiv.textContent = "Bienvenido, Administrador. Tienes acceso total.";
       messageDiv.style.color = "green";
+    } else if (input) {
+      // Cualquier otro usuario
+      messageDiv.textContent = `Bienvenido, ${input}. Tienes acceso limitado.`;
+      messageDiv.style.color = "blue";
     } else {
+      // Si no se ingresa nombre de usuario
       messageDiv.textContent = "Por favor, ingresa un nombre de usuario.";
       messageDiv.style.color = "red";
     }
