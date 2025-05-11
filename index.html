@@ -2,30 +2,46 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Inicio de Sesión</title>
+  <title>Adoración Viva</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
+      background: black; /* Fondo negro */
+      color: white; /* Letras blancas */
       display: flex;
       height: 100vh;
       justify-content: center;
       align-items: center;
+      margin: 0;
     }
     .login-container {
-      background: white;
+      background: black; /* Fondo negro */
       padding: 2rem;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
+    }
+    .login-container img {
+      width: 150px; /* Tamaño de la imagen */
+      border-radius: 50%; /* Imagen circular */
+      margin-bottom: 1rem; /* Espacio debajo de la imagen */
     }
     input[type="text"] {
       padding: 0.5rem;
       width: 200px;
       margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
     button {
       padding: 0.5rem 1rem;
+      background: white; /* Botón blanco */
+      color: black; /* Texto negro en el botón */
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ccc; /* Botón cambia a gris al pasar el cursor */
     }
     .message {
       margin-top: 1rem;
@@ -36,31 +52,26 @@
 <body>
 
 <div class="login-container">
-  <h2>Inicio de Sesión</h2>
-  <input type="text" id="username" placeholder="Nombre de usuario" />
+  <!-- Imagen proporcionada -->
+  <img src="https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=100075630861635" alt="Adoración Viva">
+  <h2>Bienvenido a Adoración Viva</h2>
+  <input type="text" id="username" placeholder="Ingrese su usuario" />
   <br>
   <button onclick="login()">Ingresar</button>
   <div class="message" id="message"></div>
 </div>
 
 <script>
-  const registeredUsers = ["admon"];
-
   function login() {
-    const input = document.getElementById("username").value.trim().toLowerCase();
+    const input = document.getElementById("username").value.trim();
     const messageDiv = document.getElementById("message");
 
-    if (input === "admon") {
-      messageDiv.textContent = "Bienvenido, Administrador.";
+    if (input) {
+      messageDiv.textContent = `Bienvenido, ${input}`;
       messageDiv.style.color = "green";
     } else {
-      if (!registeredUsers.includes(input)) {
-        registeredUsers.push(input); // Se registra automáticamente
-        messageDiv.textContent = "Usuario registrado y sesión iniciada.";
-      } else {
-        messageDiv.textContent = "Sesión iniciada.";
-      }
-      messageDiv.style.color = "blue";
+      messageDiv.textContent = "Por favor, ingresa un nombre de usuario.";
+      messageDiv.style.color = "red";
     }
   }
 </script>
