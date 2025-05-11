@@ -26,12 +26,14 @@
     <button class="btn btn-dark w-100" onclick="toggleSidebar()">
       <i class="bi bi-list"></i>
     </button>
-    <img src="https://via.placeholder.com/100" alt="Adoración Viva" id="logo">
+    <img src="https://via.placeholder.com/100" alt="Adoración Viva" id="logo" style="width: 100px; margin: 1rem auto; display: block; border-radius: 10px;" onclick="cambiarLogoInput()">
+    <input type="file" id="logoInput" style="display:none;" accept="image/*" onchange="cambiarLogo()">
     <a href="inicio.html">Inicio</a>
     <a href="diezmo.html">Diezmos</a>
     <a href="#" onclick="mostrarMiembrosBaja()">Miembros de baja</a>
     <a href="#" onclick="cerrarSesion()">Salir</a>
   </div>
+
   <div class="main">
     <h2>Listado de Miembros</h2>
     <div class="search-bar row g-2">
@@ -126,6 +128,36 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
+    // Función para cambiar el logo desde el archivo
+    function cambiarLogoInput() {
+      document.getElementById('logoInput').click();
+    }
+
+    function cambiarLogo() {
+      const logoInput = document.getElementById('logoInput');
+      const logo = document.getElementById('logo');
+      const file = logoInput.files[0];
+      
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          logo.src = event.target.result;  // Establecer la imagen cargada como logo
+          localStorage.setItem('logo', event.target.result); // Guardar en localStorage
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Cargar el logo desde localStorage si existe
+    window.onload = function() {
+      const logoGuardado = localStorage.getItem('logo');
+      if (logoGuardado) {
+        document.getElementById('logo').src = logoGuardado;
+      }
+
+      mostrarMiembros();  // Mostrar miembros al cargar la página
+    };
+
     // Función para agregar un familiar
     function agregarFamiliar() {
       const familiar = document.createElement("input");
@@ -147,6 +179,7 @@
       }
     }
 
+    // Función para guardar el miembro en localStorage
     document.getElementById("formMiembro").addEventListener("submit", function(e) {
       e.preventDefault();
       const form = e.target;
@@ -154,29 +187,72 @@
         nombre: form.nombre.value,
         edad: form.edad.value,
         codigo: form.codigo.value,
-        fechaNacimiento: form.fechaNacimiento.value,
-        estadoCivil: form.estadoCivil.value,
-        telefono: form.telefono.value,
         direccion: form.direccion.value,
-        padre: form.padre.value,
-        madre: form.madre.value,
-        hermanos: [form.hermano1.value, form.hermano2.value, form.hermano3.value],
-        espiritu: form.bautizadoEspiritu.value,
-        fechaBautismo: form.fechaBautismo.value,
-        lugarBautismo: form.lugarBautismo.value,
-        fechaConversion: form.fechaConversion.value,
-        lugarConversion: form.lugarConversion.value,
-        fechaBautismoEspiritu: form.fechaBautismoEspiritu.value,
-        lugarBautismoEspiritu: form.lugarBautismoEspiritu.value
+        sociedad: form.sociedad.value || "N/A", // Por si no se selecciona sociedad
       };
 
-      // Guarda la información del nuevo miembro (esto se puede mejorar con almacenamiento en localStorage o backend)
-      console.log(nuevoMiembro);
-      alert("Formulario guardado correctamente.");
-      // Cierra el modal y reinicia el formulario
+      // Obtener miembros del localStorage, si existe
+      const miembros = JSON.parse(localStorage.getItem("miembros")) || [];
+
+      // Agregar el nuevo miembro a la lista
+      miembros.push(nuevoMiembro);
+
+      // Guardar la lista actualizada de miembros en localStorage
+      localStorage.setItem("miembros", JSON.stringify(miembros));
+
+      // Mostrar la tabla actualizada
+      mostrarMiembros();
+
+      // Cerrar el modal y reiniciar el formulario
       bootstrap.Modal.getInstance(document.getElementById("modalMiembro")).hide();
       form.reset();
     });
+
+    // Función para mostrar miembros en la tabla
+    function mostrarMiembros() {
+      const miembros = JSON.parse(localStorage.getItem("miembros")) || [];
+      const tablaMiembros = document.getElementById('tablaMiembros');
+      tablaMiembros.innerHTML = ''; // Limpiar la tabla
+
+      miembros.forEach(miembro => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><img src="https://via.placeholder.com/40" alt="Foto"></td>
+          <td>${miembro.nombre}</td>
+          <td>${miembro.codigo}</td>
+          <td>${miembro.edad}</td>
+          <td>${miembro.direccion}</td>
+          <td>${miembro.sociedad}</td>
+          <td>
+            <button class="btn btn-warning" onclick="editarMiembro('${miembro.codigo}')"><i class="bi bi-pencil-square"></i></button>
+            <button class="btn btn-danger" onclick="eliminarMiembro('${miembro.codigo}')"><i class="bi bi-trash"></i></button>
+          </td>
+        `;
+        tablaMiembros.appendChild(row);
+      });
+    }
+
+    // Función para eliminar miembro
+    function eliminarMiembro(codigo) {
+      const miembros = JSON.parse(localStorage.getItem("miembros")) || [];
+      const miembrosActualizados = miembros.filter(miembro => miembro.codigo !== codigo);
+      localStorage.setItem("miembros", JSON.stringify(miembrosActualizados));
+      mostrarMiembros();
+    }
+
+    // Función para editar miembro
+    function editarMiembro(codigo) {
+      const miembros = JSON.parse(localStorage.getItem("miembros")) || [];
+      const miembro = miembros.find(miembro => miembro.codigo === codigo);
+      
+      if (miembro) {
+        document.querySelector('[name="nombre"]').value = miembro.nombre;
+        document.querySelector('[name="edad"]').value = miembro.edad;
+        document.querySelector('[name="codigo"]').value = miembro.codigo;
+        document.querySelector('[name="direccion"]').value = miembro.direccion;
+        document.querySelector('[name="sociedad"]').value = miembro.sociedad;
+      }
+    }
   </script>
 </body>
 </html>
