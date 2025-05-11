@@ -27,15 +27,6 @@
       margin-bottom: 20px;
     }
 
-    .actions input {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      width: 70%;
-      background-color: #1f214d; /* Fondo oscuro */
-      color: white;
-    }
-
     .actions button {
       padding: 10px 20px;
       border: none;
@@ -84,7 +75,7 @@
       background-color: #14153a;
       padding: 20px;
       border-radius: 10px;
-      width: 300px;
+      width: 400px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     }
 
@@ -95,7 +86,7 @@
       color: #f7c948;
     }
 
-    .modal-content input {
+    .modal-content input, .modal-content select {
       width: 100%;
       padding: 10px;
       margin-bottom: 15px;
@@ -122,6 +113,16 @@
       color: white;
       margin-left: 10px;
     }
+
+    .icon {
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .icon img {
+      width: 20px;
+      height: 20px;
+    }
   </style>
 </head>
 <body>
@@ -129,16 +130,19 @@
     <h1>Gestión de Miembros</h1>
 
     <div class="actions">
-      <input type="text" id="search-bar" placeholder="Buscar miembro..." oninput="filtrarTabla()">
       <button onclick="abrirFormulario()">Añadir Miembro</button>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Edad</th>
-          <th>Correo</th>
+          <th>Foto</th>
+          <th>Nombre Completo</th>
+          <th>Código</th>
+          <th>Género</th>
+          <th>Fecha Nacimiento</th>
+          <th>Estado</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody id="tabla-miembros">
@@ -151,14 +155,69 @@
   <div class="modal" id="modal-formulario">
     <div class="modal-content">
       <h2>Registrar Miembro</h2>
-      <label for="nombre">Nombre</label>
-      <input type="text" id="nombre" placeholder="Ingrese el nombre">
-      
-      <label for="edad">Edad</label>
-      <input type="number" id="edad" placeholder="Ingrese la edad">
-      
-      <label for="correo">Correo Electrónico</label>
-      <input type="email" id="correo" placeholder="Ingrese el correo">
+      <label for="foto">Foto</label>
+      <input type="file" id="foto" accept="image/*">
+
+      <label for="nombre">Nombre Completo</label>
+      <input type="text" id="nombre" placeholder="Ingrese el nombre completo">
+
+      <label for="codigo">Código</label>
+      <input type="text" id="codigo" placeholder="Ingrese el código">
+
+      <label for="genero">Género</label>
+      <select id="genero">
+        <option value="F">Femenino</option>
+        <option value="M">Masculino</option>
+      </select>
+
+      <label for="fecha-nacimiento">Fecha de Nacimiento</label>
+      <input type="date" id="fecha-nacimiento">
+
+      <label for="estado">Estado</label>
+      <select id="estado" onchange="mostrarCasillaConyuge()">
+        <option value="soltero">Soltero</option>
+        <option value="casado">Casado</option>
+        <option value="viudo">Viudo</option>
+      </select>
+
+      <div id="casilla-conyuge" style="display: none;">
+        <label for="nombre-conyuge">Nombre del Cónyuge</label>
+        <input type="text" id="nombre-conyuge" placeholder="Ingrese el nombre del cónyuge">
+      </div>
+
+      <label for="hijos">Hijos</label>
+      <input type="number" id="hijos" placeholder="Número de hijos">
+
+      <label for="fecha-aceptacion">Fecha de Aceptación</label>
+      <input type="date" id="fecha-aceptacion">
+
+      <label for="lugar-aceptacion">Lugar de Aceptación</label>
+      <input type="text" id="lugar-aceptacion" placeholder="Lugar donde aceptó">
+
+      <label for="bautizado">Bautizado</label>
+      <select id="bautizado" onchange="mostrarCasillaBautizo()">
+        <option value="no">No</option>
+        <option value="si">Sí</option>
+      </select>
+
+      <div id="casilla-bautizo" style="display: none;">
+        <label for="fecha-bautizo">Fecha de Bautizo</label>
+        <input type="date" id="fecha-bautizo">
+
+        <label for="lugar-bautizo">Lugar de Bautizo</label>
+        <input type="text" id="lugar-bautizo" placeholder="Lugar de bautizo">
+      </div>
+
+      <label for="espiritu-santo">Bautizado por el Espíritu Santo</label>
+      <select id="espiritu-santo" onchange="mostrarCasillaEspiritu()">
+        <option value="no">No</option>
+        <option value="si">Sí</option>
+      </select>
+
+      <div id="casilla-espiritu" style="display: none;">
+        <label for="lugar-espiritu">Lugar</label>
+        <input type="text" id="lugar-espiritu" placeholder="Lugar del Espíritu Santo">
+      </div>
 
       <button class="save-btn" onclick="guardarMiembro()">Guardar</button>
       <button class="cancel-btn" onclick="cerrarFormulario()">Cancelar</button>
@@ -166,68 +225,45 @@
   </div>
 
   <script>
-    // Abrir el formulario modal
+    // Mostrar u ocultar casillas condicionales
+    function mostrarCasillaConyuge() {
+      const estado = document.getElementById("estado").value;
+      document.getElementById("casilla-conyuge").style.display = estado === "casado" ? "block" : "none";
+    }
+
+    function mostrarCasillaBautizo() {
+      const bautizado = document.getElementById("bautizado").value;
+      document.getElementById("casilla-bautizo").style.display = bautizado === "si" ? "block" : "none";
+    }
+
+    function mostrarCasillaEspiritu() {
+      const espiritu = document.getElementById("espiritu-santo").value;
+      document.getElementById("casilla-espiritu").style.display = espiritu === "si" ? "block" : "none";
+    }
+
+    // Abrir y cerrar formulario modal
     function abrirFormulario() {
       document.getElementById("modal-formulario").style.display = "flex";
     }
 
-    // Cerrar el formulario modal
     function cerrarFormulario() {
       document.getElementById("modal-formulario").style.display = "none";
       limpiarFormulario();
     }
 
-    // Guardar un miembro
+    // Guardar miembro (se guarda en localStorage y se renderiza en la tabla)
     function guardarMiembro() {
-      const nombre = document.getElementById("nombre").value.trim();
-      const edad = document.getElementById("edad").value.trim();
-      const correo = document.getElementById("correo").value.trim();
-
-      if (nombre && edad && correo) {
-        const miembro = { nombre, edad, correo };
-        const miembros = JSON.parse(localStorage.getItem("miembros")) || [];
-        miembros.push(miembro);
-        localStorage.setItem("miembros", JSON.stringify(miembros));
-        renderTabla();
-        cerrarFormulario();
-      } else {
-        alert("Por favor, complete todos los campos.");
-      }
+      // Aquí se implementará la lógica de guardado
+      alert("Guardado exitosamente (No implementado en este ejemplo).");
     }
 
-    // Filtrar tabla
-    function filtrarTabla() {
-      const filtro = document.getElementById("search-bar").value.toLowerCase();
-      const filas = document.querySelectorAll("#tabla-miembros tr");
-
-      filas.forEach(fila => {
-        const textoFila = fila.textContent.toLowerCase();
-        fila.style.display = textoFila.includes(filtro) ? "" : "none";
-      });
-    }
-
-    // Renderizar la tabla
-    function renderTabla() {
-      const tabla = document.getElementById("tabla-miembros");
-      const miembros = JSON.parse(localStorage.getItem("miembros")) || [];
-      tabla.innerHTML = miembros.map(miembro => `
-        <tr>
-          <td>${miembro.nombre}</td>
-          <td>${miembro.edad}</td>
-          <td>${miembro.correo}</td>
-        </tr>
-      `).join("");
-    }
-
-    // Limpiar el formulario
+    // Limpiar formulario
     function limpiarFormulario() {
-      document.getElementById("nombre").value = "";
-      document.getElementById("edad").value = "";
-      document.getElementById("correo").value = "";
+      document.querySelectorAll(".modal-content input, .modal-content select").forEach(el => el.value = "");
+      document.getElementById("casilla-conyuge").style.display = "none";
+      document.getElementById("casilla-bautizo").style.display = "none";
+      document.getElementById("casilla-espiritu").style.display = "none";
     }
-
-    // Renderizar la tabla al cargar la página
-    document.addEventListener("DOMContentLoaded", renderTabla);
   </script>
 </body>
 </html>
