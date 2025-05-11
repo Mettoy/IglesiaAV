@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,6 +79,9 @@
                 <option>Damas</option>
                 <option>Caballeros</option>
               </select>
+              <label for="foto">Foto:</label>
+              <input type="file" name="foto" class="form-control mb-2" id="foto" accept="image/*" onchange="mostrarImagen(event)">
+              <img id="imagenPrevia" src="" alt="Imagen previa" class="img-fluid" style="max-width: 100px; margin-top: 1rem; display: none;">
             </div>
             <button type="submit" class="btn btn-primary">Guardar Miembro</button>
           </form>
@@ -100,7 +104,7 @@
       miembros.forEach((m, i) => {
         tbody.innerHTML += `
           <tr>
-            <td><img src="https://via.placeholder.com/50"></td>
+            <td><img src="${m.foto || 'https://via.placeholder.com/50'}"></td>
             <td>${m.nombre}</td>
             <td contenteditable="true">${m.codigo}</td>
             <td>${m.edad}</td>
@@ -122,6 +126,7 @@
       form.codigo.value = m.codigo;
       form.direccion.value = m.direccion;
       form.sociedad.value = m.sociedad;
+      document.getElementById('imagenPrevia').src = m.foto || '';
       new bootstrap.Modal(document.getElementById('modalMiembro')).show();
       miembros.splice(i, 1);
     }
@@ -152,6 +157,17 @@
         lista.innerHTML += `<li class="list-group-item">${m.nombre} - ${m.codigo}</li>`;
       });
     }
+
+    function mostrarImagen(event) {
+      const reader = new FileReader();
+      reader.onload = function() {
+        const imgPreview = document.getElementById("imagenPrevia");
+        imgPreview.src = reader.result;
+        imgPreview.style.display = "block";
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
     document.getElementById("formMiembro").addEventListener("submit", function(e) {
       e.preventDefault();
       const form = e.target;
@@ -160,14 +176,17 @@
         edad: form.edad.value,
         codigo: form.codigo.value,
         direccion: form.direccion.value,
-        sociedad: form.sociedad.value
+        sociedad: form.sociedad.value,
+        foto: document.getElementById("imagenPrevia").src || ''
       };
       miembros.push(nuevo);
       localStorage.setItem("miembros", JSON.stringify(miembros));
       form.reset();
+      document.getElementById("imagenPrevia").style.display = "none";
       bootstrap.Modal.getInstance(document.getElementById("modalMiembro")).hide();
       mostrarMiembros();
     });
     mostrarMiembros();
-  </script></body>
+  </script>
+</body>
 </html>
