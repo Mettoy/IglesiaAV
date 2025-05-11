@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -62,6 +63,12 @@
     .btn-success:hover {
       background-color: #e6c84f;
     }
+    .modal-header {
+      background-color: #1c1c3c;
+    }
+    .modal-footer {
+      background-color: #1c1c3c;
+    }
   </style>
 </head>
 <body>
@@ -70,35 +77,42 @@
     <a href="inicio.html">Inicio</a>
     <a href="diezmos.html">Diezmos</a>
     <a href="#" onclick="cerrarSesion()">Salir</a>
-  </div>  <div class="main">
+  </div>  
+
+  <div class="main">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2>Listado de Miembros</h2>
-    </div><div class="table-wrapper">
-  <table class="table table-bordered table-striped">
-    <thead>
-      <tr>
-        <th>Foto</th>
-        <th>Nombre</th>
-        <th>Estado</th>
-        <th>Edad</th>
-        <th>Dirección</th>
-        <th>Asociación</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tabla-miembros">
-      <!-- Filas dinámicas -->
-    </tbody>
-  </table>
-</div>
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalMiembro">Agregar Miembro</button>
+    </div>
+    
+    <div class="table-wrapper">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Foto</th>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th>Edad</th>
+            <th>Dirección</th>
+            <th>Asociación</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-miembros">
+          <!-- Filas dinámicas -->
+        </tbody>
+      </table>
+    </div>
 
-<nav>
-  <ul class="pagination" id="paginacion">
-    <!-- Paginación dinámica -->
-  </ul>
-</nav>
+    <nav>
+      <ul class="pagination" id="paginacion">
+        <!-- Paginación dinámica -->
+      </ul>
+    </nav>
+  </div>  
 
-  </div>  <!-- Modal para formulario de miembro al hacer doble clic -->  <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
+  <!-- Modal para formulario de miembro al hacer doble clic -->
+  <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content text-black">
         <div class="modal-header">
@@ -107,17 +121,45 @@
         </div>
         <div class="modal-body">
           <form id="formMiembro">
-            <!-- Aquí irán los campos del formulario -->
+            <div class="mb-3">
+              <label for="foto" class="form-label">Foto</label>
+              <input type="file" class="form-control" id="foto" name="foto">
+            </div>
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="nombre" name="nombre" required>
+            </div>
+            <div class="mb-3">
+              <label for="estado" class="form-label">Estado</label>
+              <input type="text" class="form-control" id="estado" name="estado" required>
+            </div>
+            <div class="mb-3">
+              <label for="edad" class="form-label">Edad</label>
+              <input type="number" class="form-control" id="edad" name="edad" required>
+            </div>
+            <div class="mb-3">
+              <label for="direccion" class="form-label">Dirección</label>
+              <input type="text" class="form-control" id="direccion" name="direccion" required>
+            </div>
+            <div class="mb-3">
+              <label for="asociacion" class="form-label">Asociación</label>
+              <input type="text" class="form-control" id="asociacion" name="asociacion" required>
+            </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-primary" form="formMiembro">Guardar Miembro</button>
         </div>
       </div>
     </div>
-  </div>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  <script>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  
+  <script>
     function cerrarSesion() {
       alert('Sesión cerrada');
+      // Redirigir o borrar sesión si es necesario
     }
 
     // Simulación: doble clic sobre un nombre abre el modal
@@ -129,6 +171,30 @@
           modal.show();
         }
       });
+      
+      // Llenar la tabla con datos ficticios
+      const miembros = [
+        { nombre: 'Juan Pérez', estado: 'Activo', edad: 30, direccion: 'Calle Ficticia 123', asociacion: 'Adoración' },
+        { nombre: 'Ana González', estado: 'Activo', edad: 25, direccion: 'Calle Real 456', asociacion: 'Jóvenes' },
+      ];
+
+      miembros.forEach(miembro => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td><img src="https://via.placeholder.com/50" alt="Foto" class="img-fluid"></td>
+          <td>${miembro.nombre}</td>
+          <td>${miembro.estado}</td>
+          <td>${miembro.edad}</td>
+          <td>${miembro.direccion}</td>
+          <td>${miembro.asociacion}</td>
+          <td class="actions">
+            <button class="btn btn-warning btn-sm">Editar</button>
+            <button class="btn btn-danger btn-sm">Eliminar</button>
+          </td>
+        `;
+        tabla.appendChild(fila);
+      });
     });
-  </script></body>
+  </script>
+</body>
 </html>
