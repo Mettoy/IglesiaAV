@@ -24,6 +24,7 @@
     .navbar img {
       height: 50px;
       border-radius: 50%;
+      transition: height 0.3s ease;
     }
 
     .menu-btn {
@@ -46,6 +47,7 @@
       border-radius: 5px;
       overflow: hidden;
       box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+      transition: opacity 0.3s ease;
     }
 
     .menu a {
@@ -59,13 +61,25 @@
     .menu a:hover {
       background-color: #1f214d;
     }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+      .navbar img {
+        height: 40px;
+      }
+
+      .menu {
+        top: 60px;
+        left: 10px;
+      }
+    }
   </style>
 </head>
 <body>
 
   <div class="navbar">
     <img src="https://scontent.fmga1-2.fna.fbcdn.net/v/t39.30808-1/376241453_327507783113581_221642316254197631_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=106&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=nVT_T-GKf3UQ7kNvwGdd8wy&_nc_oc=Adnzurey0khTsdiSdMxS2AVvob-NTLGIS6xXOLsgpWGLO4bn7arRfc2qqul13nuWnBU&_nc_zt=24&_nc_ht=scontent.fmga1-2.fna&_nc_gid=Ezt2Eb49Iq5zjjnvb_NOWA&oh=00_AfJMjahj-_3F-w0bGqW30nUnPBxavgOINKZ5PYy5Iu3aLA&oe=6826C069" alt="Logo">
-    <button class="menu-btn" onclick="toggleMenu()">Menú</button>
+    <button class="menu-btn" onclick="toggleMenu()" aria-label="Abrir menú">Menú</button>
   </div>
 
   <div class="menu" id="menu">
@@ -79,6 +93,8 @@
     function toggleMenu() {
       const menu = document.getElementById('menu');
       menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+      // Toggle opacity for smooth transition
+      menu.style.opacity = menu.style.display === 'flex' ? '1' : '0';
     }
   </script>
 
