@@ -137,7 +137,11 @@
           <td>${m.edad}</td>
           <td>${m.direccion}</td>
           <td>${m.sociedad}</td>
-          <td><button class="btn btn-danger btn-sm" onclick="eliminarMiembro(${i})"><i class="bi bi-trash"></i></button></td>
+          <td>
+            <button class="btn btn-secondary btn-sm me-1" onclick="editarMiembro(${i})"><i class="bi bi-journal-text"></i></button>
+            <button class="btn btn-info btn-sm me-1" onclick="imprimirMiembro(${i})"><i class="bi bi-printer"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="eliminarMiembro(${i})"><i class="bi bi-trash"></i></button>
+          </td>
         `;
         tabla.appendChild(fila);
       });
@@ -167,6 +171,48 @@
       miembros.splice(index, 1);
       localStorage.setItem('miembros', JSON.stringify(miembros));
       mostrarMiembros();
+    }
+
+    function editarMiembro(index) {
+      const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+      const m = miembros[index];
+      const form = document.getElementById('formMiembro');
+      form.nombre.value = m.nombre;
+      form.edad.value = m.edad;
+      form.codigo.value = m.codigo;
+      form.direccion.value = m.direccion;
+      form.sociedad.value = m.sociedad;
+      miembroSeleccionado = index;
+      new bootstrap.Modal(document.getElementById('modalMiembro')).show();
+    }
+
+    function imprimirMiembro(index) {
+      const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+      const m = miembros[index];
+      const ventana = window.open('', '_blank');
+      ventana.document.write(`
+        <html>
+          <head>
+            <title>Ficha del Miembro</title>
+            <style>
+              body { font-family: Arial; padding: 20px; }
+              h2 { margin-bottom: 20px; }
+              img { width: 100px; border-radius: 10px; }
+            </style>
+          </head>
+          <body>
+            <h2>Ficha del Miembro</h2>
+            <img src="${m.foto || 'https://via.placeholder.com/100'}" alt="Foto">
+            <p><strong>Nombre:</strong> ${m.nombre}</p>
+            <p><strong>Código:</strong> ${m.codigo}</p>
+            <p><strong>Edad:</strong> ${m.edad}</p>
+            <p><strong>Dirección:</strong> ${m.direccion}</p>
+            <p><strong>Sociedad:</strong> ${m.sociedad}</p>
+          </body>
+        </html>
+      `);
+      ventana.document.close();
+      ventana.print();
     }
 
     document.getElementById('formMiembro').addEventListener('submit', function(e) {
