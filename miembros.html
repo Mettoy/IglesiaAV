@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
+<!DOCTYPE html><html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,21 +25,23 @@
     <button class="btn btn-dark w-100" onclick="toggleSidebar()">
       <i class="bi bi-list"></i>
     </button>
-    <img src="https://via.placeholder.com/100" alt="Adoración Viva" id="logo" style="width: 100px; margin: 1rem auto; display: block; border-radius: 10px;" onclick="cambiarLogoInput()">
+    <img src="https://via.placeholder.com/100" alt="Adoración Viva" id="logo" onclick="cambiarLogoInput()">
     <input type="file" id="logoInput" style="display:none;" accept="image/*" onchange="cambiarLogo()">
-    <a href="inicio.html">Inicio</a>
-    <a href="diezmo.html">Diezmos</a>
+    <a href="#">Inicio</a>
+    <a href="#">Diezmos</a>
     <a href="#" onclick="mostrarMiembrosBaja()">Miembros de baja</a>
-    <a href="#" onclick="cerrarSesion()">Salir</a>
-  </div>
-
-  <div class="main">
+    <a href="#">Salir</a>
+  </div>  <div class="main">
     <h2>Listado de Miembros</h2>
     <div class="search-bar row g-2">
-      <div class="col-md-4"><input type="text" class="form-control" placeholder="Buscar por nombre"></div>
-      <div class="col-md-4"><input type="text" class="form-control" placeholder="Buscar por código"></div>
       <div class="col-md-4">
-        <select class="form-select">
+        <input type="text" class="form-control" id="busquedaNombre" placeholder="Buscar por nombre" oninput="filtrarMiembros()">
+      </div>
+      <div class="col-md-4">
+        <input type="text" class="form-control" id="busquedaCodigo" placeholder="Buscar por código" oninput="filtrarMiembros()">
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" id="busquedaSociedad" onchange="filtrarMiembros()">
           <option value="">Buscar por sociedad</option>
           <option>Jóvenes</option>
           <option>Damas</option>
@@ -61,10 +62,7 @@
       <h4>Miembros dados de baja</h4>
       <ul id="listaBaja" class="list-group"></ul>
     </div>
-  </div>  
-
-  <!-- Modal -->
-  <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
+  </div>  <!-- Modal -->  <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content text-black">
         <div class="modal-header">
@@ -78,57 +76,21 @@
               <input type="text" name="nombre" class="form-control mb-2" placeholder="Nombre completo" required>
               <input type="number" name="edad" class="form-control mb-2" placeholder="Edad" required>
               <input type="text" name="codigo" class="form-control mb-2" placeholder="Código">
-              <input type="date" name="fechaNacimiento" class="form-control mb-2" placeholder="Fecha de nacimiento">
-              <select name="estadoCivil" class="form-select mb-2">
-                <option value="">Estado civil</option>
-                <option>Soltero</option>
-                <option>Casado</option>
-                <option>Viudo</option>
-              </select>
-              <input type="tel" name="telefono" class="form-control mb-2" placeholder="Teléfono">
               <input type="text" name="direccion" class="form-control mb-2" placeholder="Dirección">
-            </div>
-
-            <div class="form-section">
-              <h6>Datos familiares</h6>
-              <input type="text" name="padre" class="form-control mb-2" placeholder="Padre">
-              <input type="text" name="madre" class="form-control mb-2" placeholder="Madre">
-              <input type="text" name="hermano1" class="form-control mb-2" placeholder="Hermano 1">
-              <input type="text" name="hermano2" class="form-control mb-2" placeholder="Hermano 2">
-              <input type="text" name="hermano3" class="form-control mb-2" placeholder="Hermano 3">
-              <button type="button" class="btn btn-secondary" onclick="agregarFamiliar()">Agregar familiar</button>
-            </div>
-
-            <div class="form-section">
-              <h6>Datos espirituales</h6>
-              <input type="date" name="fechaBautismo" class="form-control mb-2" placeholder="Fecha de bautismo">
-              <input type="text" name="lugarBautismo" class="form-control mb-2" placeholder="Lugar de bautismo">
-              <input type="date" name="fechaConversion" class="form-control mb-2" placeholder="Fecha de conversión">
-              <input type="text" name="lugarConversion" class="form-control mb-2" placeholder="Lugar de conversión">
-              <label for="bautizadoEspiritu">Bautizado por el Espíritu</label>
-              <select name="bautizadoEspiritu" class="form-select mb-2" onchange="toggleEspirituFields()">
-                <option value="">Seleccione</option>
-                <option value="si">Sí</option>
-                <option value="no">No</option>
+              <select name="sociedad" class="form-select mb-2">
+                <option value="">Sociedad</option>
+                <option>Jóvenes</option>
+                <option>Damas</option>
+                <option>Caballeros</option>
               </select>
-              <div id="espirituFields" class="hidden">
-                <input type="date" name="fechaBautismoEspiritu" class="form-control mb-2" placeholder="Fecha de bautismo Espíritu">
-                <input type="text" name="lugarBautismoEspiritu" class="form-control mb-2" placeholder="Lugar de bautismo Espíritu">
-              </div>
             </div>
-
             <button type="submit" class="btn btn-primary">Guardar</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           </form>
         </div>
       </div>
     </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script>
-    // Función para cambiar el logo desde el archivo
+  </div>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  <script>
     function cambiarLogoInput() {
       document.getElementById('logoInput').click();
     }
@@ -137,49 +99,25 @@
       const logoInput = document.getElementById('logoInput');
       const logo = document.getElementById('logo');
       const file = logoInput.files[0];
-      
+
       if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
-          logo.src = event.target.result;  // Establecer la imagen cargada como logo
-          localStorage.setItem('logo', event.target.result); // Guardar en localStorage
+          logo.src = event.target.result;
+          localStorage.setItem('logo', event.target.result);
         };
         reader.readAsDataURL(file);
       }
     }
 
-    // Cargar el logo desde localStorage si existe
     window.onload = function() {
       const logoGuardado = localStorage.getItem('logo');
       if (logoGuardado) {
         document.getElementById('logo').src = logoGuardado;
       }
-
-      mostrarMiembros();  // Mostrar miembros al cargar la página
+      mostrarMiembros();
     };
 
-    // Función para agregar un familiar
-    function agregarFamiliar() {
-      const familiar = document.createElement("input");
-      familiar.type = "text";
-      familiar.name = "familiar";
-      familiar.classList.add("form-control", "mb-2");
-      familiar.placeholder = "Nuevo Familiar";
-      document.querySelector(".form-section").appendChild(familiar);
-    }
-
-    // Función para mostrar u ocultar los campos del Espíritu Santo
-    function toggleEspirituFields() {
-      const espirituFields = document.getElementById("espirituFields");
-      const bautizadoEspiritu = document.querySelector('[name="bautizadoEspiritu"]').value;
-      if (bautizadoEspiritu === "si") {
-        espirituFields.classList.remove("hidden");
-      } else {
-        espirituFields.classList.add("hidden");
-      }
-    }
-
-    // Función para guardar el miembro en localStorage
     document.getElementById("formMiembro").addEventListener("submit", function(e) {
       e.preventDefault();
       const form = e.target;
@@ -188,71 +126,88 @@
         edad: form.edad.value,
         codigo: form.codigo.value,
         direccion: form.direccion.value,
-        sociedad: form.sociedad.value || "N/A", // Por si no se selecciona sociedad
+        sociedad: form.sociedad.value || "N/A",
       };
 
-      // Obtener miembros del localStorage, si existe
       const miembros = JSON.parse(localStorage.getItem("miembros")) || [];
-
-      // Agregar el nuevo miembro a la lista
       miembros.push(nuevoMiembro);
-
-      // Guardar la lista actualizada de miembros en localStorage
       localStorage.setItem("miembros", JSON.stringify(miembros));
 
-      // Mostrar la tabla actualizada
       mostrarMiembros();
-
-      // Cerrar el modal y reiniciar el formulario
       bootstrap.Modal.getInstance(document.getElementById("modalMiembro")).hide();
       form.reset();
     });
 
-    // Función para mostrar miembros en la tabla
     function mostrarMiembros() {
       const miembros = JSON.parse(localStorage.getItem("miembros")) || [];
-      const tablaMiembros = document.getElementById('tablaMiembros');
-      tablaMiembros.innerHTML = ''; // Limpiar la tabla
-
-      miembros.forEach(miembro => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><img src="https://via.placeholder.com/40" alt="Foto"></td>
-          <td>${miembro.nombre}</td>
-          <td>${miembro.codigo}</td>
-          <td>${miembro.edad}</td>
-          <td>${miembro.direccion}</td>
-          <td>${miembro.sociedad}</td>
-          <td>
-            <button class="btn btn-warning" onclick="editarMiembro('${miembro.codigo}')"><i class="bi bi-pencil-square"></i></button>
-            <button class="btn btn-danger" onclick="eliminarMiembro('${miembro.codigo}')"><i class="bi bi-trash"></i></button>
-          </td>
-        `;
-        tablaMiembros.appendChild(row);
+      const tabla = document.getElementById("tablaMiembros");
+      tabla.innerHTML = "";
+      miembros.forEach(m => {
+        tabla.innerHTML += `
+          <tr>
+            <td><img src="https://via.placeholder.com/40" alt="Foto"></td>
+            <td>${m.nombre}</td>
+            <td>${m.codigo}</td>
+            <td>${m.edad}</td>
+            <td>${m.direccion}</td>
+            <td>${m.sociedad}</td>
+            <td>
+              <button class="btn btn-warning" onclick="editarMiembro('${m.codigo}')"><i class="bi bi-pencil-square"></i></button>
+              <button class="btn btn-danger" onclick="eliminarMiembro('${m.codigo}')"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>`;
       });
     }
 
-    // Función para eliminar miembro
-    function eliminarMiembro(codigo) {
+    function filtrarMiembros() {
+      const nombreFiltro = document.getElementById("busquedaNombre").value.toLowerCase();
+      const codigoFiltro = document.getElementById("busquedaCodigo").value.toLowerCase();
+      const sociedadFiltro = document.getElementById("busquedaSociedad").value;
+
       const miembros = JSON.parse(localStorage.getItem("miembros")) || [];
-      const miembrosActualizados = miembros.filter(miembro => miembro.codigo !== codigo);
-      localStorage.setItem("miembros", JSON.stringify(miembrosActualizados));
-      mostrarMiembros();
+      const tabla = document.getElementById("tablaMiembros");
+      tabla.innerHTML = "";
+
+      miembros.filter(m =>
+        m.nombre.toLowerCase().includes(nombreFiltro) &&
+        m.codigo.toLowerCase().includes(codigoFiltro) &&
+        (sociedadFiltro === "" || m.sociedad === sociedadFiltro)
+      ).forEach(m => {
+        tabla.innerHTML += `
+          <tr>
+            <td><img src="https://via.placeholder.com/40" alt="Foto"></td>
+            <td>${m.nombre}</td>
+            <td>${m.codigo}</td>
+            <td>${m.edad}</td>
+            <td>${m.direccion}</td>
+            <td>${m.sociedad}</td>
+            <td>
+              <button class="btn btn-warning" onclick="editarMiembro('${m.codigo}')"><i class="bi bi-pencil-square"></i></button>
+              <button class="btn btn-danger" onclick="eliminarMiembro('${m.codigo}')"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>`;
+      });
     }
 
-    // Función para editar miembro
     function editarMiembro(codigo) {
       const miembros = JSON.parse(localStorage.getItem("miembros")) || [];
-      const miembro = miembros.find(miembro => miembro.codigo === codigo);
-      
+      const miembro = miembros.find(m => m.codigo === codigo);
       if (miembro) {
         document.querySelector('[name="nombre"]').value = miembro.nombre;
         document.querySelector('[name="edad"]').value = miembro.edad;
         document.querySelector('[name="codigo"]').value = miembro.codigo;
         document.querySelector('[name="direccion"]').value = miembro.direccion;
         document.querySelector('[name="sociedad"]').value = miembro.sociedad;
+        const modal = new bootstrap.Modal(document.getElementById('modalMiembro'));
+        modal.show();
       }
     }
-  </script>
-</body>
+
+    function eliminarMiembro(codigo) {
+      let miembros = JSON.parse(localStorage.getItem("miembros")) || [];
+      miembros = miembros.filter(m => m.codigo !== codigo);
+      localStorage.setItem("miembros", JSON.stringify(miembros));
+      mostrarMiembros();
+    }
+  </script></body>
 </html>
