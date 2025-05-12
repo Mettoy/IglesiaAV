@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>Panel de Estadísticas</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
   <style>
     body {
       margin: 0;
@@ -102,52 +104,48 @@
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js"></script>
-
   <script>
-    const de firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+    // CONFIGURACIÓN FIREBASE
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_STORAGE_BUCKET",
+      messagingSenderId: "TU_SENDER_ID",
+      appId: "TU_APP_ID"
     };
-
-    // Inicializa Firebase
-    const app = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Función para actualizar el menú de acuerdo al rol
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('hide');
+    }
+
     function actualizarMenu() {
-      const rol = localStorage.getItem("rolActivo");
       const menuLinks = document.getElementById('menuLinks');
       menuLinks.innerHTML = '';
-
-      let enlaces = [
-        { href: "inicio.html", texto: "Inicio" },
-      ];
+      const rol = localStorage.getItem('rolActivo') || 'Administrador';
+      const enlaces = [];
 
       if (rol === "Administrador") {
-        enlaces = [
+        enlaces.push(
           { href: "inicio.html", texto: "Inicio" },
           { href: "diezmo.html", texto: "Diezmo" },
           { href: "ofrendas.html", texto: "Ofrendas" },
           { href: "acceso.html", texto: "Crear Acceso" },
           { href: "discipulado.html", texto: "Discipulado" }
-        ];
+        );
       } else if (rol === "Tesorero") {
-        enlaces = [
+        enlaces.push(
           { href: "inicio.html", texto: "Inicio" },
           { href: "diezmo.html", texto: "Diezmo" },
           { href: "ofrendas.html", texto: "Ofrendas" }
-        ];
+        );
       } else if (rol === "Discipulador") {
-        enlaces = [
+        enlaces.push(
           { href: "inicio.html", texto: "Inicio" },
           { href: "discipulado.html", texto: "Discipulado" }
-        ];
+        );
       }
 
       enlaces.forEach(link => {
@@ -160,15 +158,6 @@
 
     actualizarMenu();
 
-    // Mostrar el logo guardado en Firestore
-    db.collection("config").doc("logo").get().then((doc) => {
-      if (doc.exists) {
-        const logoData = doc.data().logo;
-        document.getElementById("logo").src = logoData;
-      }
-    });
-
-    // Función para cambiar el logo, solo disponible para el administrador
     function cambiarLogo() {
       const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
       if (clave !== "admin123") {
@@ -184,17 +173,10 @@
         if (file && file.type.startsWith('image/')) {
           const reader = new FileReader();
           reader.onload = () => {
-            document.getElementById('logo').src = reader.result;
-            localStorage.setItem('logo', reader.result);
-
-            // Guardar logo en Firestore
-            db.collection("config").doc("logo").set({
-              logo: reader.result
-            }).then(() => {
-              alert("Logo actualizado en Firebase.");
-            }).catch((error) => {
-              console.error("Error al guardar el logo: ", error);
-            });
+            const logoBase64 = reader.result;
+            document.getElementById('logo').src = logoBase64;
+            localStorage.setItem('logo', logoBase64);
+            db.collection("config").doc("logo").set({ logo: logoBase64 });
           };
           reader.readAsDataURL(file);
         }
@@ -202,12 +184,15 @@
       input.click();
     }
 
-    // Función para mostrar y ocultar el menú lateral
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('hide');
-    }
+    // Mostrar logo guardado desde Firebase
+    db.collection("config").doc("logo").get().then(doc => {
+      if (doc.exists) {
+        const logo = doc.data().logo;
+        document.getElementById("logo").src = logo;
+      }
+    });
 
-    // Inicialización de los gráficos
+    // Cargar datos de ejemplo si no existen
     if (!localStorage.getItem('miembros')) {
       const miembros = [
         { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
@@ -223,7 +208,6 @@
 
     const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
 
-    // Contar miembros por sociedad
     const conteoSociedad = {
       Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0
     };
@@ -233,7 +217,6 @@
       }
     });
 
-    // Crear gráfico de pastel para sociedad
     new Chart(document.getElementById('sociedadChart'), {
       type: 'pie',
       data: {
@@ -246,13 +229,10 @@
         }]
       },
       options: {
-        plugins: {
-          legend: { display: false }
-        }
+        plugins: { legend: { display: false } }
       }
     });
 
-    // Crear gráfico de barras para asistencia
     const miembrosOrdenados = miembros.slice().sort((a, b) => a.nombre.localeCompare(b.nombre));
     new Chart(document.getElementById('asistenciaChart'), {
       type: 'bar',
@@ -274,9 +254,7 @@
             ticks: { color: '#f7c948' }
           }
         },
-        plugins: {
-          legend: { display: false }
-        }
+        plugins: { legend: { display: false } }
       }
     });
   </script>
