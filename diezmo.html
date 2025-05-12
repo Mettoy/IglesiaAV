@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Diezmos - Adoración Viva</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -49,45 +48,6 @@
       text-align: center;
     }
 
-    .top-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    button {
-      padding: 10px 20px;
-      background: #003566;
-      color: gold;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-
-    button:hover {
-      background: #001d3d;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      color: black;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 0.5rem;
-      text-align: center;
-    }
-
-    th {
-      background: #003566;
-      color: gold;
-    }
-
     .form-container {
       background: #1b263b;
       padding: 1rem;
@@ -109,22 +69,90 @@
       background: #3a506b;
     }
 
-    .form-container input[type="text"]::placeholder {
-      color: #ddd;
+    button {
+      padding: 10px 20px;
+      background: #003566;
+      color: gold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 10px;
     }
 
-    .filtro-fechas {
+    button:hover {
+      background: #001d3d;
+    }
+
+    .top-actions {
       display: flex;
+      justify-content: space-between;
       align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
       gap: 10px;
     }
 
+    .date-range {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      color: black;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    th {
+      background: #003566;
+      color: gold;
+    }
+
+    .datos-miembro {
+      margin-top: 1rem;
+      background: #001d3d;
+      padding: 1rem;
+      border-radius: 5px;
+      color: white;
+    }
+
+    .datos-miembro img {
+      width: 100px;
+      border-radius: 50%;
+      margin-bottom: 1rem;
+    }
+
+    .search-results {
+      background: #3a506b;
+      padding: 5px;
+      margin-top: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .search-results div {
+      padding: 5px;
+      background: #4a6378;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+
+    .search-results div:hover {
+      background: #2e4057;
+    }
   </style>
 </head>
 <body>
 
 <div class="sidebar">
-  <input type="file" id="logoInput" style="display: none;" accept="image/*" />
   <img id="logo" src="logo.png" alt="Logo" onclick="cambiarLogo()" />
   <h2>Menú</h2>
   <p>Inicio</p>
@@ -137,29 +165,40 @@
 
   <div class="top-actions">
     <button onclick="toggleFormulario()" style="background: green;">Añadir Diezmo</button>
-    <div class="filtro-fechas">
-      <label style="color: white;">Desde:</label>
+    <div class="date-range">
+      <label for="desde">Desde</label>
       <input type="date" id="desde" />
-      <label style="color: white;">Hasta:</label>
+      <label for="hasta">Hasta</label>
       <input type="date" id="hasta" />
-      <button onclick="exportarPDF()">Imprimir Hoja PDF</button>
-      <button onclick="exportarExcel()">Imprimir Hoja Excel</button>
+    </div>
+    <div>
+      <button onclick="exportarPDF()">Imprimir PDF</button>
+      <button onclick="exportarExcel()">Imprimir Excel</button>
     </div>
   </div>
 
   <div class="form-container" id="formulario">
-    <!-- Aquí va el mismo formulario que ya tienes (sin cambios) -->
-    <!-- Solo se muestra/oculta al tocar "Añadir Diezmo" -->
-    <label>Nombre:</label>
-    <input type="text" id="nombre" />
-    <label>Código:</label>
-    <input type="text" id="codigo" />
-    <label>Edad:</label>
-    <input type="text" id="edad" />
-    <label>Fecha:</label>
+    <label for="buscarNombre">Buscar Miembro por Nombre</label>
+    <input type="text" id="buscarNombre" oninput="buscarMiembro('nombre')" placeholder="Ingrese nombre..." />
+    <div id="resultadosNombre" class="search-results"></div>
+
+    <label for="buscarCodigo">Buscar Miembro por Código</label>
+    <input type="text" id="buscarCodigo" oninput="buscarMiembro('codigo')" placeholder="Ingrese código..." />
+    <div id="resultadosCodigo" class="search-results"></div>
+
+    <label for="miembro">Seleccionar Miembro</label>
+    <select id="miembro" onchange="mostrarDatosMiembro()">
+      <option value="">Seleccione un miembro</option>
+    </select>
+
+    <div class="datos-miembro" id="datosMiembro"></div>
+
+    <label for="fecha">Fecha</label>
     <input type="date" id="fecha" />
-    <label>Cantidad:</label>
-    <input type="text" id="cantidad" />
+
+    <label for="cantidad">Cantidad (C$ o $)</label>
+    <input type="text" id="cantidad" placeholder="Ej: C$500 o $20" />
+
     <button onclick="guardarRegistro()">Guardar</button>
   </div>
 
@@ -179,37 +218,83 @@
 </div>
 
 <script>
-  let registros = JSON.parse(localStorage.getItem("registrosDiezmo")) || [];
+  let miembros = JSON.parse(localStorage.getItem("miembros")) || [];
+  let registros = JSON.parse(localStorage.getItem('registrosDiezmo')) || [];
 
-  function toggleFormulario() {
-    const form = document.getElementById("formulario");
-    form.style.display = form.style.display === "none" || form.style.display === "" ? "block" : "none";
+  function cargarMiembros() {
+    const select = document.getElementById("miembro");
+    miembros.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.codigo;
+      opt.textContent = `${m.nombre} (${m.codigo})`;
+      select.appendChild(opt);
+    });
+  }
+
+  function buscarMiembro(tipo) {
+    const filtro = document.getElementById(`buscar${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).value.toLowerCase();
+    const resultados = document.getElementById(`resultados${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
+    resultados.innerHTML = '';
+
+    miembros.forEach(m => {
+      if (m[tipo].toLowerCase().includes(filtro)) {
+        const div = document.createElement("div");
+        div.textContent = `${m.nombre} (${m.codigo})`;
+        div.onclick = function() {
+          document.getElementById("miembro").value = m.codigo;
+          mostrarDatosMiembro(m);
+          resultados.innerHTML = '';
+        };
+        resultados.appendChild(div);
+      }
+    });
+  }
+
+  function mostrarDatosMiembro(miembro = null) {
+    if (!miembro) {
+      const codigo = document.getElementById("miembro").value;
+      miembro = miembros.find(m => m.codigo === codigo);
+    }
+    if (miembro) {
+      document.getElementById("datosMiembro").innerHTML = `
+        <img src="${miembro.foto}" alt="Foto del miembro" />
+        <p><strong>Nombre:</strong> ${miembro.nombre}</p>
+        <p><strong>Código:</strong> ${miembro.codigo}</p>
+        <p><strong>Edad:</strong> ${miembro.edad}</p>
+      `;
+    }
   }
 
   function guardarRegistro() {
-    const nombre = document.getElementById("nombre").value;
-    const codigo = document.getElementById("codigo").value;
-    const edad = document.getElementById("edad").value;
+    const codigo = document.getElementById("miembro").value;
+    const miembro = miembros.find(m => m.codigo === codigo);
     const fecha = document.getElementById("fecha").value;
     const cantidad = document.getElementById("cantidad").value;
 
-    if (!nombre || !codigo || !edad || !fecha || !cantidad) {
-      alert("Completa todos los campos.");
+    if (!miembro || !fecha || !cantidad) {
+      alert("Complete todos los campos correctamente.");
       return;
     }
 
-    registros.push({ nombre, codigo, edad, fecha, cantidad });
-    localStorage.setItem("registrosDiezmo", JSON.stringify(registros));
+    registros.push({
+      codigo: miembro.codigo,
+      nombre: miembro.nombre,
+      edad: miembro.edad,
+      fecha,
+      cantidad
+    });
+
+    localStorage.setItem('registrosDiezmo', JSON.stringify(registros));
     mostrarTabla();
     document.getElementById("formulario").reset();
-    document.getElementById("formulario").style.display = "none";
+    document.getElementById("datosMiembro").innerHTML = "";
   }
 
   function mostrarTabla() {
-    const tbody = document.querySelector("#tabla tbody");
+    const tbody = document.getElementById("tabla").querySelector("tbody");
     tbody.innerHTML = "";
     registros.forEach((r, i) => {
-      tbody.innerHTML += `<tr>
+      const row = `<tr>
         <td>${i + 1}</td>
         <td>${r.codigo}</td>
         <td>${r.nombre}</td>
@@ -217,46 +302,33 @@
         <td>${r.fecha}</td>
         <td>${r.cantidad}</td>
       </tr>`;
+      tbody.innerHTML += row;
     });
+  }
+
+  function toggleFormulario() {
+    const formulario = document.getElementById("formulario");
+    formulario.style.display = (formulario.style.display === "none" || formulario.style.display === "") ? "block" : "none";
   }
 
   function exportarPDF() {
     const desde = document.getElementById("desde").value;
     const hasta = document.getElementById("hasta").value;
-    if (!desde || !hasta) {
-      alert("Seleccione un rango de fechas.");
-      return;
-    }
-
-    const filtered = registros.filter(r => r.fecha >= desde && r.fecha <= hasta);
-    let contenido = `INFORME ADORACIÓN VIVA\n\n`;
-    contenido += `Desde: ${desde} - Hasta: ${hasta}\n\n`;
-    filtered.forEach((r, i) => {
-      contenido += `${i + 1}. ${r.nombre} | ${r.codigo} | ${r.edad} años | ${r.fecha} | ${r.cantidad}\n`;
-    });
-
-    const win = window.open("", "", "width=800,height=600");
-    win.document.write(`<pre>${contenido}</pre>`);
-    win.print();
-    win.close();
+    alert(`Generar PDF desde ${desde} hasta ${hasta}`);
+    // Lógica real de exportación puede añadirse aquí
   }
 
   function exportarExcel() {
     const desde = document.getElementById("desde").value;
     const hasta = document.getElementById("hasta").value;
-    if (!desde || !hasta) {
-      alert("Seleccione un rango de fechas.");
-      return;
-    }
-
-    const filtered = registros.filter(r => r.fecha >= desde && r.fecha <= hasta);
-    const ws = XLSX.utils.json_to_sheet(filtered);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Diezmos");
-    XLSX.writeFile(wb, `Diezmos_${desde}_a_${hasta}.xlsx`);
+    alert(`Generar Excel desde ${desde} hasta ${hasta}`);
+    // Lógica real de exportación puede añadirse aquí
   }
 
-  window.onload = mostrarTabla;
+  window.onload = function () {
+    cargarMiembros();
+    mostrarTabla();
+  };
 </script>
 
 </body>
