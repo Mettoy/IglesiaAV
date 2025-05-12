@@ -13,7 +13,6 @@
       display: flex;
     }
 
-    /* Sidebar */
     .sidebar {
       width: 250px;
       background: #001d3d;
@@ -38,6 +37,11 @@
       margin: 1rem 0;
     }
 
+    .sidebar p a {
+      color: gold;
+      text-decoration: none;
+    }
+
     .content {
       margin-left: 260px;
       padding: 2rem;
@@ -49,29 +53,11 @@
       text-align: center;
     }
 
-    .form-container {
-      background: #1b263b;
-      padding: 1rem;
-      border-radius: 10px;
-      margin-bottom: 2rem;
-      display: none;
-    }
-
-    .form-container label,
-    .form-container input,
-    .form-container select {
-      color: white;
-      display: block;
-      width: 100%;
-      margin-bottom: 0.75rem;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      background: #3a506b;
-    }
-
-    .form-container input[type="text"]::placeholder {
-      color: #ddd;
+    .top-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
     }
 
     button {
@@ -86,13 +72,6 @@
 
     button:hover {
       background: #001d3d;
-    }
-
-    .top-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
     }
 
     table {
@@ -113,45 +92,28 @@
       color: gold;
     }
 
-    .search-bar {
-      margin-bottom: 0.5rem;
-      padding: 5px;
-      width: 100%;
-    }
+    /* Estilos para impresión */
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
 
-    .datos-miembro {
-      margin-top: 1rem;
-      background: #001d3d;
-      padding: 1rem;
-      border-radius: 5px;
-      color: white;
-    }
+      .sidebar,
+      .top-actions,
+      .form-container,
+      #formulario {
+        display: none !important;
+      }
 
-    .datos-miembro img {
-      width: 100px;
-      border-radius: 50%;
-      margin-bottom: 1rem;
-    }
+      #encabezadoImpresion {
+        display: block !important;
+      }
 
-    .search-results {
-      background: #3a506b;
-      padding: 5px;
-      margin-top: 10px;
-      max-height: 150px;
-      overflow-y: auto;
+      table {
+        color: black;
+      }
     }
-
-    .search-results div {
-      padding: 5px;
-      background: #4a6378;
-      margin-bottom: 5px;
-      cursor: pointer;
-    }
-
-    .search-results div:hover {
-      background: #2e4057;
-    }
-
   </style>
 </head>
 <body>
@@ -160,48 +122,28 @@
   <input type="file" id="logoInput" style="display: none;" accept="image/*" />
   <img id="logo" src="logo.png" alt="Logo" onclick="cambiarLogo()" />
   <h2>Menú</h2>
-  <p>Inicio</p>
-  <p>Miembros</p>
-  <p>Diezmos</p>
+  <p><a href="inicio.html">Inicio</a></p>
+  <p><a href="miembro.html">Miembros</a></p>
+  <p><a href="diezmo.html">Diezmo</a></p>
+  <p><a href="discipulado.html">Discipulado</a></p>
 </div>
 
 <div class="content">
+  <div id="encabezadoImpresion" style="display: none; text-align: center; margin-bottom: 20px;">
+    <img id="logoImpresion" src="logo.png" alt="Logo" style="width: 100px; height: auto; margin-bottom: 10px;" />
+    <h2 style="color: black;">Informe ADORACIÓN VIVA</h2>
+  </div>
+
   <h1>Registro de Diezmos</h1>
 
   <div class="top-actions">
-    <button onclick="toggleFormulario()" style="background: green;">Añadir Diezmo</button>
+    <div></div>
     <div>
       <button onclick="exportarPDF()">Imprimir Hoja PDF</button>
       <button onclick="exportarExcel()">Imprimir Hoja Excel</button>
     </div>
   </div>
 
-  <div class="form-container" id="formulario">
-    <label for="buscarNombre">Buscar Miembro por Nombre</label>
-    <input type="text" id="buscarNombre" oninput="buscarMiembro('nombre')" placeholder="Ingrese nombre..." />
-    <div id="resultadosNombre" class="search-results"></div>
-
-    <label for="buscarCodigo">Buscar Miembro por Código</label>
-    <input type="text" id="buscarCodigo" oninput="buscarMiembro('codigo')" placeholder="Ingrese código..." />
-    <div id="resultadosCodigo" class="search-results"></div>
-
-    <label for="miembro">Seleccionar Miembro</label>
-    <select id="miembro" onchange="mostrarDatosMiembro()">
-      <option value="">Seleccione un miembro</option>
-    </select>
-
-    <div class="datos-miembro" id="datosMiembro"></div>
-
-    <label for="fecha">Fecha</label>
-    <input type="date" id="fecha" />
-
-    <label for="cantidad">Cantidad (C$ o $)</label>
-    <input type="text" id="cantidad" placeholder="Ej: C$500 o $20" />
-
-    <button onclick="guardarRegistro()">Guardar</button>
-  </div>
-
-  <div id="filtros"></div>
   <table id="tabla">
     <thead>
       <tr>
@@ -218,78 +160,7 @@
 </div>
 
 <script>
-  // Cargar miembros desde localStorage
-  let miembros = JSON.parse(localStorage.getItem("miembros")) || [];
   let registros = JSON.parse(localStorage.getItem('registrosDiezmo')) || [];
-
-  function cargarMiembros() {
-    const select = document.getElementById("miembro");
-    miembros.forEach(m => {
-      const opt = document.createElement("option");
-      opt.value = m.codigo;
-      opt.textContent = `${m.nombre} (${m.codigo})`;
-      select.appendChild(opt);
-    });
-  }
-
-  function buscarMiembro(tipo) {
-    const filtro = document.getElementById(`buscar${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).value.toLowerCase();
-    const resultados = document.getElementById(`resultados${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
-    resultados.innerHTML = '';
-
-    miembros.forEach(m => {
-      if (m[tipo].toLowerCase().includes(filtro)) {
-        const div = document.createElement("div");
-        div.textContent = `${m.nombre} (${m.codigo})`;
-        div.onclick = function() {
-          document.getElementById("miembro").value = m.codigo;
-          mostrarDatosMiembro(m);
-          resultados.innerHTML = ''; // Limpiar resultados
-        };
-        resultados.appendChild(div);
-      }
-    });
-  }
-
-  function mostrarDatosMiembro(miembro = null) {
-    if (!miembro) {
-      const codigo = document.getElementById("miembro").value;
-      miembro = miembros.find(m => m.codigo === codigo);
-    }
-    if (miembro) {
-      document.getElementById("datosMiembro").innerHTML = `
-        <img src="${miembro.foto}" alt="Foto del miembro" />
-        <p><strong>Nombre:</strong> ${miembro.nombre}</p>
-        <p><strong>Código:</strong> ${miembro.codigo}</p>
-        <p><strong>Edad:</strong> ${miembro.edad}</p>
-      `;
-    }
-  }
-
-  function guardarRegistro() {
-    const codigo = document.getElementById("miembro").value;
-    const miembro = miembros.find(m => m.codigo === codigo);
-    const fecha = document.getElementById("fecha").value;
-    const cantidad = document.getElementById("cantidad").value;
-
-    if (!miembro || !fecha || !cantidad || isNaN(cantidad)) {
-      alert("Complete todos los campos correctamente.");
-      return;
-    }
-
-    registros.push({
-      codigo: miembro.codigo,
-      nombre: miembro.nombre,
-      edad: miembro.edad,
-      fecha,
-      cantidad
-    });
-
-    localStorage.setItem('registrosDiezmo', JSON.stringify(registros));
-    mostrarTabla();
-    document.getElementById("formulario").reset();
-    document.getElementById("datosMiembro").innerHTML = "";
-  }
 
   function mostrarTabla() {
     const tbody = document.getElementById("tabla").querySelector("tbody");
@@ -307,18 +178,39 @@
     });
   }
 
-  function toggleFormulario() {
-    const formulario = document.getElementById("formulario");
-    if (formulario.style.display === "none" || formulario.style.display === "") {
-      formulario.style.display = "block"; // Mostrar el formulario
-    } else {
-      formulario.style.display = "none"; // Ocultar el formulario
-    }
+  function exportarPDF() {
+    window.print();
   }
 
+  function exportarExcel() {
+    window.print();
+  }
+
+  function cambiarLogo() {
+    document.getElementById("logoInput").click();
+  }
+
+  document.getElementById("logoInput").addEventListener("change", function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const base64 = event.target.result;
+      document.getElementById("logo").src = base64;
+      document.getElementById("logoImpresion").src = base64;
+      localStorage.setItem("logoAdoracionViva", base64);
+    };
+    reader.readAsDataURL(file);
+  });
+
   window.onload = function () {
-    cargarMiembros();
     mostrarTabla();
+    const logoGuardado = localStorage.getItem("logoAdoracionViva");
+    if (logoGuardado) {
+      document.getElementById("logo").src = logoGuardado;
+      document.getElementById("logoImpresion").src = logoGuardado;
+    }
   };
 </script>
 
