@@ -7,61 +7,81 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f2f5;
+      background: #0d1b2a;
+      color: gold;
       margin: 0;
       padding: 2rem;
     }
     .container {
-      background: white;
+      background: #1b263b;
       padding: 2rem;
       border-radius: 10px;
-      max-width: 500px;
+      max-width: 600px;
       margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
     }
     h2 {
       text-align: center;
-      color: #4a148c;
+      color: gold;
     }
     label {
       display: block;
       margin-top: 1rem;
     }
-    input, select, button, datalist {
+    input, select, button {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
       border-radius: 5px;
       border: 1px solid #ccc;
       font-size: 1rem;
+      background: #e0e0e0;
     }
     button {
-      background: #4a148c;
-      color: white;
+      background: #003566;
+      color: gold;
       font-weight: bold;
       margin-top: 1.5rem;
       border: none;
       cursor: pointer;
     }
     button:hover {
-      background: #6a1b9a;
+      background: #001d3d;
     }
+    .lista-accesos {
+      margin-top: 2rem;
+    }
+    .acceso-item {
+      background: #415a77;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+    .estado-boton {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .acceso { background: green; color: white; }
+    .sin-acceso { background: red; color: white; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2 id="titulo">Crear Acceso</h2>
+    <h2>Gestión de Accesos</h2>
     <form id="formAcceso">
-      <!-- Miembro -->
-      <label for="miembro">Buscar miembro</label>
-      <input list="listaMiembros" id="miembro" placeholder="Nombre del miembro" required />
-      <datalist id="listaMiembros"></datalist>
+      <label for="nombre">Nombre completo</label>
+      <input type="text" id="nombre" placeholder="Nombre del usuario" required />
 
-      <!-- Usuario -->
-      <label for="usuario">Usuario de acceso</label>
-      <input type="text" id="usuario" placeholder="ej: juanperez123" required />
+      <label for="usuario">Usuario</label>
+      <input type="text" id="usuario" placeholder="ej: juanperez" required />
 
-      <!-- Rol -->
       <label for="rol">Rol</label>
       <select id="rol" required>
         <option value="">Selecciona un rol</option>
@@ -70,77 +90,83 @@
         <option value="Invitado">Invitado</option>
       </select>
 
-      <button type="submit">Guardar acceso</button>
+      <button type="submit">Guardar Acceso</button>
     </form>
+
+    <div class="lista-accesos" id="listaAccesos"></div>
   </div>
 
   <script>
     const form = document.getElementById('formAcceso');
-    const miembroInput = document.getElementById('miembro');
-    const usuarioInput = document.getElementById('usuario');
-    const rolSelect = document.getElementById('rol');
-    const datalist = document.getElementById('listaMiembros');
+    const listaAccesos = document.getElementById('listaAccesos');
 
-    const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
-    const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
-    const usuarioActual = localStorage.getItem('codigoUsuarioActual');
-    const accesoUsuario = accesos.find(a => a.codigo === usuarioActual);
+    let accesos = JSON.parse(localStorage.getItem('accesos')) || [];
 
-    if (!accesoUsuario || accesoUsuario.tipo !== 'Administrador') {
-      alert('Acceso no autorizado');
-      window.location.href = "miembros.html";
+    function guardarAccesos() {
+      localStorage.setItem('accesos', JSON.stringify(accesos));
+      mostrarAccesos();
     }
 
-    // Rellenar datalist con nombres
-    miembros.forEach(m => {
-      const option = document.createElement('option');
-      option.value = `${m.nombre} - ${m.codigo}`;
-      datalist.appendChild(option);
-    });
+    function mostrarAccesos() {
+      listaAccesos.innerHTML = '';
+      accesos.forEach((acceso, i) => {
+        const item = document.createElement('div');
+        item.className = 'acceso-item';
 
-    form.addEventListener('submit', (e) => {
+        const nombre = document.createElement('span');
+        nombre.textContent = `${acceso.nombre} (${acceso.usuario}) - ${acceso.tipo}`;
+
+        const boton = document.createElement('button');
+        boton.textContent = acceso.acceso ? 'Acceso' : 'Sin acceso';
+        boton.className = 'estado-boton ' + (acceso.acceso ? 'acceso' : 'sin-acceso');
+        boton.onclick = () => {
+          if (acceso.usuario === 'ADMON') return alert('No puedes modificar el acceso de ADMON');
+          acceso.acceso = !acceso.acceso;
+          guardarAccesos();
+        };
+
+        item.appendChild(nombre);
+        item.appendChild(boton);
+        listaAccesos.appendChild(item);
+      });
+    }
+
+    form.addEventListener('submit', e => {
       e.preventDefault();
+      const nombre = document.getElementById('nombre').value.trim();
+      const usuario = document.getElementById('usuario').value.trim().toUpperCase();
+      const rol = document.getElementById('rol').value;
 
-      const miembroTexto = miembroInput.value.trim();
-      const usuario = usuarioInput.value.trim();
-      const rol = rolSelect.value;
-
-      // Extraer código del texto del datalist (último valor después del "-")
-      const codigo = miembroTexto.split('-').pop()?.trim();
-      const miembro = miembros.find(m => m.codigo === codigo);
-
-      if (!miembro) {
-        alert('Selecciona un miembro válido de la lista');
+      if (!nombre || !usuario || !rol) {
+        alert('Todos los campos son obligatorios');
         return;
       }
 
-      if (!usuario) {
-        alert('Debes ingresar un nombre de usuario');
-        return;
-      }
-
-      if (!rol) {
-        alert('Selecciona un rol');
-        return;
-      }
-
-      const existente = accesos.find(a => a.usuario === usuario);
-      if (existente) {
+      if (accesos.some(a => a.usuario === usuario)) {
         alert('Ese nombre de usuario ya existe');
         return;
       }
 
       accesos.push({
-        codigo: miembro.codigo,
-        nombre: miembro.nombre,
+        nombre,
         usuario,
-        tipo: rol
+        tipo: rol,
+        acceso: true
       });
 
-      localStorage.setItem('accesos', JSON.stringify(accesos));
-      alert('Acceso guardado correctamente');
+      guardarAccesos();
       form.reset();
     });
+
+    // Bloquear ingreso si no tiene acceso
+    const usuarioActual = localStorage.getItem('codigoUsuarioActual');
+    const datosUsuario = accesos.find(a => a.usuario === usuarioActual);
+    if (datosUsuario && datosUsuario.acceso === false) {
+      alert('Acceso denegado. Contacta al administrador.');
+      window.location.href = 'acceso-denegado.html'; // página personalizada si lo deseas
+    }
+
+    mostrarAccesos();
   </script>
 </body>
 </html>
