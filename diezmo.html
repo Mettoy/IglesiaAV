@@ -28,7 +28,6 @@
       width: 100%;
       max-height: 150px;
       object-fit: contain;
-      cursor: pointer;
       margin-bottom: 1rem;
     }
 
@@ -153,7 +152,7 @@
 <body>
 
 <div class="sidebar">
-  <img id="logo" src="logo.png" alt="Logo" onclick="cambiarLogo()" />
+  <img id="logo" src="logo.png" alt="Logo" />
   <h2>Menú</h2>
   <p>Inicio</p>
   <p>Miembros</p>
@@ -218,11 +217,17 @@
 </div>
 
 <script>
+  // Simular rol (solo para pruebas, reemplaza por tu lógica de login real)
+  if (!localStorage.getItem("rolUsuario")) {
+    localStorage.setItem("rolUsuario", "Administrador"); // Cambia a "Usuario" para probar restricción
+  }
+
   let miembros = JSON.parse(localStorage.getItem("miembros")) || [];
   let registros = JSON.parse(localStorage.getItem('registrosDiezmo')) || [];
 
   function cargarMiembros() {
     const select = document.getElementById("miembro");
+    select.innerHTML = '<option value="">Seleccione un miembro</option>';
     miembros.forEach(m => {
       const opt = document.createElement("option");
       opt.value = m.codigo;
@@ -315,17 +320,52 @@
     const desde = document.getElementById("desde").value;
     const hasta = document.getElementById("hasta").value;
     alert(`Generar PDF desde ${desde} hasta ${hasta}`);
-    // Lógica real de exportación puede añadirse aquí
   }
 
   function exportarExcel() {
     const desde = document.getElementById("desde").value;
     const hasta = document.getElementById("hasta").value;
     alert(`Generar Excel desde ${desde} hasta ${hasta}`);
-    // Lógica real de exportación puede añadirse aquí
+  }
+
+  function cambiarLogo() {
+    const rol = localStorage.getItem("rolUsuario");
+    if (rol !== "Administrador") {
+      alert("Solo el Administrador puede cambiar el logo.");
+      return;
+    }
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const logoData = reader.result;
+        const logo = document.getElementById('logo');
+        logo.src = logoData;
+        localStorage.setItem('logoAdoracionViva', logoData);
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
   }
 
   window.onload = function () {
+    const logoGuardado = localStorage.getItem('logoAdoracionViva');
+    const logo = document.getElementById('logo');
+    if (logoGuardado) {
+      logo.src = logoGuardado;
+    }
+
+    if (localStorage.getItem("rolUsuario") === "Administrador") {
+      logo.onclick = cambiarLogo;
+      logo.style.cursor = "pointer";
+    }
+
     cargarMiembros();
     mostrarTabla();
   };
