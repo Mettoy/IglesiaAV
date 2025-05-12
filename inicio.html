@@ -149,7 +149,7 @@
 
       userInfo.textContent = `${usuario} - ${rol}`;
 
-      const enlaces = [];
+      const enlaces = [{ href: "miembros.html", texto: "Miembros" }];
 
       if (rol === "Administrador") {
         enlaces.push(
@@ -231,7 +231,7 @@
       }
     });
 
-    // Función para crear gráficos (estadísticas)
+    // Crear datos de ejemplo si no existen
     if (!localStorage.getItem('miembros')) {
       const miembros = [
         { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
