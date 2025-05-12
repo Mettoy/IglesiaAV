@@ -3,284 +3,307 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestión de Miembros - Adoración Viva</title>
+  <title>Registro de Diezmos - Adoración Viva</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0d1b2a;
-      color: gold;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+    * {
+      box-sizing: border-box;
     }
-
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0d1b2a;
+      color: gold;
+    }
     header {
-      width: 100%;
-      height: 60px;
-      background: #001d3d;
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 0 1rem;
-      box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
+      background: #001d3d;
+      padding: 10px;
+      height: 60px;
       position: fixed;
       top: 0;
+      left: 200px;
+      right: 0;
+      z-index: 1000;
     }
-
-    h1 {
-      color: gold;
-      font-size: 1.5rem;
+    header img {
+      height: 40px;
+      margin-right: 10px;
     }
-
-    /* Estilos de la barra lateral */
-    .sidebar {
-      width: 250px;
-      background: #001d3d;
+    header h1 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    #sidebar {
+      width: 200px;
+      background-color: #003566;
+      height: 100vh;
       position: fixed;
       top: 0;
       left: 0;
-      height: 100%;
-      padding: 20px;
+      padding-top: 1rem;
       color: gold;
+      overflow: auto;
     }
-
-    .sidebar img {
-      width: 150px;
-      margin-bottom: 20px;
-    }
-
-    .menu-item {
+    #sidebar img {
       display: block;
-      color: gold;
-      text-decoration: none;
-      padding: 10px;
-      margin: 5px 0;
-      background: #003566;
-      border-radius: 5px;
+      margin: 0 auto 10px;
+      max-width: 100px;
     }
-
-    .menu-item:hover {
-      background: #001d3d;
-    }
-
-    .container {
-      margin-top: 80px;
-      padding: 2rem;
-      background: #1b263b;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-      max-width: 800px;
-      width: 100%;
-    }
-
-    label, select, input {
-      display: block;
-      width: 100%;
-      margin-bottom: 1rem;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      background: #e0e0e0;
-      color: white;
-    }
-
-    button {
-      background: #003566;
-      color: gold;
-      font-weight: bold;
-      margin-top: 1.5rem;
+    #sidebar button {
+      background: none;
       border: none;
-      cursor: pointer;
+      color: gold;
       padding: 10px;
+      text-align: left;
       width: 100%;
-      font-size: 1.1rem;
+      cursor: pointer;
     }
-
-    button:hover {
-      background: #001d3d;
+    .main {
+      margin-left: 200px;
+      padding: 80px 20px 20px;
     }
-
-    .miembro-info img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      border-radius: 50%;
-    }
-
-    .form-plegable {
-      display: none;
-      background: #003566;
+    .form-toggle {
+      background: green;
       color: white;
-      padding: 1rem;
-      margin-top: 10px;
-      border-radius: 10px;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      font-weight: bold;
     }
-
-    .form-plegable label,
-    .form-plegable input,
-    .form-plegable select {
+    .form-container {
+      display: none;
       background: #1b263b;
+      padding: 20px;
+      border-radius: 8px;
     }
-
-    .botones {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 1rem;
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      color: white;
+    }
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: none;
+      background: #e0e0e0;
+      color: black;
+    }
+    button.save-btn {
+      background: #003566;
+      color: gold;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .tools {
+      margin: 20px 0 10px;
+    }
+    .tools button {
+      margin-right: 10px;
+      background: #ffc300;
+      color: black;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: #1b263b;
+      color: white;
+    }
+    th, td {
+      border: 1px solid gold;
+      padding: 10px;
+      text-align: center;
+    }
+    .search-bar {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+    img.foto {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
     }
   </style>
 </head>
 <body>
-
-  <!-- Barra lateral -->
-  <div class="sidebar">
-    <img src="https://via.placeholder.com/150" alt="Logo" id="logo">
-    <a href="#" class="menu-item">Inicio</a>
-    <a href="#" class="menu-item">Miembros</a>
-    <a href="#" class="menu-item">Diezmo</a>
-    <a href="#" class="menu-item">Ofrendas</a>
+  <div id="sidebar">
+    <img id="logo" src="logo.png" alt="Logo" />
+    <input type="file" id="logoInput" style="display:none" />
+    <button onclick="cambiarLogo()">Cambiar Logo</button>
+    <script>
+      const rol = 'ADMON';
+      function cambiarLogo() {
+        if (rol !== 'ADMON') return alert('Solo el administrador puede cambiar el logo');
+        document.getElementById('logoInput').click();
+      }
+      document.getElementById('logoInput').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            document.getElementById('logo').src = reader.result;
+            localStorage.setItem('logo', reader.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      window.onload = () => {
+        const savedLogo = localStorage.getItem('logo');
+        if (savedLogo) document.getElementById('logo').src = savedLogo;
+      };
+    </script>
   </div>
 
-  <!-- Contenido principal -->
-  <div class="container">
-    <!-- Botones para Exportar a PDF/Excel y Añadir Diezmo -->
-    <div class="botones">
-      <button id="btnAñadirDiezmo" onclick="toggleForm()">Añadir Diezmo</button>
-      <button onclick="exportarPDF()">Exportar a PDF</button>
-      <button onclick="exportarExcel()">Exportar a Excel</button>
-    </div>
+  <header>
+    <img id="logoHeader" src="logo.png" alt="Logo" />
+    <h1>Informe ADORACIÓN VIVA</h1>
+  </header>
 
-    <!-- Formulario de Añadir Diezmo -->
-    <div class="form-plegable" id="formDiezmo">
-      <label for="miembro">Seleccionar Miembro</label>
-      <select id="miembro" required>
+  <div class="main">
+    <button class="form-toggle" onclick="toggleFormulario()">Añadir Diezmo</button>
+
+    <div class="form-container" id="formulario">
+      <label>Buscar Miembro</label>
+      <input type="text" oninput="filtrarMiembros(this.value)">
+      
+      <label>Seleccionar Miembro</label>
+      <select id="miembro" onchange="mostrarDatosMiembro()">
         <option value="">Seleccione un miembro</option>
       </select>
 
-      <label for="cantidad">Cantidad</label>
-      <input type="number" id="cantidad" placeholder="Ingrese cantidad" required>
+      <div id="datosMiembro"></div>
 
-      <label for="moneda">Moneda</label>
-      <select id="moneda">
-        <option value="cordobas">Córdobas</option>
-        <option value="dolares">Dólares</option>
-      </select>
+      <label>Fecha</label>
+      <input type="date" id="fecha">
 
-      <button onclick="guardarRegistro()">Guardar Registro</button>
+      <label>Cantidad (C$ o $)</label>
+      <input type="text" id="cantidad" placeholder="Ej. C$100 o $20">
+
+      <button class="save-btn" onclick="guardarRegistro()">Guardar</button>
     </div>
 
-    <!-- Tabla de Miembros -->
-    <table id="tablaMiembros">
+    <div class="tools">
+      <button onclick="generarPDF()">Imprimir Hoja PDF</button>
+      <button onclick="generarExcel()">Exportar a Excel</button>
+    </div>
+
+    <table id="tabla">
       <thead>
         <tr>
-          <th>Foto</th>
-          <th>Nombre</th>
-          <th>Código</th>
-          <th>Edad</th>
-          <th>Acciones</th>
+          <th>#<br><input class="search-bar" oninput="filtrarTabla(0, this.value)" /></th>
+          <th>Foto<br><input class="search-bar" disabled /></th>
+          <th>Nombre<br><input class="search-bar" oninput="filtrarTabla(2, this.value)" /></th>
+          <th>Código<br><input class="search-bar" oninput="filtrarTabla(3, this.value)" /></th>
+          <th>Edad<br><input class="search-bar" oninput="filtrarTabla(4, this.value)" /></th>
+          <th>Fecha<br><input class="search-bar" oninput="filtrarTabla(5, this.value)" /></th>
+          <th>Cantidad<br><input class="search-bar" oninput="filtrarTabla(6, this.value)" /></th>
         </tr>
       </thead>
-      <tbody>
-        <!-- Miembros serán añadidos aquí -->
-      </tbody>
+      <tbody></tbody>
     </table>
   </div>
 
   <script>
-    // Datos de miembros iniciales
-    const miembrosIniciales = [
-      {
-        "nombre": "Juan Pérez",
-        "codigo": "12345",
-        "edad": 30,
-        "foto": "https://via.placeholder.com/100"  // Imagen de ejemplo
-      },
-      {
-        "nombre": "Ana Gómez",
-        "codigo": "67890",
-        "edad": 25,
-        "foto": "https://via.placeholder.com/100"  // Imagen de ejemplo
-      }
+    const miembros = [
+      { nombre: "Juan Pérez", codigo: "123", edad: 30, foto: "https://via.placeholder.com/50" },
+      { nombre: "Ana Gómez", codigo: "456", edad: 25, foto: "https://via.placeholder.com/50" }
     ];
 
-    // Verificar si ya hay miembros almacenados en localStorage, si no, agregar los miembros iniciales
-    if (!localStorage.getItem('miembros')) {
-      localStorage.setItem('miembros', JSON.stringify(miembrosIniciales));
+    const registros = [];
+
+    miembros.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.codigo;
+      opt.textContent = `${m.nombre} (${m.codigo})`;
+      document.getElementById("miembro").appendChild(opt);
+    });
+
+    function toggleFormulario() {
+      const f = document.getElementById("formulario");
+      f.style.display = f.style.display === "none" || !f.style.display ? "block" : "none";
     }
 
-    // Cargar miembros desde localStorage
-    let miembros = JSON.parse(localStorage.getItem('miembros')) || [];
-
-    // Función para cargar la lista de miembros en el select y la tabla
-    function cargarMiembros() {
-      const miembroSelect = document.getElementById('miembro');
-      const tablaMiembros = document.getElementById('tablaMiembros').getElementsByTagName('tbody')[0];
-
-      miembros.forEach(miembro => {
-        // Agregar al select
-        const option = document.createElement('option');
-        option.value = miembro.codigo;
-        option.textContent = `${miembro.nombre} (${miembro.codigo})`;
-        miembroSelect.appendChild(option);
-
-        // Agregar a la tabla
-        const row = tablaMiembros.insertRow();
-        row.insertCell(0).innerHTML = `<img src="${miembro.foto}" alt="${miembro.nombre}" style="width: 50px; height: 50px; border-radius: 50%;">`;
-        row.insertCell(1).textContent = miembro.nombre;
-        row.insertCell(2).textContent = miembro.codigo;
-        row.insertCell(3).textContent = miembro.edad;
-        row.insertCell(4).innerHTML = `<button onclick="imprimirMiembro('${miembro.codigo}')">Imprimir</button>`;
+    function filtrarMiembros(texto) {
+      const select = document.getElementById("miembro");
+      [...select.options].forEach(opt => {
+        if (opt.value === "") return;
+        opt.style.display = opt.textContent.toLowerCase().includes(texto.toLowerCase()) ? "block" : "none";
       });
     }
 
-    // Función para mostrar/ocultar el formulario de Diezmo
-    function toggleForm() {
-      const formDiezmo = document.getElementById('formDiezmo');
-      formDiezmo.style.display = (formDiezmo.style.display === 'none' || formDiezmo.style.display === '') ? 'block' : 'none';
-    }
-
-    // Función para guardar el registro de Diezmo
-    function guardarRegistro() {
-      const miembroSelect = document.getElementById('miembro');
-      const miembroCodigo = miembroSelect.value;
-      const miembro = miembros.find(m => m.codigo === miembroCodigo);
-      const cantidad = document.getElementById('cantidad').value;
-      const moneda = document.getElementById('moneda').value;
-
-      if (miembro && cantidad) {
-        const nuevoRegistro = {
-          miembro: miembro.nombre,
-          codigo: miembro.codigo,
-          cantidad: cantidad,
-          moneda: moneda,
-          fecha: new Date().toLocaleDateString()
-        };
-
-        console.log(nuevoRegistro);
-        alert('Registro guardado.');
+    function mostrarDatosMiembro() {
+      const codigo = document.getElementById("miembro").value;
+      const miembro = miembros.find(m => m.codigo === codigo);
+      const div = document.getElementById("datosMiembro");
+      if (miembro) {
+        div.innerHTML = `
+          <img class="foto" src="${miembro.foto}" />
+          <p><strong>Nombre:</strong> ${miembro.nombre}</p>
+          <p><strong>Código:</strong> ${miembro.codigo}</p>
+          <p><strong>Edad:</strong> ${miembro.edad}</p>
+        `;
       } else {
-        alert('Por favor, selecciona un miembro y agrega una cantidad.');
+        div.innerHTML = "";
       }
     }
 
-    // Función para exportar a PDF
-    function exportarPDF() {
-      console.log("Generando PDF...");
-      // Agregar la lógica de generación de PDF aquí
+    function guardarRegistro() {
+      const codigo = document.getElementById("miembro").value;
+      const miembro = miembros.find(m => m.codigo === codigo);
+      const fecha = document.getElementById("fecha").value;
+      const cantidad = document.getElementById("cantidad").value;
+      if (!miembro || !fecha || !cantidad) return alert("Completa todos los campos");
+
+      registros.push({ ...miembro, fecha, cantidad });
+      actualizarTabla();
     }
 
-    // Función para exportar a Excel
-    function exportarExcel() {
-      console.log("Generando Excel...");
-      // Agregar la lógica de generación de Excel aquí
+    function actualizarTabla() {
+      const tbody = document.querySelector("#tabla tbody");
+      tbody.innerHTML = "";
+      registros.forEach((r, i) => {
+        const fila = `
+          <tr>
+            <td>${i + 1}</td>
+            <td><img class="foto" src="${r.foto}" /></td>
+            <td>${r.nombre}</td>
+            <td>${r.codigo}</td>
+            <td>${r.edad}</td>
+            <td>${r.fecha}</td>
+            <td>${r.cantidad}</td>
+          </tr>`;
+        tbody.innerHTML += fila;
+      });
     }
 
-    // Cargar miembros al iniciar
-    cargarMiembros();
+    function filtrarTabla(col, val) {
+      const rows = document.querySelectorAll("#tabla tbody tr");
+      rows.forEach(row => {
+        const cell = row.children[col];
+        row.style.display = cell.textContent.toLowerCase().includes(val.toLowerCase()) ? "" : "none";
+      });
+    }
+
+    function generarPDF() {
+      alert("Aquí se genera un PDF con encabezado, logo y agrupado por mes.");
+      // Aquí puedes usar jsPDF o pdf-lib para crear el PDF con el logo y título
+    }
+
+    function generarExcel() {
+      alert("Aquí se genera un archivo Excel con los registros.");
+      // Aquí puedes usar SheetJS para exportar a Excel
+    }
   </script>
-
 </body>
 </html>
