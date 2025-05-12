@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -102,11 +103,11 @@
 
   <div class="sidebar" id="sidebar">
     <img id="logo" src="https://via.placeholder.com/100" alt="Logo" onclick="cambiarLogo()">
-    <a href="inicio.html" id="linkInicio">Inicio</a>
-    <a href="miembros.html" id="linkMiembros">Miembros</a>
-    <a href="diezmo.html" id="linkDiezmo">Diezmos</a>
-    <a href="asistencia.html" id="linkAsistencia">Asistencia</a>
-    <a href="acceso.html" id="linkAcceso">Añadir acceso</a>
+    <a href="inicio.html" id="inicioLink">Inicio</a>
+    <a href="miembros.html" id="miembrosLink">Miembros</a>
+    <a href="diseño.html" id="diezmoLink">Diezmos</a>
+    <a href="asistencia.html" id="asistenciaLink">Asistencia</a>
+    <a href="acceso.html" id="accesoLink">Añadir acceso</a>
   </div>
 
   <div class="content">
@@ -120,6 +121,32 @@
   <script>
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('hide');
+    }
+
+    // Verificar acceso al usuario
+    const usuarioActual = localStorage.getItem('codigoUsuarioActual');
+    const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
+
+    // Verificar si el usuario es "ADMON"
+    const accesoUsuario = accesos.find(a => a.codigo === usuarioActual);
+    if (!accesoUsuario) {
+      window.location.href = "acceso.html"; // Redirigir si no hay usuario autenticado
+    }
+
+    const esAdmin = accesoUsuario.codigo === 'ADMON'; // Solo "ADMON" tiene acceso total
+
+    // Mostrar solo las opciones de menú permitidas según el rol
+    if (!esAdmin) {
+      document.getElementById('miembrosLink').style.display = 'none';
+      document.getElementById('diezmoLink').style.display = 'none';
+      document.getElementById('asistenciaLink').style.display = 'none';
+      document.getElementById('accesoLink').style.display = 'none';
+    }
+
+    // Mostrar solo las opciones permitidas para "Preadministrador"
+    if (accesoUsuario.tipo === 'Preadministrador') {
+      document.getElementById('diezmoLink').style.display = 'none';
+      document.getElementById('asistenciaLink').style.display = 'none';
     }
 
     // Simular datos si no existen
@@ -137,35 +164,6 @@
     }
 
     const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
-
-    // Verificar el acceso del usuario
-    const usuarioActual = JSON.parse(localStorage.getItem('usuarioActual'));
-    if (!usuarioActual) {
-      window.location.href = 'acceso.html'; // Redirigir si no hay usuario logueado
-    }
-
-    // Validar y ajustar el menú según el rol del usuario
-    const rol = usuarioActual.rol;
-    if (rol === 'Administrador') {
-      document.getElementById('linkDiezmo').style.display = 'block';
-      document.getElementById('linkMiembros').style.display = 'block';
-      document.getElementById('linkAsistencia').style.display = 'block';
-      document.getElementById('linkAcceso').style.display = 'block';
-    } else if (rol === 'Discipulador') {
-      document.getElementById('linkDiezmo').style.display = 'none';
-      document.getElementById('linkMiembros').style.display = 'none';
-      document.getElementById('linkAsistencia').style.display = 'none';
-      document.getElementById('linkAcceso').style.display = 'none';
-    } else if (rol === 'Tesorero') {
-      document.getElementById('linkMiembros').style.display = 'none';
-      document.getElementById('linkAsistencia').style.display = 'none';
-      document.getElementById('linkAcceso').style.display = 'none';
-    } else if (rol === 'Preadministrador') {
-      document.getElementById('linkDiezmo').style.display = 'none';
-      document.getElementById('linkMiembros').style.display = 'block';
-      document.getElementById('linkAsistencia').style.display = 'block';
-      document.getElementById('linkAcceso').style.display = 'none';
-    }
 
     // Conteo por sociedad
     const conteoSociedad = {
