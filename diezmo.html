@@ -333,13 +333,12 @@
   });
 
   window.onload = function () {
-    const logoGuardado = localStorage.getItem("logo");
-    if (logoGuardado) {
-      document.getElementById("logo").src = logoGuardado;
+    if (localStorage.getItem("logo")) {
+      document.getElementById("logo").src = localStorage.getItem("logo");
     }
     cargarMiembros();
     mostrarTabla();
-    toggleFormulario(); // lo despliega la primera vez};
+  };
 </script>
 
 </body>
