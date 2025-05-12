@@ -102,18 +102,53 @@
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js"></script>
+
   <script>
+    const de firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Inicializa Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Función para actualizar el menú de acuerdo al rol
     function actualizarMenu() {
+      const rol = localStorage.getItem("rolActivo");
       const menuLinks = document.getElementById('menuLinks');
       menuLinks.innerHTML = '';
 
-      const enlaces = [
+      let enlaces = [
         { href: "inicio.html", texto: "Inicio" },
-        { href: "diezmo.html", texto: "Diezmo" },
-        { href: "ofrendas.html", texto: "Ofrendas" },
-        { href: "acceso.html", texto: "Crear Acceso" },
-        { href: "discipulado.html", texto: "Discipulado" }
       ];
+
+      if (rol === "Administrador") {
+        enlaces = [
+          { href: "inicio.html", texto: "Inicio" },
+          { href: "diezmo.html", texto: "Diezmo" },
+          { href: "ofrendas.html", texto: "Ofrendas" },
+          { href: "acceso.html", texto: "Crear Acceso" },
+          { href: "discipulado.html", texto: "Discipulado" }
+        ];
+      } else if (rol === "Tesorero") {
+        enlaces = [
+          { href: "inicio.html", texto: "Inicio" },
+          { href: "diezmo.html", texto: "Diezmo" },
+          { href: "ofrendas.html", texto: "Ofrendas" }
+        ];
+      } else if (rol === "Discipulador") {
+        enlaces = [
+          { href: "inicio.html", texto: "Inicio" },
+          { href: "discipulado.html", texto: "Discipulado" }
+        ];
+      }
 
       enlaces.forEach(link => {
         const a = document.createElement('a');
@@ -125,10 +160,54 @@
 
     actualizarMenu();
 
+    // Mostrar el logo guardado en Firestore
+    db.collection("config").doc("logo").get().then((doc) => {
+      if (doc.exists) {
+        const logoData = doc.data().logo;
+        document.getElementById("logo").src = logoData;
+      }
+    });
+
+    // Función para cambiar el logo, solo disponible para el administrador
+    function cambiarLogo() {
+      const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
+      if (clave !== "admin123") {
+        alert("Acceso denegado.");
+        return;
+      }
+
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = function () {
+        const file = this.files[0];
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            document.getElementById('logo').src = reader.result;
+            localStorage.setItem('logo', reader.result);
+
+            // Guardar logo en Firestore
+            db.collection("config").doc("logo").set({
+              logo: reader.result
+            }).then(() => {
+              alert("Logo actualizado en Firebase.");
+            }).catch((error) => {
+              console.error("Error al guardar el logo: ", error);
+            });
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
+    }
+
+    // Función para mostrar y ocultar el menú lateral
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('hide');
     }
 
+    // Inicialización de los gráficos
     if (!localStorage.getItem('miembros')) {
       const miembros = [
         { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
@@ -144,6 +223,7 @@
 
     const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
 
+    // Contar miembros por sociedad
     const conteoSociedad = {
       Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0
     };
@@ -153,6 +233,7 @@
       }
     });
 
+    // Crear gráfico de pastel para sociedad
     new Chart(document.getElementById('sociedadChart'), {
       type: 'pie',
       data: {
@@ -171,6 +252,7 @@
       }
     });
 
+    // Crear gráfico de barras para asistencia
     const miembrosOrdenados = miembros.slice().sort((a, b) => a.nombre.localeCompare(b.nombre));
     new Chart(document.getElementById('asistenciaChart'), {
       type: 'bar',
@@ -197,35 +279,6 @@
         }
       }
     });
-
-    function cambiarLogo() {
-      const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
-      if (clave !== "admin123") {
-        alert("Acceso denegado.");
-        return;
-      }
-
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.onchange = function () {
-        const file = this.files[0];
-        if (file && file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            document.getElementById('logo').src = reader.result;
-            localStorage.setItem('logo', reader.result);
-          };
-          reader.readAsDataURL(file);
-        }
-      };
-      input.click();
-    }
-
-    const logoGuardado = localStorage.getItem('logo');
-    if (logoGuardado) {
-      document.getElementById('logo').src = logoGuardado;
-    }
   </script>
 </body>
 </html>
