@@ -103,69 +103,24 @@
   </div>
 
   <script>
-    // Asignar rol automáticamente si el usuario es ADMON
-    const usuarioActual = localStorage.getItem('usuarioActual');
-    if (usuarioActual === 'ADMON') {
-      localStorage.setItem('rolUsuarioActual', 'Administrador');
-    }
-
-    const rolUsuario = localStorage.getItem('rolUsuarioActual');
-
     function actualizarMenu() {
       const menuLinks = document.getElementById('menuLinks');
       menuLinks.innerHTML = '';
 
-      const inicio = document.createElement('a');
-      inicio.href = "inicio.html";
-      inicio.textContent = "Inicio";
-      menuLinks.appendChild(inicio);
+      const enlaces = [
+        { href: "inicio.html", texto: "Inicio" },
+        { href: "diezmo.html", texto: "Diezmo" },
+        { href: "ofrendas.html", texto: "Ofrendas" },
+        { href: "acceso.html", texto: "Crear Acceso" },
+        { href: "discipulado.html", texto: "Discipulado" }
+      ];
 
-      if (rolUsuario === 'Administrador') {
-        const diezmo = document.createElement('a');
-        diezmo.href = "diezmo.html";
-        diezmo.textContent = "Diezmo";
-        menuLinks.appendChild(diezmo);
-
-        const ofrendas = document.createElement('a');
-        ofrendas.href = "ofrendas.html";
-        ofrendas.textContent = "Ofrendas";
-        menuLinks.appendChild(ofrendas);
-
-        const crearAcceso = document.createElement('a');
-        crearAcceso.href = "acceso.html";
-        crearAcceso.textContent = "Crear Acceso";
-        menuLinks.appendChild(crearAcceso);
-
-        const discipulado = document.createElement('a');
-        discipulado.href = "discipulado.html";
-        discipulado.textContent = "Discipulado";
-        menuLinks.appendChild(discipulado);
-      } else if (rolUsuario === 'Discipulador') {
-        const discipulado = document.createElement('a');
-        discipulado.href = "discipulado.html";
-        discipulado.textContent = "Discipulado";
-        menuLinks.appendChild(discipulado);
-      } else if (rolUsuario === 'Tesorero') {
-        const diezmo = document.createElement('a');
-        diezmo.href = "diezmo.html";
-        diezmo.textContent = "Diezmo";
-        menuLinks.appendChild(diezmo);
-
-        const ofrendas = document.createElement('a');
-        ofrendas.href = "ofrendas.html";
-        ofrendas.textContent = "Ofrendas";
-        menuLinks.appendChild(ofrendas);
-      } else if (rolUsuario === 'Preadministrador') {
-        const crearAcceso = document.createElement('a');
-        crearAcceso.href = "acceso.html";
-        crearAcceso.textContent = "Crear Acceso";
-        menuLinks.appendChild(crearAcceso);
-
-        const discipulado = document.createElement('a');
-        discipulado.href = "discipulado.html";
-        discipulado.textContent = "Discipulado";
-        menuLinks.appendChild(discipulado);
-      }
+      enlaces.forEach(link => {
+        const a = document.createElement('a');
+        a.href = link.href;
+        a.textContent = link.texto;
+        menuLinks.appendChild(a);
+      });
     }
 
     actualizarMenu();
@@ -174,7 +129,6 @@
       document.getElementById('sidebar').classList.toggle('hide');
     }
 
-    // Datos de ejemplo
     if (!localStorage.getItem('miembros')) {
       const miembros = [
         { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
