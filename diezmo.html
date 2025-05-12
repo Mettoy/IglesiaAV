@@ -192,6 +192,7 @@
   </table>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
   let miembros = [
     { nombre: "Juan Pérez", codigo: "123", edad: 30, foto: "https://via.placeholder.com/100" },
@@ -241,8 +242,8 @@
     const fecha = document.getElementById("fecha").value;
     const cantidad = document.getElementById("cantidad").value;
 
-    if (!miembro || !fecha || !cantidad) {
-      alert("Complete todos los campos.");
+    if (!miembro || !fecha || !cantidad || isNaN(cantidad)) {
+      alert("Complete todos los campos correctamente.");
       return;
     }
 
@@ -277,7 +278,8 @@
   }
 
   function exportarPDF() {
-    const ventana = window.open("", "", "width=800,height=600");
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
     const grouped = {};
 
     registros.forEach(r => {
@@ -286,21 +288,25 @@
       grouped[mes].push(r);
     });
 
-    let contenido = `<h1 style="text-align:center;">Informe Diezmos</h1>`;
+    doc.setFontSize(18);
+    doc.text("Informe Diezmos", 20, 20);
+    let y = 30;
+
     for (let mes in grouped) {
-      contenido += `<h2>${mes}</h2>`;
-      contenido += `<table border="1" width="100%" style="border-collapse: collapse;">
-        <tr><th>#</th><th>Código</th><th>Nombre</th><th>Edad</th><th>Fecha</th><th>Cantidad</th></tr>`;
-      grouped[mes].forEach((r, i) => {
-        contenido += `<tr>
-          <td>${i + 1}</td><td>${r.codigo}</td><td>${r.nombre}</td>
-          <td>${r.edad}</td><td>${r.fecha}</td><td>${r.cantidad}</td>
-        </tr>`;
+      doc.setFontSize(14);
+      doc.text(mes, 20, y);
+      y += 10;
+
+      doc.autoTable({
+        startY: y,
+        head: [['#', 'Código', 'Nombre', 'Edad', 'Fecha', 'Cantidad']],
+        body: grouped[mes].map((r, i) => [i + 1, r.codigo, r.nombre, r.edad, r.fecha, r.cantidad]),
       });
-      contenido += `</table><br>`;
+
+      y = doc.lastAutoTable.finalY + 10;
     }
-    ventana.document.write(contenido);
-    ventana.print();
+
+    doc.save("informe_diezmos.pdf");
   }
 
   function exportarExcel() {
