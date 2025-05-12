@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Gestión de Accesos</title>
+  <title>Iniciar Sesión - Adoración Viva</title>
   <style>
     body {
       margin: 0;
@@ -10,51 +10,30 @@
       background-color: #0b0c2a;
       color: #f7c948;
       display: flex;
-    }
-
-    .sidebar {
-      width: 200px;
-      background-color: #14153a;
+      justify-content: center;
+      align-items: center;
       height: 100vh;
-      padding-top: 20px;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
-      position: fixed;
-      left: 0;
-      top: 0;
     }
 
-    .sidebar a {
-      display: block;
-      padding: 10px 20px;
-      color: #f7c948;
-      text-decoration: none;
-    }
-
-    .sidebar a:hover {
+    .login-container {
       background-color: #1f214d;
-    }
-
-    .content {
-      margin-left: 200px;
-      padding: 20px;
-      flex-grow: 1;
-    }
-
-    .form-container {
-      max-width: 400px;
-      background-color: #1f214d;
-      padding: 20px;
+      padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      width: 300px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+      text-align: center;
     }
 
     label {
       display: block;
-      margin-top: 10px;
+      margin-top: 15px;
       color: #f7c948;
     }
 
-    input, select {
+    input {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
@@ -63,9 +42,9 @@
     }
 
     button {
-      margin-top: 15px;
-      padding: 10px;
+      margin-top: 20px;
       width: 100%;
+      padding: 10px;
       background-color: #f7c948;
       color: #0b0c2a;
       border: none;
@@ -77,136 +56,50 @@
       background-color: #e6b400;
     }
 
-    .user-list {
-      margin-top: 30px;
-    }
-
-    .user-list div {
-      background: #2b2d52;
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 10px;
+    .error {
+      color: red;
+      margin-top: 10px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <a href="index.html">Inicio</a>
-    <a href="#">Miembros</a>
-    <a href="#">Diezmos</a>
-    <a href="#">Asistencia</a>
-    <a href="acceso.html">Añadir acceso</a>
-  </div>
+  <div class="login-container">
+    <h2>Iniciar Sesión</h2>
+    <form onsubmit="iniciarSesion(); return false;">
+      <label for="usuario">Usuario</label>
+      <input type="text" id="usuario" placeholder="Ingrese su usuario">
 
-  <div class="content">
-    <h2>Gestión de Accesos</h2>
-    <div class="form-container">
-      <form onsubmit="guardarAcceso(); return false;">
-        <label for="miembro">Seleccionar Miembro</label>
-        <select id="miembro">
-          <!-- Opciones dinámicas con JS -->
-        </select>
-
-        <label for="usuario">Usuario</label>
-        <input type="text" id="usuario">
-
-        <label for="rol">Rol</label>
-        <select id="rol">
-          <option value="admin">Administrador</option>
-          <option value="usuario">Usuario</option>
-        </select>
-
-        <button type="submit">Guardar Acceso</button>
-      </form>
-    </div>
-
-    <div class="user-list" id="listaAccesos">
-      <h3>Usuarios Registrados</h3>
-    </div>
+      <button type="submit">Entrar</button>
+      <div id="mensaje" class="error"></div>
+    </form>
   </div>
 
   <script>
-    // Verificar si ya existen miembros en localStorage
-    if (!localStorage.getItem('miembros')) {
-      localStorage.setItem('miembros', JSON.stringify([
-        { id: "1", nombreCompleto: "Juan Pérez" },
-        { id: "2", nombreCompleto: "María López" }
-      ]));
-    }
+    function iniciarSesion() {
+      const usuario = document.getElementById('usuario').value.trim().toLowerCase();
+      const mensaje = document.getElementById('mensaje');
 
-    if (!localStorage.getItem('accesos')) {
-      localStorage.setItem('accesos', JSON.stringify([]));
-    }
-
-    // Guardar nuevo acceso
-    function guardarAcceso() {
-      const miembroId = document.getElementById('miembro').value;
-      const usuario = document.getElementById('usuario').value.trim();
-      const rol = document.getElementById('rol').value;
-
-      if (!miembroId || !usuario) {
-        alert("Por favor, complete todos los campos.");
+      if (!usuario) {
+        mensaje.textContent = "Debe ingresar un nombre de usuario.";
         return;
       }
 
       const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
 
-      // Verificar si el usuario ya está registrado
-      const duplicado = accesos.some(a => a.usuario.toLowerCase() === usuario.toLowerCase());
-      if (duplicado) {
-        alert("El nombre de usuario ya está registrado.");
+      const acceso = accesos.find(a => a.usuario.toLowerCase() === usuario);
+
+      if (!acceso) {
+        mensaje.textContent = "Usuario no encontrado. Verifique el nombre.";
         return;
       }
 
-      const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
-      const miembro = miembros.find(m => m.id === miembroId);
+      // Guardar el acceso activo
+      localStorage.setItem('usuarioActivo', JSON.stringify(acceso));
 
-      if (!miembro) {
-        alert("Miembro no encontrado.");
-        return;
-      }
-
-      const nuevoAcceso = {
-        nombre: miembro.nombreCompleto,
-        usuario,
-        rol,
-        miembroId
-      };
-
-      accesos.push(nuevoAcceso);
-      localStorage.setItem('accesos', JSON.stringify(accesos));
-      mostrarAccesos();
-      document.querySelector('.form-container').reset();
+      // Redirigir a inicio.html
+      window.location.href = "inicio.html";
     }
-
-    // Mostrar accesos registrados
-    function mostrarAccesos() {
-      const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
-      const lista = document.getElementById('listaAccesos');
-      lista.innerHTML = "<h3>Usuarios Registrados</h3>";
-
-      accesos.forEach((a, i) => {
-        lista.innerHTML += `
-          <div>
-            <strong>${a.nombre}</strong> (${a.rol})<br>
-            Usuario: ${a.usuario}
-          </div>
-        `;
-      });
-    }
-
-    // Cargar miembros registrados en el formulario
-    function cargarMiembros() {
-      const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
-      const select = document.getElementById('miembro');
-      select.innerHTML = '<option value="">Seleccione...</option>';
-      miembros.forEach(m => {
-        select.innerHTML += `<option value="${m.id}">${m.nombreCompleto}</option>`;
-      });
-    }
-
-    cargarMiembros();
-    mostrarAccesos();
   </script>
 </body>
 </html>
