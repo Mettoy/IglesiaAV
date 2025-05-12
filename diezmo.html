@@ -135,21 +135,23 @@
 
     .search-results {
       background: #3a506b;
-      padding: 1rem;
-      border-radius: 5px;
-      color: white;
-      max-height: 200px;
+      padding: 5px;
+      margin-top: 10px;
+      max-height: 150px;
       overflow-y: auto;
     }
 
-    .search-results p {
-      margin: 0.5rem 0;
+    .search-results div {
+      padding: 5px;
+      background: #4a6378;
+      margin-bottom: 5px;
       cursor: pointer;
     }
 
-    .search-results p:hover {
-      background: #001d3d;
+    .search-results div:hover {
+      background: #2e4057;
     }
+
   </style>
 </head>
 <body>
@@ -175,14 +177,13 @@
   </div>
 
   <div class="form-container" id="formulario">
-    <label for="buscarCodigo">Buscar Miembro por Código</label>
-    <input type="text" id="buscarCodigo" oninput="buscarMiembroPorCodigo()" placeholder="Ingrese código..." />
-
     <label for="buscarNombre">Buscar Miembro por Nombre</label>
-    <input type="text" id="buscarNombre" oninput="buscarMiembroPorNombre()" placeholder="Ingrese nombre..." />
+    <input type="text" id="buscarNombre" oninput="buscarMiembro('nombre')" placeholder="Ingrese nombre..." />
+    <div id="resultadosNombre" class="search-results"></div>
 
-    <div class="search-results" id="resultadosCodigo"></div>
-    <div class="search-results" id="resultadosNombre"></div>
+    <label for="buscarCodigo">Buscar Miembro por Código</label>
+    <input type="text" id="buscarCodigo" oninput="buscarMiembro('codigo')" placeholder="Ingrese código..." />
+    <div id="resultadosCodigo" class="search-results"></div>
 
     <label for="miembro">Seleccionar Miembro</label>
     <select id="miembro" onchange="mostrarDatosMiembro()">
@@ -216,12 +217,9 @@
   </table>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-  let miembros = [
-    { nombre: "Juan Pérez", codigo: "123", edad: 30, foto: "https://via.placeholder.com/100" },
-    { nombre: "Ana Gómez", codigo: "456", edad: 25, foto: "https://via.placeholder.com/100" }
-  ];
+  // Cargar miembros desde localStorage
+  let miembros = JSON.parse(localStorage.getItem("miembros")) || [];
   let registros = JSON.parse(localStorage.getItem('registrosDiezmo')) || [];
 
   function cargarMiembros() {
@@ -234,44 +232,30 @@
     });
   }
 
-  function buscarMiembroPorCodigo() {
-    const filtro = document.getElementById("buscarCodigo").value.toLowerCase();
-    const resultados = document.getElementById("resultadosCodigo");
+  function buscarMiembro(tipo) {
+    const filtro = document.getElementById(`buscar${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).value.toLowerCase();
+    const resultados = document.getElementById(`resultados${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
     resultados.innerHTML = '';
 
     miembros.forEach(m => {
-      if (m.codigo.toLowerCase().includes(filtro)) {
-        const p = document.createElement("p");
-        p.textContent = `${m.nombre} (${m.codigo})`;
-        p.onclick = () => seleccionarMiembro(m.codigo);
-        resultados.appendChild(p);
+      if (m[tipo].toLowerCase().includes(filtro)) {
+        const div = document.createElement("div");
+        div.textContent = `${m.nombre} (${m.codigo})`;
+        div.onclick = function() {
+          document.getElementById("miembro").value = m.codigo;
+          mostrarDatosMiembro(m);
+          resultados.innerHTML = ''; // Limpiar resultados
+        };
+        resultados.appendChild(div);
       }
     });
   }
 
-  function buscarMiembroPorNombre() {
-    const filtro = document.getElementById("buscarNombre").value.toLowerCase();
-    const resultados = document.getElementById("resultadosNombre");
-    resultados.innerHTML = '';
-
-    miembros.forEach(m => {
-      if (m.nombre.toLowerCase().includes(filtro)) {
-        const p = document.createElement("p");
-        p.textContent = `${m.nombre} (${m.codigo})`;
-        p.onclick = () => seleccionarMiembro(m.codigo);
-        resultados.appendChild(p);
-      }
-    });
-  }
-
-  function seleccionarMiembro(codigo) {
-    document.getElementById("miembro").value = codigo;
-    mostrarDatosMiembro();
-  }
-
-  function mostrarDatosMiembro() {
-    const codigo = document.getElementById("miembro").value;
-    const miembro = miembros.find(m => m.codigo === codigo);
+  function mostrarDatosMiembro(miembro = null) {
+    if (!miembro) {
+      const codigo = document.getElementById("miembro").value;
+      miembro = miembros.find(m => m.codigo === codigo);
+    }
     if (miembro) {
       document.getElementById("datosMiembro").innerHTML = `
         <img src="${miembro.foto}" alt="Foto del miembro" />
