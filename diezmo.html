@@ -200,11 +200,6 @@
   ];
   let registros = JSON.parse(localStorage.getItem('registrosDiezmo')) || [];
 
-  function toggleFormulario() {
-    const form = document.getElementById("formulario");
-    form.style.display = form.style.display === "none" ? "block" : "none";
-  }
-
   function cargarMiembros() {
     const select = document.getElementById("miembro");
     miembros.forEach(m => {
@@ -218,9 +213,17 @@
   function buscarMiembro() {
     const filtro = document.getElementById("buscar").value.toLowerCase();
     const select = document.getElementById("miembro");
-    for (let opt of select.options) {
-      opt.style.display = opt.textContent.toLowerCase().includes(filtro) ? "block" : "none";
-    }
+    // Limpiar las opciones del select
+    select.innerHTML = '<option value="">Seleccione un miembro</option>';
+
+    miembros.forEach(m => {
+      if (m.nombre.toLowerCase().includes(filtro)) {
+        const opt = document.createElement("option");
+        opt.value = m.codigo;
+        opt.textContent = `${m.nombre} (${m.codigo})`;
+        select.appendChild(opt);
+      }
+    });
   }
 
   function mostrarDatosMiembro() {
@@ -276,67 +279,6 @@
       tbody.innerHTML += row;
     });
   }
-
-  function exportarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const grouped = {};
-
-    registros.forEach(r => {
-      const mes = new Date(r.fecha).toLocaleString('default', { month: 'long', year: 'numeric' });
-      if (!grouped[mes]) grouped[mes] = [];
-      grouped[mes].push(r);
-    });
-
-    doc.setFontSize(18);
-    doc.text("Informe Diezmos", 20, 20);
-    let y = 30;
-
-    for (let mes in grouped) {
-      doc.setFontSize(14);
-      doc.text(mes, 20, y);
-      y += 10;
-
-      doc.autoTable({
-        startY: y,
-        head: [['#', 'Código', 'Nombre', 'Edad', 'Fecha', 'Cantidad']],
-        body: grouped[mes].map((r, i) => [i + 1, r.codigo, r.nombre, r.edad, r.fecha, r.cantidad]),
-      });
-
-      y = doc.lastAutoTable.finalY + 10;
-    }
-
-    doc.save("informe_diezmos.pdf");
-  }
-
-  function exportarExcel() {
-    let csv = "Código,Nombre,Edad,Fecha,Cantidad\n";
-    registros.forEach(r => {
-      csv += `${r.codigo},${r.nombre},${r.edad},${r.fecha},${r.cantidad}\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "informe_diezmos.csv";
-    a.click();
-  }
-
-  function cambiarLogo() {
-    const input = document.getElementById("logoInput");
-    input.click();
-  }
-
-  document.getElementById("logoInput").addEventListener("change", function () {
-    const file = this.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        localStorage.setItem("logo", e.target.result);
-        document.getElementById("logo").src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  });
 
   window.onload = function () {
     if (localStorage.getItem("logo")) {
