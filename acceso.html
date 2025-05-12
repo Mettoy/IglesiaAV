@@ -92,6 +92,20 @@
       gap: 10px;
       margin-top: 5px;
     }
+
+    #detalleMiembro {
+      margin-top: 10px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #fotoMiembro {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
@@ -108,10 +122,14 @@
     <div class="form-container">
       <form onsubmit="guardarAcceso(); return false;">
         <input type="hidden" id="editIndex" value="">
+        
         <label for="miembro">Seleccionar Miembro</label>
-        <select id="miembro">
-          <!-- Opciones con JS -->
-        </select>
+        <select id="miembro"></select>
+
+        <div id="detalleMiembro">
+          <img id="fotoMiembro" src="" alt="Foto">
+          <span id="nombreMiembro" style="color: white;"></span>
+        </div>
 
         <label for="usuario">Usuario</label>
         <input type="text" id="usuario" placeholder="Nombre de usuario deseado">
@@ -134,12 +152,12 @@
   </div>
 
   <script>
-    // Carga de ejemplo si no hay miembros en localStorage
+    // Datos de ejemplo
     if (!localStorage.getItem('miembros')) {
       localStorage.setItem('miembros', JSON.stringify([
-        { id: "1", nombreCompleto: "Juan Pérez" },
-        { id: "2", nombreCompleto: "María López" },
-        { id: "3", nombreCompleto: "Carlos Torres" }
+        { id: "1", nombreCompleto: "Juan Pérez", foto: "https://via.placeholder.com/60" },
+        { id: "2", nombreCompleto: "María López", foto: "https://via.placeholder.com/60/ffb6c1" },
+        { id: "3", nombreCompleto: "Carlos Torres", foto: "https://via.placeholder.com/60/87cefa" }
       ]));
     }
 
@@ -171,6 +189,7 @@
         document.querySelector('form').reset();
         document.getElementById('editIndex').value = "";
         document.getElementById('miembro').disabled = false;
+        document.getElementById('detalleMiembro').style.display = "none";
         cargarMiembros();
         mostrarAccesos();
         return;
@@ -198,6 +217,7 @@
       localStorage.setItem('accesos', JSON.stringify(accesos));
       document.querySelector('form').reset();
       document.getElementById('miembro').disabled = false;
+      document.getElementById('detalleMiembro').style.display = "none";
       cargarMiembros();
       mostrarAccesos();
     }
@@ -259,7 +279,23 @@
       document.getElementById('miembro').innerHTML = `<option value="${acceso.miembroId}">${acceso.nombre}</option>`;
       document.getElementById('miembro').disabled = true;
       document.getElementById('editIndex').value = index;
+      document.getElementById('detalleMiembro').style.display = "none";
     }
+
+    // Mostrar detalles del miembro seleccionado
+    document.getElementById('miembro').addEventListener('change', function() {
+      const miembroId = this.value;
+      const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+      const miembro = miembros.find(m => m.id === miembroId);
+
+      if (miembro) {
+        document.getElementById('detalleMiembro').style.display = "flex";
+        document.getElementById('fotoMiembro').src = miembro.foto || "https://via.placeholder.com/60";
+        document.getElementById('nombreMiembro').textContent = miembro.nombreCompleto;
+      } else {
+        document.getElementById('detalleMiembro').style.display = "none";
+      }
+    });
 
     cargarMiembros();
     mostrarAccesos();
