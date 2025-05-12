@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Página de Gestión</title>
+  <style>
+    body { font-family: Arial, sans-serif; display: flex; margin: 0; }
+    .sidebar { width: 250px; background: #2c3e50; color: white; padding: 20px; min-height: 100vh; }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar li { margin: 15px 0; }
+    .content { flex-grow: 1; padding: 30px; }
+    h2 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <!-- Menú lateral -->
+  <div class="sidebar">
+    <ul>
+      <li><strong>Menú</strong></li>
+      <li>Nombre, Usuarios y Roles</li>
+    </ul>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="content">
+    <h2 id="saludo">Bienvenido</h2>
+    <button onclick="iniciarSesion()">Iniciar sesión como ejemplo</button>
+  </div>
+
+  <script>
+    // Simula inicio de sesión
+    function iniciarSesion() {
+      const nombreEjemplo = "Carlos Pérez";
+      localStorage.setItem("nombreUsuario", nombreEjemplo);
+      mostrarSaludo();
+    }
+
+    function mostrarSaludo() {
+      const nombre = localStorage.getItem("nombreUsuario") || "Usuario";
+      document.getElementById("saludo").textContent = `Bienvenido, ${nombre}`;
+    }
+
+    // Mostrar saludo al cargar la página
+    window.onload = mostrarSaludo;
+  </script>
+</body>
+</html>
