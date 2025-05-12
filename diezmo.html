@@ -280,6 +280,15 @@
     });
   }
 
+  function toggleFormulario() {
+    const formulario = document.getElementById("formulario");
+    if (formulario.style.display === "none" || formulario.style.display === "") {
+      formulario.style.display = "block"; // Mostrar el formulario
+    } else {
+      formulario.style.display = "none"; // Ocultar el formulario
+    }
+  }
+
   window.onload = function () {
     if (localStorage.getItem("logo")) {
       document.getElementById("logo").src = localStorage.getItem("logo");
