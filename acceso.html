@@ -152,7 +152,6 @@
   </div>
 
   <script>
-    // Datos de ejemplo
     if (!localStorage.getItem('miembros')) {
       localStorage.setItem('miembros', JSON.stringify([
         { id: "1", nombreCompleto: "Juan Pérez", foto: "https://via.placeholder.com/60" },
@@ -176,8 +175,8 @@
         return;
       }
 
-      if (usuario.length < 3) {
-        alert("El nombre de usuario debe tener al menos 3 caracteres.");
+      if (usuario.length < 3 || !/^[a-zA-Z0-9_]+$/.test(usuario)) {
+        alert("El nombre de usuario debe tener al menos 3 caracteres y contener solo letras, números o guión bajo.");
         return;
       }
 
@@ -186,12 +185,7 @@
       if (editIndex !== "") {
         accesos[editIndex] = { ...accesos[editIndex], usuario, rol };
         localStorage.setItem('accesos', JSON.stringify(accesos));
-        document.querySelector('form').reset();
-        document.getElementById('editIndex').value = "";
-        document.getElementById('miembro').disabled = false;
-        document.getElementById('detalleMiembro').style.display = "none";
-        cargarMiembros();
-        mostrarAccesos();
+        resetFormulario();
         return;
       }
 
@@ -215,11 +209,7 @@
 
       accesos.push({ nombre: miembro.nombreCompleto, usuario, rol, miembroId });
       localStorage.setItem('accesos', JSON.stringify(accesos));
-      document.querySelector('form').reset();
-      document.getElementById('miembro').disabled = false;
-      document.getElementById('detalleMiembro').style.display = "none";
-      cargarMiembros();
-      mostrarAccesos();
+      resetFormulario();
     }
 
     function mostrarAccesos() {
@@ -235,8 +225,13 @@
       accesos.forEach((a, i) => {
         lista.innerHTML += `
           <div class="user-entry">
-            <strong>${a.nombre}</strong> (${a.rol})<br>
-            Usuario: ${a.usuario}
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="${obtenerFotoMiembro(a.miembroId)}" alt="Foto" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+              <div>
+                <strong>${a.nombre}</strong> (${a.rol})<br>
+                Usuario: ${a.usuario}
+              </div>
+            </div>
             <div class="user-entry-buttons">
               <button onclick="editarAcceso(${i})">Editar</button>
               <button onclick="eliminarAcceso(${i})">Eliminar</button>
@@ -282,7 +277,21 @@
       document.getElementById('detalleMiembro').style.display = "none";
     }
 
-    // Mostrar detalles del miembro seleccionado
+    function resetFormulario() {
+      document.querySelector('form').reset();
+      document.getElementById('editIndex').value = "";
+      document.getElementById('miembro').disabled = false;
+      document.getElementById('detalleMiembro').style.display = "none";
+      cargarMiembros();
+      mostrarAccesos();
+    }
+
+    function obtenerFotoMiembro(miembroId) {
+      const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+      const miembro = miembros.find(m => m.id === miembroId);
+      return miembro?.foto || "https://via.placeholder.com/60";
+    }
+
     document.getElementById('miembro').addEventListener('change', function() {
       const miembroId = this.value;
       const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
