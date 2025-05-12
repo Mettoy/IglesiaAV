@@ -117,7 +117,7 @@
         nombre.textContent = `${acceso.nombre} (${acceso.usuario}) - ${acceso.tipo}`;
 
         const boton = document.createElement('button');
-        boton.textContent = acceso.acceso ? 'Acceso' : 'Sin acceso';
+        boton.textContent = acceso.acceso ? 'Permitir acceso' : 'Acceso denegado';
         boton.className = 'estado-boton ' + (acceso.acceso ? 'acceso' : 'sin-acceso');
         boton.onclick = () => {
           if (acceso.usuario === 'ADMON') return alert('No puedes modificar el acceso de ADMON');
@@ -157,14 +157,6 @@
       guardarAccesos();
       form.reset();
     });
-
-    // Bloquear ingreso si no tiene acceso
-    const usuarioActual = localStorage.getItem('codigoUsuarioActual');
-    const datosUsuario = accesos.find(a => a.usuario === usuarioActual);
-    if (datosUsuario && datosUsuario.acceso === false) {
-      alert('Acceso denegado. Contacta al administrador.');
-      window.location.href = 'acceso-denegado.html'; // página personalizada si lo deseas
-    }
 
     mostrarAccesos();
   </script>
