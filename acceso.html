@@ -3,39 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agregar Acceso - Adoración Viva</title>
+  <title>Gestión de Accesos - Adoración Viva</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f0f2f5;
       margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      padding: 2rem;
     }
     .container {
       background: white;
       padding: 2rem;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 100%;
       max-width: 500px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     h2 {
       text-align: center;
-      margin-bottom: 1rem;
       color: #4a148c;
     }
     label {
       display: block;
       margin-top: 1rem;
-      margin-bottom: 0.5rem;
     }
-    input, select, button {
+    input, select, button, datalist {
       width: 100%;
       padding: 10px;
+      margin-top: 5px;
       border-radius: 5px;
       border: 1px solid #ccc;
       font-size: 1rem;
@@ -43,9 +38,9 @@
     button {
       background: #4a148c;
       color: white;
+      font-weight: bold;
       margin-top: 1.5rem;
       border: none;
-      font-weight: bold;
       cursor: pointer;
     }
     button:hover {
@@ -55,17 +50,21 @@
 </head>
 <body>
   <div class="container">
-    <h2>Agregar Nuevo Acceso</h2>
+    <h2 id="titulo">Crear Acceso</h2>
     <form id="formAcceso">
-      <label for="nombre">Nombre completo</label>
-      <input type="text" id="nombre" required />
+      <!-- Miembro -->
+      <label for="miembro">Buscar miembro</label>
+      <input list="listaMiembros" id="miembro" placeholder="Nombre del miembro" required />
+      <datalist id="listaMiembros"></datalist>
 
-      <label for="codigo">Código</label>
-      <input type="text" id="codigo" required />
+      <!-- Usuario -->
+      <label for="usuario">Usuario de acceso</label>
+      <input type="text" id="usuario" placeholder="ej: juanperez123" required />
 
-      <label for="tipo">Tipo de acceso</label>
-      <select id="tipo" required>
-        <option value="">Selecciona un tipo</option>
+      <!-- Rol -->
+      <label for="rol">Rol</label>
+      <select id="rol" required>
+        <option value="">Selecciona un rol</option>
         <option value="Administrador">Administrador</option>
         <option value="Colaborador">Colaborador</option>
         <option value="Invitado">Invitado</option>
@@ -77,21 +76,68 @@
 
   <script>
     const form = document.getElementById('formAcceso');
+    const miembroInput = document.getElementById('miembro');
+    const usuarioInput = document.getElementById('usuario');
+    const rolSelect = document.getElementById('rol');
+    const datalist = document.getElementById('listaMiembros');
 
-    form.addEventListener('submit', function (e) {
+    const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
+    const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+    const usuarioActual = localStorage.getItem('codigoUsuarioActual');
+    const accesoUsuario = accesos.find(a => a.codigo === usuarioActual);
+
+    if (!accesoUsuario || accesoUsuario.tipo !== 'Administrador') {
+      alert('Acceso no autorizado');
+      window.location.href = "miembros.html";
+    }
+
+    // Rellenar datalist con nombres
+    miembros.forEach(m => {
+      const option = document.createElement('option');
+      option.value = `${m.nombre} - ${m.codigo}`;
+      datalist.appendChild(option);
+    });
+
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      
-      const nuevoAcceso = {
-        nombre: document.getElementById('nombre').value,
-        codigo: document.getElementById('codigo').value,
-        tipo: document.getElementById('tipo').value,
-      };
 
-      // Guardar en localStorage (puedes adaptarlo a una base de datos real)
-      let accesos = JSON.parse(localStorage.getItem('accesos')) || [];
-      accesos.push(nuevoAcceso);
+      const miembroTexto = miembroInput.value.trim();
+      const usuario = usuarioInput.value.trim();
+      const rol = rolSelect.value;
+
+      // Extraer código del texto del datalist (último valor después del "-")
+      const codigo = miembroTexto.split('-').pop()?.trim();
+      const miembro = miembros.find(m => m.codigo === codigo);
+
+      if (!miembro) {
+        alert('Selecciona un miembro válido de la lista');
+        return;
+      }
+
+      if (!usuario) {
+        alert('Debes ingresar un nombre de usuario');
+        return;
+      }
+
+      if (!rol) {
+        alert('Selecciona un rol');
+        return;
+      }
+
+      const existente = accesos.find(a => a.usuario === usuario);
+      if (existente) {
+        alert('Ese nombre de usuario ya existe');
+        return;
+      }
+
+      accesos.push({
+        codigo: miembro.codigo,
+        nombre: miembro.nombre,
+        usuario,
+        tipo: rol
+      });
+
       localStorage.setItem('accesos', JSON.stringify(accesos));
-
       alert('Acceso guardado correctamente');
       form.reset();
     });
