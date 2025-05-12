@@ -50,8 +50,10 @@
     }
 
     .top-actions {
-      text-align: center;
-      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
     }
 
     button {
@@ -61,7 +63,7 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin: 0 5px;
+      margin-right: 10px;
     }
 
     button:hover {
@@ -86,10 +88,37 @@
       color: gold;
     }
 
-    input, select {
-      padding: 8px;
-      margin: 5px;
+    .form-container {
+      background: #1b263b;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      display: none;
     }
+
+    .form-container label,
+    .form-container input,
+    .form-container select {
+      color: white;
+      display: block;
+      width: 100%;
+      margin-bottom: 0.75rem;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background: #3a506b;
+    }
+
+    .form-container input[type="text"]::placeholder {
+      color: #ddd;
+    }
+
+    .filtro-fechas {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
   </style>
 </head>
 <body>
@@ -107,9 +136,31 @@
   <h1>Registro de Diezmos</h1>
 
   <div class="top-actions">
-    <button onclick="mostrarFormulario()">Añadir Diezmo</button>
-    <button onclick="seleccionarMes('pdf')">Imprimir Hoja PDF</button>
-    <button onclick="seleccionarMes('excel')">Imprimir Hoja Excel</button>
+    <button onclick="toggleFormulario()" style="background: green;">Añadir Diezmo</button>
+    <div class="filtro-fechas">
+      <label style="color: white;">Desde:</label>
+      <input type="date" id="desde" />
+      <label style="color: white;">Hasta:</label>
+      <input type="date" id="hasta" />
+      <button onclick="exportarPDF()">Imprimir Hoja PDF</button>
+      <button onclick="exportarExcel()">Imprimir Hoja Excel</button>
+    </div>
+  </div>
+
+  <div class="form-container" id="formulario">
+    <!-- Aquí va el mismo formulario que ya tienes (sin cambios) -->
+    <!-- Solo se muestra/oculta al tocar "Añadir Diezmo" -->
+    <label>Nombre:</label>
+    <input type="text" id="nombre" />
+    <label>Código:</label>
+    <input type="text" id="codigo" />
+    <label>Edad:</label>
+    <input type="text" id="edad" />
+    <label>Fecha:</label>
+    <input type="date" id="fecha" />
+    <label>Cantidad:</label>
+    <input type="text" id="cantidad" />
+    <button onclick="guardarRegistro()">Guardar</button>
   </div>
 
   <table id="tabla">
@@ -128,13 +179,37 @@
 </div>
 
 <script>
-  const registros = JSON.parse(localStorage.getItem('registrosDiezmo')) || [];
+  let registros = JSON.parse(localStorage.getItem("registrosDiezmo")) || [];
+
+  function toggleFormulario() {
+    const form = document.getElementById("formulario");
+    form.style.display = form.style.display === "none" || form.style.display === "" ? "block" : "none";
+  }
+
+  function guardarRegistro() {
+    const nombre = document.getElementById("nombre").value;
+    const codigo = document.getElementById("codigo").value;
+    const edad = document.getElementById("edad").value;
+    const fecha = document.getElementById("fecha").value;
+    const cantidad = document.getElementById("cantidad").value;
+
+    if (!nombre || !codigo || !edad || !fecha || !cantidad) {
+      alert("Completa todos los campos.");
+      return;
+    }
+
+    registros.push({ nombre, codigo, edad, fecha, cantidad });
+    localStorage.setItem("registrosDiezmo", JSON.stringify(registros));
+    mostrarTabla();
+    document.getElementById("formulario").reset();
+    document.getElementById("formulario").style.display = "none";
+  }
 
   function mostrarTabla() {
     const tbody = document.querySelector("#tabla tbody");
     tbody.innerHTML = "";
     registros.forEach((r, i) => {
-      const row = `<tr>
+      tbody.innerHTML += `<tr>
         <td>${i + 1}</td>
         <td>${r.codigo}</td>
         <td>${r.nombre}</td>
@@ -142,99 +217,46 @@
         <td>${r.fecha}</td>
         <td>${r.cantidad}</td>
       </tr>`;
-      tbody.innerHTML += row;
     });
   }
 
-  function mostrarFormulario() {
-    const codigo = prompt("Código del miembro:");
-    const nombre = prompt("Nombre del miembro:");
-    const edad = prompt("Edad:");
-    const fecha = prompt("Fecha (YYYY-MM-DD):");
-    const cantidad = prompt("Cantidad:");
-
-    if (codigo && nombre && edad && fecha && cantidad) {
-      registros.push({ codigo, nombre, edad, fecha, cantidad });
-      localStorage.setItem('registrosDiezmo', JSON.stringify(registros));
-      mostrarTabla();
+  function exportarPDF() {
+    const desde = document.getElementById("desde").value;
+    const hasta = document.getElementById("hasta").value;
+    if (!desde || !hasta) {
+      alert("Seleccione un rango de fechas.");
+      return;
     }
-  }
 
-  function seleccionarMes(tipo) {
-    const mes = prompt("Escribe el mes a imprimir (formato MM, por ejemplo 01 para enero):");
-    if (!mes || mes.length !== 2) return;
-
-    const filtrados = registros.filter(r => r.fecha.slice(5, 7) === mes);
-    if (tipo === 'pdf') exportarPDF(filtrados);
-    else exportarExcel(filtrados);
-  }
-
-  function exportarPDF(data) {
-    const logoSrc = localStorage.getItem("logo") || document.getElementById("logo").src;
-    const ventana = window.open('', '', 'width=800,height=600');
-    ventana.document.write(`<html><head><title>Informe ADORACIÓN VIVA</title>`);
-    ventana.document.write(`<style>
-      body { font-family: Arial; padding: 20px; }
-      h1 { text-align: center; color: #003566; margin-top: 10px; }
-      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-      th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-      th { background: #003566; color: gold; }
-      img.logo { max-height: 100px; display: block; margin: auto; }
-    </style></head><body>`);
-    ventana.document.write(`<img src="${logoSrc}" class="logo" />`);
-    ventana.document.write(`<h1>Informe ADORACIÓN VIVA</h1>`);
-    ventana.document.write(`<table><thead><tr>
-      <th>#</th><th>Código</th><th>Nombre</th><th>Edad</th><th>Fecha</th><th>Cantidad</th>
-    </tr></thead><tbody>`);
-
-    data.forEach((r, i) => {
-      ventana.document.write(`<tr>
-        <td>${i + 1}</td><td>${r.codigo}</td><td>${r.nombre}</td><td>${r.edad}</td><td>${r.fecha}</td><td>${r.cantidad}</td>
-      </tr>`);
+    const filtered = registros.filter(r => r.fecha >= desde && r.fecha <= hasta);
+    let contenido = `INFORME ADORACIÓN VIVA\n\n`;
+    contenido += `Desde: ${desde} - Hasta: ${hasta}\n\n`;
+    filtered.forEach((r, i) => {
+      contenido += `${i + 1}. ${r.nombre} | ${r.codigo} | ${r.edad} años | ${r.fecha} | ${r.cantidad}\n`;
     });
 
-    ventana.document.write(`</tbody></table></body></html>`);
-    ventana.document.close();
-    ventana.print();
+    const win = window.open("", "", "width=800,height=600");
+    win.document.write(`<pre>${contenido}</pre>`);
+    win.print();
+    win.close();
   }
 
-  function exportarExcel(data) {
-    const ws = XLSX.utils.json_to_sheet(data.map((r, i) => ({
-      "#": i + 1,
-      "Código": r.codigo,
-      "Nombre": r.nombre,
-      "Edad": r.edad,
-      "Fecha": r.fecha,
-      "Cantidad": r.cantidad
-    })));
+  function exportarExcel() {
+    const desde = document.getElementById("desde").value;
+    const hasta = document.getElementById("hasta").value;
+    if (!desde || !hasta) {
+      alert("Seleccione un rango de fechas.");
+      return;
+    }
+
+    const filtered = registros.filter(r => r.fecha >= desde && r.fecha <= hasta);
+    const ws = XLSX.utils.json_to_sheet(filtered);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Diezmos");
-    XLSX.writeFile(wb, "Informe_Diezmos.xlsx");
+    XLSX.writeFile(wb, `Diezmos_${desde}_a_${hasta}.xlsx`);
   }
 
-  function cambiarLogo() {
-    const input = document.getElementById("logoInput");
-    input.click();
-    input.onchange = function () {
-      const file = input.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          document.getElementById("logo").src = e.target.result;
-          localStorage.setItem("logo", e.target.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-  }
-
-  window.onload = function () {
-    const savedLogo = localStorage.getItem("logo");
-    if (savedLogo) {
-      document.getElementById("logo").src = savedLogo;
-    }
-    mostrarTabla();
-  };
+  window.onload = mostrarTabla;
 </script>
 
 </body>
