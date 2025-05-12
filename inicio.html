@@ -36,14 +36,15 @@
       margin: 0 auto 10px;
       cursor: pointer;
     }
-    .sidebar a {
+    .sidebar a, .sidebar .user-info, .sidebar .logout {
       display: block;
       padding: 15px 30px;
       color: #f7c948;
       text-decoration: none;
     }
-    .sidebar a:hover {
+    .sidebar a:hover, .sidebar .logout:hover {
       background-color: #1f214d;
+      cursor: pointer;
     }
     .content {
       margin-left: 200px;
@@ -93,7 +94,9 @@
 
   <div class="sidebar" id="sidebar">
     <img id="logo" src="https://via.placeholder.com/100" alt="Logo" onclick="cambiarLogo()" />
+    <div class="user-info" id="userInfo"></div>
     <div id="menuLinks"></div>
+    <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
   </div>
 
   <div class="content">
@@ -105,7 +108,15 @@
   </div>
 
   <script>
-    // CONFIGURACIÓN FIREBASE
+    // Protección de acceso
+    const usuarioActivo = localStorage.getItem('usuarioActivo');
+    const rolActivo = localStorage.getItem('rolActivo');
+
+    if (!usuarioActivo || !rolActivo) {
+      window.location.href = "index.html";
+    }
+
+    // Firebase
     const firebaseConfig = {
       apiKey: "TU_API_KEY",
       authDomain: "TU_AUTH_DOMAIN",
@@ -121,10 +132,21 @@
       document.getElementById('sidebar').classList.toggle('hide');
     }
 
+    function cerrarSesion() {
+      localStorage.removeItem("usuarioActivo");
+      localStorage.removeItem("rolActivo");
+      window.location.href = "index.html";
+    }
+
     function actualizarMenu() {
       const menuLinks = document.getElementById('menuLinks');
+      const userInfo = document.getElementById('userInfo');
       menuLinks.innerHTML = '';
-      const rol = localStorage.getItem('rolActivo') || 'Administrador';
+      const rol = rolActivo;
+      const usuario = usuarioActivo;
+
+      userInfo.textContent = `${usuario} - ${rol}`;
+
       const enlaces = [];
 
       if (rol === "Administrador") {
@@ -160,7 +182,7 @@
 
     function cambiarLogo() {
       const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
-      if (clave !== "admin123") {
+      if (!clave || clave.trim().toLowerCase() !== "adoración viva") {
         alert("Acceso denegado.");
         return;
       }
@@ -192,7 +214,6 @@
       }
     });
 
-    // Cargar datos de ejemplo si no existen
     if (!localStorage.getItem('miembros')) {
       const miembros = [
         { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
@@ -208,9 +229,7 @@
 
     const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
 
-    const conteoSociedad = {
-      Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0
-    };
+    const conteoSociedad = { Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0 };
     miembros.forEach(m => {
       if (conteoSociedad[m.sociedad] !== undefined) {
         conteoSociedad[m.sociedad]++;
