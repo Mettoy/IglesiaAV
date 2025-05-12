@@ -6,6 +6,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
   <style>
     body {
       margin: 0;
@@ -127,6 +128,7 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const storage = firebase.storage();
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('hide');
@@ -193,14 +195,17 @@
       input.onchange = function () {
         const file = this.files[0];
         if (file && file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const logoBase64 = reader.result;
-            document.getElementById('logo').src = logoBase64;
-            localStorage.setItem('logo', logoBase64);
-            db.collection("config").doc("logo").set({ logo: logoBase64 });
-          };
-          reader.readAsDataURL(file);
+          const storageRef = storage.ref();
+          const logoRef = storageRef.child('logos/logo.png');
+          
+          logoRef.put(file).then(() => {
+            logoRef.getDownloadURL().then((url) => {
+              document.getElementById('logo').src = url;
+              db.collection("config").doc("logo").set({ logo: url });
+            });
+          }).catch(error => {
+            alert("Error al subir el archivo: " + error.message);
+          });
         }
       };
       input.click();
@@ -214,6 +219,7 @@
       }
     });
 
+    // Función para crear gráficos (estadísticas)
     if (!localStorage.getItem('miembros')) {
       const miembros = [
         { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
