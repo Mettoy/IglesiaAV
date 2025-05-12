@@ -102,11 +102,9 @@
 
   <div class="sidebar" id="sidebar">
     <img id="logo" src="https://via.placeholder.com/100" alt="Logo" onclick="cambiarLogo()">
-    <a href="inicio.html">Inicio</a>
-    <a href="miembros.html">Miembros</a>
-    <a href="diseño.html">Diezmos</a>
-    <a href="asistencia.html">Asistencia</a>
-    <a href="acceso.html">Añadir acceso</a>
+    <div id="menuLinks">
+      <!-- Enlaces del menú se agregarán aquí -->
+    </div>
   </div>
 
   <div class="content">
@@ -118,6 +116,80 @@
   </div>
 
   <script>
+    // Función para obtener el rol del usuario actual
+    const rolUsuario = localStorage.getItem('rolUsuarioActual');
+
+    // Función que ajusta el menú según el rol
+    function actualizarMenu() {
+      const menuLinks = document.getElementById('menuLinks');
+      menuLinks.innerHTML = ''; // Limpiar el menú actual
+
+      // Menú común para todos
+      const inicio = document.createElement('a');
+      inicio.href = "inicio.html";
+      inicio.textContent = "Inicio";
+      menuLinks.appendChild(inicio);
+
+      // Dependiendo del rol, agregar las opciones del menú
+      if (rolUsuario === 'Administrador') {
+        const diezmo = document.createElement('a');
+        diezmo.href = "diezmo.html";
+        diezmo.textContent = "Diezmo";
+        menuLinks.appendChild(diezmo);
+
+        const ofrendas = document.createElement('a');
+        ofrendas.href = "ofrendas.html";
+        ofrendas.textContent = "Ofrendas";
+        menuLinks.appendChild(ofrendas);
+
+        const crearAcceso = document.createElement('a');
+        crearAcceso.href = "acceso.html";
+        crearAcceso.textContent = "Crear Acceso";
+        menuLinks.appendChild(crearAcceso);
+
+        const discipulado = document.createElement('a');
+        discipulado.href = "discipulado.html";
+        discipulado.textContent = "Discipulado";
+        menuLinks.appendChild(discipulado);
+
+      } else if (rolUsuario === 'Discipulador') {
+        const discipulado = document.createElement('a');
+        discipulado.href = "discipulado.html";
+        discipulado.textContent = "Discipulado";
+        menuLinks.appendChild(discipulado);
+
+      } else if (rolUsuario === 'Tesorero') {
+        const diezmo = document.createElement('a');
+        diezmo.href = "diezmo.html";
+        diezmo.textContent = "Diezmo";
+        menuLinks.appendChild(diezmo);
+
+        const ofrendas = document.createElement('a');
+        ofrendas.href = "ofrendas.html";
+        ofrendas.textContent = "Ofrendas";
+        menuLinks.appendChild(ofrendas);
+
+      } else if (rolUsuario === 'Preadministrador') {
+        const inicio = document.createElement('a');
+        inicio.href = "inicio.html";
+        inicio.textContent = "Inicio";
+        menuLinks.appendChild(inicio);
+
+        const crearAcceso = document.createElement('a');
+        crearAcceso.href = "acceso.html";
+        crearAcceso.textContent = "Crear Acceso";
+        menuLinks.appendChild(crearAcceso);
+
+        const discipulado = document.createElement('a');
+        discipulado.href = "discipulado.html";
+        discipulado.textContent = "Discipulado";
+        menuLinks.appendChild(discipulado);
+      }
+    }
+
+    // Llamar la función para actualizar el menú cuando se cargue la página
+    actualizarMenu();
+
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('hide');
     }
