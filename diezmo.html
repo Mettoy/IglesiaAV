@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>Diezmos - Adoración Viva</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -12,7 +15,6 @@
       color: gold;
       display: flex;
     }
-
     .sidebar {
       width: 250px;
       background: #001d3d;
@@ -23,30 +25,26 @@
       overflow: auto;
       padding: 1rem;
     }
-
     .sidebar img {
       width: 100%;
       max-height: 150px;
       object-fit: contain;
+      cursor: pointer;
       margin-bottom: 1rem;
     }
-
     .sidebar h2 {
       font-size: 1rem;
       margin: 1rem 0;
     }
-
     .content {
       margin-left: 260px;
       padding: 2rem;
       width: 100%;
     }
-
     h1 {
       color: gold;
       text-align: center;
     }
-
     .form-container {
       background: #1b263b;
       padding: 1rem;
@@ -54,7 +52,6 @@
       margin-bottom: 2rem;
       display: none;
     }
-
     .form-container label,
     .form-container input,
     .form-container select {
@@ -67,7 +64,6 @@
       border: 1px solid #ccc;
       background: #3a506b;
     }
-
     button {
       padding: 10px 20px;
       background: #003566;
@@ -77,11 +73,9 @@
       cursor: pointer;
       margin-right: 10px;
     }
-
     button:hover {
       background: #001d3d;
     }
-
     .top-actions {
       display: flex;
       justify-content: space-between;
@@ -90,31 +84,26 @@
       flex-wrap: wrap;
       gap: 10px;
     }
-
     .date-range {
       display: flex;
       gap: 10px;
       align-items: center;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       background: white;
       color: black;
     }
-
     th, td {
       border: 1px solid #ddd;
       padding: 0.5rem;
       text-align: center;
     }
-
     th {
       background: #003566;
       color: gold;
     }
-
     .datos-miembro {
       margin-top: 1rem;
       background: #001d3d;
@@ -122,13 +111,11 @@
       border-radius: 5px;
       color: white;
     }
-
     .datos-miembro img {
       width: 100px;
       border-radius: 50%;
       margin-bottom: 1rem;
     }
-
     .search-results {
       background: #3a506b;
       padding: 5px;
@@ -136,14 +123,12 @@
       max-height: 150px;
       overflow-y: auto;
     }
-
     .search-results div {
       padding: 5px;
       background: #4a6378;
       margin-bottom: 5px;
       cursor: pointer;
     }
-
     .search-results div:hover {
       background: #2e4057;
     }
@@ -152,7 +137,7 @@
 <body>
 
 <div class="sidebar">
-  <img id="logo" src="logo.png" alt="Logo" />
+  <img id="logo" src="logo.png" alt="Logo" onclick="cambiarLogo()" />
   <h2>Menú</h2>
   <p>Inicio</p>
   <p>Miembros</p>
@@ -217,38 +202,51 @@
 </div>
 
 <script>
-  // Simular rol (solo para pruebas, reemplaza por tu lógica de login real)
-  if (!localStorage.getItem("rolUsuario")) {
-    localStorage.setItem("rolUsuario", "Administrador"); // Cambia a "Usuario" para probar restricción
-  }
-
   let miembros = JSON.parse(localStorage.getItem("miembros")) || [];
-  let registros = JSON.parse(localStorage.getItem('registrosDiezmo')) || [];
+  let registros = JSON.parse(localStorage.getItem("registrosDiezmo")) || [];
 
   function cargarMiembros() {
     const select = document.getElementById("miembro");
-    select.innerHTML = '<option value="">Seleccione un miembro</option>';
     miembros.forEach(m => {
       const opt = document.createElement("option");
       opt.value = m.codigo;
       opt.textContent = `${m.nombre} (${m.codigo})`;
       select.appendChild(opt);
     });
+
+    const logo = localStorage.getItem("logoAdoracionViva");
+    if (logo) document.getElementById("logo").src = logo;
+  }
+
+  function cambiarLogo() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result;
+        localStorage.setItem("logoAdoracionViva", base64);
+        document.getElementById("logo").src = base64;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    };
+    input.click();
   }
 
   function buscarMiembro(tipo) {
     const filtro = document.getElementById(`buscar${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).value.toLowerCase();
     const resultados = document.getElementById(`resultados${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
-    resultados.innerHTML = '';
+    resultados.innerHTML = "";
 
     miembros.forEach(m => {
       if (m[tipo].toLowerCase().includes(filtro)) {
         const div = document.createElement("div");
         div.textContent = `${m.nombre} (${m.codigo})`;
-        div.onclick = function() {
+        div.onclick = () => {
           document.getElementById("miembro").value = m.codigo;
           mostrarDatosMiembro(m);
-          resultados.innerHTML = '';
+          resultados.innerHTML = "";
         };
         resultados.appendChild(div);
       }
@@ -281,15 +279,8 @@
       return;
     }
 
-    registros.push({
-      codigo: miembro.codigo,
-      nombre: miembro.nombre,
-      edad: miembro.edad,
-      fecha,
-      cantidad
-    });
-
-    localStorage.setItem('registrosDiezmo', JSON.stringify(registros));
+    registros.push({ codigo: miembro.codigo, nombre: miembro.nombre, edad: miembro.edad, fecha, cantidad });
+    localStorage.setItem("registrosDiezmo", JSON.stringify(registros));
     mostrarTabla();
     document.getElementById("formulario").reset();
     document.getElementById("datosMiembro").innerHTML = "";
@@ -313,59 +304,45 @@
 
   function toggleFormulario() {
     const formulario = document.getElementById("formulario");
-    formulario.style.display = (formulario.style.display === "none" || formulario.style.display === "") ? "block" : "none";
+    formulario.style.display = formulario.style.display === "block" ? "none" : "block";
   }
 
-  function exportarPDF() {
-    const desde = document.getElementById("desde").value;
-    const hasta = document.getElementById("hasta").value;
-    alert(`Generar PDF desde ${desde} hasta ${hasta}`);
+  async function exportarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const logo = localStorage.getItem("logoAdoracionViva");
+
+    if (logo) {
+      const img = new Image();
+      img.src = logo;
+      await new Promise(resolve => img.onload = resolve);
+      doc.addImage(img, "PNG", 10, 10, 30, 30);
+    }
+
+    doc.setFontSize(16);
+    doc.text("Informe ADORACIÓN VIVA", 50, 20);
+    doc.setFontSize(12);
+    doc.text("Registros de Diezmos", 50, 28);
+
+    doc.autoTable({
+      head: [["#", "Código", "Nombre", "Edad", "Fecha", "Cantidad"]],
+      body: registros.map((r, i) => [i + 1, r.codigo, r.nombre, r.edad, r.fecha, r.cantidad]),
+      startY: 40,
+    });
+
+    doc.save("informe_diezmos.pdf");
   }
 
   function exportarExcel() {
-    const desde = document.getElementById("desde").value;
-    const hasta = document.getElementById("hasta").value;
-    alert(`Generar Excel desde ${desde} hasta ${hasta}`);
+    const wb = XLSX.utils.book_new();
+    const ws_data = [["#", "Código", "Nombre", "Edad", "Fecha", "Cantidad"]];
+    registros.forEach((r, i) => ws_data.push([i + 1, r.codigo, r.nombre, r.edad, r.fecha, r.cantidad]));
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, "Diezmos");
+    XLSX.writeFile(wb, "informe_diezmos.xlsx");
   }
 
-  function cambiarLogo() {
-    const rol = localStorage.getItem("rolUsuario");
-    if (rol !== "Administrador") {
-      alert("Solo el Administrador puede cambiar el logo.");
-      return;
-    }
-
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = () => {
-      const file = input.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const logoData = reader.result;
-        const logo = document.getElementById('logo');
-        logo.src = logoData;
-        localStorage.setItem('logoAdoracionViva', logoData);
-      };
-      reader.readAsDataURL(file);
-    };
-    input.click();
-  }
-
-  window.onload = function () {
-    const logoGuardado = localStorage.getItem('logoAdoracionViva');
-    const logo = document.getElementById('logo');
-    if (logoGuardado) {
-      logo.src = logoGuardado;
-    }
-
-    if (localStorage.getItem("rolUsuario") === "Administrador") {
-      logo.onclick = cambiarLogo;
-      logo.style.cursor = "pointer";
-    }
-
+  window.onload = () => {
     cargarMiembros();
     mostrarTabla();
   };
