@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Panel de Estadísticas</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -12,7 +12,6 @@
       color: #f7c948;
       display: flex;
     }
-
     .sidebar {
       width: 200px;
       background-color: #14153a;
@@ -24,11 +23,9 @@
       top: 0;
       transition: transform 0.3s ease;
     }
-
     .sidebar.hide {
       transform: translateX(-100%);
     }
-
     .sidebar img {
       width: 100px;
       height: 100px;
@@ -37,24 +34,20 @@
       margin: 0 auto 10px;
       cursor: pointer;
     }
-
     .sidebar a {
       display: block;
       padding: 15px 30px;
       color: #f7c948;
       text-decoration: none;
     }
-
     .sidebar a:hover {
       background-color: #1f214d;
     }
-
     .content {
       margin-left: 200px;
       padding: 20px;
       flex-grow: 1;
     }
-
     .menu-toggle {
       position: absolute;
       top: 15px;
@@ -67,7 +60,6 @@
       border-radius: 5px;
       z-index: 10;
     }
-
     .charts {
       display: flex;
       flex-wrap: wrap;
@@ -75,7 +67,6 @@
       justify-content: center;
       margin-top: 60px;
     }
-
     canvas {
       background-color: #fff;
       border-radius: 8px;
@@ -83,12 +74,10 @@
       width: 150px !important;
       height: 150px !important;
     }
-
     @media (max-width: 768px) {
       .content {
         margin-left: 0;
       }
-
       .sidebar {
         position: absolute;
         z-index: 5;
@@ -101,7 +90,7 @@
   <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
   <div class="sidebar" id="sidebar">
-    <img id="logo" src="https://via.placeholder.com/100" alt="Logo" onclick="cambiarLogo()">
+    <img id="logo" src="https://via.placeholder.com/100" alt="Logo" onclick="cambiarLogo()" />
     <div id="menuLinks"></div>
   </div>
 
@@ -114,21 +103,13 @@
   </div>
 
   <script>
+    // Asignar rol automáticamente si el usuario es ADMON
+    const usuarioActual = localStorage.getItem('usuarioActual');
+    if (usuarioActual === 'ADMON') {
+      localStorage.setItem('rolUsuarioActual', 'Administrador');
+    }
+
     const rolUsuario = localStorage.getItem('rolUsuarioActual');
-
-    const accesosPorRol = {
-      Administrador: ["diezmo", "ofrendas", "acceso", "discipulado"],
-      Discipulador: ["discipulado"],
-      Tesorero: ["diezmo", "ofrendas"],
-      Preadministrador: ["acceso", "discipulado"]
-    };
-
-    const enlaces = {
-      diezmo: { href: "diezmo.html", texto: "Diezmo" },
-      ofrendas: { href: "ofrendas.html", texto: "Ofrendas" },
-      acceso: { href: "acceso.html", texto: "Crear Acceso" },
-      discipulado: { href: "discipulado.html", texto: "Discipulado" }
-    };
 
     function actualizarMenu() {
       const menuLinks = document.getElementById('menuLinks');
@@ -139,14 +120,52 @@
       inicio.textContent = "Inicio";
       menuLinks.appendChild(inicio);
 
-      const permisos = accesosPorRol[rolUsuario] || [];
-      permisos.forEach(clave => {
-        const { href, texto } = enlaces[clave];
-        const a = document.createElement('a');
-        a.href = href;
-        a.textContent = texto;
-        menuLinks.appendChild(a);
-      });
+      if (rolUsuario === 'Administrador') {
+        const diezmo = document.createElement('a');
+        diezmo.href = "diezmo.html";
+        diezmo.textContent = "Diezmo";
+        menuLinks.appendChild(diezmo);
+
+        const ofrendas = document.createElement('a');
+        ofrendas.href = "ofrendas.html";
+        ofrendas.textContent = "Ofrendas";
+        menuLinks.appendChild(ofrendas);
+
+        const crearAcceso = document.createElement('a');
+        crearAcceso.href = "acceso.html";
+        crearAcceso.textContent = "Crear Acceso";
+        menuLinks.appendChild(crearAcceso);
+
+        const discipulado = document.createElement('a');
+        discipulado.href = "discipulado.html";
+        discipulado.textContent = "Discipulado";
+        menuLinks.appendChild(discipulado);
+      } else if (rolUsuario === 'Discipulador') {
+        const discipulado = document.createElement('a');
+        discipulado.href = "discipulado.html";
+        discipulado.textContent = "Discipulado";
+        menuLinks.appendChild(discipulado);
+      } else if (rolUsuario === 'Tesorero') {
+        const diezmo = document.createElement('a');
+        diezmo.href = "diezmo.html";
+        diezmo.textContent = "Diezmo";
+        menuLinks.appendChild(diezmo);
+
+        const ofrendas = document.createElement('a');
+        ofrendas.href = "ofrendas.html";
+        ofrendas.textContent = "Ofrendas";
+        menuLinks.appendChild(ofrendas);
+      } else if (rolUsuario === 'Preadministrador') {
+        const crearAcceso = document.createElement('a');
+        crearAcceso.href = "acceso.html";
+        crearAcceso.textContent = "Crear Acceso";
+        menuLinks.appendChild(crearAcceso);
+
+        const discipulado = document.createElement('a');
+        discipulado.href = "discipulado.html";
+        discipulado.textContent = "Discipulado";
+        menuLinks.appendChild(discipulado);
+      }
     }
 
     actualizarMenu();
@@ -155,7 +174,7 @@
       document.getElementById('sidebar').classList.toggle('hide');
     }
 
-    // Simular datos si no existen
+    // Datos de ejemplo
     if (!localStorage.getItem('miembros')) {
       const miembros = [
         { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
@@ -174,7 +193,6 @@
     const conteoSociedad = {
       Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0
     };
-
     miembros.forEach(m => {
       if (conteoSociedad[m.sociedad] !== undefined) {
         conteoSociedad[m.sociedad]++;
@@ -200,7 +218,6 @@
     });
 
     const miembrosOrdenados = miembros.slice().sort((a, b) => a.nombre.localeCompare(b.nombre));
-
     new Chart(document.getElementById('asistenciaChart'), {
       type: 'bar',
       data: {
@@ -218,11 +235,7 @@
             beginAtZero: true
           },
           x: {
-            ticks: {
-              color: '#f7c948',
-              maxRotation: 60,
-              minRotation: 45
-            }
+            ticks: { color: '#f7c948' }
           }
         },
         plugins: {
