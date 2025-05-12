@@ -2,308 +2,346 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <title>Diezmos - Adoración Viva</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Registro de Diezmos - Adoración Viva</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #0d1b2a;
+      background: #0d1b2a;
       color: gold;
-    }
-    header {
       display: flex;
-      align-items: center;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
       background: #001d3d;
-      padding: 10px;
-      height: 60px;
-      position: fixed;
-      top: 0;
-      left: 200px;
-      right: 0;
-      z-index: 1000;
-    }
-    header img {
-      height: 40px;
-      margin-right: 10px;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.2rem;
-    }
-    #sidebar {
-      width: 200px;
-      background-color: #003566;
       height: 100vh;
       position: fixed;
-      top: 0;
       left: 0;
-      padding-top: 1rem;
-      color: gold;
+      top: 0;
       overflow: auto;
+      padding: 1rem;
     }
-    #sidebar img {
-      display: block;
-      margin: 0 auto 10px;
-      max-width: 100px;
+
+    .sidebar img {
+      width: 100%;
+      max-height: 150px;
+      object-fit: contain;
+      cursor: pointer;
+      margin-bottom: 1rem;
     }
-    #sidebar button {
-      background: none;
-      border: none;
+
+    .sidebar h2 {
+      font-size: 1rem;
+      margin: 1rem 0;
+    }
+
+    .content {
+      margin-left: 260px;
+      padding: 2rem;
+      width: 100%;
+    }
+
+    h1 {
       color: gold;
-      padding: 10px;
-      text-align: left;
-      width: 100%;
-      cursor: pointer;
+      text-align: center;
     }
-    .main {
-      margin-left: 200px;
-      padding: 80px 20px 20px;
-    }
-    .form-toggle {
-      background: green;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      cursor: pointer;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
+
     .form-container {
-      display: none;
       background: #1b263b;
-      padding: 20px;
-      border-radius: 8px;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      display: none;
     }
-    label {
-      display: block;
-      margin: 10px 0 5px;
+
+    .form-container label,
+    .form-container input,
+    .form-container select {
       color: white;
-    }
-    select, input {
+      display: block;
       width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 0.75rem;
+      padding: 8px;
       border-radius: 5px;
-      border: none;
-      background: #e0e0e0;
-      color: black;
+      border: 1px solid #ccc;
+      background: #3a506b;
     }
-    button.save-btn {
+
+    .form-container input[type="text"]::placeholder {
+      color: #ddd;
+    }
+
+    button {
+      padding: 10px 20px;
       background: #003566;
       color: gold;
       border: none;
-      padding: 10px 20px;
-      font-weight: bold;
+      border-radius: 5px;
       cursor: pointer;
-    }
-    .tools {
-      margin: 20px 0 10px;
-    }
-    .tools button {
       margin-right: 10px;
-      background: #ffc300;
-      color: black;
-      border: none;
-      padding: 10px;
-      cursor: pointer;
-      font-weight: bold;
     }
+
+    button:hover {
+      background: #001d3d;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
-      background: #1b263b;
-      color: white;
+      background: white;
+      color: black;
     }
+
     th, td {
-      border: 1px solid gold;
-      padding: 10px;
+      border: 1px solid #ddd;
+      padding: 0.5rem;
       text-align: center;
     }
-    .search-bar {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 5px;
+
+    th {
+      background: #003566;
+      color: gold;
     }
-    img.foto {
-      width: 50px;
-      height: 50px;
+
+    .search-bar {
+      margin-bottom: 0.5rem;
+      padding: 5px;
+      width: 100%;
+    }
+
+    .datos-miembro {
+      margin-top: 1rem;
+      background: #001d3d;
+      padding: 1rem;
+      border-radius: 5px;
+      color: white;
+    }
+
+    .datos-miembro img {
+      width: 100px;
       border-radius: 50%;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
 <body>
-  <div id="sidebar">
-    <img id="logo" src="logo.png" alt="Logo" />
-    <input type="file" id="logoInput" style="display:none" />
-    <button onclick="cambiarLogo()">Cambiar Logo</button>
-    <script>
-      const rol = 'ADMON';
-      function cambiarLogo() {
-        if (rol !== 'ADMON') return alert('Solo el administrador puede cambiar el logo');
-        document.getElementById('logoInput').click();
-      }
-      document.getElementById('logoInput').addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            document.getElementById('logo').src = reader.result;
-            localStorage.setItem('logo', reader.result);
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-      window.onload = () => {
-        const savedLogo = localStorage.getItem('logo');
-        if (savedLogo) document.getElementById('logo').src = savedLogo;
-      };
-    </script>
+
+<div class="sidebar">
+  <input type="file" id="logoInput" style="display: none;" accept="image/*" />
+  <img id="logo" src="logo.png" alt="Logo" onclick="cambiarLogo()" />
+  <h2>Menú</h2>
+  <p>Inicio</p>
+  <p>Miembros</p>
+  <p>Diezmos</p>
+</div>
+
+<div class="content">
+  <h1>Registro de Diezmos</h1>
+
+  <div class="top-actions">
+    <button onclick="toggleFormulario()" style="background: green;">Añadir Diezmo</button>
+    <div>
+      <button onclick="exportarPDF()">Imprimir Hoja PDF</button>
+      <button onclick="exportarExcel()">Imprimir Hoja Excel</button>
+    </div>
   </div>
 
-  <header>
-    <img id="logoHeader" src="logo.png" alt="Logo" />
-    <h1>Informe ADORACIÓN VIVA</h1>
-  </header>
+  <div class="form-container" id="formulario">
+    <label for="buscar">Buscar Miembro por Código</label>
+    <input type="text" id="buscar" oninput="buscarMiembro()" placeholder="Ingrese código..." />
 
-  <div class="main">
-    <button class="form-toggle" onclick="toggleFormulario()">Añadir Diezmo</button>
+    <label for="miembro">Seleccionar Miembro</label>
+    <select id="miembro" onchange="mostrarDatosMiembro()">
+      <option value="">Seleccione un miembro</option>
+    </select>
 
-    <div class="form-container" id="formulario">
-      <label>Buscar Miembro</label>
-      <input type="text" oninput="filtrarMiembros(this.value)">
-      
-      <label>Seleccionar Miembro</label>
-      <select id="miembro" onchange="mostrarDatosMiembro()">
-        <option value="">Seleccione un miembro</option>
-      </select>
+    <div class="datos-miembro" id="datosMiembro"></div>
 
-      <div id="datosMiembro"></div>
+    <label for="fecha">Fecha</label>
+    <input type="date" id="fecha" />
 
-      <label>Fecha</label>
-      <input type="date" id="fecha">
+    <label for="cantidad">Cantidad (C$ o $)</label>
+    <input type="text" id="cantidad" placeholder="Ej: C$500 o $20" />
 
-      <label>Cantidad (C$ o $)</label>
-      <input type="text" id="cantidad" placeholder="Ej. C$100 o $20">
-
-      <button class="save-btn" onclick="guardarRegistro()">Guardar</button>
-    </div>
-
-    <div class="tools">
-      <button onclick="generarPDF()">Imprimir Hoja PDF</button>
-      <button onclick="generarExcel()">Exportar a Excel</button>
-    </div>
-
-    <table id="tabla">
-      <thead>
-        <tr>
-          <th>#<br><input class="search-bar" oninput="filtrarTabla(0, this.value)" /></th>
-          <th>Foto<br><input class="search-bar" disabled /></th>
-          <th>Nombre<br><input class="search-bar" oninput="filtrarTabla(2, this.value)" /></th>
-          <th>Código<br><input class="search-bar" oninput="filtrarTabla(3, this.value)" /></th>
-          <th>Edad<br><input class="search-bar" oninput="filtrarTabla(4, this.value)" /></th>
-          <th>Fecha<br><input class="search-bar" oninput="filtrarTabla(5, this.value)" /></th>
-          <th>Cantidad<br><input class="search-bar" oninput="filtrarTabla(6, this.value)" /></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <button onclick="guardarRegistro()">Guardar</button>
   </div>
 
-  <script>
-    const miembros = [
-      { nombre: "Juan Pérez", codigo: "123", edad: 30, foto: "https://via.placeholder.com/50" },
-      { nombre: "Ana Gómez", codigo: "456", edad: 25, foto: "https://via.placeholder.com/50" }
-    ];
+  <div id="filtros"></div>
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Edad</th>
+        <th>Fecha</th>
+        <th>Cantidad</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
-    const registros = [];
+<script>
+  let miembros = [
+    { nombre: "Juan Pérez", codigo: "123", edad: 30, foto: "https://via.placeholder.com/100" },
+    { nombre: "Ana Gómez", codigo: "456", edad: 25, foto: "https://via.placeholder.com/100" }
+  ];
+  let registros = JSON.parse(localStorage.getItem('registrosDiezmo')) || [];
 
+  function toggleFormulario() {
+    const form = document.getElementById("formulario");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+  }
+
+  function cargarMiembros() {
+    const select = document.getElementById("miembro");
     miembros.forEach(m => {
       const opt = document.createElement("option");
       opt.value = m.codigo;
       opt.textContent = `${m.nombre} (${m.codigo})`;
-      document.getElementById("miembro").appendChild(opt);
+      select.appendChild(opt);
+    });
+  }
+
+  function buscarMiembro() {
+    const filtro = document.getElementById("buscar").value.toLowerCase();
+    const select = document.getElementById("miembro");
+    for (let opt of select.options) {
+      opt.style.display = opt.textContent.toLowerCase().includes(filtro) ? "block" : "none";
+    }
+  }
+
+  function mostrarDatosMiembro() {
+    const codigo = document.getElementById("miembro").value;
+    const miembro = miembros.find(m => m.codigo === codigo);
+    if (miembro) {
+      document.getElementById("datosMiembro").innerHTML = `
+        <img src="${miembro.foto}" alt="Foto del miembro" />
+        <p><strong>Nombre:</strong> ${miembro.nombre}</p>
+        <p><strong>Código:</strong> ${miembro.codigo}</p>
+        <p><strong>Edad:</strong> ${miembro.edad}</p>
+      `;
+    }
+  }
+
+  function guardarRegistro() {
+    const codigo = document.getElementById("miembro").value;
+    const miembro = miembros.find(m => m.codigo === codigo);
+    const fecha = document.getElementById("fecha").value;
+    const cantidad = document.getElementById("cantidad").value;
+
+    if (!miembro || !fecha || !cantidad) {
+      alert("Complete todos los campos.");
+      return;
+    }
+
+    registros.push({
+      codigo: miembro.codigo,
+      nombre: miembro.nombre,
+      edad: miembro.edad,
+      fecha,
+      cantidad
     });
 
-    function toggleFormulario() {
-      const f = document.getElementById("formulario");
-      f.style.display = f.style.display === "none" || !f.style.display ? "block" : "none";
-    }
+    localStorage.setItem('registrosDiezmo', JSON.stringify(registros));
+    mostrarTabla();
+    document.getElementById("formulario").reset();
+    document.getElementById("datosMiembro").innerHTML = "";
+  }
 
-    function filtrarMiembros(texto) {
-      const select = document.getElementById("miembro");
-      [...select.options].forEach(opt => {
-        if (opt.value === "") return;
-        opt.style.display = opt.textContent.toLowerCase().includes(texto.toLowerCase()) ? "block" : "none";
+  function mostrarTabla() {
+    const tbody = document.getElementById("tabla").querySelector("tbody");
+    tbody.innerHTML = "";
+    registros.forEach((r, i) => {
+      const row = `<tr>
+        <td>${i + 1}</td>
+        <td>${r.codigo}</td>
+        <td>${r.nombre}</td>
+        <td>${r.edad}</td>
+        <td>${r.fecha}</td>
+        <td>${r.cantidad}</td>
+      </tr>`;
+      tbody.innerHTML += row;
+    });
+  }
+
+  function exportarPDF() {
+    const ventana = window.open("", "", "width=800,height=600");
+    const grouped = {};
+
+    registros.forEach(r => {
+      const mes = new Date(r.fecha).toLocaleString('default', { month: 'long', year: 'numeric' });
+      if (!grouped[mes]) grouped[mes] = [];
+      grouped[mes].push(r);
+    });
+
+    let contenido = `<h1 style="text-align:center;">Informe Diezmos</h1>`;
+    for (let mes in grouped) {
+      contenido += `<h2>${mes}</h2>`;
+      contenido += `<table border="1" width="100%" style="border-collapse: collapse;">
+        <tr><th>#</th><th>Código</th><th>Nombre</th><th>Edad</th><th>Fecha</th><th>Cantidad</th></tr>`;
+      grouped[mes].forEach((r, i) => {
+        contenido += `<tr>
+          <td>${i + 1}</td><td>${r.codigo}</td><td>${r.nombre}</td>
+          <td>${r.edad}</td><td>${r.fecha}</td><td>${r.cantidad}</td>
+        </tr>`;
       });
+      contenido += `</table><br>`;
     }
+    ventana.document.write(contenido);
+    ventana.print();
+  }
 
-    function mostrarDatosMiembro() {
-      const codigo = document.getElementById("miembro").value;
-      const miembro = miembros.find(m => m.codigo === codigo);
-      const div = document.getElementById("datosMiembro");
-      if (miembro) {
-        div.innerHTML = `
-          <img class="foto" src="${miembro.foto}" />
-          <p><strong>Nombre:</strong> ${miembro.nombre}</p>
-          <p><strong>Código:</strong> ${miembro.codigo}</p>
-          <p><strong>Edad:</strong> ${miembro.edad}</p>
-        `;
-      } else {
-        div.innerHTML = "";
-      }
+  function exportarExcel() {
+    let csv = "Código,Nombre,Edad,Fecha,Cantidad\n";
+    registros.forEach(r => {
+      csv += `${r.codigo},${r.nombre},${r.edad},${r.fecha},${r.cantidad}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "informe_diezmos.csv";
+    a.click();
+  }
+
+  function cambiarLogo() {
+    const input = document.getElementById("logoInput");
+    input.click();
+  }
+
+  document.getElementById("logoInput").addEventListener("change", function () {
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        localStorage.setItem("logo", e.target.result);
+        document.getElementById("logo").src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
+  });
 
-    function guardarRegistro() {
-      const codigo = document.getElementById("miembro").value;
-      const miembro = miembros.find(m => m.codigo === codigo);
-      const fecha = document.getElementById("fecha").value;
-      const cantidad = document.getElementById("cantidad").value;
-      if (!miembro || !fecha || !cantidad) return alert("Completa todos los campos");
-
-      registros.push({ ...miembro, fecha, cantidad });
-      actualizarTabla();
+  window.onload = function () {
+    const logoGuardado = localStorage.getItem("logo");
+    if (logoGuardado) {
+      document.getElementById("logo").src = logoGuardado;
     }
+    cargarMiembros();
+    mostrarTabla();
+    toggleFormulario(); // lo despliega la primera vez
+  };
+</script>
 
-    function actualizarTabla() {
-      const tbody = document.querySelector("#tabla tbody");
-      tbody.innerHTML = "";
-      registros.forEach((r, i) => {
-        const fila = `
-          <tr>
-            <td>${i + 1}</td>
-            <td><img class="foto" src="${r.foto}" /></td>
-            <td>${r.nombre}</td>
-            <td>${r.codigo}</td>
-            <td>${r.edad}</td>
-            <td>${r.fecha}</td>
-            <td>${r.cantidad}</td>
-          </tr>`;
-        tbody.innerHTML += fila;
-      });
-    }
-
-    function filtrarTabla(col, val) {
-      const rows = document.querySelectorAll("#tabla tbody tr");
-      rows.forEach(row => {
-        const cell = row.children[col];
-        row.style.display = cell.textContent.toLowerCase().includes(val.toLowerCase()) ? "" : "none";
-      });
-    }
-
-    function generarPDF() {
-      alert("Aquí se genera un PDF con encabezado, logo y agrupado por mes.");
-      // Aquí puedes usar jsPDF o pdf-lib para crear el PDF con el logo y título
-    }
-
-    function generarExcel() {
-      alert("Aquí se genera un archivo Excel con los registros.");
-      // Aquí puedes usar SheetJS para exportar a Excel
-    }
-  </script>
 </body>
 </html>
