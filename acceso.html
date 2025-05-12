@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Accesos</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0b0c2a;
+      color: #f7c948;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 200px;
+      background-color: #14153a;
+      height: 100vh;
+      padding-top: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 10px 20px;
+      color: #f7c948;
+      text-decoration: none;
+    }
+
+    .sidebar a:hover {
+      background-color: #1f214d;
+    }
+
+    .content {
+      margin-left: 200px;
+      padding: 20px;
+      flex-grow: 1;
+    }
+
+    .form-container {
+      max-width: 400px;
+      background-color: #1f214d;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      color: #f7c948;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      width: 100%;
+      background-color: #f7c948;
+      color: #0b0c2a;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #e6b400;
+    }
+
+    .user-list {
+      margin-top: 30px;
+    }
+
+    .user-list div {
+      background: #2b2d52;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <a href="index.html">Inicio</a>
+    <a href="#">Miembros</a>
+    <a href="#">Diezmos</a>
+    <a href="#">Asistencia</a>
+    <a href="acceso.html">Añadir acceso</a>
+  </div>
+
+  <div class="content">
+    <h2>Gestión de Accesos</h2>
+    <div class="form-container">
+      <label for="nombre">Nombre</label>
+      <input type="text" id="nombre">
+
+      <label for="usuario">Usuario</label>
+      <input type="text" id="usuario">
+
+      <label for="clave">Contraseña</label>
+      <input type="password" id="clave">
+
+      <label for="rol">Rol</label>
+      <select id="rol">
+        <option value="admin">Administrador</option>
+        <option value="usuario">Usuario</option>
+      </select>
+
+      <button onclick="guardarAcceso()">Guardar Acceso</button>
+    </div>
+
+    <div class="user-list" id="listaAccesos">
+      <h3>Usuarios Registrados</h3>
+    </div>
+  </div>
+
+  <script>
+    function guardarAcceso() {
+      const nombre = document.getElementById('nombre').value.trim();
+      const usuario = document.getElementById('usuario').value.trim();
+      const clave = document.getElementById('clave').value;
+      const rol = document.getElementById('rol').value;
+
+      if (!nombre || !usuario || !clave) {
+        alert("Por favor, complete todos los campos.");
+        return;
+      }
+
+      const nuevoAcceso = { nombre, usuario, clave, rol };
+      const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
+
+      accesos.push(nuevoAcceso);
+      localStorage.setItem('accesos', JSON.stringify(accesos));
+      mostrarAccesos();
+      document.querySelector('.form-container').reset();
+    }
+
+    function mostrarAccesos() {
+      const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
+      const lista = document.getElementById('listaAccesos');
+      lista.innerHTML = "<h3>Usuarios Registrados</h3>";
+
+      accesos.forEach((a, i) => {
+        lista.innerHTML += `
+          <div>
+            <strong>${a.nombre}</strong> (${a.rol})<br>
+            Usuario: ${a.usuario}
+          </div>
+        `;
+      });
+    }
+
+    mostrarAccesos();
+  </script>
+</body>
+</html>
