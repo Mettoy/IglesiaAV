@@ -2,255 +2,112 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Panel de Estadísticas</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Inicio de Sesión</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #0b0c2a;
-      color: #f7c948;
+      background-color: #f3f4f6;
       display: flex;
-    }
-
-    .sidebar {
-      width: 200px;
-      background-color: #14153a;
-      height: 100vh;
-      padding-top: 30px;
-      box-shadow: 5px 0 5px rgba(0,0,0,0.3);
-      position: fixed;
-      left: 0;
-      top: 0;
-      transition: transform 0.3s ease;
-    }
-
-    .sidebar.hide {
-      transform: translateX(-100%);
-    }
-
-    .sidebar img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      display: block;
-      margin: 0 auto 10px;
-      cursor: pointer;
-    }
-
-    .sidebar a {
-      display: block;
-      padding: 15px 30px;
-      color: #f7c948;
-      text-decoration: none;
-    }
-
-    .sidebar a:hover {
-      background-color: #1f214d;
-    }
-
-    .content {
-      margin-left: 200px;
-      padding: 20px;
-      flex-grow: 1;
-    }
-
-    .menu-toggle {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      background-color: #f7c948;
-      color: #0b0c2a;
-      border: none;
-      padding: 8px 12px;
-      cursor: pointer;
-      border-radius: 5px;
-      z-index: 10;
-    }
-
-    .charts {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
       justify-content: center;
-      margin-top: 60px;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
     }
-
-    canvas {
-      background-color: #fff;
-      border-radius: 8px;
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 300px;
+    }
+    .login-box h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .login-box input[type="text"] {
+      width: 100%;
       padding: 10px;
-      width: 150px !important;
-      height: 150px !important;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
     }
-
-    @media (max-width: 768px) {
-      .content {
-        margin-left: 0;
-      }
-
-      .sidebar {
-        position: absolute;
-        z-index: 5;
-      }
+    .login-box button {
+      background-color: #002244; /* Azul oscuro */
+      color: gold; /* Dorado */
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .login-box img {
+      max-width: 100px;
+      max-height: 100px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+    }
+    #imgInput {
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+<div class="login-box">
+  <input type="file" id="imgInput" accept="image/*" onchange="cargarImagen(event)">
+  <img id="vistaPrevia" src="" style="display:none">
+  <h2>Ingrese</h2>
+  <input type="text" id="usuario" placeholder="Usuario" oninput="verificarAdmon()">
+  <button onclick="iniciarSesion()">Entrar</button>
+</div>
 
-  <div class="sidebar" id="sidebar">
-    <img id="logo" src="https://via.placeholder.com/100" alt="Logo" onclick="cambiarLogo()">
-    <a href="inicio.html" id="inicioLink">Inicio</a>
-    <a href="miembros.html" id="miembrosLink">Miembros</a>
-    <a href="diseño.html" id="diezmoLink">Diezmos</a>
-    <a href="asistencia.html" id="asistenciaLink">Asistencia</a>
-    <a href="acceso.html" id="accesoLink">Añadir acceso</a>
-  </div>
-
-  <div class="content">
-    <h2>Estadísticas Generales</h2>
-    <div class="charts">
-      <canvas id="sociedadChart" width="50" height="50"></canvas>
-      <canvas id="asistenciaChart" width="50" height="50"></canvas>
-    </div>
-  </div>
-
-  <script>
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('hide');
+<script>
+  function verificarAdmon() {
+    const usuario = document.getElementById('usuario').value.trim().toUpperCase();
+    const imgInput = document.getElementById('imgInput');
+    if (usuario === "ADMON") {
+      imgInput.style.display = 'block';
+    } else {
+      imgInput.style.display = 'none';
+      document.getElementById('vistaPrevia').style.display = 'none';
     }
+  }
 
-    // Verificar acceso al usuario
-    const usuarioActual = localStorage.getItem('codigoUsuarioActual');
-    const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
-
-    // Verificar si el usuario es "ADMON"
-    const accesoUsuario = accesos.find(a => a.codigo === usuarioActual);
-    if (!accesoUsuario) {
-      window.location.href = "acceso.html"; // Redirigir si no hay usuario autenticado
-    }
-
-    const esAdmin = accesoUsuario.codigo === 'ADMON'; // Solo "ADMON" tiene acceso total
-
-    // Mostrar solo las opciones de menú permitidas según el rol
-    if (!esAdmin) {
-      document.getElementById('miembrosLink').style.display = 'none';
-      document.getElementById('diezmoLink').style.display = 'none';
-      document.getElementById('asistenciaLink').style.display = 'none';
-      document.getElementById('accesoLink').style.display = 'none';
-    }
-
-    // Mostrar solo las opciones permitidas para "Preadministrador"
-    if (accesoUsuario.tipo === 'Preadministrador') {
-      document.getElementById('diezmoLink').style.display = 'none';
-      document.getElementById('asistenciaLink').style.display = 'none';
-    }
-
-    // Simular datos si no existen
-    if (!localStorage.getItem('miembros')) {
-      const miembros = [
-        { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
-        { nombre: "Luis", sociedad: "Caballeros", asistencia: 6 },
-        { nombre: "Carlos", sociedad: "Jóvenes", asistencia: 7 },
-        { nombre: "Marta", sociedad: "Damas", asistencia: 9 },
-        { nombre: "Pedro", sociedad: "Caballeros", asistencia: 5 },
-        { nombre: "Lucía", sociedad: "Jóvenes", asistencia: 10 },
-        { nombre: "José", sociedad: "Sociedad", asistencia: 4 }
-      ];
-      localStorage.setItem('miembros', JSON.stringify(miembros));
-    }
-
-    const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
-
-    // Conteo por sociedad
-    const conteoSociedad = {
-      Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0
-    };
-    miembros.forEach(m => {
-      if (conteoSociedad[m.sociedad] !== undefined) {
-        conteoSociedad[m.sociedad]++;
-      }
-    });
-
-    new Chart(document.getElementById('sociedadChart'), {
-      type: 'pie',
-      data: {
-        labels: Object.keys(conteoSociedad),
-        datasets: [{
-          data: Object.values(conteoSociedad),
-          backgroundColor: ['#f7c948', '#36a2eb', '#ff6384', '#9966ff'],
-          borderColor: '#14153a',
-          borderWidth: 2
-        }]
-      },
-      options: {
-        plugins: {
-          legend: { display: false }
-        }
-      }
-    });
-
-    // Asistencia por miembro
-    const miembrosOrdenados = miembros.slice().sort((a, b) => a.nombre.localeCompare(b.nombre));
-
-    new Chart(document.getElementById('asistenciaChart'), {
-      type: 'bar',
-      data: {
-        labels: miembrosOrdenados.map(m => m.nombre),
-        datasets: [{
-          label: 'Asistencia',
-          data: miembrosOrdenados.map(m => m.asistencia || 0),
-          backgroundColor: '#36a2eb'
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            ticks: { color: '#f7c948' },
-            beginAtZero: true
-          },
-          x: {
-            ticks: { color: '#f7c948' }
-          }
-        },
-        plugins: {
-          legend: { display: false }
-        }
-      }
-    });
-
-    // Cambiar logo solo con contraseña de admin
-    function cambiarLogo() {
-      const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
-      if (clave !== "admin123") {
-        alert("Acceso denegado.");
-        return;
-      }
-
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.onchange = function () {
-        const file = this.files[0];
-        if (file && file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            document.getElementById('logo').src = reader.result;
-            localStorage.setItem('logo', reader.result);
-          };
-          reader.readAsDataURL(file);
-        }
+  function cargarImagen(event) {
+    const vista = document.getElementById('vistaPrevia');
+    const archivo = event.target.files[0];
+    if (archivo) {
+      const lector = new FileReader();
+      lector.onload = function(e) {
+        vista.src = e.target.result;
+        vista.style.display = 'block';
       };
-      input.click();
+      lector.readAsDataURL(archivo);
+    }
+  }
+
+  function iniciarSesion() {
+    const usuario = document.getElementById('usuario').value.trim();
+    if (!usuario) {
+      alert("Por favor ingrese un usuario.");
+      return;
     }
 
-    // Cargar logo guardado
-    const logoGuardado = localStorage.getItem('logo');
-    if (logoGuardado) {
-      document.getElementById('logo').src = logoGuardado;
+    // Obtener usuarios desde localStorage
+    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+
+    // Buscar si el usuario existe
+    const existe = usuarios.find(u => u.nombre === usuario);
+
+    if (usuario === "ADMON" || existe) {
+      localStorage.setItem('usuarioActivo', usuario);
+      window.location.href = "inicio.html";
+    } else {
+      alert("Usuario no registrado.");
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
