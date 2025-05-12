@@ -23,22 +23,34 @@
       background: #001d3d;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       padding: 0 1rem;
       box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
       z-index: 1000;
+    }
+
+    .logo-wrapper {
+      position: absolute;
+      left: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    header h1 {
+      color: gold;
+      font-size: 1.3rem;
+      margin: 0;
     }
 
     header img {
       height: 40px;
       border-radius: 5px;
       margin-right: 10px;
+      transition: height 0.3s ease;
     }
 
-    header h1 {
-      color: gold;
-      font-size: 1.3rem;
-      flex: 1;
+    header .logo-wrapper img {
+      height: 40px;
     }
 
     .sidebar {
@@ -145,6 +157,12 @@
     .acceso { background: green; color: white; }
     .sin-acceso { background: red; color: white; }
 
+    .botones-acciones {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
     #logoInput {
       display: none;
     }
@@ -167,12 +185,14 @@
 
   <!-- Barra superior -->
   <header>
-    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="logo-wrapper">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <label for="logoInput">
+        <img id="logoImg" src="" alt="Logo" />
+      </label>
+      <input type="file" id="logoInput" accept="image/*" onchange="guardarLogo(event)" />
+    </div>
     <h1>Panel de Accesos</h1>
-    <label for="logoInput">
-      <img id="logoImg" src="" alt="Logo" />
-    </label>
-    <input type="file" id="logoInput" accept="image/*" onchange="guardarLogo(event)" />
   </header>
 
   <!-- Contenido principal -->
@@ -244,17 +264,49 @@
         const nombre = document.createElement('span');
         nombre.textContent = `${acceso.miembro} (${acceso.usuario}) - ${acceso.tipo}`;
 
-        const boton = document.createElement('button');
-        boton.textContent = acceso.acceso ? 'Permitir acceso' : 'Acceso denegado';
-        boton.className = 'estado-boton ' + (acceso.acceso ? 'acceso' : 'sin-acceso');
-        boton.onclick = () => {
+        const botones = document.createElement('div');
+        botones.className = 'botones-acciones';
+
+        const botonEstado = document.createElement('button');
+        botonEstado.textContent = acceso.acceso ? '✔ Acceso permitido' : '✖ Acceso denegado';
+        botonEstado.className = 'estado-boton ' + (acceso.acceso ? 'acceso' : 'sin-acceso');
+        botonEstado.onclick = () => {
           if (acceso.usuario === 'ADMON') return alert('No puedes modificar el acceso de ADMON');
           acceso.acceso = !acceso.acceso;
           guardarAccesos();
         };
 
+        const botonEditar = document.createElement('button');
+        botonEditar.textContent = '✎';
+        botonEditar.title = 'Editar';
+        botonEditar.onclick = () => {
+          if (acceso.usuario === 'ADMON') return alert('No puedes editar ADMON');
+          const nuevoUsuario = prompt("Nuevo nombre de usuario:", acceso.usuario);
+          if (!nuevoUsuario) return;
+          const nuevoRol = prompt("Nuevo rol (Administrador, Colaborador, Invitado):", acceso.tipo);
+          if (!nuevoRol) return;
+          acceso.usuario = nuevoUsuario.toUpperCase();
+          acceso.tipo = nuevoRol;
+          guardarAccesos();
+        };
+
+        const botonEliminar = document.createElement('button');
+        botonEliminar.textContent = '🗑';
+        botonEliminar.title = 'Eliminar';
+        botonEliminar.onclick = () => {
+          if (acceso.usuario === 'ADMON') return alert('No puedes eliminar ADMON');
+          if (confirm("¿Eliminar este acceso?")) {
+            accesos.splice(i, 1);
+            guardarAccesos();
+          }
+        };
+
+        botones.appendChild(botonEstado);
+        botones.appendChild(botonEditar);
+        botones.appendChild(botonEliminar);
+
         item.appendChild(nombre);
-        item.appendChild(boton);
+        item.appendChild(botones);
         listaAccesos.appendChild(item);
       });
     }
