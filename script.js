@@ -1,29 +1,61 @@
-// Guardar los datos de la tabla en localStorage
-function guardarTablaEnLocalStorage() {
-  const filas = document.querySelectorAll("#tabla-miembros tr");
-  const datos = Array.from(filas).map(fila => {
-    const celdas = fila.querySelectorAll("td");
-    return {
-      nombre: celdas[0].textContent,
-      edad: celdas[1].textContent,
-      correo: celdas[2].textContent
-    };
-  });
-  localStorage.setItem("miembros", JSON.stringify(datos));
-}
+function actualizarMenu() {
+  const menuLinks = document.getElementById('menuLinks');
+  menuLinks.innerHTML = ''; // Limpiar el menú actual
 
-// Cargar los datos de la tabla desde localStorage
-function cargarTablaDesdeLocalStorage() {
-  const tabla = document.getElementById("tabla-miembros");
-  const datos = JSON.parse(localStorage.getItem("miembros")) || [];
-  tabla.innerHTML = datos.map(dato => `
-    <tr>
-      <td>${dato.nombre}</td>
-      <td>${dato.edad}</td>
-      <td>${dato.correo}</td>
-    </tr>
-  `).join("");
-}
+  // Menú común para todos
+  const inicio = document.createElement('a');
+  inicio.href = "inicio.html";
+  inicio.textContent = "Inicio";
+  menuLinks.appendChild(inicio);
 
-// Llamar a cargarTablaDesdeLocalStorage al cargar la página
-document.addEventListener("DOMContentLoaded", cargarTablaDesdeLocalStorage);
+  // Acceso total para Administrador o ADMON
+  if (rolUsuario === 'Administrador' || rolUsuario === 'ADMON') {
+    const diezmo = document.createElement('a');
+    diezmo.href = "diezmo.html";
+    diezmo.textContent = "Diezmo";
+    menuLinks.appendChild(diezmo);
+
+    const ofrendas = document.createElement('a');
+    ofrendas.href = "ofrendas.html";
+    ofrendas.textContent = "Ofrendas";
+    menuLinks.appendChild(ofrendas);
+
+    const crearAcceso = document.createElement('a');
+    crearAcceso.href = "acceso.html";
+    crearAcceso.textContent = "Crear Acceso";
+    menuLinks.appendChild(crearAcceso);
+
+    const discipulado = document.createElement('a');
+    discipulado.href = "discipulado.html";
+    discipulado.textContent = "Discipulado";
+    menuLinks.appendChild(discipulado);
+
+  } else if (rolUsuario === 'Discipulador') {
+    const discipulado = document.createElement('a');
+    discipulado.href = "discipulado.html";
+    discipulado.textContent = "Discipulado";
+    menuLinks.appendChild(discipulado);
+
+  } else if (rolUsuario === 'Tesorero') {
+    const diezmo = document.createElement('a');
+    diezmo.href = "diezmo.html";
+    diezmo.textContent = "Diezmo";
+    menuLinks.appendChild(diezmo);
+
+    const ofrendas = document.createElement('a');
+    ofrendas.href = "ofrendas.html";
+    ofrendas.textContent = "Ofrendas";
+    menuLinks.appendChild(ofrendas);
+
+  } else if (rolUsuario === 'Preadministrador') {
+    const crearAcceso = document.createElement('a');
+    crearAcceso.href = "acceso.html";
+    crearAcceso.textContent = "Crear Acceso";
+    menuLinks.appendChild(crearAcceso);
+
+    const discipulado = document.createElement('a');
+    discipulado.href = "discipulado.html";
+    discipulado.textContent = "Discipulado";
+    menuLinks.appendChild(discipulado);
+  }
+}
