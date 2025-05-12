@@ -5,24 +5,25 @@
   <title>Inicio de Sesión</title>
   <style>
     body {
-      background-color: #f3f4f6;
+      background-color: #0d1b2a; /* Azul oscuro */
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       font-family: Arial, sans-serif;
+      color: gold;
     }
     .login-box {
-      background: white;
+      background: #1b263b;
       padding: 30px;
       border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
       text-align: center;
       width: 300px;
     }
     .login-box h2 {
       margin-bottom: 20px;
-      color: #333;
+      color: gold;
     }
     .login-box input[type="text"] {
       width: 100%;
@@ -33,8 +34,8 @@
       border-radius: 8px;
     }
     .login-box button {
-      background-color: #002244; /* Azul oscuro */
-      color: gold; /* Dorado */
+      background-color: #003566;
+      color: gold;
       border: none;
       padding: 10px 20px;
       border-radius: 8px;
@@ -63,14 +64,32 @@
 </div>
 
 <script>
+  // Mostrar imagen guardada de ADMON si existe
+  window.onload = function () {
+    const usuario = document.getElementById('usuario').value.trim().toUpperCase();
+    const imgGuardada = localStorage.getItem('imagenADMON');
+    if (imgGuardada) {
+      const vista = document.getElementById('vistaPrevia');
+      vista.src = imgGuardada;
+      vista.style.display = 'block';
+    }
+  };
+
   function verificarAdmon() {
     const usuario = document.getElementById('usuario').value.trim().toUpperCase();
     const imgInput = document.getElementById('imgInput');
+    const vista = document.getElementById('vistaPrevia');
+
     if (usuario === "ADMON") {
       imgInput.style.display = 'block';
+      const imgGuardada = localStorage.getItem('imagenADMON');
+      if (imgGuardada) {
+        vista.src = imgGuardada;
+        vista.style.display = 'block';
+      }
     } else {
       imgInput.style.display = 'none';
-      document.getElementById('vistaPrevia').style.display = 'none';
+      vista.style.display = 'none';
     }
   }
 
@@ -82,27 +101,32 @@
       lector.onload = function(e) {
         vista.src = e.target.result;
         vista.style.display = 'block';
+        localStorage.setItem('imagenADMON', e.target.result);
       };
       lector.readAsDataURL(archivo);
     }
   }
 
   function iniciarSesion() {
-    const usuario = document.getElementById('usuario').value.trim();
+    const usuario = document.getElementById('usuario').value.trim().toUpperCase();
     if (!usuario) {
       alert("Por favor ingrese un usuario.");
       return;
     }
 
-    // Obtener usuarios desde localStorage
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    // Obtener usuarios desde localStorage (guardados en acceso.html)
+    const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
 
-    // Buscar si el usuario existe
-    const existe = usuarios.find(u => u.nombre === usuario);
+    // Buscar el usuario por nombre de usuario
+    const encontrado = accesos.find(u => u.usuario === usuario);
 
-    if (usuario === "ADMON" || existe) {
-      localStorage.setItem('usuarioActivo', usuario);
+    if (usuario === "ADMON" || (encontrado && encontrado.acceso)) {
+      const rol = (usuario === "ADMON") ? "Administrador" : encontrado.tipo;
+      localStorage.setItem("usuarioActivo", usuario);
+      localStorage.setItem("rolActivo", rol);
       window.location.href = "inicio.html";
+    } else if (encontrado && !encontrado.acceso) {
+      alert("Este usuario tiene el acceso denegado.");
     } else {
       alert("Usuario no registrado.");
     }
