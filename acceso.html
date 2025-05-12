@@ -87,17 +87,17 @@
       margin-bottom: 10px;
     }
 
-    .user-entry button {
+    .user-entry-buttons {
+      display: flex;
+      gap: 10px;
       margin-top: 5px;
-      width: auto;
-      margin-right: 10px;
     }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <a href="inicio.html">Inicio</a>
-    <a href="#">Miembros</a>
+    <a href="miembro.html">Miembros</a>
     <a href="#">Diezmos</a>
     <a href="#">Asistencia</a>
     <a href="acceso.html">Añadir acceso</a>
@@ -134,6 +134,7 @@
   </div>
 
   <script>
+    // Carga de ejemplo si no hay miembros en localStorage
     if (!localStorage.getItem('miembros')) {
       localStorage.setItem('miembros', JSON.stringify([
         { id: "1", nombreCompleto: "Juan Pérez" },
@@ -157,25 +158,29 @@
         return;
       }
 
+      if (usuario.length < 3) {
+        alert("El nombre de usuario debe tener al menos 3 caracteres.");
+        return;
+      }
+
       let accesos = JSON.parse(localStorage.getItem('accesos')) || [];
 
-      // Si está editando
       if (editIndex !== "") {
         accesos[editIndex] = { ...accesos[editIndex], usuario, rol };
         localStorage.setItem('accesos', JSON.stringify(accesos));
         document.querySelector('form').reset();
         document.getElementById('editIndex').value = "";
+        document.getElementById('miembro').disabled = false;
+        cargarMiembros();
         mostrarAccesos();
         return;
       }
 
-      // Validación: usuario único
       if (accesos.some(a => a.usuario.toLowerCase() === usuario.toLowerCase())) {
         alert("El nombre de usuario ya está en uso.");
         return;
       }
 
-      // Validación: miembro no duplicado
       if (accesos.some(a => a.miembroId === miembroId)) {
         alert("Este miembro ya tiene un acceso.");
         return;
@@ -192,6 +197,7 @@
       accesos.push({ nombre: miembro.nombreCompleto, usuario, rol, miembroId });
       localStorage.setItem('accesos', JSON.stringify(accesos));
       document.querySelector('form').reset();
+      document.getElementById('miembro').disabled = false;
       cargarMiembros();
       mostrarAccesos();
     }
@@ -201,13 +207,20 @@
       const lista = document.getElementById('listaAccesos');
       lista.innerHTML = "<h3>Usuarios Registrados</h3>";
 
+      if (accesos.length === 0) {
+        lista.innerHTML += "<p>No hay usuarios registrados.</p>";
+        return;
+      }
+
       accesos.forEach((a, i) => {
         lista.innerHTML += `
           <div class="user-entry">
             <strong>${a.nombre}</strong> (${a.rol})<br>
-            Usuario: ${a.usuario}<br>
-            <button onclick="editarAcceso(${i})">Editar</button>
-            <button onclick="eliminarAcceso(${i})">Eliminar</button>
+            Usuario: ${a.usuario}
+            <div class="user-entry-buttons">
+              <button onclick="editarAcceso(${i})">Editar</button>
+              <button onclick="eliminarAcceso(${i})">Eliminar</button>
+            </div>
           </div>
         `;
       });
