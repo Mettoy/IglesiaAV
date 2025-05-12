@@ -132,6 +132,24 @@
       border-radius: 50%;
       margin-bottom: 1rem;
     }
+
+    .search-results {
+      background: #3a506b;
+      padding: 1rem;
+      border-radius: 5px;
+      color: white;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .search-results p {
+      margin: 0.5rem 0;
+      cursor: pointer;
+    }
+
+    .search-results p:hover {
+      background: #001d3d;
+    }
   </style>
 </head>
 <body>
@@ -157,8 +175,14 @@
   </div>
 
   <div class="form-container" id="formulario">
-    <label for="buscar">Buscar Miembro por Nombre</label>
-    <input type="text" id="buscar" oninput="buscarMiembro()" placeholder="Ingrese nombre..." />
+    <label for="buscarCodigo">Buscar Miembro por Código</label>
+    <input type="text" id="buscarCodigo" oninput="buscarMiembroPorCodigo()" placeholder="Ingrese código..." />
+
+    <label for="buscarNombre">Buscar Miembro por Nombre</label>
+    <input type="text" id="buscarNombre" oninput="buscarMiembroPorNombre()" placeholder="Ingrese nombre..." />
+
+    <div class="search-results" id="resultadosCodigo"></div>
+    <div class="search-results" id="resultadosNombre"></div>
 
     <label for="miembro">Seleccionar Miembro</label>
     <select id="miembro" onchange="mostrarDatosMiembro()">
@@ -210,20 +234,39 @@
     });
   }
 
-  function buscarMiembro() {
-    const filtro = document.getElementById("buscar").value.toLowerCase();
-    const select = document.getElementById("miembro");
-    // Limpiar las opciones del select
-    select.innerHTML = '<option value="">Seleccione un miembro</option>';
+  function buscarMiembroPorCodigo() {
+    const filtro = document.getElementById("buscarCodigo").value.toLowerCase();
+    const resultados = document.getElementById("resultadosCodigo");
+    resultados.innerHTML = '';
+
+    miembros.forEach(m => {
+      if (m.codigo.toLowerCase().includes(filtro)) {
+        const p = document.createElement("p");
+        p.textContent = `${m.nombre} (${m.codigo})`;
+        p.onclick = () => seleccionarMiembro(m.codigo);
+        resultados.appendChild(p);
+      }
+    });
+  }
+
+  function buscarMiembroPorNombre() {
+    const filtro = document.getElementById("buscarNombre").value.toLowerCase();
+    const resultados = document.getElementById("resultadosNombre");
+    resultados.innerHTML = '';
 
     miembros.forEach(m => {
       if (m.nombre.toLowerCase().includes(filtro)) {
-        const opt = document.createElement("option");
-        opt.value = m.codigo;
-        opt.textContent = `${m.nombre} (${m.codigo})`;
-        select.appendChild(opt);
+        const p = document.createElement("p");
+        p.textContent = `${m.nombre} (${m.codigo})`;
+        p.onclick = () => seleccionarMiembro(m.codigo);
+        resultados.appendChild(p);
       }
     });
+  }
+
+  function seleccionarMiembro(codigo) {
+    document.getElementById("miembro").value = codigo;
+    mostrarDatosMiembro();
   }
 
   function mostrarDatosMiembro() {
@@ -290,9 +333,6 @@
   }
 
   window.onload = function () {
-    if (localStorage.getItem("logo")) {
-      document.getElementById("logo").src = localStorage.getItem("logo");
-    }
     cargarMiembros();
     mostrarTabla();
   };
