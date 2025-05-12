@@ -36,13 +36,44 @@
       font-size: 1.5rem;
     }
 
+    /* Estilos de la barra lateral */
+    .sidebar {
+      width: 250px;
+      background: #001d3d;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      padding: 20px;
+      color: gold;
+    }
+
+    .sidebar img {
+      width: 150px;
+      margin-bottom: 20px;
+    }
+
+    .menu-item {
+      display: block;
+      color: gold;
+      text-decoration: none;
+      padding: 10px;
+      margin: 5px 0;
+      background: #003566;
+      border-radius: 5px;
+    }
+
+    .menu-item:hover {
+      background: #001d3d;
+    }
+
     .container {
       margin-top: 80px;
       padding: 2rem;
       background: #1b263b;
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-      max-width: 600px;
+      max-width: 800px;
       width: 100%;
     }
 
@@ -54,19 +85,7 @@
       border-radius: 5px;
       border: 1px solid #ccc;
       background: #e0e0e0;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-      background: #e0e0e0;
-    }
-
-    select {
-      font-size: 1rem;
+      color: white;
     }
 
     button {
@@ -76,6 +95,9 @@
       margin-top: 1.5rem;
       border: none;
       cursor: pointer;
+      padding: 10px;
+      width: 100%;
+      font-size: 1.1rem;
     }
 
     button:hover {
@@ -88,41 +110,83 @@
       object-fit: cover;
       border-radius: 50%;
     }
+
+    .form-plegable {
+      display: none;
+      background: #003566;
+      color: white;
+      padding: 1rem;
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+
+    .form-plegable label,
+    .form-plegable input,
+    .form-plegable select {
+      background: #1b263b;
+    }
+
+    .botones {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Barra superior -->
-  <header>
-    <h1>Gestión de Miembros</h1>
-  </header>
+  <!-- Barra lateral -->
+  <div class="sidebar">
+    <img src="https://via.placeholder.com/150" alt="Logo" id="logo">
+    <a href="#" class="menu-item">Inicio</a>
+    <a href="#" class="menu-item">Miembros</a>
+    <a href="#" class="menu-item">Diezmo</a>
+    <a href="#" class="menu-item">Ofrendas</a>
+  </div>
 
   <!-- Contenido principal -->
   <div class="container">
-    <!-- Buscador de miembros -->
-    <label for="buscarMiembro">Buscar Miembro</label>
-    <input type="text" id="buscarMiembro" placeholder="Buscar por nombre o código" oninput="filtrarMiembros()">
+    <!-- Botones para Exportar a PDF/Excel y Añadir Diezmo -->
+    <div class="botones">
+      <button id="btnAñadirDiezmo" onclick="toggleForm()">Añadir Diezmo</button>
+      <button onclick="exportarPDF()">Exportar a PDF</button>
+      <button onclick="exportarExcel()">Exportar a Excel</button>
+    </div>
 
-    <label for="miembro">Seleccionar Miembro</label>
-    <select id="miembro" required>
-      <option value="">Seleccione un miembro</option>
-    </select>
+    <!-- Formulario de Añadir Diezmo -->
+    <div class="form-plegable" id="formDiezmo">
+      <label for="miembro">Seleccionar Miembro</label>
+      <select id="miembro" required>
+        <option value="">Seleccione un miembro</option>
+      </select>
 
-    <div id="miembroInfo" class="miembro-info"></div>
+      <label for="cantidad">Cantidad</label>
+      <input type="number" id="cantidad" placeholder="Ingrese cantidad" required>
 
-    <!-- Formulario para cantidad -->
-    <label for="cantidad">Cantidad</label>
-    <input type="number" id="cantidad" placeholder="Ingrese cantidad">
+      <label for="moneda">Moneda</label>
+      <select id="moneda">
+        <option value="cordobas">Córdobas</option>
+        <option value="dolares">Dólares</option>
+      </select>
 
-    <label for="moneda">Moneda</label>
-    <select id="moneda">
-      <option value="cordobas">Córdobas</option>
-      <option value="dolares">Dólares</option>
-    </select>
+      <button onclick="guardarRegistro()">Guardar Registro</button>
+    </div>
 
-    <button onclick="guardarRegistro()">Guardar Registro</button>
-
-    <div id="datosMiembro"></div>
+    <!-- Tabla de Miembros -->
+    <table id="tablaMiembros">
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Edad</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Miembros serán añadidos aquí -->
+      </tbody>
+    </table>
   </div>
 
   <script>
@@ -132,14 +196,12 @@
         "nombre": "Juan Pérez",
         "codigo": "12345",
         "edad": 30,
-        "direccion": "Calle Ficticia 123",
         "foto": "https://via.placeholder.com/100"  // Imagen de ejemplo
       },
       {
         "nombre": "Ana Gómez",
         "codigo": "67890",
         "edad": 25,
-        "direccion": "Avenida Real 456",
         "foto": "https://via.placeholder.com/100"  // Imagen de ejemplo
       }
     ];
@@ -152,56 +214,35 @@
     // Cargar miembros desde localStorage
     let miembros = JSON.parse(localStorage.getItem('miembros')) || [];
 
-    // Función para cargar la lista de miembros en el select
+    // Función para cargar la lista de miembros en el select y la tabla
     function cargarMiembros() {
       const miembroSelect = document.getElementById('miembro');
+      const tablaMiembros = document.getElementById('tablaMiembros').getElementsByTagName('tbody')[0];
+
       miembros.forEach(miembro => {
+        // Agregar al select
         const option = document.createElement('option');
         option.value = miembro.codigo;
         option.textContent = `${miembro.nombre} (${miembro.codigo})`;
         miembroSelect.appendChild(option);
+
+        // Agregar a la tabla
+        const row = tablaMiembros.insertRow();
+        row.insertCell(0).innerHTML = `<img src="${miembro.foto}" alt="${miembro.nombre}" style="width: 50px; height: 50px; border-radius: 50%;">`;
+        row.insertCell(1).textContent = miembro.nombre;
+        row.insertCell(2).textContent = miembro.codigo;
+        row.insertCell(3).textContent = miembro.edad;
+        row.insertCell(4).innerHTML = `<button onclick="imprimirMiembro('${miembro.codigo}')">Imprimir</button>`;
       });
     }
 
-    // Función para filtrar miembros según el texto ingresado
-    function filtrarMiembros() {
-      const filtro = document.getElementById('buscarMiembro').value.toLowerCase();
-      const miembroSelect = document.getElementById('miembro');
-      const opciones = miembroSelect.getElementsByTagName('option');
-
-      for (let i = 1; i < opciones.length; i++) { // Comenzamos desde 1 para no ocultar el primer "Seleccione"
-        const nombre = opciones[i].textContent.toLowerCase();
-        const codigo = opciones[i].value.toLowerCase();
-        if (nombre.includes(filtro) || codigo.includes(filtro)) {
-          opciones[i].style.display = 'block';
-        } else {
-          opciones[i].style.display = 'none';
-        }
-      }
+    // Función para mostrar/ocultar el formulario de Diezmo
+    function toggleForm() {
+      const formDiezmo = document.getElementById('formDiezmo');
+      formDiezmo.style.display = (formDiezmo.style.display === 'none' || formDiezmo.style.display === '') ? 'block' : 'none';
     }
 
-    // Función para mostrar la información del miembro seleccionado
-    function mostrarDatosMiembro() {
-      const miembroSelect = document.getElementById('miembro');
-      const miembroCodigo = miembroSelect.value;
-      const miembro = miembros.find(m => m.codigo === miembroCodigo);
-
-      const miembroInfoDiv = document.getElementById('miembroInfo');
-      if (miembro) {
-        miembroInfoDiv.innerHTML = `
-          <div>
-            <img src="${miembro.foto}" alt="Foto de ${miembro.nombre}">
-            <p><strong>Nombre:</strong> ${miembro.nombre}</p>
-            <p><strong>Código:</strong> ${miembro.codigo}</p>
-            <p><strong>Edad:</strong> ${miembro.edad}</p>
-          </div>
-        `;
-      } else {
-        miembroInfoDiv.innerHTML = `<p>Selecciona un miembro para ver sus detalles.</p>`;
-      }
-    }
-
-    // Función para guardar el registro con los datos de cantidad, moneda, y miembro
+    // Función para guardar el registro de Diezmo
     function guardarRegistro() {
       const miembroSelect = document.getElementById('miembro');
       const miembroCodigo = miembroSelect.value;
@@ -218,18 +259,27 @@
           fecha: new Date().toLocaleDateString()
         };
 
-        // Aquí puedes agregar la lógica para almacenar los registros (por ejemplo, en una tabla)
         console.log(nuevoRegistro);
+        alert('Registro guardado.');
       } else {
         alert('Por favor, selecciona un miembro y agrega una cantidad.');
       }
     }
 
+    // Función para exportar a PDF
+    function exportarPDF() {
+      console.log("Generando PDF...");
+      // Agregar la lógica de generación de PDF aquí
+    }
+
+    // Función para exportar a Excel
+    function exportarExcel() {
+      console.log("Generando Excel...");
+      // Agregar la lógica de generación de Excel aquí
+    }
+
     // Cargar miembros al iniciar
     cargarMiembros();
-
-    // Al seleccionar un miembro, mostrar los datos
-    document.getElementById('miembro').addEventListener('change', mostrarDatosMiembro);
   </script>
 
 </body>
