@@ -195,13 +195,25 @@
       input.onchange = function () {
         const file = this.files[0];
         if (file && file.type.startsWith('image/')) {
+          // Mostrar la imagen seleccionada inmediatamente en el logo
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            document.getElementById('logo').src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+
+          // Subir la imagen a Firebase Storage
           const storageRef = storage.ref();
           const logoRef = storageRef.child('logos/logo.png');
-          
+
           logoRef.put(file).then(() => {
             logoRef.getDownloadURL().then((url) => {
-              document.getElementById('logo').src = url;
-              db.collection("config").doc("logo").set({ logo: url });
+              // Guardar la URL en Firestore
+              db.collection("config").doc("logo").set({ logo: url }).then(() => {
+                console.log("Logo actualizado correctamente.");
+              }).catch((error) => {
+                alert("Error al guardar el logo en Firestore: " + error.message);
+              });
             });
           }).catch(error => {
             alert("Error al subir el archivo: " + error.message);
@@ -211,7 +223,7 @@
       input.click();
     }
 
-    // Mostrar logo guardado desde Firebase
+    // Mostrar el logo guardado desde Firebase al cargar la página
     db.collection("config").doc("logo").get().then(doc => {
       if (doc.exists) {
         const logo = doc.data().logo;
