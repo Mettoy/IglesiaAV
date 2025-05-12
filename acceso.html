@@ -101,22 +101,23 @@
   <div class="content">
     <h2>Gestión de Accesos</h2>
     <div class="form-container">
-      <label for="nombre">Nombre</label>
-      <input type="text" id="nombre">
+      <form onsubmit="guardarAcceso(); return false;">
+        <label for="miembro">Seleccionar Miembro</label>
+        <select id="miembro">
+          <!-- Opciones dinámicas con JS -->
+        </select>
 
-      <label for="usuario">Usuario</label>
-      <input type="text" id="usuario">
+        <label for="usuario">Usuario</label>
+        <input type="text" id="usuario">
 
-      <label for="clave">Contraseña</label>
-      <input type="password" id="clave">
+        <label for="rol">Rol</label>
+        <select id="rol">
+          <option value="admin">Administrador</option>
+          <option value="usuario">Usuario</option>
+        </select>
 
-      <label for="rol">Rol</label>
-      <select id="rol">
-        <option value="admin">Administrador</option>
-        <option value="usuario">Usuario</option>
-      </select>
-
-      <button onclick="guardarAcceso()">Guardar Acceso</button>
+        <button type="submit">Guardar Acceso</button>
+      </form>
     </div>
 
     <div class="user-list" id="listaAccesos">
@@ -125,19 +126,52 @@
   </div>
 
   <script>
+    // Verificar si ya existen miembros en localStorage
+    if (!localStorage.getItem('miembros')) {
+      localStorage.setItem('miembros', JSON.stringify([
+        { id: "1", nombreCompleto: "Juan Pérez" },
+        { id: "2", nombreCompleto: "María López" }
+      ]));
+    }
+
+    if (!localStorage.getItem('accesos')) {
+      localStorage.setItem('accesos', JSON.stringify([]));
+    }
+
+    // Guardar nuevo acceso
     function guardarAcceso() {
-      const nombre = document.getElementById('nombre').value.trim();
+      const miembroId = document.getElementById('miembro').value;
       const usuario = document.getElementById('usuario').value.trim();
-      const clave = document.getElementById('clave').value;
       const rol = document.getElementById('rol').value;
 
-      if (!nombre || !usuario || !clave) {
+      if (!miembroId || !usuario) {
         alert("Por favor, complete todos los campos.");
         return;
       }
 
-      const nuevoAcceso = { nombre, usuario, clave, rol };
       const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
+
+      // Verificar si el usuario ya está registrado
+      const duplicado = accesos.some(a => a.usuario.toLowerCase() === usuario.toLowerCase());
+      if (duplicado) {
+        alert("El nombre de usuario ya está registrado.");
+        return;
+      }
+
+      const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+      const miembro = miembros.find(m => m.id === miembroId);
+
+      if (!miembro) {
+        alert("Miembro no encontrado.");
+        return;
+      }
+
+      const nuevoAcceso = {
+        nombre: miembro.nombreCompleto,
+        usuario,
+        rol,
+        miembroId
+      };
 
       accesos.push(nuevoAcceso);
       localStorage.setItem('accesos', JSON.stringify(accesos));
@@ -145,6 +179,7 @@
       document.querySelector('.form-container').reset();
     }
 
+    // Mostrar accesos registrados
     function mostrarAccesos() {
       const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
       const lista = document.getElementById('listaAccesos');
@@ -160,6 +195,17 @@
       });
     }
 
+    // Cargar miembros registrados en el formulario
+    function cargarMiembros() {
+      const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+      const select = document.getElementById('miembro');
+      select.innerHTML = '<option value="">Seleccione...</option>';
+      miembros.forEach(m => {
+        select.innerHTML += `<option value="${m.id}">${m.nombreCompleto}</option>`;
+      });
+    }
+
+    cargarMiembros();
     mostrarAccesos();
   </script>
 </body>
