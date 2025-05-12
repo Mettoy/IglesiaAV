@@ -102,9 +102,7 @@
 
   <div class="sidebar" id="sidebar">
     <img id="logo" src="https://via.placeholder.com/100" alt="Logo" onclick="cambiarLogo()">
-    <div id="menuLinks">
-      <!-- Enlaces del menú se agregarán aquí -->
-    </div>
+    <div id="menuLinks"></div>
   </div>
 
   <div class="content">
@@ -116,78 +114,41 @@
   </div>
 
   <script>
-    // Función para obtener el rol del usuario actual
     const rolUsuario = localStorage.getItem('rolUsuarioActual');
 
-    // Función que ajusta el menú según el rol
+    const accesosPorRol = {
+      Administrador: ["diezmo", "ofrendas", "acceso", "discipulado"],
+      Discipulador: ["discipulado"],
+      Tesorero: ["diezmo", "ofrendas"],
+      Preadministrador: ["acceso", "discipulado"]
+    };
+
+    const enlaces = {
+      diezmo: { href: "diezmo.html", texto: "Diezmo" },
+      ofrendas: { href: "ofrendas.html", texto: "Ofrendas" },
+      acceso: { href: "acceso.html", texto: "Crear Acceso" },
+      discipulado: { href: "discipulado.html", texto: "Discipulado" }
+    };
+
     function actualizarMenu() {
       const menuLinks = document.getElementById('menuLinks');
-      menuLinks.innerHTML = ''; // Limpiar el menú actual
+      menuLinks.innerHTML = '';
 
-      // Menú común para todos
       const inicio = document.createElement('a');
       inicio.href = "inicio.html";
       inicio.textContent = "Inicio";
       menuLinks.appendChild(inicio);
 
-      // Dependiendo del rol, agregar las opciones del menú
-      if (rolUsuario === 'Administrador') {
-        const diezmo = document.createElement('a');
-        diezmo.href = "diezmo.html";
-        diezmo.textContent = "Diezmo";
-        menuLinks.appendChild(diezmo);
-
-        const ofrendas = document.createElement('a');
-        ofrendas.href = "ofrendas.html";
-        ofrendas.textContent = "Ofrendas";
-        menuLinks.appendChild(ofrendas);
-
-        const crearAcceso = document.createElement('a');
-        crearAcceso.href = "acceso.html";
-        crearAcceso.textContent = "Crear Acceso";
-        menuLinks.appendChild(crearAcceso);
-
-        const discipulado = document.createElement('a');
-        discipulado.href = "discipulado.html";
-        discipulado.textContent = "Discipulado";
-        menuLinks.appendChild(discipulado);
-
-      } else if (rolUsuario === 'Discipulador') {
-        const discipulado = document.createElement('a');
-        discipulado.href = "discipulado.html";
-        discipulado.textContent = "Discipulado";
-        menuLinks.appendChild(discipulado);
-
-      } else if (rolUsuario === 'Tesorero') {
-        const diezmo = document.createElement('a');
-        diezmo.href = "diezmo.html";
-        diezmo.textContent = "Diezmo";
-        menuLinks.appendChild(diezmo);
-
-        const ofrendas = document.createElement('a');
-        ofrendas.href = "ofrendas.html";
-        ofrendas.textContent = "Ofrendas";
-        menuLinks.appendChild(ofrendas);
-
-      } else if (rolUsuario === 'Preadministrador') {
-        const inicio = document.createElement('a');
-        inicio.href = "inicio.html";
-        inicio.textContent = "Inicio";
-        menuLinks.appendChild(inicio);
-
-        const crearAcceso = document.createElement('a');
-        crearAcceso.href = "acceso.html";
-        crearAcceso.textContent = "Crear Acceso";
-        menuLinks.appendChild(crearAcceso);
-
-        const discipulado = document.createElement('a');
-        discipulado.href = "discipulado.html";
-        discipulado.textContent = "Discipulado";
-        menuLinks.appendChild(discipulado);
-      }
+      const permisos = accesosPorRol[rolUsuario] || [];
+      permisos.forEach(clave => {
+        const { href, texto } = enlaces[clave];
+        const a = document.createElement('a');
+        a.href = href;
+        a.textContent = texto;
+        menuLinks.appendChild(a);
+      });
     }
 
-    // Llamar la función para actualizar el menú cuando se cargue la página
     actualizarMenu();
 
     function toggleSidebar() {
@@ -210,10 +171,10 @@
 
     const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
 
-    // Conteo por sociedad
     const conteoSociedad = {
       Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0
     };
+
     miembros.forEach(m => {
       if (conteoSociedad[m.sociedad] !== undefined) {
         conteoSociedad[m.sociedad]++;
@@ -238,7 +199,6 @@
       }
     });
 
-    // Asistencia por miembro
     const miembrosOrdenados = miembros.slice().sort((a, b) => a.nombre.localeCompare(b.nombre));
 
     new Chart(document.getElementById('asistenciaChart'), {
@@ -258,7 +218,11 @@
             beginAtZero: true
           },
           x: {
-            ticks: { color: '#f7c948' }
+            ticks: {
+              color: '#f7c948',
+              maxRotation: 60,
+              minRotation: 45
+            }
           }
         },
         plugins: {
@@ -267,7 +231,6 @@
       }
     });
 
-    // Cambiar logo solo con contraseña de admin
     function cambiarLogo() {
       const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
       if (clave !== "admin123") {
@@ -292,7 +255,6 @@
       input.click();
     }
 
-    // Cargar logo guardado
     const logoGuardado = localStorage.getItem('logo');
     if (logoGuardado) {
       document.getElementById('logo').src = logoGuardado;
