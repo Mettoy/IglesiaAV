@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <title>Panel de Estadísticas</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
       margin: 0;
@@ -26,9 +24,7 @@
       top: 0;
       transition: transform 0.3s ease;
     }
-    .sidebar.hide {
-      transform: translateX(-100%);
-    }
+    .sidebar.hide { transform: translateX(-100%); }
     .sidebar img {
       width: 100px;
       height: 100px;
@@ -79,13 +75,8 @@
       height: 150px !important;
     }
     @media (max-width: 768px) {
-      .content {
-        margin-left: 0;
-      }
-      .sidebar {
-        position: absolute;
-        z-index: 5;
-      }
+      .content { margin-left: 0; }
+      .sidebar { position: absolute; z-index: 5; }
     }
   </style>
 </head>
@@ -103,13 +94,12 @@
   <div class="content">
     <h2>Estadísticas Generales</h2>
     <div class="charts">
-      <canvas id="sociedadChart" width="50" height="50"></canvas>
-      <canvas id="asistenciaChart" width="50" height="50"></canvas>
+      <canvas id="sociedadChart"></canvas>
+      <canvas id="asistenciaChart"></canvas>
     </div>
   </div>
 
   <script>
-    // Protección de acceso
     const usuarioActivo = localStorage.getItem('usuarioActivo');
     const rolActivo = localStorage.getItem('rolActivo');
 
@@ -117,18 +107,54 @@
       window.location.href = "index.html";
     }
 
-    // Firebase
-    const firebaseConfig = {
-      apiKey: "TU_API_KEY",
-      authDomain: "TU_AUTH_DOMAIN",
-      projectId: "TU_PROJECT_ID",
-      storageBucket: "TU_STORAGE_BUCKET",
-      messagingSenderId: "TU_SENDER_ID",
-      appId: "TU_APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+    // Supabase
+    const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function cargarLogo() {
+      const { data } = await supabase
+        .storage
+        .from('logos')
+        .getPublicUrl('logo.png');
+
+      if (data?.publicUrl) {
+        document.getElementById("logo").src = data.publicUrl;
+      }
+    }
+
+    async function cambiarLogo() {
+      const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
+      if (!clave || clave.trim().toLowerCase() !== "adoración viva") {
+        alert("Acceso denegado.");
+        return;
+      }
+
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = async function () {
+        const file = this.files[0];
+        if (file && file.type.startsWith('image/')) {
+          // Mostrar temporalmente
+          const reader = new FileReader();
+          reader.onload = e => document.getElementById('logo').src = e.target.result;
+          reader.readAsDataURL(file);
+
+          const { error: uploadError } = await supabase.storage
+            .from('logos')
+            .upload('logo.png', file, { upsert: true });
+
+          if (uploadError) {
+            alert("Error al subir: " + uploadError.message);
+            return;
+          }
+
+          cargarLogo(); // Refrescar logo
+        }
+      };
+      input.click();
+    }
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('hide');
@@ -149,11 +175,12 @@
 
       userInfo.textContent = `${usuario} - ${rol}`;
 
-      const enlaces = [{ href: "miembros.html", texto: "Miembros" }];
+      const enlaces = [];
 
       if (rol === "Administrador") {
         enlaces.push(
           { href: "inicio.html", texto: "Inicio" },
+          { href: "miembros.html", texto: "Miembros" },
           { href: "diezmo.html", texto: "Diezmo" },
           { href: "ofrendas.html", texto: "Ofrendas" },
           { href: "acceso.html", texto: "Crear Acceso" },
@@ -180,58 +207,7 @@
       });
     }
 
-    actualizarMenu();
-
-    function cambiarLogo() {
-      const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
-      if (!clave || clave.trim().toLowerCase() !== "adoración viva") {
-        alert("Acceso denegado.");
-        return;
-      }
-
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.onchange = function () {
-        const file = this.files[0];
-        if (file && file.type.startsWith('image/')) {
-          // Mostrar la imagen seleccionada inmediatamente en el logo
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            document.getElementById('logo').src = e.target.result;
-          };
-          reader.readAsDataURL(file);
-
-          // Subir la imagen a Firebase Storage
-          const storageRef = storage.ref();
-          const logoRef = storageRef.child('logos/logo.png');
-
-          logoRef.put(file).then(() => {
-            logoRef.getDownloadURL().then((url) => {
-              // Guardar la URL en Firestore
-              db.collection("config").doc("logo").set({ logo: url }).then(() => {
-                console.log("Logo actualizado correctamente.");
-              }).catch((error) => {
-                alert("Error al guardar el logo en Firestore: " + error.message);
-              });
-            });
-          }).catch(error => {
-            alert("Error al subir el archivo: " + error.message);
-          });
-        }
-      };
-      input.click();
-    }
-
-    // Mostrar el logo guardado desde Firebase al cargar la página
-    db.collection("config").doc("logo").get().then(doc => {
-      if (doc.exists) {
-        const logo = doc.data().logo;
-        document.getElementById("logo").src = logo;
-      }
-    });
-
-    // Crear datos de ejemplo si no existen
+    // Datos demo
     if (!localStorage.getItem('miembros')) {
       const miembros = [
         { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
@@ -283,17 +259,15 @@
       },
       options: {
         scales: {
-          y: {
-            ticks: { color: '#f7c948' },
-            beginAtZero: true
-          },
-          x: {
-            ticks: { color: '#f7c948' }
-          }
+          y: { ticks: { color: '#f7c948' }, beginAtZero: true },
+          x: { ticks: { color: '#f7c948' } }
         },
         plugins: { legend: { display: false } }
       }
     });
+
+    actualizarMenu();
+    cargarLogo();
   </script>
 </body>
 </html>
