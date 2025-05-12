@@ -10,24 +10,92 @@
       background: #0d1b2a;
       color: gold;
       margin: 0;
-      padding: 2rem;
+      padding: 0;
+      display: flex;
     }
-    .container {
-      background: #1b263b;
-      padding: 2rem;
-      border-radius: 10px;
-      max-width: 600px;
-      margin: auto;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: #001d3d;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
+      z-index: 1000;
     }
-    h2 {
-      text-align: center;
+
+    header img {
+      height: 40px;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    header h1 {
+      color: gold;
+      font-size: 1.3rem;
+      flex: 1;
+    }
+
+    .sidebar {
+      width: 200px;
+      background: #14213d;
+      height: 100vh;
+      padding-top: 60px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 999;
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar ul li {
+      padding: 1rem;
+      border-bottom: 1px solid #444;
+      cursor: pointer;
       color: gold;
     }
+
+    .menu-toggle {
+      background: none;
+      border: none;
+      color: gold;
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .container {
+      margin: 80px auto;
+      padding: 2rem;
+      background: #1b263b;
+      border-radius: 10px;
+      max-width: 600px;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+      flex: 1;
+    }
+
     label {
       display: block;
       margin-top: 1rem;
     }
+
     input, select, button {
       width: 100%;
       padding: 10px;
@@ -37,6 +105,7 @@
       font-size: 1rem;
       background: #e0e0e0;
     }
+
     button {
       background: #003566;
       color: gold;
@@ -45,12 +114,15 @@
       border: none;
       cursor: pointer;
     }
+
     button:hover {
       background: #001d3d;
     }
+
     .lista-accesos {
       margin-top: 2rem;
     }
+
     .acceso-item {
       background: #415a77;
       margin-bottom: 1rem;
@@ -61,6 +133,7 @@
       align-items: center;
       color: white;
     }
+
     .estado-boton {
       padding: 5px 10px;
       border: none;
@@ -68,16 +141,47 @@
       font-weight: bold;
       cursor: pointer;
     }
+
     .acceso { background: green; color: white; }
     .sin-acceso { background: red; color: white; }
+
+    #logoInput {
+      display: none;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <ul>
+      <li>Inicio</li>
+      <li>Miembros</li>
+      <li>Discipulado</li>
+      <li>Diezmo</li>
+      <li>Ofrendas</li>
+      <li>Estadísticas</li>
+      <li>Reportes</li>
+    </ul>
+  </div>
+
+  <!-- Barra superior -->
+  <header>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <h1>Panel de Accesos</h1>
+    <label for="logoInput">
+      <img id="logoImg" src="" alt="Logo" />
+    </label>
+    <input type="file" id="logoInput" accept="image/*" onchange="guardarLogo(event)" />
+  </header>
+
+  <!-- Contenido principal -->
   <div class="container">
-    <h2>Gestión de Accesos</h2>
     <form id="formAcceso">
-      <label for="nombre">Nombre completo</label>
-      <input type="text" id="nombre" placeholder="Nombre del usuario" required />
+      <label for="miembro">Miembro</label>
+      <select id="miembro" required>
+        <option value="">Seleccione un miembro</option>
+      </select>
 
       <label for="usuario">Usuario</label>
       <input type="text" id="usuario" placeholder="ej: juanperez" required />
@@ -99,8 +203,32 @@
   <script>
     const form = document.getElementById('formAcceso');
     const listaAccesos = document.getElementById('listaAccesos');
+    const logoImg = document.getElementById('logoImg');
+    const miembroSelect = document.getElementById('miembro');
+    const sidebar = document.getElementById('sidebar');
 
     let accesos = JSON.parse(localStorage.getItem('accesos')) || [];
+
+    function toggleSidebar() {
+      sidebar.classList.toggle('open');
+    }
+
+    function guardarLogo(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const logoURL = e.target.result;
+        localStorage.setItem('logoAdmon', logoURL);
+        logoImg.src = logoURL;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function cargarLogo() {
+      const logo = localStorage.getItem('logoAdmon');
+      if (logo) logoImg.src = logo;
+    }
 
     function guardarAccesos() {
       localStorage.setItem('accesos', JSON.stringify(accesos));
@@ -114,7 +242,7 @@
         item.className = 'acceso-item';
 
         const nombre = document.createElement('span');
-        nombre.textContent = `${acceso.nombre} (${acceso.usuario}) - ${acceso.tipo}`;
+        nombre.textContent = `${acceso.miembro} (${acceso.usuario}) - ${acceso.tipo}`;
 
         const boton = document.createElement('button');
         boton.textContent = acceso.acceso ? 'Permitir acceso' : 'Acceso denegado';
@@ -133,11 +261,11 @@
 
     form.addEventListener('submit', e => {
       e.preventDefault();
-      const nombre = document.getElementById('nombre').value.trim();
+      const miembro = miembroSelect.value;
       const usuario = document.getElementById('usuario').value.trim().toUpperCase();
       const rol = document.getElementById('rol').value;
 
-      if (!nombre || !usuario || !rol) {
+      if (!miembro || !usuario || !rol) {
         alert('Todos los campos son obligatorios');
         return;
       }
@@ -148,7 +276,7 @@
       }
 
       accesos.push({
-        nombre,
+        miembro,
         usuario,
         tipo: rol,
         acceso: true
@@ -158,7 +286,27 @@
       form.reset();
     });
 
+    function cargarMiembros() {
+      const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+      if (miembros.length === 0) {
+        const option = document.createElement('option');
+        option.textContent = "No hay miembros registrados";
+        option.disabled = true;
+        miembroSelect.appendChild(option);
+      } else {
+        miembros.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.nombreCompleto;
+          opt.textContent = m.nombreCompleto;
+          miembroSelect.appendChild(opt);
+        });
+      }
+    }
+
+    cargarMiembros();
+    cargarLogo();
     mostrarAccesos();
   </script>
+
 </body>
 </html>
