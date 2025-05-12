@@ -1,1 +1,329 @@
-h
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Diezmo - Adoración Viva</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1b2a;
+      color: gold;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: #001d3d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 1rem;
+      box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
+      z-index: 1000;
+    }
+
+    .logo-wrapper {
+      position: absolute;
+      left: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    header h1 {
+      color: gold;
+      font-size: 1.3rem;
+      margin: 0;
+    }
+
+    header img {
+      height: 40px;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    .sidebar {
+      width: 200px;
+      background: #14213d;
+      height: 100vh;
+      padding-top: 60px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 999;
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar ul li {
+      padding: 1rem;
+      border-bottom: 1px solid #444;
+      cursor: pointer;
+      color: gold;
+    }
+
+    .menu-toggle {
+      background: none;
+      border: none;
+      color: gold;
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .container {
+      margin: 80px auto;
+      padding: 2rem;
+      background: #1b263b;
+      border-radius: 10px;
+      max-width: 900px;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+      flex: 1;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      background: #e0e0e0;
+    }
+
+    button {
+      background: #003566;
+      color: gold;
+      font-weight: bold;
+      margin-top: 1.5rem;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #001d3d;
+    }
+
+    .tabla-diezmo {
+      margin-top: 2rem;
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .tabla-diezmo th, .tabla-diezmo td {
+      padding: 12px;
+      border: 1px solid #444;
+    }
+
+    .tabla-diezmo th {
+      background-color: #003566;
+      color: gold;
+    }
+
+    .tabla-diezmo td {
+      color: white;
+    }
+
+    .acciones {
+      display: flex;
+      gap: 5px;
+    }
+
+    .boton-editar, .boton-eliminar {
+      cursor: pointer;
+      color: #003566;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .boton-editar {
+      background-color: #f4a261;
+    }
+
+    .boton-editar:hover {
+      background-color: #e76f51;
+    }
+
+    .boton-eliminar {
+      background-color: #e63946;
+      color: white;
+    }
+
+    .boton-eliminar:hover {
+      background-color: #d62828;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <ul>
+      <li>Inicio</li>
+      <li>Miembros</li>
+      <li>Discipulado</li>
+      <li>Diezmo</li>
+      <li>Ofrendas</li>
+      <li>Estadísticas</li>
+      <li>Reportes</li>
+    </ul>
+  </div>
+
+  <!-- Barra superior -->
+  <header>
+    <div class="logo-wrapper">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <label for="logoInput">
+        <img id="logoImg" src="" alt="Logo" />
+      </label>
+    </div>
+    <h1>Gestión de Diezmos</h1>
+  </header>
+
+  <!-- Contenido principal -->
+  <div class="container">
+    <!-- Formulario de Registro de Diezmo -->
+    <form id="formDiezmo">
+      <label for="miembro">Miembro</label>
+      <select id="miembro" required>
+        <option value="">Seleccione un miembro</option>
+      </select>
+
+      <label for="monto">Monto</label>
+      <input type="number" id="monto" placeholder="Monto del diezmo" required />
+
+      <label for="fecha">Fecha</label>
+      <input type="date" id="fecha" required />
+
+      <button type="submit">Registrar Diezmo</button>
+    </form>
+
+    <!-- Tabla de Diezmos Registrados -->
+    <div class="tabla-diezmo">
+      <table>
+        <thead>
+          <tr>
+            <th>Miembro</th>
+            <th>Monto</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaDiezmos"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const formDiezmo = document.getElementById('formDiezmo');
+    const tablaDiezmos = document.getElementById('tablaDiezmos');
+    const miembroSelect = document.getElementById('miembro');
+    const sidebar = document.getElementById('sidebar');
+
+    let diezmos = JSON.parse(localStorage.getItem('diezmos')) || [];
+    let miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+
+    function toggleSidebar() {
+      sidebar.classList.toggle('open');
+    }
+
+    function cargarMiembros() {
+      if (miembros.length === 0) {
+        const option = document.createElement('option');
+        option.textContent = "No hay miembros registrados";
+        option.disabled = true;
+        miembroSelect.appendChild(option);
+      } else {
+        miembros.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.nombreCompleto;
+          opt.textContent = m.nombreCompleto;
+          miembroSelect.appendChild(opt);
+        });
+      }
+    }
+
+    function guardarDiezmos() {
+      localStorage.setItem('diezmos', JSON.stringify(diezmos));
+      mostrarDiezmos();
+    }
+
+    function mostrarDiezmos() {
+      tablaDiezmos.innerHTML = '';
+      diezmos.forEach((diezmo, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${diezmo.miembro}</td>
+          <td>${diezmo.monto}</td>
+          <td>${diezmo.fecha}</td>
+          <td class="acciones">
+            <button class="boton-editar" onclick="editarDiezmo(${i})">Editar</button>
+            <button class="boton-eliminar" onclick="eliminarDiezmo(${i})">Eliminar</button>
+          </td>
+        `;
+        tablaDiezmos.appendChild(row);
+      });
+    }
+
+    function editarDiezmo(index) {
+      const diezmo = diezmos[index];
+      document.getElementById('miembro').value = diezmo.miembro;
+      document.getElementById('monto').value = diezmo.monto;
+      document.getElementById('fecha').value = diezmo.fecha;
+      diezmos.splice(index, 1); // Eliminar de la lista para editar
+      guardarDiezmos();
+    }
+
+    function eliminarDiezmo(index) {
+      if (confirm("¿Eliminar este registro de diezmo?")) {
+        diezmos.splice(index, 1);
+        guardarDiezmos();
+      }
+    }
+
+    formDiezmo.addEventListener('submit', e => {
+      e.preventDefault();
+      const miembro = miembroSelect.value;
+      const monto = parseFloat(document.getElementById('monto').value);
+      const fecha = document.getElementById('fecha').value;
+
+      if (!miembro || !monto || !fecha) {
+        alert('Todos los campos son obligatorios');
+        return;
+      }
+
+      diezmos.push({ miembro, monto, fecha });
+      guardarDiezmos();
+      formDiezmo.reset();
+    });
+
+    cargarMiembros();
+    mostrarDiezmos();
+  </script>
+
+</body>
+</html>
