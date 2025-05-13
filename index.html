@@ -60,17 +60,49 @@
   <button onclick="iniciarSesion()">Entrar</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
 <script>
-  // Iniciar sesión
-  function iniciarSesion() {
-    const usuario = document.getElementById("usuario").value.trim().toUpperCase();
-    if (!usuario) {
-      alert("Por favor ingrese un usuario.");
+  // Configuración de Supabase
+  const supabaseUrl = "https://azywyqozwwbfctxeokug.supabase.co";
+  const supabaseKey = "YOUR_SUPABASE_ANON_KEY"; // Sustituye con tu clave de Supabase
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  // Función para iniciar sesión
+  async function iniciarSesion() {
+    const usuarioInput = document.getElementById("usuario").value.trim().toUpperCase();
+
+    if (!usuarioInput) {
+      alert("Por favor, ingrese un usuario.");
       return;
     }
 
-    // Aquí podrías agregar tu lógica de autenticación para usuarios
-    alert("Sesión iniciada como: " + usuario);
+    try {
+      // Consultar la tabla de usuarios en Supabase
+      const { data, error } = await supabase
+        .from("usuarios") // Nombre de la tabla en Supabase
+        .select("usuario, rol, acceso")
+        .eq("usuario", usuarioInput)
+        .single();
+
+      if (error || !data) {
+        alert("Usuario no registrado.");
+        console.error("Error al consultar el usuario:", error);
+        return;
+      }
+
+      // Verificar si el usuario tiene acceso permitido
+      if (data.acceso) {
+        alert(`Bienvenido, ${data.usuario}. Rol: ${data.rol}`);
+        // Redirigir a inicio.html
+        window.location.href = "inicio.html";
+      } else {
+        alert("Este usuario tiene el acceso denegado.");
+      }
+    } catch (err) {
+      console.error("Error inesperado:", err);
+      alert("Ocurrió un error al intentar iniciar sesión.");
+    }
   }
 </script>
 
