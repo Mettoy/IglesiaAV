@@ -5,13 +5,14 @@
   <title>Inicio de Sesión</title>
   <style>
     body {
-      background-color: #0d1b2a; /* Azul oscuro */
+      background-color: #0d1b2a;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       font-family: Arial, sans-serif;
       color: gold;
+      margin: 0;
     }
     .login-box {
       background: #1b263b;
@@ -48,28 +49,32 @@
       margin-bottom: 20px;
       border-radius: 10px;
     }
+    .estado {
+      margin-top: 10px;
+      font-size: 14px;
+      color: gold;
+    }
   </style>
 </head>
 <body>
 
 <div class="login-box">
-  <!-- Logo de Supabase proporcionado -->
-  <img id="logoGeneral" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo de la Aplicación">
+  <img id="logoGeneral" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" alt="Logo de la Aplicación">
   <h2>Ingrese</h2>
   <input type="text" id="usuario" placeholder="Usuario">
   <button onclick="iniciarSesion()">Entrar</button>
+  <p class="estado" id="estado"></p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
 <script>
   // Configuración de Supabase
   const supabaseUrl = "https://azywyqozwwbfctxeokug.supabase.co";
-  const supabaseKey = "YOUR_SUPABASE_ANON_KEY"; // Sustituye con tu clave de Supabase
+  const supabaseKey = "YOUR_SUPABASE_ANON_KEY"; // <-- Reemplaza con tu clave real
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  // Función para iniciar sesión
   async function iniciarSesion() {
+    const estado = document.getElementById("estado");
     const usuarioInput = document.getElementById("usuario").value.trim().toUpperCase();
 
     if (!usuarioInput) {
@@ -77,31 +82,35 @@
       return;
     }
 
+    estado.textContent = "Verificando usuario...";
+
     try {
-      // Consultar la tabla de usuarios en Supabase
       const { data, error } = await supabase
-        .from("usuarios") // Nombre de la tabla en Supabase
+        .from("usuarios")
         .select("usuario, rol, acceso")
         .eq("usuario", usuarioInput)
         .single();
 
       if (error || !data) {
+        estado.textContent = "";
         alert("Usuario no registrado.");
-        console.error("Error al consultar el usuario:", error);
+        console.error("Error al consultar:", error);
         return;
       }
 
-      // Verificar si el usuario tiene acceso permitido
       if (data.acceso) {
-        alert(`Bienvenido, ${data.usuario}. Rol: ${data.rol}`);
-        // Redirigir a inicio.html
+        localStorage.setItem("usuario", data.usuario);
+        localStorage.setItem("rol", data.rol);
+        estado.textContent = "Acceso permitido. Redirigiendo...";
         window.location.href = "inicio.html";
       } else {
+        estado.textContent = "";
         alert("Este usuario tiene el acceso denegado.");
       }
     } catch (err) {
+      estado.textContent = "";
       console.error("Error inesperado:", err);
-      alert("Ocurrió un error al intentar iniciar sesión.");
+      alert("Error al intentar iniciar sesión.");
     }
   }
 </script>
