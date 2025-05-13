@@ -6,25 +6,44 @@
   <style>
     body {
       background-color: #0d1b2a;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       font-family: Arial, sans-serif;
       color: gold;
       margin: 0;
+      display: flex;
     }
+
+    /* Menú lateral */
     .menu {
-      width: 100%;
+      width: 200px;
       background-color: #003566;
-      padding: 10px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding: 20px;
       color: gold;
-      text-align: center;
     }
+
     .menu a {
       color: gold;
-      margin: 0 10px;
+      margin: 15px 0;
       text-decoration: none;
+      display: block;
     }
+
+    .menu a:hover {
+      background-color: #005e8c;
+      padding: 5px;
+      border-radius: 5px;
+    }
+
+    /* Contenedor principal */
+    .container {
+      margin-left: 220px;
+      padding: 20px;
+      width: 100%;
+    }
+
     .box {
       background: #1b263b;
       padding: 30px;
@@ -34,10 +53,12 @@
       margin-top: 20px;
       text-align: center;
     }
+
     h2 {
       color: gold;
       margin-bottom: 15px;
     }
+
     input, select {
       width: 100%;
       padding: 10px;
@@ -46,6 +67,7 @@
       border-radius: 8px;
       border: 1px solid #ccc;
     }
+
     button {
       background-color: #003566;
       color: gold;
@@ -55,64 +77,82 @@
       cursor: pointer;
       font-weight: bold;
     }
+
     table {
       width: 100%;
       margin-top: 30px;
       border-collapse: collapse;
       color: gold;
     }
+
     th, td {
       padding: 10px;
       text-align: center;
       border: 1px solid #ddd;
     }
+
     th {
       background-color: #003566;
     }
+
     .estado {
       font-size: 14px;
       margin-top: 10px;
       color: gold;
     }
+
+    /* Estilo del logo en el menú */
+    .logo {
+      width: 100%;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Menú de Navegación -->
+  <!-- Menú Lateral -->
   <div class="menu">
+    <div id="logo-container">
+      <!-- Aquí se cargará el logo desde Firebase -->
+      <img src="" id="logo" class="logo" alt="Logo">
+    </div>
     <a href="inicio.html">Inicio</a>
-    <a href="registrar.html">Registrar</a>
+    <a href="registrar.html">Registrar Usuarios</a>
   </div>
 
-  <div class="box">
-    <h2>Registrar Usuario</h2>
-    <form id="formRegistrar">
-      <input type="email" id="email" placeholder="Correo Electrónico" required>
-      <input type="text" id="usuario" placeholder="Nombre de Usuario" required>
-      <select id="rol" required>
-        <option value="Administrador">Administrador</option>
-        <option value="Tesorero">Tesorero</option>
-        <option value="Discipulador">Discipulador</option>
-      </select>
-      <button type="submit">Registrar Usuario</button>
-    </form>
+  <!-- Contenedor Principal -->
+  <div class="container">
+    <div class="box">
+      <h2>Registrar Usuario</h2>
+      <form id="formRegistrar">
+        <input type="email" id="email" placeholder="Correo Electrónico" required>
+        <input type="password" id="contraseña" placeholder="Contraseña" required>
+        <input type="text" id="usuario" placeholder="Nombre de Usuario" required>
+        <select id="rol" required>
+          <option value="Administrador">Administrador</option>
+          <option value="Tesorero">Tesorero</option>
+          <option value="Discipulador">Discipulador</option>
+        </select>
+        <button type="submit">Registrar Usuario</button>
+      </form>
 
-    <p class="estado" id="estadoRegistrar"></p>
+      <p class="estado" id="estadoRegistrar"></p>
 
-    <table id="tablaUsuarios">
-      <thead>
-        <tr>
-          <th>Usuario</th>
-          <th>Rol</th>
-          <th>Acceso</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+      <table id="tablaUsuarios">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Acceso</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- Script Firebase -->
+  <!-- Firebase Script -->
   <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js"></script>
@@ -132,14 +172,24 @@
     const auth = firebase.auth();
     const database = firebase.database();
 
+    // Cargar logo de Firebase
+    const logoRef = database.ref('config/logo');
+    logoRef.once('value').then((snapshot) => {
+      const logoUrl = snapshot.val();
+      if (logoUrl) {
+        document.getElementById("logo").src = logoUrl;
+      }
+    });
+
     // Función para registrar un usuario
     document.getElementById("formRegistrar").addEventListener("submit", function(e) {
       e.preventDefault();
       const email = document.getElementById("email").value;
+      const contraseña = document.getElementById("contraseña").value;
       const usuario = document.getElementById("usuario").value;
       const rol = document.getElementById("rol").value;
 
-      auth.createUserWithEmailAndPassword(email, "defaultpassword").then((userCredential) => {
+      auth.createUserWithEmailAndPassword(email, contraseña).then((userCredential) => {
         const user = userCredential.user;
         const userId = user.uid;
 
@@ -152,7 +202,7 @@
         });
 
         document.getElementById("estadoRegistrar").textContent = "Usuario registrado con éxito!";
-        loadUsers(); // Recargar la tabla de usuarios
+        addUserToTable(userId, usuario, rol, true); // Añadir el usuario a la tabla
 
       }).catch((error) => {
         document.getElementById("estadoRegistrar").textContent = "Error al registrar usuario: " + error.message;
@@ -169,21 +219,26 @@
 
         for (const userId in users) {
           const user = users[userId];
-          const row = document.createElement('tr');
-
-          row.innerHTML = `
-            <td>${user.usuario}</td>
-            <td>${user.rol}</td>
-            <td>${user.acceso ? 'Acceso permitido' : 'Acceso denegado'}</td>
-            <td>
-              <button onclick="toggleAccess('${userId}')">${user.acceso ? 'Quitar acceso' : 'Dar acceso'}</button>
-              <button onclick="deleteUser('${userId}')">Eliminar</button>
-            </td>
-          `;
-
-          tableBody.appendChild(row);
+          addUserToTable(userId, user.usuario, user.rol, user.acceso);
         }
       });
+    }
+
+    // Función para añadir un usuario a la tabla
+    function addUserToTable(userId, usuario, rol, acceso) {
+      const tableBody = document.querySelector("#tablaUsuarios tbody");
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td>${usuario}</td>
+        <td>${rol}</td>
+        <td>${acceso ? 'Acceso permitido' : 'Acceso denegado'}</td>
+        <td>
+          <button onclick="toggleAccess('${userId}')">${acceso ? 'Quitar acceso' : 'Dar acceso'}</button>
+          <button onclick="deleteUser('${userId}')">Eliminar</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
     }
 
     // Función para cambiar el acceso del usuario
