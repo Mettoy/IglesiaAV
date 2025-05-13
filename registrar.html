@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Usuarios</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1b2a;
+      color: gold;
+      padding: 20px;
+    }
+    input, select, button {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+    }
+    table {
+      margin-top: 20px;
+      width: 100%;
+      border-collapse: collapse;
+      background: #1b263b;
+      color: white;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #003566;
+      color: gold;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Registrar Usuario</h2>
+  <input type="email" id="correo" placeholder="Correo">
+  <input type="password" id="contrasena" placeholder="Contraseña">
+  <button onclick="registrarUsuario()">Registrar</button>
+
+  <h2>Usuarios Registrados</h2>
+  <table id="tablaUsuarios">
+    <thead>
+      <tr>
+        <th>Correo</th>
+        <th>Rol</th>
+        <th>Acceso</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+      authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+      databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+      projectId: "iglesia-adoracion-viva",
+      storageBucket: "iglesia-adoracion-viva.appspot.com",
+      messagingSenderId: "815332010058",
+      appId: "1:815332010058:web:d2afff616469349d88deb3"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    function registrarUsuario() {
+      const correo = document.getElementById("correo").value;
+      const contrasena = document.getElementById("contrasena").value;
+
+      auth.createUserWithEmailAndPassword(correo, contrasena)
+        .then(userCredential => {
+          const user = userCredential.user;
+          db.ref("usuarios/" + user.uid).set({
+            correo: correo,
+            rol: "Invitado",
+            acceso: true
+          });
+          alert("Usuario registrado correctamente");
+          document.getElementById("correo").value = "";
+          document.getElementById("contrasena").value = "";
+        })
+        .catch(error => {
+          alert("Error: " + error.message);
+        });
+    }
+
+    function cargarUsuarios() {
+      const tabla = document.querySelector("#tablaUsuarios tbody");
+      tabla.innerHTML = "";
+
+      db.ref("usuarios").on("value", snapshot => {
+        tabla.innerHTML = "";
+        snapshot.forEach(childSnapshot => {
+          const uid = childSnapshot.key;
+          const usuario = childSnapshot.val();
+
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+            <td>${usuario.correo}</td>
+            <td>
+              <select onchange="actualizarRol('${uid}', this.value)">
+                <option ${usuario.rol === "Administrador" ? "selected" : ""}>Administrador</option>
+                <option ${usuario.rol === "Discipulador" ? "selected" : ""}>Discipulador</option>
+                <option ${usuario.rol === "Tesorero" ? "selected" : ""}>Tesorero</option>
+                <option ${usuario.rol === "Invitado" ? "selected" : ""}>Invitado</option>
+              </select>
+            </td>
+            <td>
+              <button onclick="toggleAcceso('${uid}', ${usuario.acceso})" style="background-color:${usuario.acceso ? 'green' : 'red'};">
+                ${usuario.acceso ? 'Permitido' : 'Denegado'}
+              </button>
+            </td>
+            <td>
+              <button onclick="eliminarUsuario('${uid}')">Eliminar</button>
+            </td>
+          `;
+          tabla.appendChild(fila);
+        });
+      });
+    }
+
+    function actualizarRol(uid, nuevoRol) {
+      db.ref("usuarios/" + uid).update({ rol: nuevoRol });
+    }
+
+    function toggleAcceso(uid, estadoActual) {
+      db.ref("usuarios/" + uid).update({ acceso: !estadoActual });
+    }
+
+    function eliminarUsuario(uid) {
+      if (confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
+        db.ref("usuarios/" + uid).remove();
+        auth.currentUser?.delete(); // esto elimina solo si es el usuario actual
+      }
+    }
+
+    window.onload = cargarUsuarios;
+  </script>
+
+</body>
+</html>
