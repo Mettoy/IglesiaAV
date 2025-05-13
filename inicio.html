@@ -14,7 +14,7 @@
       display: flex;
     }
     .sidebar {
-      width: 200px;
+      width: 250px;
       background-color: #14153a;
       height: 100vh;
       padding-top: 30px;
@@ -26,25 +26,26 @@
     }
     .sidebar.hide { transform: translateX(-100%); }
     .sidebar img {
-      width: 100px;
-      height: 100px;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
       display: block;
-      margin: 0 auto 10px;
+      margin: 0 auto 20px;
       cursor: pointer;
     }
     .sidebar a, .sidebar .user-info, .sidebar .logout {
       display: block;
-      padding: 15px 30px;
+      padding: 20px 30px;
       color: #f7c948;
       text-decoration: none;
+      font-size: 18px;
     }
     .sidebar a:hover, .sidebar .logout:hover {
       background-color: #1f214d;
       cursor: pointer;
     }
     .content {
-      margin-left: 200px;
+      margin-left: 250px;
       padding: 20px;
       flex-grow: 1;
     }
@@ -71,8 +72,8 @@
       background-color: #fff;
       border-radius: 8px;
       padding: 10px;
-      width: 150px !important;
-      height: 150px !important;
+      width: 300px !important;
+      height: 300px !important;
     }
     @media (max-width: 768px) {
       .content { margin-left: 0; }
@@ -85,7 +86,7 @@
   <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
   <div class="sidebar" id="sidebar">
-    <img id="logo" src="default-logo.png" alt="Logo" onclick="cambiarLogo()" />
+    <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
     <div class="user-info" id="userInfo"></div>
     <div id="menuLinks"></div>
     <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
@@ -190,14 +191,15 @@
         enlaces.push(
           { href: "inicio.html", texto: "Inicio" },
           { href: "miembros.html", texto: "Miembros" },
-          { href: "diezmo.html", texto: "Diezmo" },
+          { href: "diezmo.html", texto: "Diezmos" },
+          { href: "acceso.html", texto: "Dar acceso" },
           { href: "ofrendas.html", texto: "Ofrendas" },
           { href: "estadisticas.html", texto: "Estadísticas" }
         );
       } else if (rol === "Tesorero") {
         enlaces.push(
           { href: "inicio.html", texto: "Inicio" },
-          { href: "diezmo.html", texto: "Diezmo" },
+          { href: "diezmo.html", texto: "Diezmos" },
           { href: "ofrendas.html", texto: "Ofrendas" }
         );
       } else if (rol === "Discipulador") {
@@ -275,7 +277,7 @@
       window.location.href = "index.html";
     }
 
-    // Llamadas a las funciones iniciales
+    // Funciones iniciales
     actualizarMenu();
     cargarLogo();
     cargarEstadisticas();
