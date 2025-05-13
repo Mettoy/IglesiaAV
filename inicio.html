@@ -180,8 +180,7 @@
       const usuario = await obtenerUsuarioActivo();
       const menuLinks = document.getElementById('menuLinks');
       const userInfo = document.getElementById('userInfo');
-      menuLinks.innerHTML = '';
-      
+      menuLinks.innerHTML = ''; // Limpiar los enlaces actuales
       const rol = usuario.rol;
       userInfo.textContent = `${usuario.nombre} - ${rol}`;
 
@@ -217,6 +216,7 @@
         );
       }
 
+      // Crear los enlaces del menú
       enlaces.forEach(link => {
         const a = document.createElement('a');
         a.href = link.href;
