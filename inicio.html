@@ -193,8 +193,10 @@
           { href: "miembros.html", texto: "Miembros" },
           { href: "diezmo.html", texto: "Diezmos" },
           { href: "acceso.html", texto: "Dar acceso" },
-          { href: "ofrendas.html", texto: "Ofrendas" },
-          { href: "estadisticas.html", texto: "Estadísticas" }
+          { href: "estadisticas.html", texto: "Estadísticas" },
+          { href: "reportes.html", texto: "Reportes" },  // Nueva opción
+          { href: "configuracion.html", texto: "Configuración" },  // Nueva opción
+          { href: "auditoria.html", texto: "Auditoría" }  // Nueva opción
         );
       } else if (rol === "Tesorero") {
         enlaces.push(
@@ -206,6 +208,12 @@
         enlaces.push(
           { href: "inicio.html", texto: "Inicio" },
           { href: "discipulado.html", texto: "Discipulado" }
+        );
+      } else if (rol === "Preadministrador") {
+        enlaces.push(
+          { href: "inicio.html", texto: "Inicio" },
+          { href: "miembros.html", texto: "Miembros" },
+          { href: "acceso.html", texto: "Dar acceso" }
         );
       }
 
