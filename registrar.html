@@ -3,60 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <title>Registrar Usuarios</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <style>
     body {
+      background-color: #0d1b2a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       font-family: Arial, sans-serif;
-      background: #0d1b2a;
       color: gold;
-      padding: 20px;
+      margin: 0;
     }
-    input, select, button {
-      padding: 8px;
-      margin: 5px;
-      border-radius: 5px;
-    }
-    table {
-      margin-top: 20px;
+    .menu {
       width: 100%;
-      border-collapse: collapse;
-      background: #1b263b;
-      color: white;
-    }
-    th, td {
+      background-color: #003566;
       padding: 10px;
+      color: gold;
+      text-align: center;
+    }
+    .menu a {
+      color: gold;
+      margin: 0 10px;
+      text-decoration: none;
+    }
+    .box {
+      background: #1b263b;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+      width: 80%;
+      margin-top: 20px;
+      text-align: center;
+    }
+    h2 {
+      color: gold;
+      margin-bottom: 15px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
       border: 1px solid #ccc;
     }
     button {
       background-color: #003566;
       color: gold;
       border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
       cursor: pointer;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+      color: gold;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #003566;
+    }
+    .estado {
+      font-size: 14px;
+      margin-top: 10px;
+      color: gold;
     }
   </style>
 </head>
 <body>
 
-  <h2>Registrar Usuario</h2>
-  <input type="email" id="correo" placeholder="Correo">
-  <input type="password" id="contrasena" placeholder="Contraseña">
-  <button onclick="registrarUsuario()">Registrar</button>
+  <!-- Menú de Navegación -->
+  <div class="menu">
+    <a href="inicio.html">Inicio</a>
+    <a href="registrar.html">Registrar</a>
+  </div>
 
-  <h2>Usuarios Registrados</h2>
-  <table id="tablaUsuarios">
-    <thead>
-      <tr>
-        <th>Correo</th>
-        <th>Rol</th>
-        <th>Acceso</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="box">
+    <h2>Registrar Usuario</h2>
+    <form id="formRegistrar">
+      <input type="email" id="email" placeholder="Correo Electrónico" required>
+      <input type="text" id="usuario" placeholder="Nombre de Usuario" required>
+      <select id="rol" required>
+        <option value="Administrador">Administrador</option>
+        <option value="Tesorero">Tesorero</option>
+        <option value="Discipulador">Discipulador</option>
+      </select>
+      <button type="submit">Registrar Usuario</button>
+    </form>
 
+    <p class="estado" id="estadoRegistrar"></p>
+
+    <table id="tablaUsuarios">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Acceso</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Script Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
@@ -68,82 +127,88 @@
       appId: "1:815332010058:web:d2afff616469349d88deb3"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    // Inicializar Firebase
+    const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const db = firebase.database();
+    const database = firebase.database();
 
-    function registrarUsuario() {
-      const correo = document.getElementById("correo").value;
-      const contrasena = document.getElementById("contrasena").value;
+    // Función para registrar un usuario
+    document.getElementById("formRegistrar").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const usuario = document.getElementById("usuario").value;
+      const rol = document.getElementById("rol").value;
 
-      auth.createUserWithEmailAndPassword(correo, contrasena)
-        .then(userCredential => {
-          const user = userCredential.user;
-          db.ref("usuarios/" + user.uid).set({
-            correo: correo,
-            rol: "Invitado",
-            acceso: true
-          });
-          alert("Usuario registrado correctamente");
-          document.getElementById("correo").value = "";
-          document.getElementById("contrasena").value = "";
-        })
-        .catch(error => {
-          alert("Error: " + error.message);
+      auth.createUserWithEmailAndPassword(email, "defaultpassword").then((userCredential) => {
+        const user = userCredential.user;
+        const userId = user.uid;
+
+        // Guardar datos del usuario en Firebase Database
+        const usuarioRef = database.ref('usuarios/' + userId);
+        usuarioRef.set({
+          usuario: usuario,
+          rol: rol,
+          acceso: true
         });
-    }
 
-    function cargarUsuarios() {
-      const tabla = document.querySelector("#tablaUsuarios tbody");
-      tabla.innerHTML = "";
+        document.getElementById("estadoRegistrar").textContent = "Usuario registrado con éxito!";
+        loadUsers(); // Recargar la tabla de usuarios
 
-      db.ref("usuarios").on("value", snapshot => {
-        tabla.innerHTML = "";
-        snapshot.forEach(childSnapshot => {
-          const uid = childSnapshot.key;
-          const usuario = childSnapshot.val();
+      }).catch((error) => {
+        document.getElementById("estadoRegistrar").textContent = "Error al registrar usuario: " + error.message;
+      });
+    });
 
-          const fila = document.createElement("tr");
-          fila.innerHTML = `
-            <td>${usuario.correo}</td>
+    // Función para cargar usuarios desde Firebase Database
+    function loadUsers() {
+      const usersRef = database.ref('usuarios');
+      usersRef.once('value', (snapshot) => {
+        const users = snapshot.val();
+        const tableBody = document.querySelector("#tablaUsuarios tbody");
+        tableBody.innerHTML = ""; // Limpiar tabla
+
+        for (const userId in users) {
+          const user = users[userId];
+          const row = document.createElement('tr');
+
+          row.innerHTML = `
+            <td>${user.usuario}</td>
+            <td>${user.rol}</td>
+            <td>${user.acceso ? 'Acceso permitido' : 'Acceso denegado'}</td>
             <td>
-              <select onchange="actualizarRol('${uid}', this.value)">
-                <option ${usuario.rol === "Administrador" ? "selected" : ""}>Administrador</option>
-                <option ${usuario.rol === "Discipulador" ? "selected" : ""}>Discipulador</option>
-                <option ${usuario.rol === "Tesorero" ? "selected" : ""}>Tesorero</option>
-                <option ${usuario.rol === "Invitado" ? "selected" : ""}>Invitado</option>
-              </select>
-            </td>
-            <td>
-              <button onclick="toggleAcceso('${uid}', ${usuario.acceso})" style="background-color:${usuario.acceso ? 'green' : 'red'};">
-                ${usuario.acceso ? 'Permitido' : 'Denegado'}
-              </button>
-            </td>
-            <td>
-              <button onclick="eliminarUsuario('${uid}')">Eliminar</button>
+              <button onclick="toggleAccess('${userId}')">${user.acceso ? 'Quitar acceso' : 'Dar acceso'}</button>
+              <button onclick="deleteUser('${userId}')">Eliminar</button>
             </td>
           `;
-          tabla.appendChild(fila);
+
+          tableBody.appendChild(row);
+        }
+      });
+    }
+
+    // Función para cambiar el acceso del usuario
+    function toggleAccess(userId) {
+      const userRef = database.ref('usuarios/' + userId);
+      userRef.get().then((snapshot) => {
+        const user = snapshot.val();
+        userRef.update({
+          acceso: !user.acceso
+        }).then(() => {
+          loadUsers(); // Recargar tabla
         });
       });
     }
 
-    function actualizarRol(uid, nuevoRol) {
-      db.ref("usuarios/" + uid).update({ rol: nuevoRol });
+    // Función para eliminar un usuario
+    function deleteUser(userId) {
+      const userRef = database.ref('usuarios/' + userId);
+      userRef.remove().then(() => {
+        loadUsers(); // Recargar tabla
+      });
     }
 
-    function toggleAcceso(uid, estadoActual) {
-      db.ref("usuarios/" + uid).update({ acceso: !estadoActual });
-    }
-
-    function eliminarUsuario(uid) {
-      if (confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
-        db.ref("usuarios/" + uid).remove();
-        auth.currentUser?.delete(); // esto elimina solo si es el usuario actual
-      }
-    }
-
-    window.onload = cargarUsuarios;
+    // Cargar los usuarios al iniciar la página
+    loadUsers();
   </script>
 
 </body>
