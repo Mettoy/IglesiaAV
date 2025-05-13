@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <title>Inicio de Sesión</title>
   <style>
     body {
       background-color: #0d1b2a;
@@ -63,7 +63,7 @@
 <script>
   const supabase = supabase.createClient(
     "https://azywyqozwwbfctxeokug.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk"
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   );
 
   async function iniciarSesion() {
@@ -77,40 +77,7 @@
 
     estado.textContent = "Verificando...";
 
-    // Primero, busca al usuario en Supabase
-    const { data, error } = await supabase
-      .from("usuarios")
-      .select("usuario, rol, acceso")
-      .eq("usuario", usuarioIngresado)
-      .single();
-
-    // Si hay error o el usuario no existe
-    if (error || !data) {
-      estado.textContent = "";
-      alert("Usuario no encontrado.");
-      return;
-    }
-
-    // Si el usuario existe y no tiene acceso, se deniega el acceso
-    if (!data.acceso) {
-      estado.textContent = "";
-      alert("Acceso denegado.");
-      return;
-    }
-
-    // Asegura que ADMON tenga rol Administrador sin importar lo que tenga guardado
-    const rolAsignado = data.usuario === "ADMON" ? "Administrador" : data.rol;
-
-    // Almacenar datos en localStorage
-    localStorage.setItem("usuario", data.usuario);
-    localStorage.setItem("rol", rolAsignado);
-
-    estado.textContent = "Acceso permitido. Redirigiendo...";
-    setTimeout(() => {
-      window.location.href = "inicio.html";
-    }, 1000);
-
-    // Si el usuario es ADMON, y no existe en la base de datos, lo crea automáticamente
+    // Crear ADMON si no existe
     if (usuarioIngresado === "ADMON") {
       const { data: admonExistente } = await supabase
         .from("usuarios")
@@ -118,19 +85,38 @@
         .eq("usuario", "ADMON");
 
       if (!admonExistente || admonExistente.length === 0) {
-        // Crear el usuario ADMON con rol Administrador si no existe
-        const { error: errorCrear } = await supabase
-          .from("usuarios")
-          .insert([{ usuario: "ADMON", rol: "Administrador", acceso: true }]);
-
-        if (errorCrear) {
-          estado.textContent = "Error al crear ADMON.";
-          console.error("Error al crear ADMON:", errorCrear);
-        } else {
-          console.log("Usuario ADMON creado correctamente.");
-        }
+        await supabase.from("usuarios").insert([
+          { usuario: "ADMON", rol: "Administrador", acceso: true }
+        ]);
       }
     }
+
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select("usuario, rol, acceso")
+      .eq("usuario", usuarioIngresado)
+      .single();
+
+    if (error || !data) {
+      estado.textContent = "";
+      alert("Usuario no encontrado.");
+      return;
+    }
+
+    if (data.acceso !== true) {
+      estado.textContent = "";
+      alert("Acceso denegado.");
+      return;
+    }
+
+    const rolAsignado = data.usuario === "ADMON" ? "Administrador" : data.rol;
+    localStorage.setItem("usuario", data.usuario);
+    localStorage.setItem("rol", rolAsignado);
+
+    estado.textContent = "Acceso permitido. Redirigiendo...";
+    setTimeout(() => {
+      window.location.href = "inicio.html";
+    }, 1000);
   }
 </script>
 
