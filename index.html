@@ -55,7 +55,7 @@
 <div class="box">
   <h2>Inicio de Sesión</h2>
   <form id="formLogin">
-    <input type="email" id="emailLogin" placeholder="Correo Electrónico" autocomplete="off" required>
+    <input type="email" id="emailLogin" placeholder="Correo Electrónico" required>
     <input type="password" id="passwordLogin" placeholder="Contraseña" required>
     <button type="submit">Ingresar</button>
   </form>
@@ -67,7 +67,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
 
 <script>
-  // Configuración de Firebase
+  // Tu configuración de Firebase
   const firebaseConfig = {
     apiKey: "TU_API_KEY",
     authDomain: "TU_AUTH_DOMAIN",
@@ -81,41 +81,36 @@
   const app = firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
 
-  // Manejador de formulario
-  document.getElementById("formLogin").addEventListener("submit", function(e) {
-    e.preventDefault(); // Evita recarga de página
+  // Manejo del formulario de login
+  document.getElementById("formLogin").addEventListener("submit", function (e) {
+    e.preventDefault(); // Evita que se recargue la página
     iniciarSesion();
   });
 
-  // Función para iniciar sesión
-  async function iniciarSesion() {
+  function iniciarSesion() {
     const estado = document.getElementById("estadoLogin");
     const email = document.getElementById("emailLogin").value.trim();
     const password = document.getElementById("passwordLogin").value.trim();
 
     if (!email || !password) {
-      alert("Por favor ingrese su correo y contraseña.");
+      alert("Por favor ingrese correo y contraseña.");
       return;
     }
 
     estado.textContent = "Verificando...";
 
-    try {
-      // Iniciar sesión con Firebase
-      const userCredential = await auth.signInWithEmailAndPassword(email, password);
-      const user = userCredential.user;
-
-      estado.textContent = "Acceso permitido. Redirigiendo...";
-
-      // Redirige al inicio (inicio.html)
-      setTimeout(() => {
-        window.location.href = "inicio.html";  // Cambia por la URL de tu página de inicio
-      }, 1000);
-    } catch (error) {
-      console.error("Error en inicio de sesión:", error);
-      estado.textContent = "Error al iniciar sesión.";
-      alert("Correo o contraseña incorrectos.");
-    }
+    auth.signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        estado.textContent = "Acceso permitido. Redirigiendo...";
+        setTimeout(() => {
+          window.location.href = "inicio.html";
+        }, 1000);
+      })
+      .catch((error) => {
+        console.error(error);
+        estado.textContent = "Credenciales incorrectas.";
+        alert("Correo o contraseña incorrectos.");
+      });
   }
 </script>
 
