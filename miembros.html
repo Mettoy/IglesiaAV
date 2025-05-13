@@ -92,30 +92,14 @@
     </div>
   </div>
 
-  <!-- Input oculto para cambiar foto -->
-  <input type="file" id="fotoInput" style="display:none;" accept="image/*" onchange="actualizarFoto(event)">
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.21.0/dist/supabase.min.js"></script>
 
   <script>
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID",
-      measurementId: "YOUR_MEASUREMENT_ID"
-    };
-
-    // Inicializar Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+    // Configuración de Supabase
+    const supabaseUrl = 'YOUR_SUPABASE_URL';
+    const supabaseKey = 'YOUR_SUPABASE_KEY';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     let miembroSeleccionado = null;
 
@@ -144,114 +128,48 @@
       new bootstrap.Modal(document.getElementById('modalMiembro')).show();
     }
 
+    // Mostrar miembros en tiempo real
     function mostrarMiembros() {
-      db.collection("miembros").get().then((querySnapshot) => {
-        const tabla = document.getElementById('tablaMiembros');
-        tabla.innerHTML = '';
-        querySnapshot.forEach((doc) => {
-          const m = doc.data();
-          const fila = document.createElement('tr');
-          fila.innerHTML = `
-            <td><img src="${m.foto || 'https://via.placeholder.com/40'}" onclick="seleccionarFoto('${doc.id}')"></td>
-            <td>${m.nombre}</td>
-            <td>${m.codigo}</td>
-            <td>${m.edad}</td>
-            <td>${m.direccion}</td>
-            <td>${m.sociedad}</td>
-            <td>
-              <button class="btn btn-secondary btn-sm me-1" onclick="editarMiembro('${doc.id}')"><i class="bi bi-journal-text"></i></button>
-              <button class="btn btn-info btn-sm me-1" onclick="imprimirMiembro('${doc.id}')"><i class="bi bi-printer"></i></button>
-              <button class="btn btn-danger btn-sm" onclick="eliminarMiembro('${doc.id}')"><i class="bi bi-trash"></i></button>
-            </td>
-          `;
-          tabla.appendChild(fila);
-        });
-      });
-    }
-
-    function seleccionarFoto(id) {
-      miembroSeleccionado = id;
-      document.getElementById('fotoInput').click();
-    }
-
-    function actualizarFoto(event) {
-      const file = event.target.files[0];
-      if (!file || miembroSeleccionado === null) return;
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const storageRef = storage.ref().child(`miembros/${miembroSeleccionado}`);
-        const uploadTask = storageRef.putString(reader.result, 'data_url');
-
-        uploadTask.on('state_changed', (snapshot) => {
-          // Puedes agregar lógica de progreso aquí si lo deseas
-        }, (error) => {
-          console.error(error);
-        }, () => {
-          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-            db.collection("miembros").doc(miembroSeleccionado).update({
-              foto: downloadURL
-            }).then(() => {
-              mostrarMiembros();
-            });
+      supabase
+        .from('miembros')
+        .select('*')
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error al obtener miembros: ', error);
+            return;
+          }
+          const tabla = document.getElementById('tablaMiembros');
+          tabla.innerHTML = '';
+          data.forEach((miembro) => {
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+              <td><img src="${miembro.foto || 'https://via.placeholder.com/40'}" onclick="seleccionarFoto('${miembro.id}')"></td>
+              <td>${miembro.nombre}</td>
+              <td>${miembro.codigo}</td>
+              <td>${miembro.edad}</td>
+              <td>${miembro.direccion}</td>
+              <td>${miembro.sociedad}</td>
+              <td>
+                <button class="btn btn-secondary btn-sm me-1" onclick="editarMiembro('${miembro.id}')"><i class="bi bi-journal-text"></i></button>
+                <button class="btn btn-info btn-sm me-1" onclick="imprimirMiembro('${miembro.id}')"><i class="bi bi-printer"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="eliminarMiembro('${miembro.id}')"><i class="bi bi-trash"></i></button>
+              </td>
+            `;
+            tabla.appendChild(fila);
           });
         });
-      };
-      reader.readAsDataURL(file);
     }
 
-    function eliminarMiembro(id) {
-      db.collection("miembros").doc(id).delete().then(() => {
-        mostrarMiembros();
-      }).catch((error) => {
-        console.error("Error al eliminar el miembro: ", error);
-      });
-    }
+    // Suscribir a cambios en la tabla `miembros` en tiempo real
+    supabase
+      .from('miembros')
+      .on('*', (payload) => {
+        console.log('Cambio detectado:', payload);
+        mostrarMiembros(); // Actualizar la tabla al recibir un cambio
+      })
+      .subscribe();
 
-    function editarMiembro(id) {
-      db.collection("miembros").doc(id).get().then((doc) => {
-        const m = doc.data();
-        const form = document.getElementById('formMiembro');
-        form.nombre.value = m.nombre;
-        form.edad.value = m.edad;
-        form.codigo.value = m.codigo;
-        form.direccion.value = m.direccion;
-        form.sociedad.value = m.sociedad;
-        miembroSeleccionado = id;
-        new bootstrap.Modal(document.getElementById('modalMiembro')).show();
-      });
-    }
-
-    function imprimirMiembro(id) {
-      db.collection("miembros").doc(id).get().then((doc) => {
-        const m = doc.data();
-        const ventana = window.open('', '_blank');
-        ventana.document.write(`
-          <html>
-            <head>
-              <title>Ficha del Miembro</title>
-              <style>
-                body { font-family: Arial; padding: 20px; }
-                h2 { margin-bottom: 20px; }
-                img { width: 100px; border-radius: 10px; }
-              </style>
-            </head>
-            <body>
-              <h2>Ficha del Miembro</h2>
-              <img src="${m.foto || 'https://via.placeholder.com/100'}" alt="Foto">
-              <p><strong>Nombre:</strong> ${m.nombre}</p>
-              <p><strong>Código:</strong> ${m.codigo}</p>
-              <p><strong>Edad:</strong> ${m.edad}</p>
-              <p><strong>Dirección:</strong> ${m.direccion}</p>
-              <p><strong>Sociedad:</strong> ${m.sociedad}</p>
-            </body>
-          </html>
-        `);
-        ventana.document.close();
-        ventana.print();
-      });
-    }
-
+    // Función para agregar miembro
     document.getElementById('formMiembro').addEventListener('submit', function(e) {
       e.preventDefault();
       const form = e.target;
@@ -264,17 +182,66 @@
         foto: ''
       };
 
-      db.collection("miembros").add(miembro).then(() => {
-        mostrarMiembros();
-        bootstrap.Modal.getInstance(document.getElementById('modalMiembro')).hide();
-      }).catch((error) => {
-        console.error("Error al agregar el miembro: ", error);
-      });
+      supabase
+        .from('miembros')
+        .insert([miembro])
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error al agregar el miembro: ', error);
+          } else {
+            mostrarMiembros();
+            new bootstrap.Modal(document.getElementById('new bootstrap.Modal(document.getElementById('modalMiembro')).hide();
+            alert('Miembro agregado exitosamente.');
+          }
+        });
     });
 
-    window.onload = () => {
-      mostrarMiembros();
-    };
+    // Función para editar un miembro (puedes agregar tu lógica)
+    function editarMiembro(id) {
+      // Aquí podrías cargar los datos del miembro seleccionado en el formulario para editarlo
+      console.log(`Editar miembro con ID: ${id}`);
+      // Ejemplo de cómo cargar los datos al formulario
+      supabase
+        .from('miembros')
+        .select('*')
+        .eq('id', id)
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error al obtener miembro: ', error);
+          } else {
+            const form = document.getElementById('formMiembro');
+            form.nombre.value = data.nombre;
+            form.edad.value = data.edad;
+            form.codigo.value = data.codigo;
+            form.direccion.value = data.direccion;
+            form.sociedad.value = data.sociedad;
+            miembroSeleccionado = id;
+            new bootstrap.Modal(document.getElementById('modalMiembro')).show();
+          }
+        });
+    }
+
+    // Función para eliminar un miembro
+    function eliminarMiembro(id) {
+      if (confirm('¿Estás seguro de que quieres eliminar este miembro?')) {
+        supabase
+          .from('miembros')
+          .delete()
+          .eq('id', id)
+          .then(({ data, error }) => {
+            if (error) {
+              console.error('Error al eliminar el miembro: ', error);
+            } else {
+              mostrarMiembros();
+              alert('Miembro eliminado exitosamente.');
+            }
+          });
+      }
+    }
+
+    // Cargar los miembros al cargar la página
+    mostrarMiembros();
   </script>
 </body>
 </html>
