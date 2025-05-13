@@ -5,266 +5,223 @@
   <title>Registrar Usuarios</title>
   <style>
     body {
-      background-color: #0d1b2a;
-      font-family: Arial, sans-serif;
-      color: gold;
       margin: 0;
-      display: flex;
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
     }
 
-    /* Menú lateral */
-    .menu {
-      width: 200px;
-      background-color: #003566;
+    .sidebar {
+      width: 220px;
+      background-color: #1b263b;
+      color: white;
       height: 100vh;
       position: fixed;
-      top: 0;
       left: 0;
-      padding: 20px;
-      color: gold;
+      top: 0;
+      padding: 15px;
+      box-sizing: border-box;
     }
 
-    .menu a {
-      color: gold;
-      margin: 15px 0;
-      text-decoration: none;
-      display: block;
-    }
-
-    .menu a:hover {
-      background-color: #005e8c;
-      padding: 5px;
-      border-radius: 5px;
-    }
-
-    /* Contenedor principal */
-    .container {
-      margin-left: 220px;
-      padding: 20px;
+    .sidebar img {
       width: 100%;
+      margin-bottom: 20px;
+      border-radius: 10px;
+    }
+
+    .content {
+      margin-left: 240px;
+      padding: 20px;
     }
 
     .box {
-      background: #1b263b;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-      width: 80%;
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    h2 {
-      color: gold;
-      margin-bottom: 15px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin-bottom: 30px;
     }
 
     input, select {
       width: 100%;
       padding: 10px;
-      margin-top: 10px;
-      margin-bottom: 15px;
-      border-radius: 8px;
+      margin: 10px 0;
+      border-radius: 5px;
       border: 1px solid #ccc;
     }
 
     button {
-      background-color: #003566;
-      color: gold;
-      border: none;
       padding: 10px 20px;
-      border-radius: 8px;
+      background-color: #003566;
+      color: white;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
     }
 
     table {
       width: 100%;
-      margin-top: 30px;
       border-collapse: collapse;
-      color: gold;
+      background: white;
     }
 
     th, td {
       padding: 10px;
-      text-align: center;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
+      text-align: left;
     }
 
-    th {
-      background-color: #003566;
+    .btn-toggle {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
     }
 
-    .estado {
-      font-size: 14px;
-      margin-top: 10px;
-      color: gold;
+    .btn-on {
+      background-color: green;
     }
 
-    /* Estilo del logo en el menú */
-    .logo {
-      width: 100%;
-      margin-bottom: 20px;
+    .btn-off {
+      background-color: red;
     }
   </style>
 </head>
 <body>
 
-  <!-- Menú Lateral -->
-  <div class="menu">
-    <div id="logo-container">
-      <!-- Aquí se cargará el logo desde Firebase -->
-      <img src="" id="logo" class="logo" alt="Logo">
-    </div>
-    <a href="inicio.html">Inicio</a>
-    <a href="registrar.html">Registrar Usuarios</a>
+<div class="sidebar">
+  <img id="logo" src="" alt="Logo">
+  <h3>Menú</h3>
+  <ul>
+    <li><a href="inicio.html" style="color:white;">Inicio</a></li>
+    <li><a href="registrar.html" style="color:white;">Registrar</a></li>
+  </ul>
+</div>
+
+<div class="content">
+  <div class="box">
+    <h2>Registrar Usuario</h2>
+    <input type="email" id="correo" placeholder="Correo electrónico" required>
+    <input type="password" id="contraseña" placeholder="Contraseña" required>
+    <select id="rol">
+      <option value="Administrador">Administrador</option>
+      <option value="Tesorero">Tesorero</option>
+      <option value="Discipulador">Discipulador</option>
+    </select>
+    <button onclick="registrarUsuario()">Guardar</button>
   </div>
 
-  <!-- Contenedor Principal -->
-  <div class="container">
-    <div class="box">
-      <h2>Registrar Usuario</h2>
-      <form id="formRegistrar">
-        <input type="email" id="email" placeholder="Correo Electrónico" required>
-        <input type="password" id="contraseña" placeholder="Contraseña" required>
-        <input type="text" id="usuario" placeholder="Nombre de Usuario" required>
-        <select id="rol" required>
-          <option value="Administrador">Administrador</option>
-          <option value="Tesorero">Tesorero</option>
-          <option value="Discipulador">Discipulador</option>
-        </select>
-        <button type="submit">Registrar Usuario</button>
-      </form>
+  <h2>Usuarios Registrados</h2>
+  <table id="tablaUsuarios">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Correo</th>
+        <th>Rol</th>
+        <th>Acceso</th>
+        <th>Eliminar</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
-      <p class="estado" id="estadoRegistrar"></p>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-      <table id="tablaUsuarios">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Rol</th>
-            <th>Acceso</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+    databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+    projectId: "iglesia-adoracion-viva",
+    storageBucket: "iglesia-adoracion-viva.appspot.com",
+    messagingSenderId: "815332010058",
+    appId: "1:815332010058:web:d2afff616469349d88deb3"
+  };
 
-  <!-- Firebase Script -->
-  <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-      authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-      databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-      projectId: "iglesia-adoracion-viva",
-      storageBucket: "iglesia-adoracion-viva.appspot.com",
-      messagingSenderId: "815332010058",
-      appId: "1:815332010058:web:d2afff616469349d88deb3"
-    };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
 
-    // Inicializar Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const database = firebase.database();
+  // Cargar logo desde Firebase
+  firebase.database().ref("config/logo").on("value", (snapshot) => {
+    const logoUrl = snapshot.val();
+    if (logoUrl) {
+      document.getElementById("logo").src = logoUrl;
+    }
+  });
 
-    // Cargar logo de Firebase
-    const logoRef = database.ref('config/logo');
-    logoRef.once('value').then((snapshot) => {
-      const logoUrl = snapshot.val();
-      if (logoUrl) {
-        document.getElementById("logo").src = logoUrl;
-      }
-    });
+  function registrarUsuario() {
+    const email = document.getElementById("correo").value.trim();
+    const password = document.getElementById("contraseña").value;
+    const rol = document.getElementById("rol").value;
 
-    // Función para registrar un usuario
-    document.getElementById("formRegistrar").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const contraseña = document.getElementById("contraseña").value;
-      const usuario = document.getElementById("usuario").value;
-      const rol = document.getElementById("rol").value;
+    if (!email || !password) {
+      alert("Completa todos los campos.");
+      return;
+    }
 
-      auth.createUserWithEmailAndPassword(email, contraseña).then((userCredential) => {
-        const user = userCredential.user;
-        const userId = user.uid;
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(userCredential => {
+        const uid = userCredential.user.uid;
 
-        // Guardar datos del usuario en Firebase Database
-        const usuarioRef = database.ref('usuarios/' + userId);
-        usuarioRef.set({
-          usuario: usuario,
+        db.ref("usuarios/" + uid).set({
+          correo: email,
           rol: rol,
           acceso: true
         });
 
-        document.getElementById("estadoRegistrar").textContent = "Usuario registrado con éxito!";
-        addUserToTable(userId, usuario, rol, true); // Añadir el usuario a la tabla
+        document.getElementById("correo").value = "";
+        document.getElementById("contraseña").value = "";
+        cargarUsuarios();
+      })
+      .catch(error => {
+        alert("Error al registrar: " + error.message);
+      });
+  }
 
-      }).catch((error) => {
-        document.getElementById("estadoRegistrar").textContent = "Error al registrar usuario: " + error.message;
+  function cargarUsuarios() {
+    const tbody = document.querySelector("#tablaUsuarios tbody");
+    tbody.innerHTML = "";
+
+    db.ref("usuarios").once("value", snapshot => {
+      let index = 1;
+      snapshot.forEach(child => {
+        const data = child.val();
+        const uid = child.key;
+
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${index++}</td>
+          <td>${data.correo}</td>
+          <td>${data.rol}</td>
+          <td><button class="btn-toggle ${data.acceso ? 'btn-on' : 'btn-off'}" onclick="toggleAcceso('${uid}', ${!data.acceso})">${data.acceso ? 'ON' : 'OFF'}</button></td>
+          <td><button onclick="eliminarUsuario('${uid}')">🗑️</button></td>
+        `;
+        tbody.appendChild(fila);
       });
     });
+  }
 
-    // Función para cargar usuarios desde Firebase Database
-    function loadUsers() {
-      const usersRef = database.ref('usuarios');
-      usersRef.once('value', (snapshot) => {
-        const users = snapshot.val();
-        const tableBody = document.querySelector("#tablaUsuarios tbody");
-        tableBody.innerHTML = ""; // Limpiar tabla
+  function toggleAcceso(uid, estado) {
+    db.ref("usuarios/" + uid).update({ acceso: estado });
+    setTimeout(cargarUsuarios, 500);
+  }
 
-        for (const userId in users) {
-          const user = users[userId];
-          addUserToTable(userId, user.usuario, user.rol, user.acceso);
-        }
-      });
+  function eliminarUsuario(uid) {
+    if (confirm("¿Eliminar este usuario?")) {
+      db.ref("usuarios/" + uid).remove();
+      setTimeout(cargarUsuarios, 500);
     }
+  }
 
-    // Función para añadir un usuario a la tabla
-    function addUserToTable(userId, usuario, rol, acceso) {
-      const tableBody = document.querySelector("#tablaUsuarios tbody");
-      const row = document.createElement('tr');
-
-      row.innerHTML = `
-        <td>${usuario}</td>
-        <td>${rol}</td>
-        <td>${acceso ? 'Acceso permitido' : 'Acceso denegado'}</td>
-        <td>
-          <button onclick="toggleAccess('${userId}')">${acceso ? 'Quitar acceso' : 'Dar acceso'}</button>
-          <button onclick="deleteUser('${userId}')">Eliminar</button>
-        </td>
-      `;
-      tableBody.appendChild(row);
-    }
-
-    // Función para cambiar el acceso del usuario
-    function toggleAccess(userId) {
-      const userRef = database.ref('usuarios/' + userId);
-      userRef.get().then((snapshot) => {
-        const user = snapshot.val();
-        userRef.update({
-          acceso: !user.acceso
-        }).then(() => {
-          loadUsers(); // Recargar tabla
-        });
-      });
-    }
-
-    // Función para eliminar un usuario
-    function deleteUser(userId) {
-      const userRef = database.ref('usuarios/' + userId);
-      userRef.remove().then(() => {
-        loadUsers(); // Recargar tabla
-      });
-    }
-
-    // Cargar los usuarios al iniciar la página
-    loadUsers();
-  </script>
+  // Cargar usuarios al abrir
+  window.onload = cargarUsuarios;
+</script>
 
 </body>
 </html>
