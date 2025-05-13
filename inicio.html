@@ -85,7 +85,7 @@
   <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
   <div class="sidebar" id="sidebar">
-    <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
+    <img id="logo" src="default-logo.png" alt="Logo" onclick="cambiarLogo()" />
     <div class="user-info" id="userInfo"></div>
     <div id="menuLinks"></div>
     <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
@@ -100,32 +100,38 @@
   </div>
 
   <script>
-    const usuarioActivo = localStorage.getItem('usuarioActivo');
-    const rolActivo = localStorage.getItem('rolActivo');
-
-    if (!usuarioActivo || !rolActivo) {
-      window.location.href = "index.html";
-    }
-
-    // Supabase
     const supabaseUrl = 'TU_SUPABASE_URL'; // Reemplaza con tu URL de Supabase
     const supabaseKey = 'TU_SUPABASE_ANON_KEY'; // Reemplaza con tu clave pública
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Función para cargar el logo
-    async function cargarLogo() {
-      const { data, error } = await supabase
-        .storage
-        .from('logos')
-        .getPublicUrl('images%20(1).png');  // Usando el nombre de la imagen en Supabase
-
-      if (data?.publicUrl) {
-        document.getElementById("logo").src = data.publicUrl;
+    // Función para obtener el usuario activo desde Supabase
+    async function obtenerUsuarioActivo() {
+      const usuarioActivo = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('email', localStorage.getItem('usuarioActivo'))
+        .single();
+      
+      if (usuarioActivo.data) {
+        return usuarioActivo.data;
       } else {
-        document.getElementById("logo").src = "https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png"; // URL predeterminada
+        window.location.href = "index.html"; // Si no está registrado, redirigir al login
       }
     }
 
+    // Función para cargar el logo
+    async function cargarLogo() {
+      const { data, error } = await supabase
+        .from('configuracion')
+        .select('logo')
+        .single();
+
+      if (data?.logo) {
+        document.getElementById("logo").src = data.logo;
+      }
+    }
+
+    // Función para cambiar el logo
     async function cambiarLogo() {
       const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
       if (!clave || clave.trim().toLowerCase() !== "adoración viva") {
@@ -146,12 +152,21 @@
 
           const { error: uploadError } = await supabase.storage
             .from('logos')
-            .upload('images%20(1).png', file, { upsert: true });
+            .upload('new-logo.png', file, { upsert: true });
 
           if (uploadError) {
             alert("Error al subir: " + uploadError.message);
             return;
           }
+
+          const logoUrl = await supabase
+            .storage
+            .from('logos')
+            .getPublicUrl('new-logo.png');
+
+          await supabase
+            .from('configuracion')
+            .upsert({ logo: logoUrl.data.publicUrl });
 
           cargarLogo(); // Refrescar logo
         }
@@ -159,24 +174,15 @@
       input.click();
     }
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('hide');
-    }
-
-    function cerrarSesion() {
-      localStorage.removeItem("usuarioActivo");
-      localStorage.removeItem("rolActivo");
-      window.location.href = "index.html";
-    }
-
-    function actualizarMenu() {
+    // Función para actualizar el menú según el rol
+    async function actualizarMenu() {
+      const usuario = await obtenerUsuarioActivo();
       const menuLinks = document.getElementById('menuLinks');
       const userInfo = document.getElementById('userInfo');
       menuLinks.innerHTML = '';
-      const rol = rolActivo;
-      const usuario = usuarioActivo;
-
-      userInfo.textContent = `${usuario} - ${rol}`;
+      
+      const rol = usuario.rol;
+      userInfo.textContent = `${usuario.nombre} - ${rol}`;
 
       const enlaces = [];
 
@@ -186,8 +192,7 @@
           { href: "miembros.html", texto: "Miembros" },
           { href: "diezmo.html", texto: "Diezmo" },
           { href: "ofrendas.html", texto: "Ofrendas" },
-          { href: "acceso.html", texto: "Crear Acceso" },
-          { href: "discipulado.html", texto: "Discipulado" }
+          { href: "estadisticas.html", texto: "Estadísticas" }
         );
       } else if (rol === "Tesorero") {
         enlaces.push(
@@ -210,67 +215,70 @@
       });
     }
 
-    // Datos demo
-    if (!localStorage.getItem('miembros')) {
-      const miembros = [
-        { nombre: "Ana", sociedad: "Damas", asistencia: 8 },
-        { nombre: "Luis", sociedad: "Caballeros", asistencia: 6 },
-        { nombre: "Carlos", sociedad: "Jóvenes", asistencia: 7 },
-        { nombre: "Marta", sociedad: "Damas", asistencia: 9 },
-        { nombre: "Pedro", sociedad: "Caballeros", asistencia: 5 },
-        { nombre: "Lucía", sociedad: "Jóvenes", asistencia: 10 },
-        { nombre: "José", sociedad: "Sociedad", asistencia: 4 }
-      ];
-      localStorage.setItem('miembros', JSON.stringify(miembros));
+    // Función para cargar los miembros y mostrar estadísticas
+    async function cargarEstadisticas() {
+      const { data: miembros, error } = await supabase
+        .from('miembros')
+        .select('*');
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const conteoSociedad = { Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0 };
+      miembros.forEach(m => {
+        if (conteoSociedad[m.sociedad] !== undefined) {
+          conteoSociedad[m.sociedad]++;
+        }
+      });
+
+      new Chart(document.getElementById('sociedadChart'), {
+        type: 'pie',
+        data: {
+          labels: Object.keys(conteoSociedad),
+          datasets: [{
+            data: Object.values(conteoSociedad),
+            backgroundColor: ['#f7c948', '#36a2eb', '#ff6384', '#9966ff'],
+            borderColor: '#14153a',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      new Chart(document.getElementById('asistenciaChart'), {
+        type: 'bar',
+        data: {
+          labels: miembros.map(m => m.nombre),
+          datasets: [{
+            label: 'Asistencia',
+            data: miembros.map(m => m.asistencia || 0),
+            backgroundColor: '#36a2eb'
+          }]
+        },
+        options: {
+          scales: {
+            y: { ticks: { color: '#f7c948' }, beginAtZero: true },
+            x: { ticks: { color: '#f7c948' } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
     }
 
-    const miembros = JSON.parse(localStorage.getItem('miembros')) || [];
+    // Función para cerrar sesión
+    function cerrarSesion() {
+      localStorage.removeItem("usuarioActivo");
+      window.location.href = "index.html";
+    }
 
-    const conteoSociedad = { Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0 };
-    miembros.forEach(m => {
-      if (conteoSociedad[m.sociedad] !== undefined) {
-        conteoSociedad[m.sociedad]++;
-      }
-    });
-
-    new Chart(document.getElementById('sociedadChart'), {
-      type: 'pie',
-      data: {
-        labels: Object.keys(conteoSociedad),
-        datasets: [{
-          data: Object.values(conteoSociedad),
-          backgroundColor: ['#f7c948', '#36a2eb', '#ff6384', '#9966ff'],
-          borderColor: '#14153a',
-          borderWidth: 2
-        }]
-      },
-      options: {
-        plugins: { legend: { display: false } }
-      }
-    });
-
-    const miembrosOrdenados = miembros.slice().sort((a, b) => a.nombre.localeCompare(b.nombre));
-    new Chart(document.getElementById('asistenciaChart'), {
-      type: 'bar',
-      data: {
-        labels: miembrosOrdenados.map(m => m.nombre),
-        datasets: [{
-          label: 'Asistencia',
-          data: miembrosOrdenados.map(m => m.asistencia || 0),
-          backgroundColor: '#36a2eb'
-        }]
-      },
-      options: {
-        scales: {
-          y: { ticks: { color: '#f7c948' }, beginAtZero: true },
-          x: { ticks: { color: '#f7c948' } }
-        },
-        plugins: { legend: { display: false } }
-      }
-    });
-
+    // Llamadas a las funciones iniciales
     actualizarMenu();
     cargarLogo();
+    cargarEstadisticas();
   </script>
 </body>
 </html>
