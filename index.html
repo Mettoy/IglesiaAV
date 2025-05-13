@@ -45,123 +45,33 @@
     .login-box img {
       max-width: 100px;
       max-height: 100px;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
       border-radius: 10px;
-    }
-    #imgInput {
-      display: none;
     }
   </style>
 </head>
 <body>
 
 <div class="login-box">
-  <input type="file" id="imgInput" accept="image/*" onchange="cargarImagen(event)">
-  <img id="vistaPrevia" src="" style="display:none">
+  <!-- Logo predeterminado visible para todos -->
+  <img id="logoGeneral" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js" alt="Logo de la Aplicación">
   <h2>Ingrese</h2>
-  <input type="text" id="usuario" placeholder="Usuario" oninput="verificarAdmon()">
+  <input type="text" id="usuario" placeholder="Usuario">
   <button onclick="iniciarSesion()">Entrar</button>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js"></script>
-
 <script>
-// Configuración de Firebase
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-
-// Inicializa Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// Mostrar imagen guardada de ADMON si existe
-window.onload = function () {
-  const usuario = document.getElementById('usuario').value.trim().toUpperCase();
-  const imgGuardada = localStorage.getItem('imagenADMON');
-  if (imgGuardada) {
-    const vista = document.getElementById('vistaPrevia');
-    vista.src = imgGuardada;
-    vista.style.display = 'block';
-  }
-
-  // Obtener logo guardado desde Firestore
-  db.collection("config").doc("logo").get().then((doc) => {
-    if (doc.exists) {
-      const logoData = doc.data().logo;
-      document.getElementById("vistaPrevia").src = logoData;
+  // Iniciar sesión
+  function iniciarSesion() {
+    const usuario = document.getElementById("usuario").value.trim().toUpperCase();
+    if (!usuario) {
+      alert("Por favor ingrese un usuario.");
+      return;
     }
-  });
-};
 
-function verificarAdmon() {
-  const usuario = document.getElementById('usuario').value.trim().toUpperCase();
-  const imgInput = document.getElementById('imgInput');
-  const vista = document.getElementById('vistaPrevia');
-
-  if (usuario === "ADMON") {
-    imgInput.style.display = 'block';
-    const imgGuardada = localStorage.getItem('imagenADMON');
-    if (imgGuardada) {
-      vista.src = imgGuardada;
-      vista.style.display = 'block';
-    }
-  } else {
-    imgInput.style.display = 'none';
-    vista.style.display = 'none';
+    // Aquí podrías agregar tu lógica de autenticación para usuarios
+    alert("Sesión iniciada como: " + usuario);
   }
-}
-
-function cargarImagen(event) {
-  const vista = document.getElementById('vistaPrevia');
-  const archivo = event.target.files[0];
-  if (archivo) {
-    const lector = new FileReader();
-    lector.onload = function(e) {
-      vista.src = e.target.result;
-      vista.style.display = 'block';
-      localStorage.setItem('imagenADMON', e.target.result);
-
-      // Guardar logo en Firestore
-      db.collection("config").doc("logo").set({
-        logo: e.target.result
-      }).then(() => {
-        alert("Logo actualizado en Firebase.");
-      }).catch((error) => {
-        console.error("Error al guardar el logo: ", error);
-      });
-    };
-    lector.readAsDataURL(archivo);
-  }
-}
-
-function iniciarSesion() {
-  const usuario = document.getElementById('usuario').value.trim().toUpperCase();
-  if (!usuario) {
-    alert("Por favor ingrese un usuario.");
-    return;
-  }
-
-  const accesos = JSON.parse(localStorage.getItem('accesos')) || [];
-  const encontrado = accesos.find(u => u.usuario === usuario);
-
-  if (usuario === "ADMON" || (encontrado && encontrado.acceso)) {
-    const rol = (usuario === "ADMON") ? "Administrador" : encontrado.tipo;
-    localStorage.setItem("usuarioActivo", usuario);
-    localStorage.setItem("rolActivo", rol);
-    window.location.href = "inicio.html";
-  } else if (encontrado && !encontrado.acceso) {
-    alert("Este usuario tiene el acceso denegado.");
-  } else {
-    alert("Usuario no registrado.");
-  }
-}
 </script>
 
 </body>
