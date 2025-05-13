@@ -9,17 +9,59 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
   <style>
-    /* Asegúrate de que el botón esté visible y no esté tapado */
+    /* Estilo para el logo */
+    #logo {
+      width: 150px;
+      height: auto;
+      margin-top: 10px;
+    }
+
+    /* Menú lateral */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100%;
+      background-color: #343a40;
+      padding-top: 20px;
+      color: white;
+    }
+
+    .sidebar a {
+      color: white;
+      padding: 10px 15px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .sidebar a:hover {
+      background-color: #575757;
+    }
+
+    .content {
+      margin-left: 270px;
+    }
+
     .btn-agregar {
-      z-index: 9999; /* Establecer un z-index alto */
+      z-index: 9999;
     }
   </style>
 </head>
 <body>
-  
-  <!-- Contenedor principal -->
-  <div class="container mt-4">
-    
+
+  <!-- Menú lateral -->
+  <div class="sidebar">
+    <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo">
+    <a href="#">Inicio</a>
+    <a href="#">Miembros</a>
+    <a href="#">Sociedades</a>
+    <a href="#">Reporte</a>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="content container mt-4">
+
     <!-- Título y botón -->
     <h1>Gestión de Miembros</h1>
     <button class="btn btn-primary" onclick="abrirFormulario()">Añadir Miembro</button>
@@ -72,6 +114,17 @@
               <label for="sociedad" class="form-label">Sociedad</label>
               <input type="text" class="form-control" id="sociedad" required>
             </div>
+
+            <!-- Nuevas categorías -->
+            <div class="mb-3">
+              <label for="familia" class="form-label">Familia</label>
+              <input type="text" class="form-control" id="familia" required>
+            </div>
+            <div class="mb-3">
+              <label for="religion" class="form-label">Religión</label>
+              <input type="text" class="form-control" id="religion" required>
+            </div>
+
             <button type="submit" class="btn btn-success">Guardar</button>
           </form>
         </div>
@@ -100,6 +153,8 @@
       const edad = document.getElementById('edad').value;
       const direccion = document.getElementById('direccion').value;
       const sociedad = document.getElementById('sociedad').value;
+      const familia = document.getElementById('familia').value;
+      const religion = document.getElementById('religion').value;
 
       // Crear fila en la tabla de miembros
       const nuevaFila = document.createElement('tr');
