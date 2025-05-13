@@ -7,38 +7,185 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
-    body { display: flex; min-height: 100vh; background-color: #0a0a23; color: white; }
-    .sidebar { width: 250px; background-color: #111; transition: all 0.3s; }
-    .sidebar.collapsed { width: 60px; }
-    .sidebar img { width: 100px; margin: 1rem auto; display: block; border-radius: 10px; }
-    .sidebar a { color: white; padding: 10px; display: block; text-decoration: none; }
-    .sidebar a:hover { background-color: #333; }
-    .main { flex-grow: 1; padding: 2rem; width: 100%; }
-    .form-section { margin-bottom: 1rem; padding: 1rem; border: 1px solid #444; border-radius: 5px; background-color: #1c1c2e; }
-    .hidden { display: none; }
-    .table img { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: #1c1c2e;
+      transition: all 0.3s;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    .sidebar img {
+      width: 80px;
+      margin: 1rem auto;
+      display: block;
+      border-radius: 50%;
+    }
+
+    .sidebar a {
+      color: #fff;
+      padding: 12px 16px;
+      display: block;
+      text-decoration: none;
+      font-size: 1.1rem;
+      border-bottom: 1px solid #444;
+    }
+
+    .sidebar a:hover {
+      background-color: #333;
+    }
+
+    .sidebar a.active {
+      background-color: #565656;
+    }
+
+    .sidebar .menu-toggle {
+      background-color: transparent;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      padding: 10px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem;
+      background-color: #1a1a2e;
+      width: 100%;
+      border-left: 1px solid #444;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .table {
+      background-color: #222;
+      color: #fff;
+      border-radius: 8px;
+    }
+
+    .table th, .table td {
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .form-section {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background-color: #333;
+    }
+
+    .form-section input, .form-section select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 0.8rem;
+      border-radius: 8px;
+      border: none;
+      background-color: #444;
+      color: #fff;
+    }
+
+    .form-section input:focus, .form-section select:focus {
+      outline: none;
+      background-color: #555;
+    }
+
+    .btn-custom {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+
+    .btn-custom:hover {
+      background-color: #0056b3;
+    }
+
+    .modal-content {
+      background-color: #222;
+      color: #fff;
+    }
+
+    .modal-header {
+      border-bottom: 1px solid #444;
+    }
+
+    .modal-footer button {
+      background-color: #444;
+      color: #fff;
+      border-radius: 8px;
+    }
+
+    .modal-footer button:hover {
+      background-color: #555;
+    }
+
+    .btn-agregar {
+      background-color: #00c853;
+      border-radius: 8px;
+      color: #fff;
+      padding: 12px 20px;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+      width: auto;
+      margin-top: 20px;
+    }
+
+    .btn-agregar:hover {
+      background-color: #009624;
+    }
+
+    .sidebar.collapsed .menu-toggle {
+      font-size: 2rem;
+      padding: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="sidebar" id="sidebar">
-    <button class="btn btn-dark w-100" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
     <img src="https://via.placeholder.com/100" alt="Logo" id="logo" onclick="cambiarLogoInput()">
     <input type="file" id="logoInput" style="display:none;" accept="image/*" onchange="cambiarLogo()">
-    <a href="inicio.html">Inicio</a>
+    <a href="inicio.html" class="active">Inicio</a>
     <a href="diezmo.html">Diezmos</a>
     <a href="#" onclick="mostrarMiembrosBaja()">Miembros de baja</a>
     <a href="#">Salir</a>
   </div>
 
-  <div class="main">
+  <div class="main-content">
     <h2>Listado de Miembros</h2>
-    <div class="mb-3">
-      <button class="btn btn-success" onclick="abrirFormulario()"><i class="bi bi-journal-plus"></i> Agregar Miembro</button>
-    </div>
-    <table class="table table-dark table-bordered align-middle">
+    <button class="btn-agregar" onclick="abrirFormulario()"><i class="bi bi-journal-plus"></i> Agregar Miembro</button>
+
+    <table class="table table-bordered">
       <thead>
         <tr>
-          <th>Foto</th><th>Nombre completo</th><th>Código</th><th>Edad</th><th>Dirección</th><th>Sociedad</th><th>Acciones</th>
+          <th>Foto</th>
+          <th>Nombre completo</th>
+          <th>Código</th>
+          <th>Edad</th>
+          <th>Dirección</th>
+          <th>Sociedad</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody id="tablaMiembros"></tbody>
@@ -48,7 +195,7 @@
   <!-- Modal formulario -->
   <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-      <div class="modal-content text-black">
+      <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Ficha del Miembro</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -57,11 +204,11 @@
           <form id="formMiembro">
             <div class="form-section">
               <h6>Datos personales</h6>
-              <input type="text" name="nombre" class="form-control mb-2" placeholder="Nombre completo" required>
-              <input type="number" name="edad" class="form-control mb-2" placeholder="Edad" required>
-              <input type="text" name="codigo" class="form-control mb-2" placeholder="Código" required>
-              <input type="text" name="direccion" class="form-control mb-2" placeholder="Dirección">
-              <select name="sociedad" class="form-select mb-2">
+              <input type="text" name="nombre" class="form-control" placeholder="Nombre completo" required>
+              <input type="number" name="edad" class="form-control" placeholder="Edad" required>
+              <input type="text" name="codigo" class="form-control" placeholder="Código" required>
+              <input type="text" name="direccion" class="form-control" placeholder="Dirección">
+              <select name="sociedad" class="form-control">
                 <option value="">Sociedad</option>
                 <option>Jóvenes</option>
                 <option>Damas</option>
@@ -71,21 +218,21 @@
 
             <div class="form-section">
               <h6>Datos familiares</h6>
-              <input type="text" name="padre" class="form-control mb-2" placeholder="Padre">
-              <input type="text" name="madre" class="form-control mb-2" placeholder="Madre">
-              <input type="text" name="hermano1" class="form-control mb-2" placeholder="Hermano 1">
-              <input type="text" name="hermano2" class="form-control mb-2" placeholder="Hermano 2">
+              <input type="text" name="padre" class="form-control" placeholder="Padre">
+              <input type="text" name="madre" class="form-control" placeholder="Madre">
+              <input type="text" name="hermano1" class="form-control" placeholder="Hermano 1">
+              <input type="text" name="hermano2" class="form-control" placeholder="Hermano 2">
             </div>
 
             <div class="form-section">
               <h6>Datos espirituales</h6>
-              <input type="date" name="fechaBautismo" class="form-control mb-2" placeholder="Fecha de bautismo">
-              <input type="text" name="lugarBautismo" class="form-control mb-2" placeholder="Lugar de bautismo">
-              <input type="date" name="fechaConversion" class="form-control mb-2" placeholder="Fecha de conversión">
-              <input type="text" name="lugarConversion" class="form-control mb-2" placeholder="Lugar de conversión">
+              <input type="date" name="fechaBautismo" class="form-control" placeholder="Fecha de bautismo">
+              <input type="text" name="lugarBautismo" class="form-control" placeholder="Lugar de bautismo">
+              <input type="date" name="fechaConversion" class="form-control" placeholder="Fecha de conversión">
+              <input type="text" name="lugarConversion" class="form-control" placeholder="Lugar de conversión">
             </div>
 
-            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="submit" class="btn-custom">Guardar</button>
           </form>
         </div>
       </div>
@@ -94,11 +241,10 @@
 
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.21.0/dist/supabase.min.js"></script>
-
   <script>
     // Configuración de Supabase
-    const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk';
+    const supabaseUrl = 'YOUR_SUPABASE_URL';
+    const supabaseKey = 'YOUR_SUPABASE_KEY';
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     let miembroSeleccionado = null;
@@ -143,16 +289,15 @@
           data.forEach((miembro) => {
             const fila = document.createElement('tr');
             fila.innerHTML = `
-              <td><img src="${miembro.foto || 'https://via.placeholder.com/40'}" onclick="seleccionarFoto('${miembro.id}')"></td>
+              <td><img src="${miembro.foto || 'https://via.placeholder.com/100'}" alt="Foto" class="img-thumbnail" width="50"></td>
               <td>${miembro.nombre}</td>
               <td>${miembro.codigo}</td>
               <td>${miembro.edad}</td>
               <td>${miembro.direccion}</td>
               <td>${miembro.sociedad}</td>
               <td>
-                <button class="btn btn-secondary btn-sm me-1" onclick="editarMiembro('${miembro.id}')"><i class="bi bi-journal-text"></i></button>
-                <button class="btn btn-info btn-sm me-1" onclick="imprimirMiembro('${miembro.id}')"><i class="bi bi-printer"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="eliminarMiembro('${miembro.id}')"><i class="bi bi-trash"></i></button>
+                <button class="btn btn-primary" onclick="editarMiembro(${miembro.id})">Editar</button>
+                <button class="btn btn-danger" onclick="eliminarMiembro(${miembro.id})">Eliminar</button>
               </td>
             `;
             tabla.appendChild(fila);
@@ -160,104 +305,13 @@
         });
     }
 
-    // Suscribir a cambios en la tabla `miembros` en tiempo real
-    supabase
-      .from('miembros')
-      .on('*', (payload) => {
-        console.log('Cambio detectado:', payload);
-        mostrarMiembros(); // Actualizar la tabla al recibir un cambio
-      })
-      .subscribe();
-
-    // Función para agregar miembro
-    document.getElementById('formMiembro').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const form = e.target;
-      const miembro = {
-        nombre: form.nombre.value,
-        edad: form.edad.value,
-        codigo: form.codigo.value,
-        direccion: form.direccion.value,
-        sociedad: form.sociedad.value,
-        padre: form.padre.value,
-        madre: form.madre.value,
-        hermano1: form.hermano1.value,
-        hermano2: form.hermano2.value,
-        fechaBautismo: form.fechaBautismo.value,
-        lugarBautismo: form.lugarBautismo.value,
-        fechaConversion: form.fechaConversion.value,
-        lugarConversion: form.lugarConversion.value,
-      };
-
-      supabase
-        .from('miembros')
-        .insert([miembro])
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('Error al agregar miembro: ', error);
-            return;
-          }
-          console.log('Miembro agregado exitosamente:', data);
-          mostrarMiembros();  // Actualizar la lista de miembros
-          bootstrap.Modal.getInstance(document.getElementById('modalMiembro')).hide();  // Cerrar el modal
-        });
-    });
-
-    // Función para editar miembro
     function editarMiembro(id) {
-      supabase
-        .from('miembros')
-        .select('*')
-        .eq('id', id)
-        .single()
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('Error al obtener miembro:', error);
-            return;
-          }
-          // Cargar datos en el formulario de edición
-          const form = document.getElementById('formMiembro');
-          form.nombre.value = data.nombre;
-          form.edad.value = data.edad;
-          form.codigo.value = data.codigo;
-          form.direccion.value = data.direccion;
-          form.sociedad.value = data.sociedad;
-          form.padre.value = data.padre;
-          form.madre.value = data.madre;
-          form.hermano1.value = data.hermano1;
-          form.hermano2.value = data.hermano2;
-          form.fechaBautismo.value = data.fechaBautismo;
-          form.lugarBautismo.value = data.lugarBautismo;
-          form.fechaConversion.value = data.fechaConversion;
-          form.lugarConversion.value = data.lugarConversion;
-
-          miembroSeleccionado = data.id;
-          new bootstrap.Modal(document.getElementById('modalMiembro')).show();
-        });
+      // Implementa la lógica para editar
     }
 
-    // Función para eliminar miembro
     function eliminarMiembro(id) {
-      if (confirm('¿Seguro que deseas eliminar este miembro?')) {
-        supabase
-          .from('miembros')
-          .delete()
-          .eq('id', id)
-          .then(({ data, error }) => {
-            if (error) {
-              console.error('Error al eliminar miembro: ', error);
-              return;
-            }
-            console.log('Miembro eliminado:', data);
-            mostrarMiembros();  // Actualizar la lista de miembros
-          });
-      }
+      // Implementa la lógica para eliminar
     }
-
-    // Cargar la lista de miembros al cargar la página
-    mostrarMiembros();
   </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
