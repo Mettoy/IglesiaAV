@@ -45,10 +45,6 @@
       background-color: #333;
     }
 
-    .sidebar a.active {
-      background-color: #565656;
-    }
-
     .sidebar .menu-toggle {
       background-color: transparent;
       border: none;
@@ -164,8 +160,7 @@
 <body>
   <div class="sidebar" id="sidebar">
     <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
-    <!-- Actualiza la URL del logo -->
-    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" id="logo" onclick="cambiarLogoInput()">
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" alt="Logo" id="logo" onclick="cambiarLogoInput()">
     <input type="file" id="logoInput" style="display:none;" accept="image/*" onchange="cambiarLogo()">
     <a href="inicio.html" class="active">Inicio</a>
     <a href="diezmo.html">Diezmos</a>
@@ -175,7 +170,7 @@
 
   <div class="main-content">
     <h2>Listado de Miembros</h2>
-    <button class="btn-agregar" onclick="abrirFormulario()"><i class="bi bi-journal-plus"></i> Agregar Miembro</button>
+    <button class="btn-agregar" onclick="abrirFormulario()">Agregar Miembro</button>
 
     <table class="table table-bordered">
       <thead>
@@ -243,9 +238,8 @@
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.21.0/dist/supabase.min.js"></script>
   <script>
-    // Configuración de Supabase
-    const supabaseUrl = 'YOUR_SUPABASE_URL';
-    const supabaseKey = 'YOUR_SUPABASE_KEY';
+    const supabaseUrl = 'YOUR_SUPABASE_URL'; // Reemplaza con tu URL de Supabase
+    const supabaseKey = 'YOUR_SUPABASE_KEY'; // Reemplaza con tu clave de Supabase
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     let miembroSeleccionado = null;
@@ -254,181 +248,103 @@
       document.getElementById('sidebar').classList.toggle('collapsed');
     }
 
-    function cambiarLogoInput() {
-      document.getElementById('logoInput').click();
+    async function abrirFormulario() {
+      document.getElementById('formMiembro').reset();
+      $('#modalMiembro').modal('show');
     }
 
-    function cambiarLogo() {
-      const file = document.getElementById('logoInput').files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          document.getElementById('logo').src = reader.result;
-          localStorage.setItem('logo', reader.result);
-        };
-        reader.readAsDataURL(file);
+    async function agregarMiembro(event) {
+      event.preventDefault();
+
+      const form = new FormData(event.target);
+
+      const nuevoMiembro = {
+        nombre: form.get("nombre"),
+        edad: form.get("edad"),
+        codigo: form.get("codigo"),
+        direccion: form.get("direccion"),
+        sociedad: form.get("sociedad"),
+        padre: form.get("padre"),
+        madre: form.get("madre"),
+        hermano1: form.get("hermano1"),
+        hermano2: form.get("hermano2"),
+        fechaBautismo: form.get("fechaBautismo"),
+        lugarBautismo: form.get("lugarBautismo"),
+        fechaConversion: form.get("fechaConversion"),
+        lugarConversion: form.get("lugarConversion"),
+      };
+
+      const { data, error } = await supabase
+        .from('miembros')
+        .insert([nuevoMiembro]);
+
+      if (error) {
+        alert('Error al guardar el miembro: ' + error.message);
+      } else {
+        alert('Miembro guardado exitosamente!');
+        $('#modalMiembro').modal('hide');
       }
     }
 
-    function abrirFormulario() {
-      // Resetea el formulario cada vez que se abre el modal
-      document.getElementById('formMiembro').reset();
-      // Abre el modal de Bootstrap
-      const modal = new bootstrap.Modal(document.getElementById('modalMiembro'));
-      modal.show();
-    }
-
-    // Mostrar miembros en tiempo real
-    function mostrarMiembros() {
-      supabase
+    async function mostrarMiembros() {
+      const { data, error } = await supabase
         .from('miembros')
-        .select('*')
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('Error al obtener miembros: ', error);
-            return;
-          }
-          const tabla = document.getElementById('tablaMiembros');
-          tabla.innerHTML = '';
-          data.forEach((miembro) => {
-            const fila = document.createElement('tr');
-            fila.innerHTML = `
-              <td><img src="${miembro.foto || 'https://via.placeholder.com/100'}" alt="Foto" class="img-thumbnail" width="50"></td>
+        .select('*');
+
+      if (error) {
+        alert('Error al cargar los miembros: ' + error.message);
+      } else {
+        const tabla = document.getElementById('tablaMiembros');
+        tabla.innerHTML = ''; // Limpiar tabla antes de mostrar los miembros
+        data.forEach(miembro => {
+          const row = `
+            <tr>
+              <td><img src="${miembro.foto || 'default.jpg'}" alt="Foto" width="50"></td>
               <td>${miembro.nombre}</td>
               <td>${miembro.codigo}</td>
               <td>${miembro.edad}</td>
               <td>${miembro.direccion}</td>
               <td>${miembro.sociedad}</td>
               <td>
-                <button class="btn btn-primary" onclick="editarMiembro(${miembro.id})">Editar</button>
-                <button class="btn btn-danger" onclick="eliminarMiembro(${miembro.id})">Eliminar</button></td>
-            `;
-            tabla.appendChild(fila);
-          });
-        });
+                <button onclick="editarMiembro(${miembro.id})">Editar</button>
+                <button onclick="eliminarMiembro(${miembro.id})">Eliminar</button>
+              </td>
+            </tr>
+          `;
+          tabla.innerHTML += row;
+        }
+      }
     }
 
-    function editarMiembro(id) {
-      // Obtener miembro por ID
-      supabase
+    async function editarMiembro(id) {
+      // Función para editar miembro
+    }
+
+    async function eliminarMiembro(id) {
+      const { data, error } = await supabase
         .from('miembros')
-        .select('*')
-        .eq('id', id)
-        .single()
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('Error al obtener miembro: ', error);
-            return;
-          }
+        .delete()
+        .match({ id });
 
-          // Rellenar el formulario con los datos del miembro
-          document.querySelector('[name="nombre"]').value = data.nombre;
-          document.querySelector('[name="edad"]').value = data.edad;
-          document.querySelector('[name="codigo"]').value = data.codigo;
-          document.querySelector('[name="direccion"]').value = data.direccion;
-          document.querySelector('[name="sociedad"]').value = data.sociedad;
-          document.querySelector('[name="padre"]').value = data.padre || '';
-          document.querySelector('[name="madre"]').value = data.madre || '';
-          document.querySelector('[name="hermano1"]').value = data.hermano1 || '';
-          document.querySelector('[name="hermano2"]').value = data.hermano2 || '';
-          document.querySelector('[name="fechaBautismo"]').value = data.fechaBautismo || '';
-          document.querySelector('[name="lugarBautismo"]').value = data.lugarBautismo || '';
-          document.querySelector('[name="fechaConversion"]').value = data.fechaConversion || '';
-          document.querySelector('[name="lugarConversion"]').value = data.lugarConversion || '';
-
-          // Mostrar el modal
-          const modal = new bootstrap.Modal(document.getElementById('modalMiembro'));
-          modal.show();
-        });
-    }
-
-    function eliminarMiembro(id) {
-      // Eliminar miembro por ID
-      if (confirm('¿Está seguro de que desea eliminar a este miembro?')) {
-        supabase
-          .from('miembros')
-          .delete()
-          .eq('id', id)
-          .then(({ data, error }) => {
-            if (error) {
-              console.error('Error al eliminar miembro: ', error);
-              return;
-            }
-            // Actualizar la lista de miembros
-            mostrarMiembros();
-          });
-      }
-    }
-
-    // Guardar datos del formulario
-    document.getElementById('formMiembro').addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const miembro = {
-        nombre: e.target.nombre.value,
-        edad: e.target.edad.value,
-        codigo: e.target.codigo.value,
-        direccion: e.target.direccion.value,
-        sociedad: e.target.sociedad.value,
-        padre: e.target.padre.value,
-        madre: e.target.madre.value,
-        hermano1: e.target.hermano1.value,
-        hermano2: e.target.hermano2.value,
-        fechaBautismo: e.target.fechaBautismo.value,
-        lugarBautismo: e.target.lugarBautismo.value,
-        fechaConversion: e.target.fechaConversion.value,
-        lugarConversion: e.target.lugarConversion.value
-      };
-
-      // Verificar si estamos agregando o editando un miembro
-      if (miembroSeleccionado) {
-        // Actualizar miembro existente
-        supabase
-          .from('miembros')
-          .update(miembro)
-          .eq('id', miembroSeleccionado)
-          .then(({ data, error }) => {
-            if (error) {
-              console.error('Error al actualizar miembro: ', error);
-              return;
-            }
-            alert('Miembro actualizado correctamente');
-            mostrarMiembros();
-          });
+      if (error) {
+        alert('Error al eliminar miembro: ' + error.message);
       } else {
-        // Agregar nuevo miembro
-        supabase
-          .from('miembros')
-          .insert([miembro])
-          .then(({ data, error }) => {
-            if (error) {
-              console.error('Error al agregar miembro: ', error);
-              return;
-            }
-            alert('Miembro agregado correctamente');
-            mostrarMiembros();
-          });
+        alert('Miembro eliminado');
+        mostrarMiembros();
       }
+    }
 
-      // Cerrar modal
-      const modal = bootstrap.Modal.getInstance(document.getElementById('modalMiembro'));
-      modal.hide();
+    // Suscripción en tiempo real
+    supabase
+      .from('miembros')
+      .on('INSERT', payload => {
+        mostrarMiembros(); // Actualiza la tabla en tiempo real cuando se agrega un nuevo miembro
+      })
+      .subscribe();
 
-      // Resetear formulario
-      e.target.reset();
-      miembroSeleccionado = null;
-    });
-
-    // Inicializar la página
-    document.addEventListener('DOMContentLoaded', () => {
-      mostrarMiembros();
-      // Cargar logo guardado localmente si existe
-      const logoGuardado = localStorage.getItem('logo');
-      if (logoGuardado) {
-        document.getElementById('logo').src = logoGuardado;
-      }
-    });
+    // Mostrar miembros al cargar la página
+    mostrarMiembros();
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
