@@ -170,7 +170,8 @@
 
   <div class="main-content">
     <h2>Listado de Miembros</h2>
-    <button class="btn-agregar" onclick="abrirFormulario()">Agregar Miembro</button>
+    <!-- Botón de agregar miembro corregido -->
+    <button class="btn-agregar" onclick="abrirFormulario()">Añadir Miembro</button>
 
     <table class="table table-bordered">
       <thead>
@@ -248,9 +249,10 @@
       document.getElementById('sidebar').classList.toggle('collapsed');
     }
 
-    async function abrirFormulario() {
+    // Corregido para que el formulario se abra correctamente
+    function abrirFormulario() {
       document.getElementById('formMiembro').reset();
-      $('#modalMiembro').modal('show');
+      $('#modalMiembro').modal('show');  // Asegúrate de que el modal se está mostrando correctamente
     }
 
     async function agregarMiembro(event) {
