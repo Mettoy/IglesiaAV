@@ -15,6 +15,7 @@
     .sidebar a:hover { background-color: #333; }
     .main { flex-grow: 1; padding: 2rem; width: 100%; }
     .form-section { margin-bottom: 1rem; padding: 1rem; border: 1px solid #444; border-radius: 5px; background-color: #1c1c2e; }
+    .hidden { display: none; }
     .table img { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
   </style>
 </head>
@@ -44,7 +45,7 @@
     </table>
   </div>
 
-  <!-- Modal -->
+  <!-- Modal formulario -->
   <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content text-black">
@@ -67,6 +68,7 @@
                 <option>Caballeros</option>
               </select>
             </div>
+
             <div class="form-section">
               <h6>Datos familiares</h6>
               <input type="text" name="padre" class="form-control mb-2" placeholder="Padre">
@@ -74,13 +76,15 @@
               <input type="text" name="hermano1" class="form-control mb-2" placeholder="Hermano 1">
               <input type="text" name="hermano2" class="form-control mb-2" placeholder="Hermano 2">
             </div>
+
             <div class="form-section">
               <h6>Datos espirituales</h6>
-              <input type="date" name="fechaBautismo" class="form-control mb-2">
+              <input type="date" name="fechaBautismo" class="form-control mb-2" placeholder="Fecha de bautismo">
               <input type="text" name="lugarBautismo" class="form-control mb-2" placeholder="Lugar de bautismo">
-              <input type="date" name="fechaConversion" class="form-control mb-2">
+              <input type="date" name="fechaConversion" class="form-control mb-2" placeholder="Fecha de conversión">
               <input type="text" name="lugarConversion" class="form-control mb-2" placeholder="Lugar de conversión">
             </div>
+
             <button type="submit" class="btn btn-primary">Guardar</button>
           </form>
         </div>
@@ -90,11 +94,12 @@
 
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.21.0/dist/supabase.min.js"></script>
+
   <script>
-    const supabase = supabase.createClient(
-      'https://azywyqozwwbfctxeokug.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk'
-    );
+    // Configuración de Supabase
+    const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     let miembroSeleccionado = null;
 
@@ -119,45 +124,58 @@
     }
 
     function abrirFormulario() {
-      miembroSeleccionado = null;
       document.getElementById('formMiembro').reset();
       new bootstrap.Modal(document.getElementById('modalMiembro')).show();
     }
 
+    // Mostrar miembros en tiempo real
     function mostrarMiembros() {
-      supabase.from('miembros').select('*').then(({ data, error }) => {
-        if (error) {
-          console.error('Error al obtener miembros: ', error);
-          return;
-        }
-        const tabla = document.getElementById('tablaMiembros');
-        tabla.innerHTML = '';
-        data.forEach(miembro => {
-          const fila = document.createElement('tr');
-          fila.innerHTML = `
-            <td><img src="${miembro.foto || 'https://via.placeholder.com/40'}"></td>
-            <td>${miembro.nombre}</td>
-            <td>${miembro.codigo}</td>
-            <td>${miembro.edad}</td>
-            <td>${miembro.direccion}</td>
-            <td>${miembro.sociedad}</td>
-            <td>
-              <button class="btn btn-secondary btn-sm me-1" onclick="editarMiembro('${miembro.id}')"><i class="bi bi-journal-text"></i></button>
-              <button class="btn btn-info btn-sm me-1"><i class="bi bi-printer"></i></button>
-              <button class="btn btn-danger btn-sm" onclick="eliminarMiembro('${miembro.id}')"><i class="bi bi-trash"></i></button>
-            </td>
-          `;
-          tabla.appendChild(fila);
+      supabase
+        .from('miembros')
+        .select('*')
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error al obtener miembros: ', error);
+            return;
+          }
+          const tabla = document.getElementById('tablaMiembros');
+          tabla.innerHTML = '';
+          data.forEach((miembro) => {
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+              <td><img src="${miembro.foto || 'https://via.placeholder.com/40'}" onclick="seleccionarFoto('${miembro.id}')"></td>
+              <td>${miembro.nombre}</td>
+              <td>${miembro.codigo}</td>
+              <td>${miembro.edad}</td>
+              <td>${miembro.direccion}</td>
+              <td>${miembro.sociedad}</td>
+              <td>
+                <button class="btn btn-secondary btn-sm me-1" onclick="editarMiembro('${miembro.id}')"><i class="bi bi-journal-text"></i></button>
+                <button class="btn btn-info btn-sm me-1" onclick="imprimirMiembro('${miembro.id}')"><i class="bi bi-printer"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="eliminarMiembro('${miembro.id}')"><i class="bi bi-trash"></i></button>
+              </td>
+            `;
+            tabla.appendChild(fila);
+          });
         });
-      });
     }
 
-    document.getElementById('formMiembro').addEventListener('submit', async function(e) {
+    // Suscribir a cambios en la tabla `miembros` en tiempo real
+    supabase
+      .from('miembros')
+      .on('*', (payload) => {
+        console.log('Cambio detectado:', payload);
+        mostrarMiembros(); // Actualizar la tabla al recibir un cambio
+      })
+      .subscribe();
+
+    // Función para agregar miembro
+    document.getElementById('formMiembro').addEventListener('submit', function(e) {
       e.preventDefault();
       const form = e.target;
       const miembro = {
         nombre: form.nombre.value,
-        edad: parseInt(form.edad.value),
+        edad: form.edad.value,
         codigo: form.codigo.value,
         direccion: form.direccion.value,
         sociedad: form.sociedad.value,
@@ -169,50 +187,74 @@
         lugarBautismo: form.lugarBautismo.value,
         fechaConversion: form.fechaConversion.value,
         lugarConversion: form.lugarConversion.value,
-        foto: ''
       };
 
-      if (miembroSeleccionado) {
-        await supabase.from('miembros').update(miembro).eq('id', miembroSeleccionado);
-        miembroSeleccionado = null;
-      } else {
-        await supabase.from('miembros').insert([miembro]);
-      }
-
-      bootstrap.Modal.getInstance(document.getElementById('modalMiembro')).hide();
-      mostrarMiembros();
+      supabase
+        .from('miembros')
+        .insert([miembro])
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error al agregar miembro: ', error);
+            return;
+          }
+          console.log('Miembro agregado exitosamente:', data);
+          mostrarMiembros();  // Actualizar la lista de miembros
+          bootstrap.Modal.getInstance(document.getElementById('modalMiembro')).hide();  // Cerrar el modal
+        });
     });
 
+    // Función para editar miembro
     function editarMiembro(id) {
-      supabase.from('miembros').select('*').eq('id', id).single().then(({ data, error }) => {
-        if (error) return console.error('Error al cargar miembro', error);
-        const form = document.getElementById('formMiembro');
-        form.nombre.value = data.nombre;
-        form.edad.value = data.edad;
-        form.codigo.value = data.codigo;
-        form.direccion.value = data.direccion;
-        form.sociedad.value = data.sociedad;
-        form.padre.value = data.padre;
-        form.madre.value = data.madre;
-        form.hermano1.value = data.hermano1;
-        form.hermano2.value = data.hermano2;
-        form.fechaBautismo.value = data.fechaBautismo || '';
-        form.lugarBautismo.value = data.lugarBautismo || '';
-        form.fechaConversion.value = data.fechaConversion || '';
-        form.lugarConversion.value = data.lugarConversion || '';
-        miembroSeleccionado = id;
-        new bootstrap.Modal(document.getElementById('modalMiembro')).show();
-      });
+      supabase
+        .from('miembros')
+        .select('*')
+        .eq('id', id)
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error al obtener miembro:', error);
+            return;
+          }
+          // Cargar datos en el formulario de edición
+          const form = document.getElementById('formMiembro');
+          form.nombre.value = data.nombre;
+          form.edad.value = data.edad;
+          form.codigo.value = data.codigo;
+          form.direccion.value = data.direccion;
+          form.sociedad.value = data.sociedad;
+          form.padre.value = data.padre;
+          form.madre.value = data.madre;
+          form.hermano1.value = data.hermano1;
+          form.hermano2.value = data.hermano2;
+          form.fechaBautismo.value = data.fechaBautismo;
+          form.lugarBautismo.value = data.lugarBautismo;
+          form.fechaConversion.value = data.fechaConversion;
+          form.lugarConversion.value = data.lugarConversion;
+
+          miembroSeleccionado = data.id;
+          new bootstrap.Modal(document.getElementById('modalMiembro')).show();
+        });
     }
 
+    // Función para eliminar miembro
     function eliminarMiembro(id) {
-      if (confirm('¿Eliminar este miembro?')) {
-        supabase.from('miembros').delete().eq('id', id).then(() => {
-          mostrarMiembros();
-        });
+      if (confirm('¿Seguro que deseas eliminar este miembro?')) {
+        supabase
+          .from('miembros')
+          .delete()
+          .eq('id', id)
+          .then(({ data, error }) => {
+            if (error) {
+              console.error('Error al eliminar miembro: ', error);
+              return;
+            }
+            console.log('Miembro eliminado:', data);
+            mostrarMiembros();  // Actualizar la lista de miembros
+          });
       }
     }
 
+    // Cargar la lista de miembros al cargar la página
     mostrarMiembros();
   </script>
 
