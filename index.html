@@ -2,39 +2,41 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Inicio de Sesión</title>
+  <title>Acceso y Login</title>
   <style>
     body {
       background-color: #0d1b2a;
       display: flex;
-      justify-content: center;
+      justify-content: space-around;
       align-items: center;
       height: 100vh;
       font-family: Arial, sans-serif;
       color: gold;
       margin: 0;
+      flex-wrap: wrap;
     }
-    .login-box {
+    .box {
       background: #1b263b;
       padding: 30px;
       border-radius: 15px;
       box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-      text-align: center;
       width: 300px;
+      text-align: center;
+      margin: 20px;
     }
-    .login-box h2 {
-      margin-bottom: 20px;
+    h2 {
       color: gold;
+      margin-bottom: 15px;
     }
-    .login-box input[type="text"] {
+    input, select {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
+      margin-bottom: 15px;
       border-radius: 8px;
+      border: 1px solid #ccc;
     }
-    .login-box button {
+    button {
       background-color: #003566;
       color: gold;
       border: none;
@@ -43,75 +45,108 @@
       cursor: pointer;
       font-weight: bold;
     }
-    .login-box img {
-      max-width: 100px;
-      max-height: 100px;
-      margin-bottom: 20px;
-      border-radius: 10px;
-    }
     .estado {
-      margin-top: 10px;
       font-size: 14px;
+      margin-top: 10px;
       color: gold;
     }
   </style>
 </head>
 <body>
 
-<div class="login-box">
-  <img id="logoGeneral" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" alt="Logo de la Aplicación">
-  <h2>Ingrese</h2>
-  <input type="text" id="usuario" placeholder="Usuario">
-  <button onclick="iniciarSesion()">Entrar</button>
-  <p class="estado" id="estado"></p>
+<div class="box">
+  <h2>Registro de Usuario</h2>
+  <input type="text" id="nuevoUsuario" placeholder="Nuevo Usuario">
+  <select id="rol">
+    <option value="Tesorero">Tesorero</option>
+    <option value="Discipulador">Discipulador</option>
+    <option value="Preadministrador">Preadministrador</option>
+    <option value="Administrador">Administrador</option>
+  </select>
+  <label>
+    <input type="checkbox" id="acceso" checked> Permitir acceso
+  </label>
+  <br><br>
+  <button onclick="registrarUsuario()">Registrar</button>
+  <p class="estado" id="estadoRegistro"></p>
+</div>
+
+<div class="box">
+  <h2>Inicio de Sesión</h2>
+  <input type="text" id="usuarioLogin" placeholder="Usuario">
+  <button onclick="iniciarSesion()">Ingresar</button>
+  <p class="estado" id="estadoLogin"></p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script>
-  // Configuración de Supabase
   const supabaseUrl = "https://azywyqozwwbfctxeokug.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk";
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  async function iniciarSesion() {
-    const estado = document.getElementById("estado");
-    const usuarioInput = document.getElementById("usuario").value.trim().toUpperCase();
+  async function registrarUsuario() {
+    const estado = document.getElementById("estadoRegistro");
+    const usuario = document.getElementById("nuevoUsuario").value.trim().toUpperCase();
+    const rol = document.getElementById("rol").value;
+    const acceso = document.getElementById("acceso").checked;
 
-    if (!usuarioInput) {
-      alert("Por favor, ingrese un usuario.");
+    if (!usuario) {
+      alert("Ingrese un nombre de usuario.");
       return;
     }
 
-    estado.textContent = "Verificando usuario...";
+    estado.textContent = "Registrando...";
+    const { data, error } = await supabase
+      .from("usuarios")
+      .insert([{ usuario, rol, acceso }]);
 
-    try {
-      const { data, error } = await supabase
-        .from("usuarios")
-        .select("usuario, rol, acceso")
-        .eq("usuario", usuarioInput)
-        .single();
-
-      if (error || !data) {
-        estado.textContent = "";
-        alert("Usuario no registrado.");
-        console.error("Error al consultar:", error);
-        return;
-      }
-
-      if (data.acceso) {
-        localStorage.setItem("usuario", data.usuario);
-        localStorage.setItem("rol", data.rol);
-        estado.textContent = "Acceso permitido. Redirigiendo...";
-        window.location.href = "inicio.html";
-      } else {
-        estado.textContent = "";
-        alert("Este usuario tiene el acceso denegado.");
-      }
-    } catch (err) {
-      estado.textContent = "";
-      console.error("Error inesperado:", err);
-      alert("Error al intentar iniciar sesión.");
+    if (error) {
+      estado.textContent = "Error al registrar.";
+      console.error("Error:", error);
+    } else {
+      estado.textContent = "Usuario registrado correctamente.";
+      document.getElementById("nuevoUsuario").value = "";
     }
+  }
+
+  async function iniciarSesion() {
+    const estado = document.getElementById("estadoLogin");
+    const usuario = document.getElementById("usuarioLogin").value.trim().toUpperCase();
+
+    if (!usuario) {
+      alert("Ingrese su usuario.");
+      return;
+    }
+
+    estado.textContent = "Verificando...";
+
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select("usuario, rol, acceso")
+      .eq("usuario", usuario)
+      .single();
+
+    if (error || !data) {
+      estado.textContent = "";
+      alert("Usuario no encontrado.");
+      return;
+    }
+
+    if (!data.acceso) {
+      estado.textContent = "";
+      alert("Acceso denegado.");
+      return;
+    }
+
+    // Asignación especial a ADMON
+    const rolAsignado = data.usuario === "ADMON" ? "Administrador" : data.rol;
+
+    localStorage.setItem("usuario", data.usuario);
+    localStorage.setItem("rol", rolAsignado);
+    estado.textContent = "Acceso permitido. Redirigiendo...";
+    setTimeout(() => {
+      window.location.href = "inicio.html";
+    }, 1000);
   }
 </script>
 
