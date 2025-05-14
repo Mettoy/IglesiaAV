@@ -1,175 +1,181 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Gestión de Miembros - Adoración Viva</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Estilos -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Miembros - Adoración Viva</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f9;
-    }
+    * {box-sizing: border-box; font-family: 'Roboto', sans-serif;}
+    body {margin: 0; background: #f4f4f9; color: #333; display: flex;}
+
     .sidebar {
-      height: 100vh;
-      width: 250px;
-      background: #2c3e50;
-      color: white;
-      position: fixed;
-      padding: 15px;
-      transition: width 0.3s;
-    }
-    .sidebar.collapsed {
-      width: 80px;
-    }
-    .sidebar img {
-      width: 100%;
-      max-width: 150px;
-      margin: 10px auto;
-      display: block;
-    }
-    .sidebar.collapsed img {
-      display: none;
-    }
-    .sidebar a {
-      color: white;
-      text-decoration: none;
-      display: block;
-      padding: 10px 5px;
-    }
-    .main {
-      margin-left: 250px;
+      background: #292b2c;
+      width: 240px;
+      min-height: 100vh;
       padding: 20px;
-      transition: margin-left 0.3s;
+      position: fixed;
+      left: 0;
+      transition: width 0.3s ease;
+      overflow: hidden;
     }
-    .collapsed + .main {
-      margin-left: 80px;
+    .sidebar img {width: 100%; margin-bottom: 20px;}
+    .sidebar.collapsed {width: 70px;}
+    .sidebar.collapsed .menu-text {display: none;}
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      margin-bottom: 20px;
     }
-    .form-section {
+
+    .content {
+      margin-left: 240px;
+      padding: 20px;
+      width: 100%;
+      transition: margin-left 0.3s ease;
+    }
+    .collapsed + .content {margin-left: 70px;}
+
+    h1 {color: #555;}
+
+    .form-container {
+      background: #fff;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
       display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .card-header .btn {
-      float: right;
+    .form-row {margin-bottom: 15px;}
+    .form-row label {display: block; margin-bottom: 5px;}
+    .form-row input, .form-row select {
+      width: 100%; padding: 10px;
+      border: 1px solid #ccc; border-radius: 4px;
     }
-    .table th, .table td {
-      vertical-align: middle;
+
+    .btn {
+      background: #4CAF50;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
     }
-    .table img {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      border-radius: 50%;
+
+    .btn-add {
+      background: #007BFF;
+      margin-bottom: 20px;
     }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background: #007BFF;
+      color: white;
+    }
+
+    .actions button {
+      margin-right: 5px;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
     .pagination {
-      justify-content: center;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .pagination button {
+      padding: 8px 12px;
+      margin: 2px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .photo-preview {
+      max-width: 100px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
 
-<!-- Sidebar -->
 <div class="sidebar" id="sidebar">
-  <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo">
-  <a href="#" onclick="mostrarFormulario()">Agregar miembro</a>
-  <a href="#" onclick="mostrarMiembros()">Miembros</a>
-  <a href="#" onclick="mostrarBajas()">Miembros dados de baja</a>
-  <a href="#" onclick="toggleSidebar()">☰</a>
+  <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+  <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo"/>
+  <div class="menu-text">Miembros</div>
 </div>
 
-<!-- Main content -->
-<div class="main" id="main">
-  <div class="container">
+<div class="content">
+  <h1>Gestión de Miembros</h1>
+  <button class="btn btn-add" onclick="toggleForm()">➕ Añadir nuevo miembro</button>
 
-    <!-- Formulario plegable -->
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5>Agregar nuevo miembro
-          <button class="btn btn-sm btn-secondary" onclick="toggleFormulario()">Mostrar/Ocultar</button>
-        </h5>
-      </div>
-      <div class="card-body form-section" id="formularioMiembro">
-        <form id="miembroForm">
-          <div class="mb-3">
-            <label for="foto" class="form-label">Foto</label>
-            <input type="file" class="form-control" id="foto">
-          </div>
-          <div class="mb-3">
-            <label>Nombre completo</label>
-            <input type="text" class="form-control" id="nombre" required>
-          </div>
-          <div class="mb-3">
-            <label>Edad</label>
-            <input type="number" class="form-control" id="edad" required>
-          </div>
-          <div class="mb-3">
-            <label>Dirección</label>
-            <input type="text" class="form-control" id="direccion">
-          </div>
-          <div class="mb-3">
-            <label>Sociedad</label>
-            <select class="form-select" id="sociedad" required>
-              <option value="jóvenes">Jóvenes</option>
-              <option value="damas">Damas</option>
-              <option value="caballeros">Caballeros</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-success">Guardar miembro</button>
-        </form>
-      </div>
+  <div class="form-container" id="memberForm">
+    <div class="form-row">
+      <label for="photo">Foto:</label>
+      <input type="file" id="photoInput" accept="image/*" onchange="previewPhoto()"/>
+      <img id="photoPreview" class="photo-preview"/>
     </div>
-
-    <!-- Tabla de miembros -->
-    <div id="tablaMiembros" class="card">
-      <div class="card-header">
-        <h5>Miembros activos</h5>
-      </div>
-      <div class="card-body">
-        <table class="table table-bordered" id="tabla">
-          <thead>
-            <tr>
-              <th>Foto</th>
-              <th>Nombre</th>
-              <th>Edad</th>
-              <th>Dirección</th>
-              <th>Sociedad</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="listaMiembros"></tbody>
-        </table>
-        <nav>
-          <ul class="pagination" id="paginacion"></ul>
-        </nav>
-      </div>
+    <div class="form-row">
+      <label>Nombre completo:</label>
+      <input type="text" id="nombre"/>
     </div>
-
-    <!-- Miembros dados de baja -->
-    <div id="tablaBajas" class="card mt-4" style="display: none;">
-      <div class="card-header">
-        <h5>Miembros dados de baja</h5>
-      </div>
-      <div class="card-body">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>Foto</th>
-              <th>Nombre</th>
-              <th>Edad</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="listaBajas"></tbody>
-        </table>
-      </div>
+    <div class="form-row">
+      <label>Edad:</label>
+      <input type="number" id="edad"/>
     </div>
-
+    <div class="form-row">
+      <label>Dirección:</label>
+      <input type="text" id="direccion"/>
+    </div>
+    <div class="form-row">
+      <label>Sociedad:</label>
+      <select id="sociedad">
+        <option value="jóvenes">Jóvenes</option>
+        <option value="damas">Damas</option>
+        <option value="caballeros">Caballeros</option>
+      </select>
+    </div>
+    <button class="btn" onclick="guardarMiembro()">Guardar miembro</button>
   </div>
-</div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js"></script>
+  <table id="miembrosTable">
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Edad</th>
+        <th>Dirección</th>
+        <th>Sociedad</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="pagination" id="pagination"></div>
+</div>
 
 <script>
   const firebaseConfig = {
@@ -178,16 +184,400 @@
     projectId: "iglesia-adoracion-viva",
     storageBucket: "iglesia-adoracion-viva.appspot.com",
     messagingSenderId: "815332010058",
-    appId: "1:815332010058:web:d2afff616469349d88deb3"
+    appId: "1:815332010058:web:d2afff616469349d88deb3",
+    measurementId: "G-43MZP6V55D"
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+
+  const form = document.getElementById("memberForm");
+  const tableBody = document.querySelector("#miembrosTable tbody");
+  const paginationDiv = document.getElementById("pagination");
+
+  let miembros = [];
+  let currentPage = 1;
+  const itemsPerPage = 20;
+
+  function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("collapsed");
+    document.querySelector(".content").classList.toggle("collapsed");
+  }
+
+  function toggleForm() {
+    form.style.display = form.style.display === "none" ? "block" : "none";
+  }
+
+  function previewPhoto() {
+    const file = document.getElementById("photoInput").files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => document.getElementById("photoPreview").src = e.target.result;
+      reader.readAsDataURL(file);
+    }
+  }
+
+  async function guardarMiembro() {
+    const nombre = document.getElementById("nombre").value;
+    const edad = document.getElementById("edad").value;
+    const direccion = document.getElementById("direccion").value;
+    const sociedad = document.getElementById("sociedad").value;
+    const foto = document.getElementById("photoPreview").src;
+
+    await db.collection("miembros").add({
+      nombre, edad, direccion, sociedad, foto, activo: true
+    });
+
+    cargarMiembros();
+    form.reset();
+    document.getElementById("photoPreview").src = "";
+    form.style.display = "none";
+  }
+
+  function renderMiembros() {
+    const sorted = miembros.filter(m => m.activo).sort((a, b) => a.nombre.localeCompare(b.nombre));
+    const start = (currentPage - 1) * itemsPerPage;
+    const paginated = sorted.slice(start, start + itemsPerPage);
+    
+    tableBody.innerHTML = "";
+    paginated.forEach(doc => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><img src="${doc.foto}" width="40"/></td>
+        <td>${doc.nombre}</td>
+        <td>${doc.edad}</td>
+        <td>${doc.direccion}</td>
+        <td>${doc.sociedad}</td>
+        <td class="actions">
+          <button onclick="editarMiembro('${doc.id}')">✏️</button>
+          <button onclick="darDeBaja('${doc.id}')">🗑️</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+    renderPagination(sorted.length);
+  }
+
+  function renderPagination(totalItems) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    paginationDiv.innerHTML = "";
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      if (i === currentPage) btn.style.background = "#007BFF";
+      btn.onclick = () => { currentPage = i; renderMiembros(); };
+      paginationDiv.appendChild(btn);
+    }
+  }
+
+  function editarMiembro(id) {
+    alert("Función de edición pendiente para ID: " + id);
+  }
+
+  async function darDeBaja(id) {
+    await db.collection("miembros").doc(id).update({activo: false});
+    cargarMiembros();
+  }
+
+  async function cargarMiembros() {
+    const snapshot = await db.collection("miembros").get();
+    miembros = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+    renderMiembros();
+  }
+
+  cargarMiembros();
 </script>
 
-<!-- Tu script para funciones, guardado, edición, baja y paginación aquí -->
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Miembros - Adoración Viva</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <style>
+    * {box-sizing: border-box; font-family: 'Roboto', sans-serif;}
+    body {margin: 0; background: #f4f4f9; color: #333; display: flex;}
+
+    .sidebar {
+      background: #292b2c;
+      width: 240px;
+      min-height: 100vh;
+      padding: 20px;
+      position: fixed;
+      left: 0;
+      transition: width 0.3s ease;
+      overflow: hidden;
+    }
+    .sidebar img {width: 100%; margin-bottom: 20px;}
+    .sidebar.collapsed {width: 70px;}
+    .sidebar.collapsed .menu-text {display: none;}
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .content {
+      margin-left: 240px;
+      padding: 20px;
+      width: 100%;
+      transition: margin-left 0.3s ease;
+    }
+    .collapsed + .content {margin-left: 70px;}
+
+    h1 {color: #555;}
+
+    .form-container {
+      background: #fff;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .form-row {margin-bottom: 15px;}
+    .form-row label {display: block; margin-bottom: 5px;}
+    .form-row input, .form-row select {
+      width: 100%; padding: 10px;
+      border: 1px solid #ccc; border-radius: 4px;
+    }
+
+    .btn {
+      background: #4CAF50;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-add {
+      background: #007BFF;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background: #007BFF;
+      color: white;
+    }
+
+    .actions button {
+      margin-right: 5px;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    .pagination {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .pagination button {
+      padding: 8px 12px;
+      margin: 2px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .photo-preview {
+      max-width: 100px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+  <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo"/>
+  <div class="menu-text">Miembros</div>
+</div>
+
+<div class="content">
+  <h1>Gestión de Miembros</h1>
+  <button class="btn btn-add" onclick="toggleForm()">➕ Añadir nuevo miembro</button>
+
+  <div class="form-container" id="memberForm">
+    <div class="form-row">
+      <label for="photo">Foto:</label>
+      <input type="file" id="photoInput" accept="image/*" onchange="previewPhoto()"/>
+      <img id="photoPreview" class="photo-preview"/>
+    </div>
+    <div class="form-row">
+      <label>Nombre completo:</label>
+      <input type="text" id="nombre"/>
+    </div>
+    <div class="form-row">
+      <label>Edad:</label>
+      <input type="number" id="edad"/>
+    </div>
+    <div class="form-row">
+      <label>Dirección:</label>
+      <input type="text" id="direccion"/>
+    </div>
+    <div class="form-row">
+      <label>Sociedad:</label>
+      <select id="sociedad">
+        <option value="jóvenes">Jóvenes</option>
+        <option value="damas">Damas</option>
+        <option value="caballeros">Caballeros</option>
+      </select>
+    </div>
+    <button class="btn" onclick="guardarMiembro()">Guardar miembro</button>
+  </div>
+
+  <table id="miembrosTable">
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Edad</th>
+        <th>Dirección</th>
+        <th>Sociedad</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="pagination" id="pagination"></div>
+</div>
+
 <script>
-  // Aquí va tu lógica de Firebase Firestore, paginación, baja, edición, etc.
-  // Te puedo dar ese script también si quieres, completo.
+  const firebaseConfig = {
+    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+    projectId: "iglesia-adoracion-viva",
+    storageBucket: "iglesia-adoracion-viva.appspot.com",
+    messagingSenderId: "815332010058",
+    appId: "1:815332010058:web:d2afff616469349d88deb3",
+    measurementId: "G-43MZP6V55D"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const form = document.getElementById("memberForm");
+  const tableBody = document.querySelector("#miembrosTable tbody");
+  const paginationDiv = document.getElementById("pagination");
+
+  let miembros = [];
+  let currentPage = 1;
+  const itemsPerPage = 20;
+
+  function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("collapsed");
+    document.querySelector(".content").classList.toggle("collapsed");
+  }
+
+  function toggleForm() {
+    form.style.display = form.style.display === "none" ? "block" : "none";
+  }
+
+  function previewPhoto() {
+    const file = document.getElementById("photoInput").files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => document.getElementById("photoPreview").src = e.target.result;
+      reader.readAsDataURL(file);
+    }
+  }
+
+  async function guardarMiembro() {
+    const nombre = document.getElementById("nombre").value;
+    const edad = document.getElementById("edad").value;
+    const direccion = document.getElementById("direccion").value;
+    const sociedad = document.getElementById("sociedad").value;
+    const foto = document.getElementById("photoPreview").src;
+
+    await db.collection("miembros").add({
+      nombre, edad, direccion, sociedad, foto, activo: true
+    });
+
+    cargarMiembros();
+    form.reset();
+    document.getElementById("photoPreview").src = "";
+    form.style.display = "none";
+  }
+
+  function renderMiembros() {
+    const sorted = miembros.filter(m => m.activo).sort((a, b) => a.nombre.localeCompare(b.nombre));
+    const start = (currentPage - 1) * itemsPerPage;
+    const paginated = sorted.slice(start, start + itemsPerPage);
+    
+    tableBody.innerHTML = "";
+    paginated.forEach(doc => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><img src="${doc.foto}" width="40"/></td>
+        <td>${doc.nombre}</td>
+        <td>${doc.edad}</td>
+        <td>${doc.direccion}</td>
+        <td>${doc.sociedad}</td>
+        <td class="actions">
+          <button onclick="editarMiembro('${doc.id}')">✏️</button>
+          <button onclick="darDeBaja('${doc.id}')">🗑️</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+    renderPagination(sorted.length);
+  }
+
+  function renderPagination(totalItems) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    paginationDiv.innerHTML = "";
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      if (i === currentPage) btn.style.background = "#007BFF";
+      btn.onclick = () => { currentPage = i; renderMiembros(); };
+      paginationDiv.appendChild(btn);
+    }
+  }
+
+  function editarMiembro(id) {
+    alert("Función de edición pendiente para ID: " + id);
+  }
+
+  async function darDeBaja(id) {
+    await db.collection("miembros").doc(id).update({activo: false});
+    cargarMiembros();
+  }
+
+  async function cargarMiembros() {
+    const snapshot = await db.collection("miembros").get();
+    miembros = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+    renderMiembros();
+  }
+
+  cargarMiembros();
 </script>
 
 </body>
