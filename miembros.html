@@ -19,11 +19,32 @@
       appId: "1:815332010058:web:d2afff616469349d88deb3",
       measurementId: "G-43MZP6V55D"
     };
-    
+
     // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore(app);
   </script>
+  <style>
+    body {
+      background-color: #1E3A8A; /* Azul oscuro */
+    }
+
+    .bg-dark-blue {
+      background-color: #1E3A8A; /* Azul oscuro */
+    }
+
+    .bg-dark-blue-light {
+      background-color: #3B82F6; /* Azul más claro para botones */
+    }
+
+    .bg-white-light {
+      background-color: #F9FAFB; /* Blanco suave para las tablas */
+    }
+
+    .text-dark-blue {
+      color: #1E3A8A; /* Azul oscuro para textos */
+    }
+  </style>
 </head>
 
 <body class="bg-gray-100">
@@ -45,20 +66,20 @@
 
     <!-- Main Content -->
     <div class="flex-1 p-8">
-      <h2 class="text-3xl font-bold mb-6">Miembros</h2>
+      <h2 class="text-3xl font-bold mb-6 text-dark-blue">Miembros</h2>
 
       <!-- Button to Add New Member -->
       <div class="flex justify-end mb-4">
-        <button id="add-member-btn" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">
+        <button id="add-member-btn" class="bg-dark-blue-light text-white px-6 py-3 rounded hover:bg-blue-700">
           Agregar Nuevo Miembro
         </button>
       </div>
 
       <!-- Table for Active Members -->
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto bg-white-light p-4 rounded-md shadow-lg">
         <table class="min-w-full bg-white border border-gray-300 shadow-md rounded-md">
-          <thead>
-            <tr class="bg-dark-blue text-white">
+          <thead class="bg-dark-blue text-white">
+            <tr>
               <th class="px-4 py-2">Foto</th>
               <th class="px-4 py-2">Nombre Completo</th>
               <th class="px-4 py-2">Código</th>
@@ -141,7 +162,7 @@
 
         <div class="flex justify-end space-x-4">
           <button type="button" id="close-modal-btn" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
-          <button type="submit" id="save-member-btn" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">Guardar</button>
+          <button type="submit" id="save-member-btn" class="bg-dark-blue-light text-white px-6 py-3 rounded hover:bg-blue-700">Guardar</button>
         </div>
       </form>
     </div>
@@ -160,74 +181,26 @@
           snapshot.forEach(doc => {
             const member = doc.data();
             const row = document.createElement("tr");
+
             row.innerHTML = `
-              <td class="px-4 py-2"><img src="${member.foto}" class="w-12 h-12 rounded-full" alt="Foto"></td>
-              <td class="px-4 py-2">${member.nombre}</td>
-              <td class="px-4 py-2">${member.codigo}</td>
-              <td class="px-4 py-2">${member.edad}</td>
-              <td class="px-4 py-2">${member.direccion}</td>
-              <td class="px-4 py-2">${member.sociedad}</td>
-              <td class="px-4 py-2">
-                <button class="edit-btn bg-yellow-500 text-white px-4 py-2 rounded" data-id="${doc.id}">Editar</button>
-                <button class="deactivate-btn bg-red-500 text-white px-4 py-2 rounded" data-id="${doc.id}">Dar de Baja</button>
-              </td>
-            `;
-            tableBody.appendChild(row);
-          });
-        });
-    }
-
-    // Function to handle form submission
-    document.getElementById("member-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      
-      const name = document.getElementById("name").value;
-      const birthday = document.getElementById("birthday").value;
-      const civilStatus = document.getElementById("civil-status").value;
-      const family = document.getElementById("family").value;
-      const conversionDate = document.getElementById("conversion-date").value;
-      const conversionLocation = document.getElementById("conversion-location").value;
-      const baptismDate = document.getElementById("baptism-date").value;
-      const baptismLocation = document.getElementById("baptism-location").value;
-
-      const newMember = {
-        nombre: name,
-        fecha_cumpleanos: birthday,
-        estado_civil: civilStatus,
-        familiar: family,
-        fecha_conversion: conversionDate,
-        lugar_conversion: conversionLocation,
-        fecha_bautizo: baptismDate,
-        lugar_bautizo: baptismLocation,
-        activo: true,
-      };
-
-      // Save the new member to Firestore
-      db.collection("miembros").add(newMember).then(() => {
-        alert("Miembro agregado exitosamente");
-        fetchMembers();
-        closeModal();
+          <td class="px-4 py-2">${member.foto || "N/A"}</td>
+          <td class="px-4 py-2">${member.nombre_completo}</td>
+          <td class="px-4 py-2">${member.codigo}</td>
+          <td class="px-4 py-2">${member.edad}</td>
+          <td class="px-4 py-2">${member.direccion}</td>
+          <td class="px-4 py-2">${member.sociedad}</td>
+          <td class="px-4 py-2">
+            <button class="bg-dark-blue-light text-white px-4 py-2 rounded hover:bg-blue-700">Editar</button>
+            <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800">Dar Baja</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
       });
     });
+}
 
-    // Function to close the modal
-    function closeModal() {
-      document.getElementById("member-form-modal").classList.add("hidden");
-    }
-
-    // Event listener for add new member button
-    document.getElementById("add-member-btn").addEventListener("click", function () {
-      document.getElementById("form-title").textContent = "Agregar Miembro";
-      document.getElementById("member-form").reset();
-      document.getElementById("member-form-modal").classList.remove("hidden");
-    });
-
-    // Event listener for close modal button
-    document.getElementById("close-modal-btn").addEventListener("click", closeModal);
-
-    // Fetch members on page load
-    fetchMembers();
-  </script>
-</body>
-
+// Fetch members on load
+fetchMembers();
+</script>
+</body> 
 </html>
