@@ -63,7 +63,6 @@
                         <div class="tab-content" id="miTabContent">
                             <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
                                 <div class="form-section">
-                                    <input type="file" name="foto" accept="image/*">
                                     <input type="text" name="nombre" placeholder="Nombre completo" required>
                                     <input type="number" name="edad" placeholder="Edad" required>
                                     <input type="text" name="codigo" placeholder="Código" required>
@@ -93,7 +92,8 @@
                                 </div>
                             </div>
                         </div>
-                        <input type="hidden" id="miembroId" name="miembroId"> <button type="submit" class="btn-custom mt-3">Guardar</button>
+                        <input type="hidden" id="miembroId" name="miembroId">
+                        <button type="submit" class="btn-custom mt-3">Guardar</button>
                     </form>
                 </div>
             </div>
@@ -103,7 +103,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <script>
@@ -111,21 +110,12 @@
 
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(app);
-        const storage = firebase.storage(app);
         const auth = firebase.auth(app);
 
         const modal = new bootstrap.Modal(document.getElementById('modalMiembro'));
-        let editing = false; // Variable para rastrear si estamos editando
+        let editing = false;
 
         // ... (Tus funciones toggleSidebar, cambiarLogoInput, cambiarLogo, abrirFormulario) ...
-
-        async function uploadFile(file) {
-            if (!file) return null;
-            const storageRef = storage.ref();
-            const fileRef = storageRef.child(`miembros/${file.name}-${Date.now()}`);
-            await fileRef.put(file);
-            return await fileRef.getDownloadURL();
-        }
 
         function mostrarMiembrosFirestore() {
             db.collection("miembros").get().then((querySnapshot) => {
@@ -143,6 +133,7 @@
                             <td>${miembro.sociedad}</td>
                             <td>
                                 <button class='btn btn-info btn-sm' onclick="editarMiembroFirestore('${doc.id}')"><i class="bi bi-journal-text"></i></button>
+                                <button class='btn btn-warning btn-sm' onclick="darDeBajaMiembro('${doc.id}')"><i class="bi bi-arrow-down-square"></i> Baja</button>
                                 <button class='btn btn-danger btn-sm' onclick="eliminarMiembroFirestore('${doc.id}')"><i class="bi bi-trash"></i></button>
                             </td>
                         </tr>
@@ -155,18 +146,7 @@
 
         document.getElementById('formMiembro').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData.entries());
-            const fotoFile = formData.get('foto');
-            let fotoURL = null;
-
-            if (fotoFile.size > 0) {
-                fotoURL = await uploadFile(fotoFile);
-            }
-
-            if (fotoURL) {
-                data.foto = fotoURL;
-            }
+            const data = Object.fromEntries(new FormData(e.target).entries());
 
             if (editing) {
                 const miembroId = document.getElementById('miembroId').value;
@@ -193,7 +173,7 @@
         });
 
         async function eliminarMiembroFirestore(id) {
-            if (confirm('¿Estás seguro de que deseas eliminar este miembro?')) {
+            if (confirm('¿Estás seguro de que deseas eliminar este miembro permanentemente?')) {
                 try {
                     await db.collection("miembros").doc(id).delete();
                     mostrarMiembrosFirestore();
@@ -239,6 +219,17 @@
             } catch (error) {
                 console.error("Error al obtener el miembro para editar:", error);
                 alert("Ocurrió un error al intentar cargar la información del miembro.");
+            }
+        }
+
+        async function darDeBajaMiembro(id) {
+            if (confirm('¿Estás seguro de que deseas dar de baja a este miembro?')) {
+                // Aquí puedes implementar la lógica para marcar al miembro como "de baja"
+                // Podrías actualizar un campo en Firestore para indicar su estado.
+                // Por ahora, simplemente mostraremos una alerta.
+                alert(`Miembro con ID ${id} marcado como "de baja". (Implementar lógica real después)`);
+                // Si deseas redirigir a usuariosbaja.html, puedes hacerlo aquí:
+                // window.location.href = 'usuariosbaja.html';
             }
         }
 
