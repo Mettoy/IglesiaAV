@@ -13,7 +13,6 @@
             padding: 0;
         }
 
-        /* Estilo para el menú lateral */
         .menu {
             background-color: #0D1B2A;
             color: #f1c40f;
@@ -42,7 +41,6 @@
             color: #ecf0f1;
         }
 
-        /* Estilo para el formulario */
         .form-container {
             margin-left: 270px;
             padding: 20px;
@@ -202,69 +200,69 @@
     </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 <script>
-    function toggleForm() {
-        const formulario = document.getElementById("formulario");
-        formulario.style.display = formulario.style.display === "none" ? "block" : "none";
+    // Configuración de Firebase
+    const firebaseConfig = {
+        apiKey: "tu-api-key",
+        authDomain: "tu-auth-domain",
+        projectId: "tu-project-id",
+        storageBucket: "tu-storage-bucket",
+        messagingSenderId: "tu-sender-id",
+        appId: "tu-app-id"
+    };
+    
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Función para cargar los miembros desde Firestore
+    function cargarMiembros() {
+        db.collection("miembros").get().then((querySnapshot) => {
+            const tableBody = document.getElementById("miembros-list");
+            tableBody.innerHTML = "";  // Limpiar la tabla
+            querySnapshot.forEach((doc) => {
+                const miembro = doc.data();
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${miembro.nombre}</td>
+                    <td>${miembro.codigo}</td>
+                    <td>${miembro.telefono}</td>
+                    <td class="action-buttons">
+                        <button onclick="editarMiembro('${doc.id}')">Editar</button>
+                        <button onclick="darDeBaja('${doc.id}')">Dar de Baja</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        });
     }
 
+    // Función para guardar un nuevo miembro
     function guardarMiembro() {
         const nombre = document.getElementById("nombre").value;
         const codigo = document.getElementById("codigo").value;
         const telefono = document.getElementById("telefono").value;
-        const edad = document.getElementById("edad").value;
-        const fechaCumple = document.getElementById("fecha-cumple").value;
-        const direccion = document.getElementById("direccion").value;
-        const foto = document.getElementById("foto").files[0];
 
-        const miembro = {
-            nombre,
-            codigo,
-            telefono,
-            edad,
-            fechaCumple,
-            direccion,
-            foto
-        };
+        db.collection("miembros").add({
+        nombre,
+        codigo,
+        telefono
+    }).then(() => {
+        alert("Miembro guardado correctamente");
+        cargarMiembros(); // Recargar lista después de guardar
+    });
+}
 
-        // Guardar en Firestore (este código es un ejemplo, debes implementarlo con Firestore)
-        console.log("Miembro guardado:", miembro);
+function toggleForm() {
+    const formulario = document.getElementById("formulario");
+    formulario.style.display = formulario.style.display === "none" ? "block" : "none";
+}
 
-        // Agregar a la tabla
-        const tableBody = document.getElementById("miembros-list");
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${nombre}</td>
-            <td>${codigo}</td>
-            <td>${telefono}</td>
-            <td class="action-buttons">
-                <button onclick="editarMiembro(${codigo})">Editar</button>
-                <button onclick="darDeBaja(${codigo})">Dar de Baja</button>
-            </td>
-        `;
-        tableBody.appendChild(row);
-
-        // Limpiar el formulario
-        document.getElementById("formulario").reset();
-        toggleForm();
-    }
-
-    function editarMiembro(codigo) {
-        alert("Editando miembro con código: " + codigo);
-    }
-
-    function darDeBaja(codigo) {
-        alert("Miembro con código " + codigo + " dado de baja.");
-    }
-
-    function guardarFamiliar() {
-        const familiar = document.getElementById("nombre-familiar").value;
-        const tipoFamiliar = document.getElementById("familiar").value;
-
-        // Guardar en Firestore (este código es un ejemplo, debes implementarlo con Firestore)
-        console.log("Familiar guardado:", familiar, tipoFamiliar);
-    }
-</script>
-
-</body>
+// Cargar miembros al iniciar la página
+window.onload = () => {
+    cargarMiembros();
+};
+ </script> 
+</body> 
 </html>
