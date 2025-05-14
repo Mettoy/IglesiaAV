@@ -7,177 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        body {
-            background-color: #121212;
-            color: #fff;
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            min-height: 100vh;
-        }
-        .sidebar {
-            width: 250px;
-            background-color: #1c1c2e;
-            transition: all 0.3s;
-        }
-
-        .sidebar.collapsed {
-            width: 60px;
-        }
-
-        .sidebar img {
-            width: 80px;
-            margin: 1rem auto;
-            display: block;
-            border-radius: 50%;
-        }
-
-        .sidebar a {
-            color: #fff;
-            padding: 12px 16px;
-            display: block;
-            text-decoration: none;
-            font-size: 1.1rem;
-            border-bottom: 1px solid #444;
-        }
-
-        .sidebar a:hover {
-            background-color: #333;
-        }
-
-        .sidebar a.active {
-            background-color: #565656;
-        }
-
-        .sidebar .menu-toggle {
-            background-color: transparent;
-            border: none;
-            color: #fff;
-            font-size: 24px;
-            padding: 10px;
-            width: 100%;
-            text-align: left;
-        }
-
-        .main-content {
-            flex-grow: 1;
-            padding: 2rem;
-            background-color: #1a1a2e;
-            width: 100%;
-            border-left: 1px solid #444;
-        }
-
-        h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #fff;
-        }
-
-        .table {
-            background-color: #222;
-            color: #fff;
-            border-radius: 8px;
-        }
-
-        .table th, .table td {
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .form-section {
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            border: 1px solid #444;
-            border-radius: 8px;
-            background-color: #333;
-        }
-
-        .form-section input, .form-section select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 0.8rem;
-            border-radius: 8px;
-            border: none;
-            background-color: #444;
-            color: #fff;
-        }
-
-        .form-section input:focus, .form-section select:focus {
-            outline: none;
-            background-color: #555;
-        }
-
-        .btn-custom {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-        }
-
-        .btn-custom:hover {
-            background-color: #0056b3;
-        }
-
-        .modal-content {
-            background-color: #222;
-            color: #fff;
-        }
-
-        .modal-header {
-            border-bottom: 1px solid #444;
-        }
-
-        .modal-footer button {
-            background-color: #444;
-            color: #fff;
-            border-radius: 8px;
-        }
-
-        .modal-footer button:hover {
-            background-color: #555;
-        }
-
-        .btn-agregar {
-            background-color: #00c853;
-            border-radius: 8px;
-            color: #fff;
-            padding: 12px 20px;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-            width: auto;
-            margin-top: 20px;
-        }
-
-        .btn-agregar:hover {
-            background-color: #009624;
-        }
-
-        .sidebar.collapsed .menu-toggle {
-            font-size: 2rem;
-            padding: 10px;
-        }
-
-        .nav-tabs .nav-link {
-            color: #fff;
-            border: 1px solid #444;
-            margin-right: 5px;
-            border-radius: 5px 5px 0 0;
-        }
-
-        .nav-tabs .nav-link.active {
-            background-color: #555;
-            border-bottom-color: transparent;
-        }
-
-        .tab-content {
-            padding: 1rem;
-            border: 1px solid #444;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            background-color: #333;
-        }
+        /* ... (Tu CSS existente) ... */
     </style>
 </head>
 <body>
@@ -233,6 +63,7 @@
                         <div class="tab-content" id="miTabContent">
                             <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
                                 <div class="form-section">
+                                    <input type="file" name="foto" accept="image/*">
                                     <input type="text" name="nombre" placeholder="Nombre completo" required>
                                     <input type="number" name="edad" placeholder="Edad" required>
                                     <input type="text" name="codigo" placeholder="Código" required>
@@ -262,7 +93,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn-custom mt-3">Guardar</button>
+                        <input type="hidden" id="miembroId" name="miembroId"> <button type="submit" class="btn-custom mt-3">Guardar</button>
                     </form>
                 </div>
             </div>
@@ -272,56 +103,28 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <script>
-        // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-            projectId: "iglesia-adoracion-viva",
-            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-            messagingSenderId: "815332010058",
-            appId: "1:815332010058:web:d2afff616469349d88deb3",
-            measurementId: "G-43MZP6V55D"
-        };
+        // ... (Tu configuración de Firebase) ...
 
-        // Inicializar Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(app);
-        const auth = firebase.auth(app); // Si necesitas autenticación
+        const storage = firebase.storage(app);
+        const auth = firebase.auth(app);
 
         const modal = new bootstrap.Modal(document.getElementById('modalMiembro'));
+        let editing = false; // Variable para rastrear si estamos editando
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        }
+        // ... (Tus funciones toggleSidebar, cambiarLogoInput, cambiarLogo, abrirFormulario) ...
 
-        function cambiarLogoInput() {
-            document.getElementById('logoInput').click();
-        }
-
-        function cambiarLogo() {
-            const file = document.getElementById('logoInput').files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    document.getElementById('logo').src = reader.result;
-                    localStorage.setItem('logo', reader.result);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function abrirFormulario() {
-            document.getElementById('formMiembro').reset();
-            const firstTabEl = document.querySelector('#personal-tab');
-            if (firstTabEl) {
-                const tab = new bootstrap.Tab(firstTabEl);
-                tab.show();
-            }
-            modal.show();
+        async function uploadFile(file) {
+            if (!file) return null;
+            const storageRef = storage.ref();
+            const fileRef = storageRef.child(`miembros/${file.name}-${Date.now()}`);
+            await fileRef.put(file);
+            return await fileRef.getDownloadURL();
         }
 
         function mostrarMiembrosFirestore() {
@@ -338,7 +141,10 @@
                             <td>${miembro.edad}</td>
                             <td>${miembro.direccion}</td>
                             <td>${miembro.sociedad}</td>
-                            <td><button class='btn btn-danger' onclick="eliminarMiembroFirestore('${doc.id}')">Eliminar</button></td>
+                            <td>
+                                <button class='btn btn-info btn-sm' onclick="editarMiembroFirestore('${doc.id}')"><i class="bi bi-journal-text"></i></button>
+                                <button class='btn btn-danger btn-sm' onclick="eliminarMiembroFirestore('${doc.id}')"><i class="bi bi-trash"></i></button>
+                            </td>
                         </tr>
                     `;
                 });
@@ -349,15 +155,40 @@
 
         document.getElementById('formMiembro').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target).entries());
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            const fotoFile = formData.get('foto');
+            let fotoURL = null;
 
-            try {
-                await db.collection("miembros").add(data);
-                modal.hide();
-                mostrarMiembrosFirestore();
-            } catch (error) {
-                console.error("Error al agregar miembro a Firestore:", error);
-                alert("Ocurrió un error al guardar el miembro.");
+            if (fotoFile.size > 0) {
+                fotoURL = await uploadFile(fotoFile);
+            }
+
+            if (fotoURL) {
+                data.foto = fotoURL;
+            }
+
+            if (editing) {
+                const miembroId = document.getElementById('miembroId').value;
+                try {
+                    await db.collection("miembros").doc(miembroId).update(data);
+                    editing = false;
+                    document.getElementById('miembroId').value = '';
+                    modal.hide();
+                    mostrarMiembrosFirestore();
+                } catch (error) {
+                    console.error("Error al editar miembro en Firestore:", error);
+                    alert("Ocurrió un error al editar el miembro.");
+                }
+            } else {
+                try {
+                    await db.collection("miembros").add(data);
+                    modal.hide();
+                    mostrarMiembrosFirestore();
+                } catch (error) {
+                    console.error("Error al agregar miembro a Firestore:", error);
+                    alert("Ocurrió un error al guardar el miembro.");
+                }
             }
         });
 
@@ -370,6 +201,44 @@
                     console.error("Error al eliminar miembro de Firestore:", error);
                     alert("Ocurrió un error al intentar eliminar el miembro.");
                 }
+            }
+        }
+
+        async function editarMiembroFirestore(id) {
+            editing = true;
+            document.getElementById('miembroId').value = id;
+
+            try {
+                const doc = await db.collection("miembros").doc(id).get();
+                if (doc.exists) {
+                    const miembro = doc.data();
+                    document.querySelector('[name="nombre"]').value = miembro.nombre || '';
+                    document.querySelector('[name="edad"]').value = miembro.edad || '';
+                    document.querySelector('[name="codigo"]').value = miembro.codigo || '';
+                    document.querySelector('[name="direccion"]').value = miembro.direccion || '';
+                    document.querySelector('[name="sociedad"]').value = miembro.sociedad || '';
+                    document.querySelector('[name="padre"]').value = miembro.padre || '';
+                    document.querySelector('[name="madre"]').value = miembro.madre || '';
+                    document.querySelector('[name="hermano1"]').value = miembro.hermano1 || '';
+                    document.querySelector('[name="hermano2"]').value = miembro.hermano2 || '';
+                    document.querySelector('[name="fechaBautismo"]').value = miembro.fechaBautismo || '';
+                    document.querySelector('[name="lugarBautismo"]').value = miembro.lugarBautismo || '';
+                    document.querySelector('[name="fechaConversion"]').value = miembro.fechaConversion || '';
+                    document.querySelector('[name="lugarConversion"]').value = miembro.lugarConversion || '';
+
+                    const firstTabEl = document.querySelector('#personal-tab');
+                    if (firstTabEl) {
+                        const tab = new bootstrap.Tab(firstTabEl);
+                        tab.show();
+                    }
+                    modal.show();
+                } else {
+                    console.error("No se encontró el miembro con ID:", id);
+                    alert("No se pudo cargar la información del miembro para editar.");
+                }
+            } catch (error) {
+                console.error("Error al obtener el miembro para editar:", error);
+                alert("Ocurrió un error al intentar cargar la información del miembro.");
             }
         }
 
