@@ -1,268 +1,227 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Miembros - Adoración Viva</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0D1B2A;
-            color: #f1c40f;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Miembros - Adoración Viva</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0d1b2a;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-        .menu {
-            background-color: #0D1B2A;
-            color: #f1c40f;
-            width: 250px;
-            padding: 20px;
-            height: 100vh;
-            position: fixed;
-        }
+    h1 {
+      color: #f1c40f;
+      margin-top: 20px;
+    }
 
-        .menu ul {
-            list-style-type: none;
-            padding: 0;
-        }
+    #toggle-form {
+      background-color: #f1c40f;
+      color: #0d1b2a;
+      border: none;
+      padding: 12px 24px;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
 
-        .menu li {
-            margin: 20px 0;
-        }
+    #toggle-form:hover {
+      background-color: #d4ac0d;
+    }
 
-        .menu a {
-            color: #f1c40f;
-            text-decoration: none;
-            font-size: 18px;
-        }
+    #formulario {
+      background-color: #1f2a44;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      width: 90%;
+      max-width: 600px;
+      display: none;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
 
-        .menu a:hover {
-            color: #ecf0f1;
-        }
+    .form-group {
+      margin-bottom: 15px;
+    }
 
-        .form-container {
-            margin-left: 270px;
-            padding: 20px;
-            width: 100%;
-        }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #f1c40f;
+    }
 
-        .form-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #1F2A44;
-            border-radius: 8px;
-        }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #f1c40f;
+      background-color: #34495e;
+      color: #fff;
+    }
 
-        .form-section h2 {
-            color: #f1c40f;
-        }
+    #guardar-btn {
+      background-color: #f1c40f;
+      color: #0d1b2a;
+      border: none;
+      padding: 12px 24px;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
 
-        .form-section input, .form-section select {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #f1c40f;
-            background-color: #34495E;
-            color: #ecf0f1;
-            border-radius: 4px;
-        }
+    #guardar-btn:hover {
+      background-color: #d4ac0d;
+    }
 
-        .form-section button {
-            background-color: #f1c40f;
-            color: #0D1B2A;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+    table {
+      margin-top: 40px;
+      border-collapse: collapse;
+      width: 90%;
+      max-width: 800px;
+      background-color: #1f2a44;
+      border-radius: 10px;
+      overflow: hidden;
+    }
 
-        .form-section button:hover {
-            background-color: #f39c12;
-        }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #f1c40f;
+      color: #fff;
+      text-align: left;
+    }
 
-        .table-container {
-            margin-left: 270px;
-            padding: 20px;
-        }
+    th {
+      background-color: #34495e;
+      color: #f1c40f;
+    }
 
-        table {
-            width: 100%;
-            margin: 20px 0;
-            border-collapse: collapse;
-            background-color: #1F2A44;
-            color: #f1c40f;
-            border-radius: 8px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #f1c40f;
-        }
-
-        th {
-            background-color: #34495E;
-        }
-
-        tr:hover {
-            background-color: #2C3E50;
-        }
-
-        .action-buttons button {
-            background-color: #f1c40f;
-            color: #0D1B2A;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .action-buttons button:hover {
-            background-color: #f39c12;
-        }
-
-        #logo {
-            width: 100%;
-            height: auto;
-            max-width: 200px;
-            margin-bottom: 20px;
-        }
-
-    </style>
+    tr:hover {
+      background-color: #2c3e50;
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- Menú lateral -->
-    <div class="menu">
-        <h2><img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" id="logo"></h2>
-        <ul>
-            <li><a href="#">Inicio</a></li>
-            <li><a href="#">Miembros</a></li>
-            <li><a href="#">Configuración</a></li>
-        </ul>
+  <h1>Miembros - Adoración Viva</h1>
+
+  <button id="toggle-form" onclick="toggleFormulario()">➕ Agregar nuevo miembro</button>
+
+  <div id="formulario">
+    <div class="form-group">
+      <label for="nombre">Nombre completo</label>
+      <input type="text" id="nombre" required>
     </div>
-
-    <!-- Contenedor del formulario -->
-    <div class="form-container">
-        <h2>Formulario de Nuevo Miembro</h2>
-        <button onclick="toggleForm()">Añadir Miembro</button>
-
-        <div id="formulario" style="display: none;">
-            <div class="form-section">
-                <h2>Datos Personales</h2>
-                <input type="text" id="nombre" placeholder="Nombre Completo" required>
-                <input type="text" id="codigo" placeholder="Código" required>
-                <input type="text" id="telefono" placeholder="Número de Teléfono">
-                <input type="number" id="edad" placeholder="Edad">
-                <input type="date" id="fecha-cumple" placeholder="Fecha de Cumpleaños">
-                <input type="text" id="direccion" placeholder="Dirección">
-                <input type="file" id="foto" accept="image/*">
-            </div>
-
-            <div class="form-section">
-                <h2>Datos Familiares</h2>
-                <select id="familiar">
-                    <option value="conyuge">Cónyuge</option>
-                </select>
-                <input type="text" id="nombre-familiar" placeholder="Nombre del Familiar">
-                <button onclick="guardarFamiliar()">Guardar Familiar</button>
-            </div>
-
-            <div class="form-section">
-                <h2>Datos Espirituales</h2>
-                <input type="text" id="conversion" placeholder="Conversión">
-                <input type="text" id="bautismo-espiritu" placeholder="Bautismo del Espíritu Santo">
-                <input type="date" id="fecha-bautizo" placeholder="Fecha de Bautizo">
-                <input type="text" id="ubicacion-bautizo" placeholder="Ubicación de Bautizo">
-            </div>
-
-            <button onclick="guardarMiembro()">Guardar Miembro</button>
-        </div>
-
-        <div class="table-container">
-            <h2>Miembros Registrados</h2>
-            <table id="miembros-table">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Código</th>
-                        <th>Teléfono</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="miembros-list">
-                    <!-- Los miembros guardados aparecerán aquí -->
-                </tbody>
-            </table>
-        </div>
+    <div class="form-group">
+      <label for="codigo">Código</label>
+      <input type="text" id="codigo" required>
     </div>
-</div>
+    <div class="form-group">
+      <label for="telefono">Teléfono</label>
+      <input type="text" id="telefono">
+    </div>
+    <div class="form-group">
+      <label for="edad">Edad</label>
+      <input type="number" id="edad">
+    </div>
+    <div class="form-group">
+      <label for="direccion">Dirección</label>
+      <input type="text" id="direccion">
+    </div>
+    <button id="guardar-btn" onclick="guardarMiembro()">💾 Guardar miembro</button>
+  </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-<script>
-    // Configuración de Firebase
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Teléfono</th>
+        <th>Edad</th>
+      </tr>
+    </thead>
+    <tbody id="miembros-list">
+      <!-- Aquí se insertarán los miembros -->
+    </tbody>
+  </table>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <script>
+    // Configuración de Firebase (usa tus valores)
     const firebaseConfig = {
-        apiKey: "tu-api-key",
-        authDomain: "tu-auth-domain",
-        projectId: "tu-project-id",
-        storageBucket: "tu-storage-bucket",
-        messagingSenderId: "tu-sender-id",
-        appId: "tu-app-id"
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_BUCKET",
+      messagingSenderId: "TU_SENDER_ID",
+      appId: "TU_APP_ID"
     };
-    
+
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Función para cargar los miembros desde Firestore
-    function cargarMiembros() {
-        db.collection("miembros").get().then((querySnapshot) => {
-            const tableBody = document.getElementById("miembros-list");
-            tableBody.innerHTML = "";  // Limpiar la tabla
-            querySnapshot.forEach((doc) => {
-                const miembro = doc.data();
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${miembro.nombre}</td>
-                    <td>${miembro.codigo}</td>
-                    <td>${miembro.telefono}</td>
-                    <td class="action-buttons">
-                        <button onclick="editarMiembro('${doc.id}')">Editar</button>
-                        <button onclick="darDeBaja('${doc.id}')">Dar de Baja</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        });
+    function toggleFormulario() {
+      const form = document.getElementById("formulario");
+      form.style.display = form.style.display === "none" ? "block" : "none";
     }
 
-    // Función para guardar un nuevo miembro
     function guardarMiembro() {
-        const nombre = document.getElementById("nombre").value;
-        const codigo = document.getElementById("codigo").value;
-        const telefono = document.getElementById("telefono").value;
+      const nombre = document.getElementById("nombre").value;
+      const codigo = document.getElementById("codigo").value;
+      const telefono = document.getElementById("telefono").value;
+      const edad = document.getElementById("edad").value;
+      const direccion = document.getElementById("direccion").value;
 
-        db.collection("miembros").add({
+      if (!nombre || !codigo) {
+        alert("Nombre y código son obligatorios");
+        return;
+      }
+
+      db.collection("miembros").add({
         nombre,
         codigo,
-        telefono
-    }).then(() => {
+        telefono,
+        edad,
+        direccion
+      }).then(() => {
         alert("Miembro guardado correctamente");
-        cargarMiembros(); // Recargar lista después de guardar
-    });
-}
+        cargarMiembros();
+        document.getElementById("formulario").reset();
+        document.getElementById("formulario").style.display = "none";
+      });
+    }
 
-function toggleForm() {
-    const formulario = document.getElementById("formulario");
-    formulario.style.display = formulario.style.display === "none" ? "block" : "none";
-}
+    function cargarMiembros() {
+      const tbody = document.getElementById("miembros-list");
+      tbody.innerHTML = "";
+      db.collection("miembros").get().then(snapshot => {
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${data.nombre}</td>
+            <td>${data.codigo}</td>
+            <td>${data.telefono || "-"}</td>
+            <td>${data.edad || "-"}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
 
-// Cargar miembros al iniciar la página
-window.onload = () => {
-    cargarMiembros();
-};
- </script> 
-</body> 
+    // Cargar miembros al iniciar
+    window.onload = cargarMiembros;
+  </script>
+</body>
 </html>
