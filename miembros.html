@@ -1,586 +1,119 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Miembros - Adoración Viva</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <style>
-        /* Tus estilos CSS aquí (sin cambios) */
-        body {
-            background-color: #121212;
-            color: #fff;
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            min-height: 100vh;
-        }
-        .sidebar {
-            width: 250px;
-            background-color: #1c1c2e;
-            transition: all 0.3s;
-        }
-
-        .sidebar.collapsed {
-            width: 60px;
-        }
-
-        .sidebar img {
-            width: 80px;
-            margin: 1rem auto;
-            display: block;
-            border-radius: 50%;
-        }
-
-        .sidebar a {
-            color: #fff;
-            padding: 12px 16px;
-            display: block;
-            text-decoration: none;
-            font-size: 1.1rem;
-            border-bottom: 1px solid #444;
-        }
-
-        .sidebar a:hover {
-            background-color: #333;
-        }
-
-        .sidebar a.active {
-            background-color: #565656;
-        }
-
-        .sidebar .menu-toggle {
-            background-color: transparent;
-            border: none;
-            color: #fff;
-            font-size: 24px;
-            padding: 10px;
-            width: 100%;
-            text-align: left;
-        }
-
-        .main-content {
-            flex-grow: 1;
-            padding: 2rem;
-            background-color: #1a1a2e;
-            width: 100%;
-            border-left: 1px solid #444;
-        }
-
-        h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #fff;
-        }
-
-        .table {
-            background-color: #222;
-            color: #fff;
-            border-radius: 8px;
-        }
-
-        .table th, .table td {
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .form-section {
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            border: 1px solid #444;
-            border-radius: 8px;
-            background-color: #333;
-        }
-
-        .form-section input, .form-section select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 0.8rem;
-            border-radius: 8px;
-            border: none;
-            background-color: #444;
-            color: #fff;
-        }
-
-        .form-section input:focus, .form-section select:focus {
-            outline: none;
-            background-color: #555;
-        }
-
-        .btn-custom {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-        }
-
-        .btn-custom:hover {
-            background-color: #0056b3;
-        }
-
-        .modal-content {
-            background-color: #222;
-            color: #fff;
-        }
-
-        .modal-header {
-            border-bottom: 1px solid #444;
-        }
-
-        .modal-footer button {
-            background-color: #444;
-            color: #fff;
-            border-radius: 8px;
-        }
-
-        .modal-footer button:hover {
-            background-color: #555;
-        }
-
-        .btn-agregar, .btn-reactivar {
-            background-color: #00c853;
-            border-radius: 8px;
-            color: #fff;
-            padding: 12px 20px;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-            width: auto;
-            margin-top: 20px;
-            margin-right: 10px;
-        }
-
-        .btn-reactivar {
-            background-color: #ffc107; /* Amarillo para reactivar */
-            color: #212529;
-        }
-
-        .btn-agregar:hover, .btn-reactivar:hover {
-            opacity: 0.8;
-        }
-
-        .sidebar.collapsed .menu-toggle {
-            font-size: 2rem;
-            padding: 10px;
-        }
-
-        .nav-tabs .nav-link {
-            color: #fff;
-            border: 1px solid #444;
-            margin-right: 5px;
-            border-radius: 5px 5px 0 0;
-        }
-
-        .nav-tabs .nav-link.active {
-            background-color: #555;
-            border-bottom-color: transparent;
-        }
-
-        .tab-content {
-            padding: 1rem;
-            border: 1px solid #444;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            background-color: #333;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro de Miembros</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f2f2f2; }
+    h2 { margin-top: 30px; }
+    form, table { background: #fff; padding: 20px; border-radius: 10px; }
+    input, select { margin: 5px 0; padding: 8px; width: 100%; }
+    button { padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 5px; }
+    table { width: 100%; margin-top: 30px; border-collapse: collapse; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    th { background-color: #007bff; color: white; }
+  </style>
 </head>
 <body>
-    <div class="sidebar" id="sidebar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
-        <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" id="logo" onclick="cambiarLogoInput()">
-        <input type="file" id="logoInput" style="display:none;" accept="image/*" onchange="cambiarLogo()">
-        <a href="inicio.html">Inicio</a>
-        <a href="#" class="active">Miembros</a>
-        <a href="diezmo.html">Diezmos</a>
-        <a href="#">Salir</a>
-    </div>
 
-    <div class="main-content">
-        <ul class="nav nav-tabs" id="miTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="activos-tab" data-bs-toggle="tab" data-bs-target="#activos" type="button" role="tab" aria-controls="activos" aria-selected="true">Miembros Activos</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="bajas-tab" data-bs-toggle="tab" data-bs-target="#bajas" type="button" role="tab" aria-controls="bajas" aria-selected="false">Miembros de Baja</button>
-            </li>
-        </ul>
-        <div class="tab-content" id="miTabContent">
-            <div class="tab-pane fade show active" id="activos" role="tabpanel" aria-labelledby="activos-tab">
-                <h2>Listado de Miembros Activos</h2>
-                <button class="btn-agregar" onclick="abrirFormulario()"><i class="bi bi-journal-plus"></i> Agregar Miembro</button>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Foto</th>
-                            <th>Nombre completo</th>
-                            <th>Código</th>
-                            <th>Edad</th>
-                            <th>Dirección</th>
-                            <th>Sociedad</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaMiembrosActivos"></tbody>
-                </table>
-            </div>
-            <div class="tab-pane fade" id="bajas" role="tabpanel" aria-labelledby="bajas-tab">
-                <h2>Listado de Miembros de Baja</h2>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Foto</th>
-                            <th>Nombre completo</th>
-                            <th>Código</th>
-                            <th>Edad</th>
-                            <th>Dirección</th>
-                            <th>Sociedad</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaMiembrosBaja"></tbody>
-                </table>
-            </div>
-        </div>
+  <h1>Registro de Miembros - ADORACIÓN VIVA</h1>
 
-        <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Ficha del Miembro</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="formMiembro">
-                            <ul class="nav nav-tabs" id="miTabModal" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">Datos personales</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="familiar-tab" data-bs-toggle="tab" data-bs-target="#familiar" type="button" role="tab" aria-controls="familiar" aria-selected="false">Datos familiares</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="espiritual-tab" data-bs-toggle="tab" data-bs-target="#espiritual" type="button" role="tab" aria-controls="espiritual" aria-selected="false">Datos espirituales</button>
-                                </li>
-                            </ul>
-                            <div class="tab-content" id="miTabContentModal">
-                                <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
-                                    <div class="form-section">
-                                        <label for="foto">Foto:</label>
-                                        <input type="file" name="foto" id="foto" accept="image/*">
-                                        <label for="nombre">Nombre completo:</label>
-                                        <input type="text" name="nombre" id="nombre" placeholder="Nombre completo" required>
-                                        <label for="edad">Edad:</label>
-                                        <input type="number" name="edad" id="edad" placeholder="Edad" required>
-                                        <label for="codigo">Código:</label>
-                                        <input type="text" name="codigo" id="codigo" placeholder="Código" required>
-                                        <label for="direccion">Dirección:</label>
-                                        <input type="text" name="direccion" id="direccion" placeholder="Dirección">
-                                        <label for="sociedad">Sociedad:</label>
-                                        <select name="sociedad" id="sociedad">
-                                            <option value="">Sociedad</option>
-                                            <option>Jóvenes</option>
-                                            <option>Damas</option>
-                                            <option>Caballeros</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="familiar" role="tabpanel" aria-labelledby="familiar-tab">
-                                    <div class="form-section">
-                                        <label for="padre">Padre:</label>
-                                        <input type="text" name="padre" id="padre" placeholder="Padre">
-                                        <label for="madre">Madre:</label>
-                                        <input type="text" name="madre" id="madre" placeholder="Madre">
-                                        <label for="hermano1">Hermano 1:</label>
-                                        <input type="text" name="hermano1" id="hermano1" placeholder="Hermano 1">
-                                        <label for="hermano2">Hermano 2:</label>
-                                        <input type="text" name="hermano2" id="hermano2" placeholder="Hermano 2">
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="espiritual" role="tabpanel" aria-labelledby="espiritual-tab">
-                                    <div class="form-section">
-                                        <label for="fechaBautismo">Fecha de Bautismo:</label>
-                                        <input type="date" name="fechaBautismo" id="fechaBautismo">
-                                        <label for="lugarBautismo">Lugar de Bautismo:</label>
-                                        <input type="text" name="lugarBautismo" id="lugarBautismo" placeholder="Lugar de bautismo">
-                                        <label for="fechaConversion">Fecha de Conversión:</label>
-                                        <input type="date" name="fechaConversion" id="fechaConversion">
-                                        <label for="lugarConversion">Lugar de Conversión:</label>
-                                        <input type="text" name="lugarConversion" id="lugarConversion" placeholder="Lugar de conversión">
-                                    </div>
-                                </div>
-                            </div>
-                            <input type="hidden" id="miembroId" name="miembroId">
-                            <button type="submit" class="btn-custom mt-3">Guardar</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  <form id="formMiembro">
+    <h2>Datos Personales</h2>
+    <input type="text" id="nombre" placeholder="Nombre completo" required />
+    <input type="text" id="codigo" placeholder="Código del miembro" required />
+    <input type="number" id="edad" placeholder="Edad" required />
+    <input type="text" id="direccion" placeholder="Dirección" required />
+    <input type="text" id="sociedad" placeholder="Sociedad" required />
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <h2>Datos Familiares</h2>
+    <input type="text" id="estadoCivil" placeholder="Estado Civil" />
+    <input type="text" id="hijos" placeholder="Número de hijos" />
 
-    <script>
-        // **CONFIGURACIÓN DE FIREBASE**
-        const firebaseConfig = {
-            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-            projectId: "iglesia-adoracion-viva",
-            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-            messagingSenderId: "815332010058",
-            appId: "1:815332010058:web:d2afff616469349d88deb3",
-            measurementId: "G-43MZP6V55D"
-        };
+    <h2>Datos Espirituales</h2>
+    <input type="text" id="bautizado" placeholder="¿Está bautizado? (Sí/No)" />
+    <input type="text" id="ministerio" placeholder="Ministerio al que pertenece" />
 
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(app);
-        const storage = firebase.storage(app);
-        const auth = firebase.auth(app);
+    <br />
+    <button type="submit">Guardar Miembro</button>
+  </form>
 
-        const modal = new bootstrap.Modal(document.getElementById('modalMiembro'));
-        let editing = false;
+  <h2>Miembros Registrados</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Edad</th>
+        <th>Dirección</th>
+        <th>Sociedad</th>
+      </tr>
+    </thead>
+    <tbody id="tablaMiembros"></tbody>
+  </table>
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        }
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-        function cambiarLogoInput() {
-            document.getElementById('logoInput').click();
-        }
+  <script>
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+      authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+      databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+      projectId: "iglesia-adoracion-viva",
+      storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+      messagingSenderId: "815332010058",
+      appId: "1:815332010058:web:d2afff616469349d88deb3",
+      measurementId: "G-43MZP6V55D"
+    };
 
-        function cambiarLogo() {
-            const file = document.getElementById('logoInput').files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    document.getElementById('logo').src = reader.result;
-                    localStorage.setItem('logo', reader.result);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        function abrirFormulario() {
-            editing = false;
-            document.getElementById('formMiembro').reset();
-            document.getElementById('miembroId').value = '';
-            // Mostrar la primera pestaña del modal al abrir el formulario
-            const firstTabEl = document.querySelector('#personal-tab');
-            if (firstTabEl) {
-                const tab = new bootstrap.Tab(firstTabEl);
-                tab.show();
-            }
-            modal.show();
-        }
+    // Guardar miembro
+    document.getElementById("formMiembro").addEventListener("submit", function (e) {
+      e.preventDefault();
 
-        async function uploadFile(file) {
-            if (!file) return null;
-            const storageRef = storage.ref();
-            const fileRef = storageRef.child(`miembros/${file.name}-${Date.now()}`);
-            try {
-                await fileRef.put(file);
-                return await fileRef.getDownloadURL();
-            } catch (error) {
-                console.error("Error uploading file to Firebase Storage:", error);
-                alert("Ocurrió un error al subir la imagen.");
-                return null;
-            }
-        }
+      const miembro = {
+        nombre: document.getElementById("nombre").value,
+        codigo: document.getElementById("codigo").value,
+        edad: document.getElementById("edad").value,
+        direccion: document.getElementById("direccion").value,
+        sociedad: document.getElementById("sociedad").value,
+        estadoCivil: document.getElementById("estadoCivil").value,
+        hijos: document.getElementById("hijos").value,
+        bautizado: document.getElementById("bautizado").value,
+        ministerio: document.getElementById("ministerio").value
+      };
 
-        function mostrarMiembrosActivos() {
-            db.collection("miembros").where("estado", "==", "activo").orderBy("nombre").get().then((querySnapshot) => {
-                const tabla = document.getElementById('tablaMiembrosActivos');
-                tabla.innerHTML = '';
-                if (querySnapshot.empty) {
-                    tabla.innerHTML = '<tr><td colspan="7">No hay miembros activos registrados.</td></tr>';
-                    return;
-                }
-                querySnapshot.forEach((doc) => {
-                    const miembro = doc.data();
-                    tabla.innerHTML += `
-                        <tr>
-                            <td><img src="${miembro.foto || 'https://via.placeholder.com/100'}" width="50" alt="Foto de ${miembro.nombre}"></td>
-                            <td>${miembro.nombre}</td>
-                            <td>${miembro.codigo}</td>
-                            <td>${miembro.edad}</td>
-                            <td>${miembro.direccion || 'N/A'}</td>
-                            <td>${miembro.sociedad || 'N/A'}</td>
-                            <td>
-                                <button class='btn btn-info btn-sm' onclick="editarMiembro('${doc.id}')"><i class="bi bi-journal-text"></i> Editar</button>
-                                <button class='btn btn-warning btn-sm' onclick="darDeBajaMiembro('${doc.id}')"><i class="bi bi-arrow-down-square"></i> Dar de Baja</button>
-                                <button class='btn btn-danger btn-sm' onclick="eliminarMiembro('${doc.id}')"><i class="bi bi-trash"></i> Eliminar</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }).catch((error) => {
-                console.error("Error getting active members:", error);
-                alert("Ocurrió un error al cargar la lista de miembros activos.");
-            });
-        }
+      db.ref("miembros/" + miembro.codigo).set(miembro).then(() => {
+        alert("Miembro guardado correctamente");
+        document.getElementById("formMiembro").reset();
+      }).catch(error => {
+        console.error("Error al guardar:", error);
+      });
+    });
 
-        function mostrarMiembrosBaja() {
-            db.collection("miembros").where("estado", "==", "baja").orderBy("nombre").get().then((querySnapshot) => {
-                const tabla = document.getElementById('tablaMiembrosBaja');
-                tabla.innerHTML = '';
-                if (querySnapshot.empty) {
-                    tabla.innerHTML = '<tr><td colspan="7">No hay miembros de baja registrados.</td></tr>';
-                    return;
-                }
-                querySnapshot.forEach((doc) => {
-                    const miembro = doc.data();
-                    tabla.innerHTML += `
-                        <tr>
-                            <td><img src="${miembro.foto || 'https://via.placeholder.com/100'}" width="50" alt="Foto de ${miembro.nombre}"></td>
-                            <td>${miembro.nombre}</td>
-                            <td>${miembro.codigo}</td>
-                            <td>${miembro.edad}</td>
-                            <td>${miembro.direccion || 'N/A'}</td>
-                            <td>${miembro.sociedad || 'N/A'}</td>
-                            <td>
-                                <button class='btn btn-success btn-sm btn-reactivar' onclick="reactivarMiembro('${doc.id}')"><i class="bi bi-arrow-up-square"></i> Reactivar</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }).catch((error) => {
-                console.error("Error getting inactive members:", error);
-                alert("Ocurrió un error al cargar la lista de miembros de baja.");
-            });
-        }
-
-        mostrarMiembrosActivos();
-        mostrarMiembrosBaja();
-
-        document.getElementById('formMiembro').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData.entries());
-            const fotoFile = formData.get('foto');
-            let fotoURL = null;
-
-            if (fotoFile && fotoFile.size > 0) {
-                fotoURL = await uploadFile(fotoFile);
-            }
-
-            if (fotoURL) {
-                data.foto = fotoURL;
-            }
-
-            try {
-                if (editing) {
-                    const miembroId = document.getElementById('miembroId').value;
-                    await db.collection("miembros").doc(miembroId).update(data);
-                    editing = false;
-                    document.getElementById('miembroId').value = '';
-                    alert('Miembro actualizado exitosamente.');
-                } else {
-                    data.estado = "activo";
-                    await db.collection("miembros").add(data);
-                    alert('Miembro agregado exitosamente.');
-                }
-                modal.hide();
-                mostrarMiembrosActivos(); // **Llamada importante para actualizar la tabla después de guardar**
-                document.getElementById('formMiembro').reset(); // Limpiar el formulario después de guardar
-            } catch (error) {
-                console.error("Error al guardar/editar miembro en Firestore:", error);
-                alert("Ocurrió un error al guardar/editar el miembro: " + error.message);
-            }
-        });
-
-        async function eliminarMiembro(id) {
-            if (confirm('¿Estás seguro de que deseas eliminar este miembro permanentemente?')) {
-                try {
-                    await db.collection("miembros").doc(id).delete();
-                    mostrarMiembrosActivos();
-                    mostrarMiembrosBaja();
-                    alert(`Miembro con ID ${id} eliminado permanentemente.`);
-                } catch (error) {
-                    console.error("Error al eliminar miembro de Firestore:", error);
-                    alert("Ocurrió un error al intentar eliminar el miembro: " + error.message);
-                }
-            }
-        }
-
-        async function editarMiembro(id) {
-            editing = true;
-            document.getElementById('miembroId').value = id;
-
-            try {
-                const doc = await db.collection("miembros").doc(id).get();
-                if (doc.exists) {
-                    const miembro = doc.data();
-                    document.querySelector('[name="nombre"]').value = miembro.nombre || '';
-                    document.querySelector('[name="edad"]').value = miembro.edad || '';
-                    document.querySelector('[name="codigo"]').value = miembro.codigo || '';
-                    document.querySelector('[name="direccion"]').value = miembro.direccion || '';
-                    document.querySelector('[name="sociedad"]').value = miembro.sociedad || '';
-                    document.querySelector('[name="padre"]').value = miembro.padre || '';
-                    document.querySelector('[name="madre"]').value = miembro.madre || '';
-                    document.querySelector('[name="hermano1"]').value = miembro.hermano1 || '';
-                    document.querySelector('[name="hermano2"]').value = miembro.hermano2 || '';
-                    document.querySelector('[name="fechaBautismo"]').value = miembro.fechaBautismo || '';
-                    document.querySelector('[name="lugarBautismo"]').value = miembro.lugarBautismo || '';
-                    document.querySelector('[name="fechaConversion"]').value = miembro.fechaConversion || '';
-                    document.querySelector('[name="lugarConversion"]').value = miembro.lugarConversion || '';
-
-                    // Previsualizar la imagen si existe
-                    if (miembro.foto) {
-                        // No se previsualiza en el input file, pero podrías mostrarla en otro elemento si fuera necesario.
-                        // Por simplicidad, aquí solo se precargan los valores de los campos.
-                    }
-
-                    const firstTabElModal = document.querySelector('#personal-tab');
-                    if (firstTabElModal) {
-                        const tab = new bootstrap.Tab(firstTabElModal);
-                        tab.show();
-                    }
-                    modal.show();
-                } else {
-                    console.error("No se encontró el miembro con ID:", id);
-                    alert("No se pudo cargar la información del miembro para editar.");
-                }
-            } catch (error) {
-                console.error("Error al obtener el miembro para editar:", error);
-                alert("Ocurrió un error al intentar cargar la información del miembro: " + error.message);
-            }
-        }
-
-        async function darDeBajaMiembro(id) {
-            if (confirm('¿Estás seguro de que deseas dar de baja a este miembro?')) {
-                try {
-                    await db.collection("miembros").doc(id).update({ estado: "baja" });
-                    mostrarMiembrosActivos();
-                    mostrarMiembrosBaja();
-                    alert(`Miembro con ID ${id} dado de baja.`);
-                } catch (error) {
-                    console.error("Error al dar de baja al miembro en Firestore:", error);
-                    alert("Ocurrió un error al intentar dar de baja al miembro: " + error.message);
-                }
-            }
-        }
-
-        async function reactivarMiembro(id) {
-            if (confirm('¿Estás seguro de que deseas reactivar a este miembro?')) {
-                try {
-                    await db.collection("miembros").doc(id).update({ estado: "activo" });
-                    mostrarMiembrosActivos();
-                    mostrarMiembrosBaja();
-                    alert(`Miembro con ID ${id} reactivado.`);
-                } catch (error) {
-                    console.error("Error al reactivar miembro en Firestore:", error);
-                    alert("Ocurrió un error al intentar reactivar al miembro: " + error.message);
-                }
-            }
-        }
-    </script>
+    // Cargar miembros
+    const tabla = document.getElementById("tablaMiembros");
+    db.ref("miembros").on("value", (snapshot) => {
+      tabla.innerHTML = "";
+      snapshot.forEach((child) => {
+        const m = child.val();
+        const fila = `<tr>
+          <td>${m.nombre}</td>
+          <td>${m.codigo}</td>
+          <td>${m.edad}</td>
+          <td>${m.direccion}</td>
+          <td>${m.sociedad}</td>
+        </tr>`;
+        tabla.innerHTML += fila;
+      });
+    });
+  </script>
 </body>
 </html>
