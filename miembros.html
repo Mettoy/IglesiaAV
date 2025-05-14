@@ -1,200 +1,252 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Miembros - Adoración Viva</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      display: flex;
-    }
-    .sidebar {
-      width: 250px;
-      background: #2c3e50;
-      color: white;
-      padding: 20px;
-    }
-    .sidebar img {
-      width: 100%;
-      margin-bottom: 20px;
-    }
-    .content {
-      flex: 1;
-      padding: 20px;
-      background: #ecf0f1;
-    }
-    h2 {
-      margin-top: 0;
-    }
-    .toggle-btn {
-      background: #2980b9;
-      color: white;
-      border: none;
-      padding: 10px;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
-    form {
-      background: white;
-      padding: 15px;
-      display: none;
-      margin-bottom: 20px;
-      border-radius: 5px;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin: 5px 0;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #bdc3c7;
-      text-align: left;
-    }
-    th {
-      background: #3498db;
-      color: white;
-    }
-    .pagination {
-      margin-top: 15px;
-      text-align: center;
-    }
-    .pagination button {
-      margin: 0 5px;
-      padding: 5px 10px;
-      border: none;
-      background: #3498db;
-      color: white;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Miembros</title>
+    <!-- Agregar Bootstrap para diseño responsive -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJwV0f4p5zJkX3fg9tsz2jsYwUMdKwLtWYjw3pceOwS5z6eyUgRrM6so4eIj" crossorigin="anonymous">
+    <script src="https://www.gstatic.com/firebasejs/9.8.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.8.2/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.8.2/firebase-storage.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            padding-top: 20px;
+        }
+        #sidebar {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .sidebar-header img {
+            max-width: 100%;
+            height: auto;
+        }
+        .form-section {
+            margin-top: 20px;
+        }
+        .table-container {
+            margin-top: 20px;
+        }
+        .pagination {
+            justify-content: center;
+        }
+        .action-btns {
+            display: flex;
+            justify-content: space-around;
+        }
+    </style>
 </head>
 <body>
-  <div class="sidebar">
-    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" />
-    <h3>Adoración Viva</h3>
-  </div>
-  <div class="content">
-    <h2>Gestión de Miembros</h2>
-    <button class="toggle-btn" onclick="toggleForm()">Agregar nuevo miembro</button>
-    <form id="miembroForm">
-      <input type="text" id="nombre" placeholder="Nombre completo" required />
-      <input type="text" id="codigo" placeholder="Código" required />
-      <input type="number" id="edad" placeholder="Edad" required />
-      <input type="text" id="direccion" placeholder="Dirección" required />
-      <input type="text" id="sociedad" placeholder="Sociedad" required />
-      <button type="submit">Guardar</button>
-    </form>
+    <!-- Menú lateral plegable -->
+    <div class="d-flex" id="wrapper">
+        <div class="bg-light" id="sidebar" style="width: 250px;">
+            <div class="sidebar-header text-center">
+                <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo">
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <button class="btn btn-primary w-100" data-bs-toggle="collapse" data-bs-target="#formSection" aria-expanded="false" aria-controls="formSection">Formulario</button>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-primary w-100" id="addMemberBtn">Agregar Nuevo Miembro</button>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#inactiveMembers" aria-expanded="false" aria-controls="inactiveMembers">Miembros en Baja</button>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Contenido principal -->
+        <div id="page-content-wrapper" class="container">
+            <h2 class="text-center">Gestión de Miembros</h2>
 
-    <table id="miembrosTabla">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Código</th>
-          <th>Edad</th>
-          <th>Dirección</th>
-          <th>Sociedad</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <div class="pagination" id="pagination"></div>
-  </div>
+            <!-- Formulario plegable -->
+            <div class="collapse form-section" id="formSection">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Agregar nuevo miembro</h5>
+                        <form id="memberForm">
+                            <div class="mb-3">
+                                <label for="photo" class="form-label">Foto</label>
+                                <input type="file" class="form-control" id="photo" accept="image/*" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="society" class="form-label">Sociedad</label>
+                                <select class="form-select" id="society" required>
+                                    <option value="jóvenes">Jóvenes</option>
+                                    <option value="damas">Damas</option>
+                                    <option value="caballeros">Caballeros</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">Guardar Miembro</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+            <!-- Tabla de Miembros -->
+            <div class="table-container">
+                <h4 class="text-center">Lista de Miembros</h4>
+                <table class="table table-bordered" id="membersTable">
+                    <thead>
+                        <tr>
+                            <th>Foto</th>
+                            <th>Nombre</th>
+                            <th>Sociedad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersList">
+                        <!-- Aquí se llenarán los miembros desde Firestore -->
+                    </tbody>
+                </table>
+                <div class="pagination" id="paginationControls">
+                    <!-- Los controles de paginación se añadirán aquí -->
+                </div>
+            </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-      authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-      projectId: "iglesia-adoracion-viva",
-      storageBucket: "iglesia-adoracion-viva.appspot.com",
-      messagingSenderId: "815332010058",
-      appId: "1:815332010058:web:d2afff616469349d88deb3",
-      measurementId: "G-43MZP6V55D"
-    };
+            <!-- Miembros en Baja -->
+            <div class="collapse" id="inactiveMembers">
+                <h4 class="text-center">Miembros en Baja</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Sociedad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inactiveMembersList">
+                        <!-- Aquí se llenarán los miembros en baja -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const miembroForm = document.getElementById("miembroForm");
-    const miembrosTabla = document.getElementById("miembrosTabla").getElementsByTagName("tbody")[0];
-    const paginationDiv = document.getElementById("pagination");
+    <!-- Agregar script Firebase -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.appspot.com",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
 
-    let miembrosData = [];
-    const pageSize = 20;
-    let currentPage = 1;
+        firebase.initializeApp(firebaseConfig);
 
-    function toggleForm() {
-      const form = document.getElementById("miembroForm");
-      form.style.display = form.style.display === "none" ? "block" : "none";
-    }
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const membersRef = db.collection("members");
 
-    miembroForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const nuevoMiembro = {
-        nombre: document.getElementById("nombre").value.trim(),
-        codigo: document.getElementById("codigo").value.trim(),
-        edad: parseInt(document.getElementById("edad").value),
-        direccion: document.getElementById("direccion").value.trim(),
-        sociedad: document.getElementById("sociedad").value.trim()
-      };
-      await addDoc(collection(db, "miembros"), nuevoMiembro);
-      miembroForm.reset();
-      cargarMiembros();
-    });
+        // Subir foto a Firebase Storage
+        function uploadImage(file) {
+            const storageRef = storage.ref('member_photos/' + file.name);
+            const uploadTask = storageRef.put(file);
+            return uploadTask.then(() => storageRef.getDownloadURL());
+        }
 
-    async function cargarMiembros() {
-      const q = query(collection(db, "miembros"), orderBy("nombre"));
-      const querySnapshot = await getDocs(q);
-      miembrosData = [];
-      querySnapshot.forEach(doc => {
-        miembrosData.push(doc.data());
-      });
-      mostrarPagina(currentPage);
-    }
+        // Agregar miembro
+        document.getElementById("memberForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("name").value;
+            const society = document.getElementById("society").value;
+            const photoFile = document.getElementById("photo").files[0];
 
-    function mostrarPagina(pagina) {
-      miembrosTabla.innerHTML = "";
-      currentPage = pagina;
-      const inicio = (pagina - 1) * pageSize;
-      const fin = inicio + pageSize;
-      const paginaDatos = miembrosData.slice(inicio, fin);
-      paginaDatos.forEach(miembro => {
-        const fila = miembrosTabla.insertRow();
-        fila.innerHTML = `
-          <td>${miembro.nombre}</td>
-          <td>${miembro.codigo}</td>
-          <td>${miembro.edad}</td>
-          <td>${miembro.direccion}</td>
-          <td>${miembro.sociedad}</td>
-        `;
-      });
-      renderizarPaginacion();
-    }
+            const photoUrl = await uploadImage(photoFile);
+            await membersRef.add({
+                name,
+                society,
+                photoUrl,
+                isActive: true
+            });
 
-    function renderizarPaginacion() {
-      paginationDiv.innerHTML = "";
-      const totalPaginas = Math.ceil(miembrosData.length / pageSize);
-      for (let i = 1; i <= totalPaginas; i++) {
-        const btn = document.createElement("button");
-        btn.innerText = i;
-        btn.onclick = () => mostrarPagina(i);
-        if (i === currentPage) btn.style.background = "#2c3e50";
-        paginationDiv.appendChild(btn);
-      }
-    }
+            alert("Miembro agregado correctamente.");
+            loadMembers();
+        });
 
-    cargarMiembros();
-  </script>
+        // Cargar miembros activos
+        async function loadMembers() {
+            const snapshot = await membersRef.where("isActive", "==", true).get();
+            const membersList = document.getElementById("membersList");
+            membersList.innerHTML = "";
+
+            snapshot.forEach(doc => {
+                const member = doc.data();
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td><img src="${member.photoUrl}" alt="Foto" width="50"></td>
+                    <td>${member.name}</td>
+                    <td>${member.society}</td>
+                    <td class="action-btns">
+                        <button class="btn btn-warning" onclick="deactivateMember('${doc.id}')">Dar de Baja</button>
+                        <button class="btn btn-primary" onclick="editMember('${doc.id}')">Editar</button>
+                    </td>
+                `;
+                membersList.appendChild(row);
+            });
+        }
+
+        // Dar de baja miembro
+        async function deactivateMember(memberId) {
+            await membersRef.doc(memberId).update({
+                isActive: false
+            });
+            loadMembers();
+        }
+
+        // Editar miembro (puedes añadir lógica aquí para editar)
+        function editMember(memberId) {
+            alert("Lógica de edición aún no implementada.");
+        }
+
+        // Cargar miembros en baja
+        async function loadInactiveMembers() {
+            const snapshot = await membersRef.where("isActive", "==", false).get();
+            const inactiveMembersList = document.getElementById("inactiveMembersList");
+            inactiveMembersList.innerHTML = "";
+
+            snapshot.forEach(doc => {
+                const member = doc.data();
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${member.name}</td>
+                    <td>${member.society}</td>
+                    <td>
+                        <button class="btn btn-success" onclick="reactivateMember('${doc.id}')">Reactivar</button>
+                    </td>
+                `;
+                inactiveMembersList.appendChild(row);
+            });
+        }
+
+        // Reactivar miembro
+        async function reactivateMember(memberId) {
+            await membersRef.doc(memberId).update({
+                isActive: true
+            });
+            loadInactiveMembers();
+            loadMembers();
+        }
+
+        // Inicializar carga de miembros y miembros en baja
+        loadMembers();
+        loadInactiveMembers();
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
-
