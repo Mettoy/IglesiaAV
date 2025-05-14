@@ -267,12 +267,18 @@
                             <div class="tab-content" id="miTabContentModal">
                                 <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
                                     <div class="form-section">
-                                        <input type="file" name="foto" accept="image/*">
-                                        <input type="text" name="nombre" placeholder="Nombre completo" required>
-                                        <input type="number" name="edad" placeholder="Edad" required>
-                                        <input type="text" name="codigo" placeholder="Código" required>
-                                        <input type="text" name="direccion" placeholder="Dirección">
-                                        <select name="sociedad">
+                                        <label for="foto">Foto:</label>
+                                        <input type="file" name="foto" id="foto" accept="image/*">
+                                        <label for="nombre">Nombre completo:</label>
+                                        <input type="text" name="nombre" id="nombre" placeholder="Nombre completo" required>
+                                        <label for="edad">Edad:</label>
+                                        <input type="number" name="edad" id="edad" placeholder="Edad" required>
+                                        <label for="codigo">Código:</label>
+                                        <input type="text" name="codigo" id="codigo" placeholder="Código" required>
+                                        <label for="direccion">Dirección:</label>
+                                        <input type="text" name="direccion" id="direccion" placeholder="Dirección">
+                                        <label for="sociedad">Sociedad:</label>
+                                        <select name="sociedad" id="sociedad">
                                             <option value="">Sociedad</option>
                                             <option>Jóvenes</option>
                                             <option>Damas</option>
@@ -282,18 +288,26 @@
                                 </div>
                                 <div class="tab-pane fade" id="familiar" role="tabpanel" aria-labelledby="familiar-tab">
                                     <div class="form-section">
-                                        <input type="text" name="padre" placeholder="Padre">
-                                        <input type="text" name="madre" placeholder="Madre">
-                                        <input type="text" name="hermano1" placeholder="Hermano 1">
-                                        <input type="text" name="hermano2" placeholder="Hermano 2">
+                                        <label for="padre">Padre:</label>
+                                        <input type="text" name="padre" id="padre" placeholder="Padre">
+                                        <label for="madre">Madre:</label>
+                                        <input type="text" name="madre" id="madre" placeholder="Madre">
+                                        <label for="hermano1">Hermano 1:</label>
+                                        <input type="text" name="hermano1" id="hermano1" placeholder="Hermano 1">
+                                        <label for="hermano2">Hermano 2:</label>
+                                        <input type="text" name="hermano2" id="hermano2" placeholder="Hermano 2">
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="espiritual" role="tabpanel" aria-labelledby="espiritual-tab">
                                     <div class="form-section">
-                                        <input type="date" name="fechaBautismo">
-                                        <input type="text" name="lugarBautismo" placeholder="Lugar de bautismo">
-                                        <input type="date" name="fechaConversion">
-                                        <input type="text" name="lugarConversion" placeholder="Lugar de conversión">
+                                        <label for="fechaBautismo">Fecha de Bautismo:</label>
+                                        <input type="date" name="fechaBautismo" id="fechaBautismo">
+                                        <label for="lugarBautismo">Lugar de Bautismo:</label>
+                                        <input type="text" name="lugarBautismo" id="lugarBautismo" placeholder="Lugar de bautismo">
+                                        <label for="fechaConversion">Fecha de Conversión:</label>
+                                        <input type="date" name="fechaConversion" id="fechaConversion">
+                                        <label for="lugarConversion">Lugar de Conversión:</label>
+                                        <input type="text" name="lugarConversion" id="lugarConversion" placeholder="Lugar de conversión">
                                     </div>
                                 </div>
                             </div>
@@ -313,16 +327,16 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <script>
-        // Configuración de Firebase (Reemplaza con tus credenciales)
+        // **CONFIGURACIÓN DE FIREBASE**
         const firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "TU_AUTH_DOMAIN",
-            databaseURL: "TU_DATABASE_URL",
-            projectId: "TU_PROJECT_ID",
-            storageBucket: "TU_STORAGE_BUCKET",
-            messagingSenderId: "TU_MESSAGING_SENDER_ID",
-            appId: "TU_APP_ID",
-            measurementId: "TU_MEASUREMENT_ID"
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
         };
 
         const app = firebase.initializeApp(firebaseConfig);
@@ -357,8 +371,8 @@
             editing = false;
             document.getElementById('formMiembro').reset();
             document.getElementById('miembroId').value = '';
-            const firstTabEl = document.querySelector('#personal-tab');
-            if (firstTabEl) {
+            // Mostrar la primera pestaña del modal al abrir el formulario
+            const firstTabEl = document.querySelector('#personal-tab');if (firstTabEl) {
                 const tab = new bootstrap.Tab(firstTabEl);
                 tab.show();
             }
@@ -369,24 +383,34 @@
             if (!file) return null;
             const storageRef = storage.ref();
             const fileRef = storageRef.child(`miembros/${file.name}-${Date.now()}`);
-            await fileRef.put(file);
-            return await fileRef.getDownloadURL();
+            try {
+                await fileRef.put(file);
+                return await fileRef.getDownloadURL();
+            } catch (error) {
+                console.error("Error uploading file to Firebase Storage:", error);
+                alert("Ocurrió un error al subir la imagen.");
+                return null;
+            }
         }
 
         function mostrarMiembrosActivos() {
-            db.collection("miembros").where("estado", "==", "activo").get().then((querySnapshot) => {
+            db.collection("miembros").where("estado", "==", "activo").orderBy("nombre").get().then((querySnapshot) => {
                 const tabla = document.getElementById('tablaMiembrosActivos');
                 tabla.innerHTML = '';
+                if (querySnapshot.empty) {
+                    tabla.innerHTML = '<tr><td colspan="7">No hay miembros activos registrados.</td></tr>';
+                    return;
+                }
                 querySnapshot.forEach((doc) => {
                     const miembro = doc.data();
                     tabla.innerHTML += `
                         <tr>
-                            <td><img src="${miembro.foto || 'https://via.placeholder.com/100'}" width="50"></td>
+                            <td><img src="${miembro.foto || 'https://via.placeholder.com/100'}" width="50" alt="Foto de ${miembro.nombre}"></td>
                             <td>${miembro.nombre}</td>
                             <td>${miembro.codigo}</td>
                             <td>${miembro.edad}</td>
-                            <td>${miembro.direccion}</td>
-                            <td>${miembro.sociedad}</td>
+                            <td>${miembro.direccion || 'N/A'}</td>
+                            <td>${miembro.sociedad || 'N/A'}</td>
                             <td>
                                 <button class='btn btn-info btn-sm' onclick="editarMiembro('${doc.id}')"><i class="bi bi-journal-text"></i> Editar</button>
                                 <button class='btn btn-warning btn-sm' onclick="darDeBajaMiembro('${doc.id}')"><i class="bi bi-arrow-down-square"></i> Dar de Baja</button>
@@ -395,29 +419,39 @@
                         </tr>
                     `;
                 });
+            }).catch((error) => {
+                console.error("Error getting active members:", error);
+                alert("Ocurrió un error al cargar la lista de miembros activos.");
             });
         }
 
         function mostrarMiembrosBaja() {
-            db.collection("miembros").where("estado", "==", "baja").get().then ((querySnapshot) => {
+            db.collection("miembros").where("estado", "==", "baja").orderBy("nombre").get().then((querySnapshot) => {
                 const tabla = document.getElementById('tablaMiembrosBaja');
                 tabla.innerHTML = '';
+                if (querySnapshot.empty) {
+                    tabla.innerHTML = '<tr><td colspan="7">No hay miembros de baja registrados.</td></tr>';
+                    return;
+                }
                 querySnapshot.forEach((doc) => {
                     const miembro = doc.data();
                     tabla.innerHTML += `
                         <tr>
-                            <td><img src="${miembro.foto || 'https://via.placeholder.com/100'}" width="50"></td>
+                            <td><img src="${miembro.foto || 'https://via.placeholder.com/100'}" width="50" alt="Foto de ${miembro.nombre}"></td>
                             <td>${miembro.nombre}</td>
                             <td>${miembro.codigo}</td>
                             <td>${miembro.edad}</td>
-                            <td>${miembro.direccion}</td>
-                            <td>${miembro.sociedad}</td>
+                            <td>${miembro.direccion || 'N/A'}</td>
+                            <td>${miembro.sociedad || 'N/A'}</td>
                             <td>
                                 <button class='btn btn-success btn-sm btn-reactivar' onclick="reactivarMiembro('${doc.id}')"><i class="bi bi-arrow-up-square"></i> Reactivar</button>
                             </td>
                         </tr>
                     `;
                 });
+            }).catch((error) => {
+                console.error("Error getting inactive members:", error);
+                alert("Ocurrió un error al cargar la lista de miembros de baja.");
             });
         }
 
@@ -445,12 +479,15 @@
                     await db.collection("miembros").doc(miembroId).update(data);
                     editing = false;
                     document.getElementById('miembroId').value = '';
+                    alert('Miembro actualizado exitosamente.');
                 } else {
                     data.estado = "activo";
                     await db.collection("miembros").add(data);
+                    alert('Miembro agregado exitosamente.');
                 }
                 modal.hide();
                 mostrarMiembrosActivos();
+                document.getElementById('formMiembro').reset(); // Limpiar el formulario después de guardar
             } catch (error) {
                 console.error("Error al guardar/editar miembro en Firestore:", error);
                 alert("Ocurrió un error al guardar/editar el miembro: " + error.message);
@@ -463,6 +500,7 @@
                     await db.collection("miembros").doc(id).delete();
                     mostrarMiembrosActivos();
                     mostrarMiembrosBaja();
+                    alert(`Miembro con ID ${id} eliminado permanentemente.`);
                 } catch (error) {
                     console.error("Error al eliminar miembro de Firestore:", error);
                     alert("Ocurrió un error al intentar eliminar el miembro: " + error.message);
@@ -491,6 +529,12 @@
                     document.querySelector('[name="lugarBautismo"]').value = miembro.lugarBautismo || '';
                     document.querySelector('[name="fechaConversion"]').value = miembro.fechaConversion || '';
                     document.querySelector('[name="lugarConversion"]').value = miembro.lugarConversion || '';
+
+                    // Previsualizar la imagen si existe
+                    if (miembro.foto) {
+                        // No se previsualiza en el input file, pero podrías mostrarla en otro elemento si fuera necesario.
+                        // Por simplicidad, aquí solo se precargan los valores de los campos.
+                    }
 
                     const firstTabElModal = document.querySelector('#personal-tab');
                     if (firstTabElModal) {
