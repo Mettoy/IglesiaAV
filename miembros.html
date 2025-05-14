@@ -13,10 +13,6 @@
             padding: 0;
         }
 
-        .container {
-            display: flex;
-        }
-
         /* Estilo para el menú lateral */
         .menu {
             background-color: #0D1B2A;
@@ -128,6 +124,13 @@
             background-color: #f39c12;
         }
 
+        #logo {
+            width: 100%;
+            height: auto;
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+
     </style>
 </head>
 <body>
@@ -135,7 +138,7 @@
 <div class="container">
     <!-- Menú lateral -->
     <div class="menu">
-        <h2>Adoración Viva</h2>
+        <h2><img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" id="logo"></h2>
         <ul>
             <li><a href="#">Inicio</a></li>
             <li><a href="#">Miembros</a></li>
@@ -179,6 +182,23 @@
 
             <button onclick="guardarMiembro()">Guardar Miembro</button>
         </div>
+
+        <div class="table-container">
+            <h2>Miembros Registrados</h2>
+            <table id="miembros-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Código</th>
+                        <th>Teléfono</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="miembros-list">
+                    <!-- Los miembros guardados aparecerán aquí -->
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -197,7 +217,6 @@
         const direccion = document.getElementById("direccion").value;
         const foto = document.getElementById("foto").files[0];
 
-        // Guardar en Firestore (si está conectado)
         const miembro = {
             nombre,
             codigo,
@@ -208,26 +227,42 @@
             foto
         };
 
-        // Aquí iría el código de Firestore para guardar los datos del miembro.
+        // Guardar en Firestore (este código es un ejemplo, debes implementarlo con Firestore)
         console.log("Miembro guardado:", miembro);
 
-        // Limpia el formulario
+        // Agregar a la tabla
+        const tableBody = document.getElementById("miembros-list");
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${nombre}</td>
+            <td>${codigo}</td>
+            <td>${telefono}</td>
+            <td class="action-buttons">
+                <button onclick="editarMiembro(${codigo})">Editar</button>
+                <button onclick="darDeBaja(${codigo})">Dar de Baja</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+
+        // Limpiar el formulario
         document.getElementById("formulario").reset();
         toggleForm();
+    }
+
+    function editarMiembro(codigo) {
+        alert("Editando miembro con código: " + codigo);
+    }
+
+    function darDeBaja(codigo) {
+        alert("Miembro con código " + codigo + " dado de baja.");
     }
 
     function guardarFamiliar() {
         const familiar = document.getElementById("nombre-familiar").value;
         const tipoFamiliar = document.getElementById("familiar").value;
 
-        // Guardar en Firestore (si está conectado)
-        const familiarData = {
-            tipoFamiliar,
-            familiar
-        };
-
-        // Aquí iría el código de Firestore para guardar el familiar.
-        console.log("Familiar guardado:", familiarData);
+        // Guardar en Firestore (este código es un ejemplo, debes implementarlo con Firestore)
+        console.log("Familiar guardado:", familiar, tipoFamiliar);
     }
 </script>
 
