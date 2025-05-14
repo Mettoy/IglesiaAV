@@ -111,6 +111,7 @@
     <div class="bg-white p-6 rounded shadow-lg w-1/3">
       <h3 class="text-2xl font-bold mb-4" id="form-title">Agregar Miembro</h3>
       <form id="member-form" class="space-y-4">
+        <!-- Personal Information Section -->
         <div>
           <label for="name" class="block font-medium">Nombre Completo</label>
           <input type="text" id="name" class="w-full p-2 border border-gray-300 rounded" required>
@@ -130,16 +131,26 @@
           </select>
         </div>
 
+        <!-- Family Section -->
         <div>
-          <label for="family" class="block font-medium">Familiar</label>
-          <select id="family" class="w-full p-2 border border-gray-300 rounded">
-            <option value="madre">Mamá</option>
-            <option value="padre">Papá</option>
-            <option value="hermanos">Hermanos</option>
-            <option value="abuelos">Abuelos</option>
-          </select>
+          <label for="family" class="block font-medium">Familia</label>
+          <div id="family-container">
+            <div class="flex items-center mb-2">
+              <select class="p-2 border border-gray-300 rounded mr-2" name="family-member">
+                <option value="madre">Mamá</option>
+                <option value="padre">Papá</option>
+                <option value="hermanos">Hermanos</option>
+                <option value="abuelos">Abuelos</option>
+              </select>
+              <input type="text" name="family-name" class="p-2 border border-gray-300 rounded" placeholder="Nombre">
+            </div>
+          </div>
+          <button type="button" id="add-family-btn" class="bg-dark-blue-light text-white px-4 py-2 rounded hover:bg-blue-700">
+            Añadir Familiar
+          </button>
         </div>
 
+        <!-- Spiritual Section -->
         <div>
           <label for="conversion-date" class="block font-medium">Conversión (Fecha)</label>
           <input type="date" id="conversion-date" class="w-full p-2 border border-gray-300 rounded">
@@ -168,56 +179,75 @@
     </div>
   </div>
 
-<script>
-  // Show modal when clicking the "Agregar Nuevo Miembro" button
-  document.getElementById("add-member-btn").addEventListener("click", function () {
-    document.getElementById("member-form-modal").classList.remove("hidden");
+  <script>
+    // Open Add Member Form
+    document.getElementById('add-member-btn').addEventListener('click', () => {
+      document.getElementById('member-form-modal').classList.remove('hidden');
+    });
+
+    // Close Add Member Form
+    document.getElementById('close-modal-btn').addEventListener('click', () => {
+      document.getElementById('member-form-modal').classList.add('hidden');
+    });
+
+    // Add Family Member
+    document.getElementById('add-family-btn').addEventListener('click', () => {
+      const familyContainer = document.getElementById('family-container');
+      const newFamilyMember = document.createElement('div');
+      newFamilyMember.classList.add('flex', 'items-center', 'mb-2');
+      newFamilyMember.innerHTML = `
+        <select class="p-2 border border-gray-300 rounded mr-2" name="family-member">
+          <option value="madre">Mamá</option>
+          <option value="padre">Papá</option>
+          <option value="hermanos">Hermanos</option>
+          <option value="abuelos">Abuelos</option>
+        </select>
+        <input type="text" name="family-name" class="p-2 border border-gray-300 rounded" placeholder="Nombre">
+      `;
+      familyContainer.appendChild(newFamilyMember);
+    });
+
+    // Save Member to Firestore
+    document.getElementById('member-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const birthday = document.getElementById('birthday').value;
+      const civilStatus = document.getElementById('civil-status').value;
+      const familyMembers = [];
+     
+const familyNames = document.querySelectorAll('input[name="family-name"]');
+familyNames.forEach(name => {
+familyMembers.push(name.value);
+});
+
+javascript
+Copiar
+Editar
+  const conversionDate = document.getElementById('conversion-date').value;
+  const conversionLocation = document.getElementById('conversion-location').value;
+  const baptismDate = document.getElementById('baptism-date').value;
+  const baptismLocation = document.getElementById('baptism-location').value;
+
+  // Save to Firestore
+  db.collection('members').add({
+    name,
+    birthday,
+    civilStatus,
+    familyMembers,
+    conversionDate,
+    conversionLocation,
+    baptismDate,
+    baptismLocation
+  })
+  .then(() => {
+    alert('Miembro agregado con éxito');
+    document.getElementById('member-form-modal').classList.add('hidden');
+  })
+  .catch((error) => {
+    console.error("Error adding document: ", error);
   });
-
-  // Close modal when clicking the "Cancelar" button
-  document.getElementById("close-modal-btn").addEventListener("click", function () {
-    document.getElementById("member-form-modal").classList.add("hidden");
-  });
-
-  // Optional: Close modal when clicking outside of it
-  document.getElementById("member-form-modal").addEventListener("click", function (event) {
-    if (event.target === this) {
-      document.getElementById("member-form-modal").classList.add("hidden");
-    }
-  });
-
-  // Firestore logic here (function fetchMembers remains unchanged)
-  // Function to fetch and display active members
-  function fetchMembers() {
-    db.collection("miembros")
-      .where("activo", "==", true)
-      .onSnapshot(snapshot => {
-        const tableBody = document.getElementById("members-table-body");
-        tableBody.innerHTML = "";  // Clear the table before adding new rows
-        snapshot.forEach(doc => {
-          const member = doc.data();
-          const row = document.createElement("tr");
-
-          row.innerHTML = `
-            <td class="px-4 py-2">${member.foto || "N/A"}</td>
-            <td class="px-4 py-2">${member.nombre_completo}</td>
-            <td class="px-4 py-2">${member.codigo}</td>
-            <td class="px-4 py-2">${member.edad}</td>
-            <td class="px-4 py-2">${member.direccion}</td>
-            <td class="px-4 py-2">${member.sociedad}</td>
-            <td class="px-4 py-2">
-              <button class="bg-dark-blue-light text-white px-4 py-2 rounded hover:bg-blue-700">Editar</button>
-              <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800">Dar Baja</button>
-            </td>
-          `;
-          tableBody.appendChild(row);
-        });
-      });
-  }
-
-  // Fetch members on load
-  fetchMembers();
-</script>
-
-</body> 
-</html>
+});
+</script> 
+</body>
+</html> 
