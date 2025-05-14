@@ -3,150 +3,100 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Miembros | Adoración Viva</title>
+  <title>Miembros - Adoración Viva</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
+      margin: 0;
       display: flex;
     }
-
-    /* Menú lateral */
     .sidebar {
-      width: 220px;
-      background-color: #2c3e50;
+      width: 250px;
+      background: #2c3e50;
       color: white;
-      height: 100vh;
       padding: 20px;
     }
-
     .sidebar img {
       width: 100%;
       margin-bottom: 20px;
     }
-
-    .sidebar h2 {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-
-    /* Contenido principal */
-    .main {
+    .content {
       flex: 1;
       padding: 20px;
-      background-color: #ecf0f1;
+      background: #ecf0f1;
     }
-
-    h1 {
+    h2 {
       margin-top: 0;
     }
-
+    .toggle-btn {
+      background: #2980b9;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
     form {
       background: white;
-      padding: 20px;
-      border-radius: 8px;
+      padding: 15px;
+      display: none;
       margin-bottom: 20px;
-    }
-
-    fieldset {
-      border: 1px solid #ccc;
-      margin-bottom: 15px;
-      padding: 10px;
       border-radius: 5px;
     }
-
-    legend {
-      font-weight: bold;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-
-    input {
+    input, select {
       width: 100%;
-      padding: 5px;
-      border: 1px solid #aaa;
-      border-radius: 4px;
+      padding: 8px;
+      margin: 5px 0;
     }
-
-    button {
-      margin-top: 15px;
-      background-color: #2980b9;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
       background: white;
-      border-radius: 8px;
     }
-
     th, td {
       padding: 10px;
-      border: 1px solid #ccc;
+      border: 1px solid #bdc3c7;
       text-align: left;
     }
-
     th {
-      background-color: #bdc3c7;
+      background: #3498db;
+      color: white;
     }
-
-    img.foto-miembro {
-      width: 40px;
-      height: 40px;
-      object-fit: cover;
-      border-radius: 50%;
+    .pagination {
+      margin-top: 15px;
+      text-align: center;
+    }
+    .pagination button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      border: none;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <div class="sidebar">
-    <img src="https://i.ibb.co/SNPD9g6/logoadoracionviva.png" id="logo" alt="Logo"/>
-    <h2>Adoración Viva</h2>
-    <p>Miembros</p>
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" />
+    <h3>Adoración Viva</h3>
   </div>
-
-  <div class="main">
-    <h1>Registrar Miembro</h1>
-    <form id="form-miembro">
-      <fieldset>
-        <legend>Datos Personales</legend>
-        <label>Nombre completo: <input type="text" id="nombre" required></label>
-        <label>Código: <input type="text" id="codigo" required></label>
-        <label>Edad: <input type="number" id="edad" required></label>
-        <label>Dirección: <input type="text" id="direccion" required></label>
-        <label>Sociedad: <input type="text" id="sociedad" required></label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Datos Familiares</legend>
-        <label>Estado civil: <input type="text" id="estadoCivil"></label>
-        <label>Nombre del cónyuge: <input type="text" id="conyuge"></label>
-        <label>Hijos: <input type="text" id="hijos"></label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Datos Espirituales</legend>
-        <label>Fecha de conversión: <input type="date" id="fechaConversion"></label>
-        <label>Ministerio: <input type="text" id="ministerio"></label>
-        <label>Pastor actual: <input type="text" id="pastor"></label>
-      </fieldset>
-
+  <div class="content">
+    <h2>Gestión de Miembros</h2>
+    <button class="toggle-btn" onclick="toggleForm()">Agregar nuevo miembro</button>
+    <form id="miembroForm">
+      <input type="text" id="nombre" placeholder="Nombre completo" required />
+      <input type="text" id="codigo" placeholder="Código" required />
+      <input type="number" id="edad" placeholder="Edad" required />
+      <input type="text" id="direccion" placeholder="Dirección" required />
+      <input type="text" id="sociedad" placeholder="Sociedad" required />
       <button type="submit">Guardar</button>
     </form>
 
-    <h2>Lista de miembros</h2>
-    <table id="tabla-miembros">
+    <table id="miembrosTabla">
       <thead>
         <tr>
-          <th>Foto</th>
           <th>Nombre</th>
           <th>Código</th>
           <th>Edad</th>
@@ -156,13 +106,13 @@
       </thead>
       <tbody></tbody>
     </table>
+    <div class="pagination" id="pagination"></div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
       authDomain: "iglesia-adoracion-viva.firebaseapp.com",
@@ -173,55 +123,78 @@
       measurementId: "G-43MZP6V55D"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const miembroForm = document.getElementById("miembroForm");
+    const miembrosTabla = document.getElementById("miembrosTabla").getElementsByTagName("tbody")[0];
+    const paginationDiv = document.getElementById("pagination");
 
-    const form = document.getElementById('form-miembro');
-    const tabla = document.querySelector('#tabla-miembros tbody');
+    let miembrosData = [];
+    const pageSize = 20;
+    let currentPage = 1;
 
-    form.addEventListener('submit', async (e) => {
+    function toggleForm() {
+      const form = document.getElementById("miembroForm");
+      form.style.display = form.style.display === "none" ? "block" : "none";
+    }
+
+    miembroForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const miembro = {
-        nombre: document.getElementById('nombre').value,
-        codigo: document.getElementById('codigo').value,
-        edad: document.getElementById('edad').value,
-        direccion: document.getElementById('direccion').value,
-        sociedad: document.getElementById('sociedad').value,
-        estadoCivil: document.getElementById('estadoCivil').value,
-        conyuge: document.getElementById('conyuge').value,
-        hijos: document.getElementById('hijos').value,
-        fechaConversion: document.getElementById('fechaConversion').value,
-        ministerio: document.getElementById('ministerio').value,
-        pastor: document.getElementById('pastor').value,
-        foto: "https://via.placeholder.com/40"
+      const nuevoMiembro = {
+        nombre: document.getElementById("nombre").value.trim(),
+        codigo: document.getElementById("codigo").value.trim(),
+        edad: parseInt(document.getElementById("edad").value),
+        direccion: document.getElementById("direccion").value.trim(),
+        sociedad: document.getElementById("sociedad").value.trim()
       };
-
-      await db.collection('miembros').add(miembro);
-      form.reset();
+      await addDoc(collection(db, "miembros"), nuevoMiembro);
+      miembroForm.reset();
       cargarMiembros();
     });
 
     async function cargarMiembros() {
-      tabla.innerHTML = '';
-      const snapshot = await db.collection('miembros').get();
-      snapshot.forEach(doc => {
-        const m = doc.data();
-        const row = `
-          <tr>
-            <td><img src="${m.foto}" class="foto-miembro"/></td>
-            <td>${m.nombre}</td>
-            <td>${m.codigo}</td>
-            <td>${m.edad}</td>
-            <td>${m.direccion}</td>
-            <td>${m.sociedad}</td>
-          </tr>
-        `;
-        tabla.innerHTML += row;
+      const q = query(collection(db, "miembros"), orderBy("nombre"));
+      const querySnapshot = await getDocs(q);
+      miembrosData = [];
+      querySnapshot.forEach(doc => {
+        miembrosData.push(doc.data());
       });
+      mostrarPagina(currentPage);
     }
 
-    window.onload = cargarMiembros;
+    function mostrarPagina(pagina) {
+      miembrosTabla.innerHTML = "";
+      currentPage = pagina;
+      const inicio = (pagina - 1) * pageSize;
+      const fin = inicio + pageSize;
+      const paginaDatos = miembrosData.slice(inicio, fin);
+      paginaDatos.forEach(miembro => {
+        const fila = miembrosTabla.insertRow();
+        fila.innerHTML = `
+          <td>${miembro.nombre}</td>
+          <td>${miembro.codigo}</td>
+          <td>${miembro.edad}</td>
+          <td>${miembro.direccion}</td>
+          <td>${miembro.sociedad}</td>
+        `;
+      });
+      renderizarPaginacion();
+    }
+
+    function renderizarPaginacion() {
+      paginationDiv.innerHTML = "";
+      const totalPaginas = Math.ceil(miembrosData.length / pageSize);
+      for (let i = 1; i <= totalPaginas; i++) {
+        const btn = document.createElement("button");
+        btn.innerText = i;
+        btn.onclick = () => mostrarPagina(i);
+        if (i === currentPage) btn.style.background = "#2c3e50";
+        paginationDiv.appendChild(btn);
+      }
+    }
+
+    cargarMiembros();
   </script>
 </body>
 </html>
+
