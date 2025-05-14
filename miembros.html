@@ -158,6 +158,26 @@
             font-size: 2rem;
             padding: 10px;
         }
+
+        .nav-tabs .nav-link {
+            color: #fff;
+            border: 1px solid #444;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: #555;
+            border-bottom-color: transparent;
+        }
+
+        .tab-content {
+            padding: 1rem;
+            border: 1px solid #444;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            background-color: #333;
+        }
     </style>
 </head>
 <body>
@@ -199,36 +219,50 @@
                 </div>
                 <div class="modal-body">
                     <form id="formMiembro">
-                        <div class="form-section">
-                            <h6>Datos personales</h6>
-                            <input type="text" name="nombre" placeholder="Nombre completo" required>
-                            <input type="number" name="edad" placeholder="Edad" required>
-                            <input type="text" name="codigo" placeholder="Código" required>
-                            <input type="text" name="direccion" placeholder="Dirección">
-                            <select name="sociedad">
-                                <option value="">Sociedad</option>
-                                <option>Jóvenes</option>
-                                <option>Damas</option>
-                                <option>Caballeros</option>
-                            </select>
+                        <ul class="nav nav-tabs" id="miTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">Datos personales</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="familiar-tab" data-bs-toggle="tab" data-bs-target="#familiar" type="button" role="tab" aria-controls="familiar" aria-selected="false">Datos familiares</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="espiritual-tab" data-bs-toggle="tab" data-bs-target="#espiritual" type="button" role="tab" aria-controls="espiritual" aria-selected="false">Datos espirituales</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="miTabContent">
+                            <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                                <div class="form-section">
+                                    <input type="text" name="nombre" placeholder="Nombre completo" required>
+                                    <input type="number" name="edad" placeholder="Edad" required>
+                                    <input type="text" name="codigo" placeholder="Código" required>
+                                    <input type="text" name="direccion" placeholder="Dirección">
+                                    <select name="sociedad">
+                                        <option value="">Sociedad</option>
+                                        <option>Jóvenes</option>
+                                        <option>Damas</option>
+                                        <option>Caballeros</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="familiar" role="tabpanel" aria-labelledby="familiar-tab">
+                                <div class="form-section">
+                                    <input type="text" name="padre" placeholder="Padre">
+                                    <input type="text" name="madre" placeholder="Madre">
+                                    <input type="text" name="hermano1" placeholder="Hermano 1">
+                                    <input type="text" name="hermano2" placeholder="Hermano 2">
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="espiritual" role="tabpanel" aria-labelledby="espiritual-tab">
+                                <div class="form-section">
+                                    <input type="date" name="fechaBautismo">
+                                    <input type="text" name="lugarBautismo" placeholder="Lugar de bautismo">
+                                    <input type="date" name="fechaConversion">
+                                    <input type="text" name="lugarConversion" placeholder="Lugar de conversión">
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-section">
-                            <h6>Datos familiares</h6>
-                            <input type="text" name="padre" placeholder="Padre">
-                            <input type="text" name="madre" placeholder="Madre">
-                            <input type="text" name="hermano1" placeholder="Hermano 1">
-                            <input type="text" name="hermano2" placeholder="Hermano 2">
-                        </div>
-
-                        <div class="form-section">
-                            <h6>Datos espirituales</h6>
-                            <input type="date" name="fechaBautismo">
-                            <input type="text" name="lugarBautismo" placeholder="Lugar de bautismo">
-                            <input type="date" name="fechaConversion">
-                            <input type="text" name="lugarConversion" placeholder="Lugar de conversión">
-                        </div>
-
-                        <button type="submit" class="btn-custom">Guardar</button>
+                        <button type="submit" class="btn-custom mt-3">Guardar</button>
                     </form>
                 </div>
             </div>
@@ -267,6 +301,12 @@
 
         function abrirFormulario() {
             document.getElementById('formMiembro').reset();
+            // Para asegurar que la primera pestaña esté activa al abrir el formulario
+            const firstTabEl = document.querySelector('#personal-tab');
+            if (firstTabEl) {
+                const tab = new bootstrap.Tab(firstTabEl);
+                tab.show();
+            }
             modal.show();
         }
 
@@ -300,6 +340,9 @@
             if (!error) {
                 modal.hide();
                 mostrarMiembros();
+            } else {
+                console.error("Error al guardar el miembro:", error);
+                alert("Ocurrió un error al guardar el miembro.");
             }
         });
 
