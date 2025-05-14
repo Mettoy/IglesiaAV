@@ -198,6 +198,8 @@
     </div>
 
     <div class="main-content">
+        <button class="btn btn-info mt-3" onclick="abrirModalRegistro()">Registrar Usuario</button>
+
         <ul class="nav nav-tabs" id="miTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="activos-tab" data-bs-toggle="tab" data-bs-target="#activos" type="button" role="tab" aria-controls="activos" aria-selected="true">Miembros Activos</button>
@@ -243,6 +245,18 @@
                 </table>
             </div>
         </div>
+
+        <h2 class="mt-4">Usuarios Registrados</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Correo Electrónico</th>
+                    <th>UID</th>
+                </tr>
+            </thead>
+            <tbody id="tablaUsuarios"></tbody>
+        </table>
 
         <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -318,6 +332,38 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="modalRegistro" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Registro de Nuevo Usuario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formRegistro">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Correo electrónico</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="fotoRegistro" class="form-label">Foto de perfil (opcional)</label>
+                                <input type="file" class="form-control" id="fotoRegistro" name="fotoRegistro" accept="image/*">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Registrar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -372,23 +418,24 @@
             document.getElementById('formMiembro').reset();
             document.getElementById('miembroId').value = '';
             // Mostrar la primera pestaña del modal al abrir el formulario
-            const firstTabEl = document.querySelector('#personal-tab');if (firstTabEl) {
+            const firstTabEl = document.querySelector('#personal-tab');
+            if (firstTabEl) {
                 const tab = new bootstrap.Tab(firstTabEl);
                 tab.show();
             }
             modal.show();
         }
 
-        async function uploadFile(file) {
+        async function uploadFile(file, carpeta = 'miembros') {
             if (!file) return null;
             const storageRef = storage.ref();
-            const fileRef = storageRef.child(`miembros/${file.name}-${Date.now()}`);
+            const fileRef = storageRef.child(`${carpeta}/${file.name}-${Date.now()}`);
             try {
                 await fileRef.put(file);
                 return await fileRef.getDownloadURL();
             } catch (error) {
-                console.error("Error uploading file to Firebase Storage:", error);
-                alert("Ocurrió un error al subir la imagen.");
+                console.error(`Error uploading file to Firebase Storage (${carpeta}):`, error);
+                alert(`Ocurrió un error al subir la imagen en ${carpeta}.`);
                 return null;
             }
         }
@@ -579,6 +626,85 @@
                 }
             }
         }
+
+        // ** --- FUNCIONALIDAD PARA REGISTRO DE USUARIOS --- **
+
+        const registroModal = new bootstrap.Modal(document.getElementById('modalRegistro'));
+        const formularioRegistro = document.getElementById('formRegistro');
+        const tablaUsuarios = document.getElementById('tablaUsuarios'); // Asegúrate de tener esta tabla en tu HTML
+
+        function abrirModalRegistro() {
+            formularioRegistro.reset();
+            registroModal.show();
+        }
+
+        async function registrarUsuario(email, password, fotoFile) {
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                let fotoURL = null;
+
+                if (fotoFile && fotoFile.size > 0) {
+                    fotoURL = await uploadFile(fotoFile, 'usuarios'); // Usamos una carpeta 'usuarios' en Storage
+                }
+
+                // Guardar información adicional del usuario en Firestore
+                await db.collection("usuarios").doc(user.uid).set({
+                    uid: user.uid,
+                    email: email,
+                    foto: fotoURL || null // Guardar la URL de la foto si existe
+                    // Puedes agregar más campos aquí si es necesario (nombre de usuario, etc.)
+                });
+
+                alert('Usuario registrado exitosamente.');
+                registroModal.hide();
+                mostrarUsuariosRegistrados(); // Actualizar la tabla de usuarios
+            } catch (error) {
+                console.error("Error al registrar usuario:", error);
+                alert("Error al registrar usuario: " + error.message);
+            }
+        }
+
+        formularioRegistro.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = formularioRegistro.email.value;
+            const password = formularioRegistro.password.value;
+            const fotoFile = formularioRegistro.fotoRegistro.files[0]; // Campo para la foto en el registro
+
+            if (password !== formularioRegistro.confirmPassword.value) {
+                alert('Las contraseñas no coinciden.');
+                return;
+            }
+
+            await registrarUsuario(email, password, fotoFile);
+        });
+
+        async function mostrarUsuariosRegistrados() {
+            tablaUsuarios.innerHTML = ''; // Limpiar la tabla antes de mostrar los datos
+            try {
+                const querySnapshot = await db.collection("usuarios").get();
+                if (querySnapshot.empty) {
+                    tablaUsuarios.innerHTML = '<tr><td colspan="3">No hay usuarios registrados.</td></tr>';
+                    return;
+                }
+                querySnapshot.forEach((doc) => {
+                    const usuario = doc.data();
+                    tablaUsuarios.innerHTML += `
+                        <tr>
+                            <td><img src="${usuario.foto || 'https://via.placeholder.com/50'}" width="30" alt="Foto de usuario"></td>
+                            <td>${usuario.email}</td>
+                            <td>${usuario.uid}</td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error al obtener usuarios registrados:", error);
+                alert("Error al cargar la lista de usuarios.");
+            }
+        }
+
+        // Llama a esta función al cargar la página si quieres mostrar los usuarios de inmediato
+        mostrarUsuariosRegistrados();
     </script>
 </body>
 </html>
