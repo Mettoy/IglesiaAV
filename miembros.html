@@ -168,39 +168,56 @@
     </div>
   </div>
 
-  <script>
-    // Firestore logic here
+<script>
+  // Show modal when clicking the "Agregar Nuevo Miembro" button
+  document.getElementById("add-member-btn").addEventListener("click", function () {
+    document.getElementById("member-form-modal").classList.remove("hidden");
+  });
 
-    // Function to fetch and display active members
-    function fetchMembers() {
-      db.collection("miembros")
-        .where("activo", "==", true)
-        .onSnapshot(snapshot => {
-          const tableBody = document.getElementById("members-table-body");
-          tableBody.innerHTML = "";  // Clear the table before adding new rows
-          snapshot.forEach(doc => {
-            const member = doc.data();
-            const row = document.createElement("tr");
+  // Close modal when clicking the "Cancelar" button
+  document.getElementById("close-modal-btn").addEventListener("click", function () {
+    document.getElementById("member-form-modal").classList.add("hidden");
+  });
 
-            row.innerHTML = `
-          <td class="px-4 py-2">${member.foto || "N/A"}</td>
-          <td class="px-4 py-2">${member.nombre_completo}</td>
-          <td class="px-4 py-2">${member.codigo}</td>
-          <td class="px-4 py-2">${member.edad}</td>
-          <td class="px-4 py-2">${member.direccion}</td>
-          <td class="px-4 py-2">${member.sociedad}</td>
-          <td class="px-4 py-2">
-            <button class="bg-dark-blue-light text-white px-4 py-2 rounded hover:bg-blue-700">Editar</button>
-            <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800">Dar Baja</button>
-          </td>
-        `;
-        tableBody.appendChild(row);
+  // Optional: Close modal when clicking outside of it
+  document.getElementById("member-form-modal").addEventListener("click", function (event) {
+    if (event.target === this) {
+      document.getElementById("member-form-modal").classList.add("hidden");
+    }
+  });
+
+  // Firestore logic here (function fetchMembers remains unchanged)
+  // Function to fetch and display active members
+  function fetchMembers() {
+    db.collection("miembros")
+      .where("activo", "==", true)
+      .onSnapshot(snapshot => {
+        const tableBody = document.getElementById("members-table-body");
+        tableBody.innerHTML = "";  // Clear the table before adding new rows
+        snapshot.forEach(doc => {
+          const member = doc.data();
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td class="px-4 py-2">${member.foto || "N/A"}</td>
+            <td class="px-4 py-2">${member.nombre_completo}</td>
+            <td class="px-4 py-2">${member.codigo}</td>
+            <td class="px-4 py-2">${member.edad}</td>
+            <td class="px-4 py-2">${member.direccion}</td>
+            <td class="px-4 py-2">${member.sociedad}</td>
+            <td class="px-4 py-2">
+              <button class="bg-dark-blue-light text-white px-4 py-2 rounded hover:bg-blue-700">Editar</button>
+              <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800">Dar Baja</button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
       });
-    });
-}
+  }
 
-// Fetch members on load
-fetchMembers();
+  // Fetch members on load
+  fetchMembers();
 </script>
+
 </body> 
 </html>
