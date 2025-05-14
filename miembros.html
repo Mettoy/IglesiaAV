@@ -1,363 +1,233 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Miembros | Adoración Viva</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f9f9f9;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 250px;
-      background-color: #001f3f;
-      color: white;
-      height: 100vh;
-      position: fixed;
-      transition: width 0.3s;
-      overflow: hidden;
-    }
-
-    .sidebar.collapsed {
-      width: 80px;
-    }
-
-    .sidebar .logo {
-      text-align: center;
-      padding: 1rem;
-    }
-
-    .sidebar .logo img {
-      width: 100px;
-      border-radius: 0;
-      transition: all 0.3s;
-    }
-
-    .sidebar.collapsed .logo img {
-      width: 50px;
-      border-radius: 50%;
-    }
-
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .sidebar ul li {
-      padding: 15px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .sidebar ul li:hover {
-      background-color: #004080;
-    }
-
-    .main {
-      margin-left: 250px;
-      padding: 1rem;
-      transition: margin-left 0.3s;
-    }
-
-    .collapsed + .main {
-      margin-left: 80px;
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .btn {
-      background-color: #ffd700;
-      border: none;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      border-radius: 5px;
-      font-weight: bold;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-
-    table th, table td {
-      padding: 0.75rem;
-      text-align: left;
-      border-bottom: 1px solid #ccc;
-    }
-
-    table th input {
-      width: 100%;
-      padding: 5px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-
-    .form-container {
-      display: none;
-      margin-top: 1rem;
-      background: #ffffff;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    .form-section {
-      margin-bottom: 1rem;
-    }
-
-    .form-section h4 {
-      color: #001f3f;
-      margin-bottom: 0.5rem;
-    }
-
-    .form-section input, .form-section select {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.25rem;
-      margin-bottom: 0.75rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    .tab-buttons {
-      margin-top: 1rem;
-    }
-
-    .tab-buttons button {
-      margin-right: 10px;
-      padding: 8px 16px;
-      border: none;
-      background: #001f3f;
-      color: white;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    .tab-buttons button.active {
-      background: #ffd700;
-      color: #001f3f;
-    }
-
-    .actions button {
-      margin-right: 5px;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .actions .edit {
-      background: #007bff;
-      color: white;
-    }
-
-    .actions .baja {
-      background: #dc3545;
-      color: white;
-    }
-
-    .actions .reactivar {
-      background: #28a745;
-      color: white;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="sidebar" id="sidebar">
-    <div class="logo">
-      <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo"/>
-    </div>
-    <ul>
-      <li onclick="toggleSidebar()">☰ Menú</li>
-      <li onclick="mostrarActivos()">Miembros activos</li>
-      <li onclick="mostrarBaja()">Miembros de baja</li>
-    </ul>
-  </div>
-
-  <div class="main" id="main">
-    <div class="top-bar">
-      <h2>Gestión de Miembros</h2>
-      <button class="btn" onclick="toggleForm()">➕ Agregar nuevo miembro</button>
-    </div>
-
-    <div class="form-container" id="formulario">
-      <div class="form-section">
-        <h4>Datos personales</h4>
-        <input type="text" id="nombre" placeholder="Nombre completo">
-        <input type="number" id="edad" placeholder="Edad">
-        <input type="text" id="direccion" placeholder="Dirección">
-        <select id="sociedad">
-          <option value="">Seleccione sociedad</option>
-          <option value="jóvenes">Jóvenes</option>
-          <option value="damas">Damas</option>
-          <option value="caballeros">Caballeros</option>
-        </select>
-      </div>
-      <div class="form-section">
-        <h4>Información familiar</h4>
-        <input type="text" id="estadoCivil" placeholder="Estado civil">
-        <input type="text" id="nombreConyuge" placeholder="Nombre del cónyuge">
-      </div>
-      <div class="form-section">
-        <h4>Información espiritual</h4>
-        <input type="text" id="bautizado" placeholder="¿Está bautizado?">
-        <input type="text" id="ministerio" placeholder="Ministerio">
-      </div>
-      <button class="btn" onclick="guardarMiembro()">Guardar</button>
-    </div>
-
-    <div class="tab-buttons">
-      <button id="btnActivos" class="active" onclick="mostrarActivos()">Activos</button>
-      <button id="btnBaja" onclick="mostrarBaja()">De baja</button>
-    </div>
-
-    <table id="tablaMiembros">
-      <thead>
-        <tr>
-          <th><input type="text" placeholder="Nombre" oninput="filtrarTabla(0, this.value)"></th>
-          <th><input type="text" placeholder="Edad" oninput="filtrarTabla(1, this.value)"></th>
-          <th><input type="text" placeholder="Dirección" oninput="filtrarTabla(2, this.value)"></th>
-          <th><input type="text" placeholder="Sociedad" oninput="filtrarTabla(3, this.value)"></th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="cuerpoTabla"></tbody>
-    </table>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getFirestore, collection, addDoc, onSnapshot, updateDoc, doc
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Miembros - Adoración Viva</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
       authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+      databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
       projectId: "iglesia-adoracion-viva",
-      storageBucket: "iglesia-adoracion-viva.appspot.com",
+      storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
       messagingSenderId: "815332010058",
       appId: "1:815332010058:web:d2afff616469349d88deb3",
       measurementId: "G-43MZP6V55D"
     };
+    
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
+  </script>
+</head>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const miembrosRef = collection(db, "miembros");
+<body class="bg-gray-100">
 
-    const cuerpoTabla = document.getElementById("cuerpoTabla");
+  <!-- Sidebar and Header -->
+  <div class="flex">
+    <div class="w-64 bg-dark-blue p-6">
+      <div class="flex justify-between items-center">
+        <img class="w-16 h-16 rounded-full" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo">
+        <button id="toggle-menu" class="text-white">☰</button>
+      </div>
+      <div id="menu" class="mt-6">
+        <ul class="text-white">
+          <li><a href="#" class="block py-2 px-4 hover:bg-blue-600">Miembros</a></li>
+          <li><a href="#" class="block py-2 px-4 hover:bg-blue-600">Miembros de Baja</a></li>
+        </ul>
+      </div>
+    </div>
 
-    let mostrarActivosFlag = true;
+    <!-- Main Content -->
+    <div class="flex-1 p-8">
+      <h2 class="text-3xl font-bold mb-6">Miembros</h2>
 
-    function renderMiembro(docData, id) {
-      const tr = document.createElement("tr");
-      if (mostrarActivosFlag && docData.estado === "activo") {
-        tr.innerHTML = `
-          <td>${docData.nombre}</td>
-          <td>${docData.edad}</td>
-          <td>${docData.direccion}</td>
-          <td>${docData.sociedad}</td>
-          <td class="actions">
-            <button class="edit" onclick="editarMiembro('${id}')">✏️</button>
-            <button class="baja" onclick="darDeBaja('${id}')">⛔</button>
-          </td>
-        `;
-      } else if (!mostrarActivosFlag && docData.estado === "baja") {
-        tr.innerHTML = `
-          <td>${docData.nombre}</td>
-          <td>${docData.edad}</td>
-          <td>${docData.direccion}</td>
-          <td>${docData.sociedad}</td>
-          <td class="actions">
-            <button class="reactivar" onclick="reactivarMiembro('${id}')">✔️</button>
-          </td>
-        `;
-      } else {
-        return;
-      }
-      cuerpoTabla.appendChild(tr);
+      <!-- Button to Add New Member -->
+      <div class="flex justify-end mb-4">
+        <button id="add-member-btn" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">
+          Agregar Nuevo Miembro
+        </button>
+      </div>
+
+      <!-- Table for Active Members -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300 shadow-md rounded-md">
+          <thead>
+            <tr class="bg-dark-blue text-white">
+              <th class="px-4 py-2">Foto</th>
+              <th class="px-4 py-2">Nombre Completo</th>
+              <th class="px-4 py-2">Código</th>
+              <th class="px-4 py-2">Edad</th>
+              <th class="px-4 py-2">Dirección</th>
+              <th class="px-4 py-2">Sociedad</th>
+              <th class="px-4 py-2">Acciones</th>
+            </tr>
+            <tr class="bg-gray-100">
+              <th><input type="text" placeholder="Buscar Foto" class="p-2 border border-gray-300 rounded w-full"></th>
+              <th><input type="text" placeholder="Buscar Nombre" class="p-2 border border-gray-300 rounded w-full"></th>
+              <th><input type="text" placeholder="Buscar Código" class="p-2 border border-gray-300 rounded w-full"></th>
+              <th><input type="text" placeholder="Buscar Edad" class="p-2 border border-gray-300 rounded w-full"></th>
+              <th><input type="text" placeholder="Buscar Dirección" class="p-2 border border-gray-300 rounded w-full"></th>
+              <th><input type="text" placeholder="Buscar Sociedad" class="p-2 border border-gray-300 rounded w-full"></th>
+              <th><input type="text" placeholder="Buscar Acción" class="p-2 border border-gray-300 rounded w-full"></th>
+            </tr>
+          </thead>
+          <tbody id="members-table-body">
+            <!-- Rows of members will be inserted here dynamically from Firestore -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Member Modal -->
+  <div id="member-form-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden justify-center items-center">
+    <div class="bg-white p-6 rounded shadow-lg w-1/3">
+      <h3 class="text-2xl font-bold mb-4" id="form-title">Agregar Miembro</h3>
+      <form id="member-form" class="space-y-4">
+        <div>
+          <label for="name" class="block font-medium">Nombre Completo</label>
+          <input type="text" id="name" class="w-full p-2 border border-gray-300 rounded" required>
+        </div>
+
+        <div>
+          <label for="birthday" class="block font-medium">Fecha de Cumpleaños</label>
+          <input type="date" id="birthday" class="w-full p-2 border border-gray-300 rounded">
+        </div>
+
+        <div>
+          <label for="civil-status" class="block font-medium">Estado Civil</label>
+          <select id="civil-status" class="w-full p-2 border border-gray-300 rounded">
+            <option value="soltero">Soltero</option>
+            <option value="casado">Casado</option>
+            <option value="divorciado">Divorciado</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="family" class="block font-medium">Familiar</label>
+          <select id="family" class="w-full p-2 border border-gray-300 rounded">
+            <option value="madre">Mamá</option>
+            <option value="padre">Papá</option>
+            <option value="hermanos">Hermanos</option>
+            <option value="abuelos">Abuelos</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="conversion-date" class="block font-medium">Conversión (Fecha)</label>
+          <input type="date" id="conversion-date" class="w-full p-2 border border-gray-300 rounded">
+        </div>
+
+        <div>
+          <label for="conversion-location" class="block font-medium">Conversión (Lugar)</label>
+          <input type="text" id="conversion-location" class="w-full p-2 border border-gray-300 rounded">
+        </div>
+
+        <div>
+          <label for="baptism-date" class="block font-medium">Bautizo del Espíritu (Fecha)</label>
+          <input type="date" id="baptism-date" class="w-full p-2 border border-gray-300 rounded">
+        </div>
+
+        <div>
+          <label for="baptism-location" class="block font-medium">Bautizo del Espíritu (Ubicación)</label>
+          <input type="text" id="baptism-location" class="w-full p-2 border border-gray-300 rounded">
+        </div>
+
+        <div class="flex justify-end space-x-4">
+          <button type="button" id="close-modal-btn" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+          <button type="submit" id="save-member-btn" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Firestore logic here
+
+    // Function to fetch and display active members
+    function fetchMembers() {
+      db.collection("miembros")
+        .where("activo", "==", true)
+        .onSnapshot(snapshot => {
+          const tableBody = document.getElementById("members-table-body");
+          tableBody.innerHTML = "";  // Clear the table before adding new rows
+          snapshot.forEach(doc => {
+            const member = doc.data();
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td class="px-4 py-2"><img src="${member.foto}" class="w-12 h-12 rounded-full" alt="Foto"></td>
+              <td class="px-4 py-2">${member.nombre}</td>
+              <td class="px-4 py-2">${member.codigo}</td>
+              <td class="px-4 py-2">${member.edad}</td>
+              <td class="px-4 py-2">${member.direccion}</td>
+              <td class="px-4 py-2">${member.sociedad}</td>
+              <td class="px-4 py-2">
+                <button class="edit-btn bg-yellow-500 text-white px-4 py-2 rounded" data-id="${doc.id}">Editar</button>
+                <button class="deactivate-btn bg-red-500 text-white px-4 py-2 rounded" data-id="${doc.id}">Dar de Baja</button>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+        });
     }
 
-    onSnapshot(miembrosRef, (snapshot) => {
-      cuerpoTabla.innerHTML = "";
-      snapshot.forEach((doc) => renderMiembro(doc.data(), doc.id));
+    // Function to handle form submission
+    document.getElementById("member-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      
+      const name = document.getElementById("name").value;
+      const birthday = document.getElementById("birthday").value;
+      const civilStatus = document.getElementById("civil-status").value;
+      const family = document.getElementById("family").value;
+      const conversionDate = document.getElementById("conversion-date").value;
+      const conversionLocation = document.getElementById("conversion-location").value;
+      const baptismDate = document.getElementById("baptism-date").value;
+      const baptismLocation = document.getElementById("baptism-location").value;
+
+      const newMember = {
+        nombre: name,
+        fecha_cumpleanos: birthday,
+        estado_civil: civilStatus,
+        familiar: family,
+        fecha_conversion: conversionDate,
+        lugar_conversion: conversionLocation,
+        fecha_bautizo: baptismDate,
+        lugar_bautizo: baptismLocation,
+        activo: true,
+      };
+
+      // Save the new member to Firestore
+      db.collection("miembros").add(newMember).then(() => {
+        alert("Miembro agregado exitosamente");
+        fetchMembers();
+        closeModal();
+      });
     });
 
-    window.toggleSidebar = function () {
-      document.getElementById("sidebar").classList.toggle("collapsed");
+    // Function to close the modal
+    function closeModal() {
+      document.getElementById("member-form-modal").classList.add("hidden");
     }
 
-    window.toggleForm = function () {
-      const form = document.getElementById("formulario");
-      form.style.display = form.style.display === "none" || !form.style.display ? "block" : "none";
-    }
+    // Event listener for add new member button
+    document.getElementById("add-member-btn").addEventListener("click", function () {
+      document.getElementById("form-title").textContent = "Agregar Miembro";
+      document.getElementById("member-form").reset();
+      document.getElementById("member-form-modal").classList.remove("hidden");
+    });
 
-    window.guardarMiembro = async function () {
-      const nuevo = {
-        nombre: document.getElementById("nombre").value,
-        edad: document.getElementById("edad").value,
-        direccion: document.getElementById("direccion").value,
-        sociedad: document.getElementById("sociedad").value,
-        estadoCivil: document.getElementById("estadoCivil").value,
-        nombreConyuge: document.getElementById("nombreConyuge").value,
-        bautizado: document.getElementById("bautizado").value,
-        ministerio: document.getElementById("ministerio").value,
-        estado: "activo"
-      };
-      await addDoc(miembrosRef, nuevo);
-      document.getElementById("formulario").style.display = "none";
-    }
+    // Event listener for close modal button
+    document.getElementById("close-modal-btn").addEventListener("click", closeModal);
 
-    window.darDeBaja = async function (id) {
-      await updateDoc(doc(db, "miembros", id), { estado: "baja" });
-    }
-
-    window.reactivarMiembro = async function (id) {
-      await updateDoc(doc(db, "miembros", id), { estado: "activo" });
-    }
-
-    window.mostrarActivos = function () {
-      mostrarActivosFlag = true;
-      document.getElementById("btnActivos").classList.add("active");
-      document.getElementById("btnBaja").classList.remove("active");
-      onSnapshot(miembrosRef, (snapshot) => {
-        cuerpoTabla.innerHTML = "";
-        snapshot.forEach((doc) => renderMiembro(doc.data(), doc.id));
-      });
-    }
-
-    window.mostrarBaja = function () {
-      mostrarActivosFlag = false;
-      document.getElementById("btnBaja").classList.add("active");
-      document.getElementById("btnActivos").classList.remove("active");
-      onSnapshot(miembrosRef, (snapshot) => {
-        cuerpoTabla.innerHTML = "";
-        snapshot.forEach((doc) => renderMiembro(doc.data(), doc.id));
-      });
-    }
-
-    window.filtrarTabla = function (col, val) {
-      const rows = cuerpoTabla.querySelectorAll("tr");
-      rows.forEach(row => {
-        const cell = row.children[col]?.textContent.toLowerCase();
-        row.style.display = cell && cell.includes(val.toLowerCase()) ? "" : "none";
-      });
-    }
-
-    window.editarMiembro = function (id) {
-      alert("Función de editar miembro pendiente de implementación.");
-    }
-
+    // Fetch members on page load
+    fetchMembers();
   </script>
 </body>
+
 </html>
