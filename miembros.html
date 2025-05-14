@@ -2,69 +2,165 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Miembros - Adoración Viva</title>
-  <link rel="stylesheet" href="estilos.css" />
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Miembros | Adoración Viva</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+    }
+
+    /* Menú lateral */
+    .sidebar {
+      width: 220px;
+      background-color: #2c3e50;
+      color: white;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .sidebar img {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .sidebar h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* Contenido principal */
+    .main {
+      flex: 1;
+      padding: 20px;
+      background-color: #ecf0f1;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    fieldset {
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    legend {
+      font-weight: bold;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 5px;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 15px;
+      background-color: #2980b9;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #bdc3c7;
+    }
+
+    img.foto-miembro {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+  </style>
 </head>
 <body>
-  <aside id="sidebar">
-    <img id="logo" src="logo_predeterminado.png" alt="Logo" />
-    <h2>ADORACIÓN VIVA</h2>
-    <nav>
-      <ul>
-        <li><a href="inicio.html">Inicio</a></li>
-        <li><a href="miembros.html">Miembros</a></li>
-        <li><a href="disipulado.html">Discipulado</a></li>
-        <!-- Más opciones -->
-      </ul>
-    </nav>
-    <p id="userRol"></p>
-    <button onclick="cerrarSesion()">Cerrar sesión</button>
-  </aside>
+  <div class="sidebar">
+    <img src="https://i.ibb.co/SNPD9g6/logoadoracionviva.png" id="logo" alt="Logo"/>
+    <h2>Adoración Viva</h2>
+    <p>Miembros</p>
+  </div>
 
-  <main>
-    <h1>Gestión de Miembros</h1>
-    <button onclick="abrirFormulario()">➕ Agregar miembro</button>
-    <table id="tablaMiembros">
+  <div class="main">
+    <h1>Registrar Miembro</h1>
+    <form id="form-miembro">
+      <fieldset>
+        <legend>Datos Personales</legend>
+        <label>Nombre completo: <input type="text" id="nombre" required></label>
+        <label>Código: <input type="text" id="codigo" required></label>
+        <label>Edad: <input type="number" id="edad" required></label>
+        <label>Dirección: <input type="text" id="direccion" required></label>
+        <label>Sociedad: <input type="text" id="sociedad" required></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Datos Familiares</legend>
+        <label>Estado civil: <input type="text" id="estadoCivil"></label>
+        <label>Nombre del cónyuge: <input type="text" id="conyuge"></label>
+        <label>Hijos: <input type="text" id="hijos"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Datos Espirituales</legend>
+        <label>Fecha de conversión: <input type="date" id="fechaConversion"></label>
+        <label>Ministerio: <input type="text" id="ministerio"></label>
+        <label>Pastor actual: <input type="text" id="pastor"></label>
+      </fieldset>
+
+      <button type="submit">Guardar</button>
+    </form>
+
+    <h2>Lista de miembros</h2>
+    <table id="tabla-miembros">
       <thead>
         <tr>
           <th>Foto</th>
-          <th>Nombre completo</th>
+          <th>Nombre</th>
           <th>Código</th>
           <th>Edad</th>
           <th>Dirección</th>
           <th>Sociedad</th>
-          <th>Acciones</th>
         </tr>
       </thead>
-      <tbody id="contenidoTabla"></tbody>
+      <tbody></tbody>
     </table>
-  </main>
-
-  <div id="formularioModal" style="display: none">
-    <form id="formularioMiembro">
-      <h2>Datos Personales</h2>
-      <input type="text" id="nombre" placeholder="Nombre completo" required />
-      <input type="text" id="codigo" placeholder="Código" required />
-      <input type="number" id="edad" placeholder="Edad" required />
-      <input type="text" id="direccion" placeholder="Dirección" required />
-      <input type="text" id="sociedad" placeholder="Sociedad" required />
-
-      <h2>Datos Familiares</h2>
-      <input type="text" id="nombrePadre" placeholder="Nombre del padre" />
-      <input type="text" id="nombreMadre" placeholder="Nombre de la madre" />
-
-      <h2>Datos Espirituales</h2>
-      <input type="text" id="bautizado" placeholder="¿Bautizado? (Sí/No)" />
-      <input type="date" id="fechaBautismo" placeholder="Fecha de bautismo" />
-
-      <input type="file" id="fotoInput" accept="image/*" />
-      <button type="submit">Guardar</button>
-      <button type="button" onclick="cerrarFormulario()">Cancelar</button>
-    </form>
   </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -76,110 +172,53 @@
       appId: "1:815332010058:web:d2afff616469349d88deb3",
       measurementId: "G-43MZP6V55D"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const tabla = document.getElementById("contenidoTabla");
-    const formulario = document.getElementById("formularioMiembro");
+    const form = document.getElementById('form-miembro');
+    const tabla = document.querySelector('#tabla-miembros tbody');
 
-    formulario.addEventListener("submit", async (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const miembro = {
-        nombre: nombre.value,
-        codigo: codigo.value,
-        edad: edad.value,
-        direccion: direccion.value,
-        sociedad: sociedad.value,
-        nombrePadre: nombrePadre.value,
-        nombreMadre: nombreMadre.value,
-        bautizado: bautizado.value,
-        fechaBautismo: fechaBautismo.value,
-        foto: ""
+        nombre: document.getElementById('nombre').value,
+        codigo: document.getElementById('codigo').value,
+        edad: document.getElementById('edad').value,
+        direccion: document.getElementById('direccion').value,
+        sociedad: document.getElementById('sociedad').value,
+        estadoCivil: document.getElementById('estadoCivil').value,
+        conyuge: document.getElementById('conyuge').value,
+        hijos: document.getElementById('hijos').value,
+        fechaConversion: document.getElementById('fechaConversion').value,
+        ministerio: document.getElementById('ministerio').value,
+        pastor: document.getElementById('pastor').value,
+        foto: "https://via.placeholder.com/40"
       };
 
-      // Subida de foto
-      const file = document.getElementById("fotoInput").files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          miembro.foto = reader.result;
-          await db.collection("miembros").add(miembro);
-          cerrarFormulario();
-        };
-        reader.readAsDataURL(file);
-      } else {
-        await db.collection("miembros").add(miembro);
-        cerrarFormulario();
-      }
+      await db.collection('miembros').add(miembro);
+      form.reset();
+      cargarMiembros();
     });
 
-    function abrirFormulario() {
-      document.getElementById("formularioModal").style.display = "block";
-    }
-
-    function cerrarFormulario() {
-      document.getElementById("formularioModal").style.display = "none";
-      formulario.reset();
-    }
-
-    function renderMiembro(doc) {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><img src="${doc.data().foto}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; cursor: pointer;" onclick="cambiarFoto('${doc.id}')" /></td>
-        <td>${doc.data().nombre}</td>
-        <td contenteditable onblur="actualizarCampo('${doc.id}', 'codigo', this.innerText)">${doc.data().codigo}</td>
-        <td>${doc.data().edad}</td>
-        <td>${doc.data().direccion}</td>
-        <td>${doc.data().sociedad}</td>
-        <td>
-          <button onclick="editarMiembro('${doc.id}')">✏️</button>
-          <button onclick="eliminarMiembro('${doc.id}')">🗑️</button>
-        </td>
-      `;
-      tabla.appendChild(tr);
-    }
-
-    function cargarMiembros() {
-      tabla.innerHTML = "";
-      db.collection("miembros").onSnapshot((snapshot) => {
-        tabla.innerHTML = "";
-        snapshot.forEach(renderMiembro);
+    async function cargarMiembros() {
+      tabla.innerHTML = '';
+      const snapshot = await db.collection('miembros').get();
+      snapshot.forEach(doc => {
+        const m = doc.data();
+        const row = `
+          <tr>
+            <td><img src="${m.foto}" class="foto-miembro"/></td>
+            <td>${m.nombre}</td>
+            <td>${m.codigo}</td>
+            <td>${m.edad}</td>
+            <td>${m.direccion}</td>
+            <td>${m.sociedad}</td>
+          </tr>
+        `;
+        tabla.innerHTML += row;
       });
-    }
-
-    function actualizarCampo(id, campo, valor) {
-      db.collection("miembros").doc(id).update({ [campo]: valor });
-    }
-
-    function eliminarMiembro(id) {
-      db.collection("miembros").doc(id).delete();
-    }
-
-    function cambiarFoto(id) {
-      const nuevaFoto = document.createElement("input");
-      nuevaFoto.type = "file";
-      nuevaFoto.accept = "image/*";
-      nuevaFoto.onchange = async () => {
-        const file = nuevaFoto.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            db.collection("miembros").doc(id).update({ foto: reader.result });
-          };
-          reader.readAsDataURL(file);
-        }
-      };
-      nuevaFoto.click();
-    }
-
-    function editarMiembro(id) {
-      // Aquí puedes cargar los datos al formulario si quieres permitir edición completa
-      alert("Función de edición detallada aún no implementada.");
-    }
-
-    function cerrarSesion() {
-      localStorage.removeItem("usuario");
-      location.href = "index.html";
     }
 
     window.onload = cargarMiembros;
