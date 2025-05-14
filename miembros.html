@@ -3,324 +3,279 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Miembros - Adoración Viva</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap">
+  <title>Miembros | Adoración Viva</title>
   <style>
+    /* Estilo aesthetic */
     body {
       margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      background: #f0f4f8;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
     }
-
     .sidebar {
       background-color: #001f3f;
       color: white;
-      width: 250px;
-      height: 100vh;
+      width: 220px;
+      min-height: 100vh;
+      padding-top: 1rem;
       position: fixed;
-      transition: 0.3s;
+      transition: all 0.3s ease;
     }
-
     .sidebar.collapsed {
       width: 60px;
     }
-
-    .sidebar .logo {
-      text-align: center;
-      padding: 15px;
-    }
-
-    .sidebar .logo img {
-      width: 100px;
-    }
-
-    .menu {
-      display: flex;
-      flex-direction: column;
-      margin-top: 20px;
-    }
-
-    .menu button {
-      background: none;
-      border: none;
-      color: white;
-      padding: 15px;
-      text-align: left;
-      width: 100%;
-      cursor: pointer;
-    }
-
-    .main {
-      margin-left: 250px;
-      padding: 20px;
-      transition: margin-left 0.3s;
-    }
-
-    .sidebar.collapsed ~ .main {
-      margin-left: 60px;
-    }
-
-    .toggle-btn {
-      position: absolute;
-      top: 20px;
-      left: 260px;
-      cursor: pointer;
-      font-size: 24px;
-      background-color: #ffc107;
-      color: #001f3f;
-      padding: 5px 10px;
-      border-radius: 5px;
-      border: none;
-    }
-
-    .sidebar.collapsed + .toggle-btn {
-      left: 70px;
-    }
-
-    .section {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .section h2 {
-      margin-top: 0;
-      color: #001f3f;
-    }
-
-    .form-section {
-      display: none;
-    }
-
-    .form-section.active {
+    .sidebar img {
+      width: 150px;
+      margin: 0 auto 20px;
       display: block;
     }
-
-    input, select {
-      padding: 10px;
-      margin: 10px 0;
-      width: 100%;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    .btn-add {
-      background-color: #ffc107;
-      color: #001f3f;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 25px;
-      font-weight: bold;
+    .menu-item {
+      padding: 1rem;
       cursor: pointer;
     }
-
+    .menu-item:hover {
+      background-color: #003366;
+    }
+    .container {
+      margin-left: 220px;
+      padding: 2rem;
+      transition: margin-left 0.3s ease;
+    }
+    .collapsed ~ .container {
+      margin-left: 60px;
+    }
+    h1 {
+      color: #001f3f;
+    }
+    .button {
+      background-color: #ffcc00;
+      border: none;
+      padding: 10px 20px;
+      color: #001f3f;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .form-section {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
     .tabs {
       display: flex;
-      margin-bottom: 10px;
+      gap: 1rem;
+      margin-bottom: 1rem;
     }
-
     .tabs button {
-      flex: 1;
-      padding: 10px;
-      cursor: pointer;
+      padding: 0.5rem 1rem;
       border: none;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .tabs button.active {
       background: #001f3f;
       color: white;
-      font-weight: bold;
     }
-
-    .tabs button.active {
-      background: #ffc107;
-      color: #001f3f;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
       background: white;
-      border-radius: 10px;
-      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
-
-    table th, table td {
+    th, td {
       padding: 10px;
-      border-bottom: 1px solid #ddd;
       text-align: left;
+      border-bottom: 1px solid #ddd;
     }
-
-    table th {
-      background-color: #001f3f;
-      color: white;
-    }
-
     .actions button {
-      background: none;
-      border: none;
-      cursor: pointer;
       margin-right: 5px;
     }
-
-    .pagination {
-      text-align: center;
-      margin-top: 10px;
+    .hidden {
+      display: none;
     }
-
-    .pagination button {
-      background: #001f3f;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      margin: 0 2px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .pagination button.active {
-      background: #ffc107;
-      color: #001f3f;
-    }
-
-    .photo-preview {
+    #member-photo {
       display: block;
-      margin: 10px auto;
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
+      max-width: 100px;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
 <body>
-
-<div class="sidebar" id="sidebar">
-  <div class="logo">
-    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" />
+  <div class="sidebar" id="sidebar">
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo"/>
+    <div class="menu-item" onclick="toggleSidebar()">☰ Menú</div>
   </div>
-  <div class="menu">
-    <button onclick="showForm()">➕ Agregar miembro</button>
-    <button onclick="showTab('activos')">👤 Activos</button>
-    <button onclick="showTab('baja')">🚫 De baja</button>
-  </div>
-</div>
-<button class="toggle-btn" onclick="toggleSidebar()">☰</button>
 
-<div class="main">
-  <div class="section form-section" id="formSection">
-    <h2>Agregar / Editar Miembro</h2>
-    <form id="miembroForm">
-      <img id="previewFoto" class="photo-preview" src="" />
-      <input type="file" id="foto" onchange="previewFoto(event)" />
-      <input type="text" id="nombre" placeholder="Nombre completo" required />
-      <input type="text" id="codigo" placeholder="Código" required />
-      <input type="number" id="edad" placeholder="Edad" required />
-      <input type="text" id="direccion" placeholder="Dirección" required />
-      <select id="sociedad">
-        <option value="">Seleccione sociedad</option>
-        <option value="jóvenes">Jóvenes</option>
-        <option value="damas">Damas</option>
-        <option value="caballeros">Caballeros</option>
-      </select>
-      <!-- Añadir campos familiares y espirituales aquí si deseas -->
-      <button type="submit" class="btn-add">Guardar</button>
+  <div class="container" id="main">
+    <h1>Gestión de Miembros</h1>
+    <button class="button" onclick="toggleForm()">Agregar nuevo miembro</button>
+
+    <form id="member-form" class="hidden">
+      <div class="form-section">
+        <h3>📷 Foto</h3>
+        <input type="file" id="photo" />
+        <img id="member-photo" src="" alt="" class="hidden"/>
+        <h3>👤 Datos Personales</h3>
+        <div class="form-group"><input type="text" id="nombre" placeholder="Nombre completo" required/></div>
+        <div class="form-group"><input type="text" id="codigo" placeholder="Código" required/></div>
+        <div class="form-group"><input type="number" id="edad" placeholder="Edad"/></div>
+        <div class="form-group"><input type="text" id="direccion" placeholder="Dirección"/></div>
+        <div class="form-group">
+          <select id="sociedad">
+            <option value="">Seleccionar sociedad</option>
+            <option value="jóvenes">Jóvenes</option>
+            <option value="damas">Damas</option>
+            <option value="caballeros">Caballeros</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>👨‍👩‍👧‍👦 Datos Familiares</h3>
+        <div class="form-group"><input type="text" id="estado-civil" placeholder="Estado civil"/></div>
+        <div class="form-group"><input type="text" id="hijos" placeholder="Cantidad de hijos"/></div>
+      </div>
+
+      <div class="form-section">
+        <h3>🙏 Datos Espirituales</h3>
+        <div class="form-group"><input type="text" id="bautismo" placeholder="Fecha de bautismo"/></div>
+        <div class="form-group"><input type="text" id="ministerio" placeholder="Ministerio"/></div>
+      </div>
+
+      <button type="submit" class="button">Guardar</button>
     </form>
+
+    <div class="tabs">
+      <button class="active" onclick="showTab('activos')">Activos</button>
+      <button onclick="showTab('baja')">De Baja</button>
+    </div>
+
+    <div id="tabla-activos">
+      <table>
+        <thead>
+          <tr>
+            <th>Foto</th><th>Nombre</th><th>Código</th><th>Edad</th><th>Dirección</th><th>Sociedad</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-activos"></tbody>
+      </table>
+    </div>
+
+    <div id="tabla-baja" class="hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Foto</th><th>Nombre</th><th>Código</th><th>Edad</th><th>Dirección</th><th>Sociedad</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-baja"></tbody>
+      </table>
+    </div>
   </div>
 
-  <div class="tabs">
-    <button id="tabActivos" class="active" onclick="showTab('activos')">Activos</button>
-    <button id="tabBaja" onclick="showTab('baja')">De baja</button>
-  </div>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  <div id="tablaActivos" class="section">
-    <h2>Miembros Activos</h2>
-    <table id="tablaActivosTable">
-      <thead>
-        <tr>
-          <th>Foto</th>
-          <th>Nombre</th>
-          <th>Código</th>
-          <th>Edad</th>
-          <th>Dirección</th>
-          <th>Sociedad</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <div class="pagination" id="paginationActivos"></div>
-  </div>
+    // Tu configuración de Firebase
+    const firebaseConfig = {
+  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+  projectId: "iglesia-adoracion-viva",
+  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+  messagingSenderId: "815332010058",
+  appId: "1:815332010058:web:d2afff616469349d88deb3",
+  measurementId: "G-43MZP6V55D"
+};
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colRef = collection(db, "miembros");
 
-  <div id="tablaBaja" class="section" style="display:none">
-    <h2>Miembros de Baja</h2>
-    <table id="tablaBajaTable">
-      <thead>
-        <tr>
-          <th>Foto</th>
-          <th>Nombre</th>
-          <th>Código</th>
-          <th>Edad</th>
-          <th>Dirección</th>
-          <th>Sociedad</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <div class="pagination" id="paginationBaja"></div>
-  </div>
-</div>
+    const form = document.getElementById("member-form");
+    const tbodyActivos = document.getElementById("tbody-activos");
+    const tbodyBaja = document.getElementById("tbody-baja");
 
-<script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-    projectId: "iglesia-adoracion-viva",
-    storageBucket: "iglesia-adoracion-viva.appspot.com",
-    messagingSenderId: "815332010058",
-    appId: "1:815332010058:web:d2afff616469349d88deb3"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  // Aquí deberías agregar la lógica para:
-  // - Mostrar los miembros paginados por estado (activo o baja)
-  // - Guardar y editar miembros
-  // - Dar de baja y reactivar
-  // - Ordenar por nombre
-  // - Mostrar la foto
-  // - Mostrar paginación
-
-  // Si quieres, te puedo seguir completando la parte JS según tus reglas específicas.
-
-  function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('collapsed');
-  }
-
-  function showForm() {
-    document.getElementById('formSection').classList.toggle('active');
-  }
-
-  function showTab(tab) {
-    document.getElementById('tablaActivos').style.display = tab === 'activos' ? 'block' : 'none';
-    document.getElementById('tablaBaja').style.display = tab === 'baja' ? 'block' : 'none';
-    document.getElementById('tabActivos').classList.toggle('active', tab === 'activos');
-    document.getElementById('tabBaja').classList.toggle('active', tab === 'baja');
-  }
-
-  function previewFoto(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        document.getElementById('previewFoto').src = reader.result;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const miembro = {
+        nombre: document.getElementById("nombre").value,
+        codigo: document.getElementById("codigo").value,
+        edad: document.getElementById("edad").value,
+        direccion: document.getElementById("direccion").value,
+        sociedad: document.getElementById("sociedad").value,
+        estado: "activo",
       };
-      reader.readAsDataURL(file);
-    }
-  }
-</script>
+      await addDoc(colRef, miembro);
+      form.reset();
+      form.classList.add("hidden");
+    });
+
+    onSnapshot(colRef, (snapshot) => {
+      tbodyActivos.innerHTML = "";
+      tbodyBaja.innerHTML = "";
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><img src="${data.foto || ''}" width="50"/></td>
+          <td>${data.nombre}</td>
+          <td>${data.codigo}</td>
+          <td>${data.edad}</td>
+          <td>${data.direccion}</td>
+          <td>${data.sociedad}</td>
+          <td class="actions">
+            ${data.estado === "activo"
+              ? `<button onclick="darDeBaja('${docSnap.id}')">Dar de baja</button>`
+              : `<button onclick="reactivar('${docSnap.id}')">Reactivar</button>`
+            }
+          </td>
+        `;
+        if (data.estado === "activo") {
+          tbodyActivos.appendChild(row);
+        } else {
+          tbodyBaja.appendChild(row);
+        }
+      });
+    });
+
+    window.darDeBaja = async (id) => {
+      await updateDoc(doc(db, "miembros", id), { estado: "baja" });
+    };
+
+    window.reactivar = async (id) => {
+      await updateDoc(doc(db, "miembros", id), { estado: "activo" });
+    };
+
+    window.toggleSidebar = () => {
+      document.getElementById("sidebar").classList.toggle("collapsed");
+      document.getElementById("main").classList.toggle("collapsed");
+    };
+
+    window.toggleForm = () => {
+      document.getElementById("member-form").classList.toggle("hidden");
+    };
+
+    window.showTab = (tab) => {
+      document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
+      document.querySelector(`.tabs button[onclick="showTab('${tab}')"]`).classList.add("active");
+      document.getElementById("tabla-activos").classList.toggle("hidden", tab !== "activos");
+      document.getElementById("tabla-baja").classList.toggle("hidden", tab !== "baja");
+    };
+  </script>
 </body>
 </html>
