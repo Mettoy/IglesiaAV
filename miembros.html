@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
+        /* Estilos CSS (sin cambios) */
         body {
             background-color: #121212;
             color: #fff;
@@ -270,12 +271,26 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.21.0/dist/supabase.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
     <script>
-        const supabase = supabase.createClient(
-            'https://azywyqozwwbfctxeokug.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk'
-        );
+        // Configuración de Firebase - ¡REEMPLAZA CON TUS DATOS!
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO_ID.firebaseapp.com",
+            projectId: "TU_PROYECTO_ID",
+            storageBucket: "TU_PROYECTO_ID.appspot.com",
+            messagingSenderId: "TU_MENSAJE_SENDER_ID",
+            appId: "TU_APP_ID",
+            measurementId: "TU_MEASUREMENT_ID"
+        };
+
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
+        const auth = firebase.auth(app); // Si necesitas autenticación
 
         const modal = new bootstrap.Modal(document.getElementById('modalMiembro'));
 
@@ -301,7 +316,6 @@
 
         function abrirFormulario() {
             document.getElementById('formMiembro').reset();
-            // Para asegurar que la primera pestaña esté activa al abrir el formulario
             const firstTabEl = document.querySelector('#personal-tab');
             if (firstTabEl) {
                 const tab = new bootstrap.Tab(firstTabEl);
@@ -310,50 +324,51 @@
             modal.show();
         }
 
-        function mostrarMiembros() {
-            supabase.from('miembros').select('*').then(({ data, error }) => {
-                if (error) return console.error(error);
+        function mostrarMiembrosFirestore() {
+            db.collection("miembros").get().then((querySnapshot) => {
                 const tabla = document.getElementById('tablaMiembros');
                 tabla.innerHTML = '';
-                data.forEach(m => {
+                querySnapshot.forEach((doc) => {
+                    const miembro = doc.data();
                     tabla.innerHTML += `
                         <tr>
-                            <td><img src="${m.foto || 'https://via.placeholder.com/100'}" width="50"></td>
-                            <td>${m.nombre}</td>
-                            <td>${m.codigo}</td>
-                            <td>${m.edad}</td>
-                            <td>${m.direccion}</td>
-                            <td>${m.sociedad}</td>
-                            <td><button class='btn btn-danger' onclick="eliminarMiembro(${m.id})">Eliminar</button></td>
+                            <td><img src="${miembro.foto || 'https://via.placeholder.com/100'}" width="50"></td>
+                            <td>${miembro.nombre}</td>
+                            <td>${miembro.codigo}</td>
+                            <td>${miembro.edad}</td>
+                            <td>${miembro.direccion}</td>
+                            <td>${miembro.sociedad}</td>
+                            <td><button class='btn btn-danger' onclick="eliminarMiembroFirestore('${doc.id}')">Eliminar</button></td>
                         </tr>
                     `;
                 });
             });
         }
 
-        mostrarMiembros();
+        mostrarMiembrosFirestore();
 
         document.getElementById('formMiembro').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = Object.fromEntries(new FormData(e.target).entries());
-            const { error } = await supabase.from('miembros').insert([data]);
-            if (!error) {
+
+            try {
+                await db.collection("miembros").add(data);
                 modal.hide();
-                mostrarMiembros();
-            } else {
-                console.error("Error al guardar el miembro:", error);
+                mostrarMiembrosFirestore();
+            } catch (error) {
+                console.error("Error al agregar miembro a Firestore:", error);
                 alert("Ocurrió un error al guardar el miembro.");
             }
         });
 
-        async function eliminarMiembro(id) {
+        async function eliminarMiembroFirestore(id) {
             if (confirm('¿Estás seguro de que deseas eliminar este miembro?')) {
-                const { error } = await supabase.from('miembros').delete().eq('id', id);
-                if (!error) {
-                    mostrarMiembros();
-                } else {
-                    console.error('Error al eliminar miembro:', error);
-                    alert('Ocurrió un error al intentar eliminar el miembro.');
+                try {
+                    await db.collection("miembros").doc(id).delete();
+                    mostrarMiembrosFirestore();
+                } catch (error) {
+                    console.error("Error al eliminar miembro de Firestore:", error);
+                    alert("Ocurrió un error al intentar eliminar el miembro.");
                 }
             }
         }
