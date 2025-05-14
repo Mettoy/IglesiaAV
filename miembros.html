@@ -2,118 +2,187 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Registro de Miembros</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f2f2f2; }
-    h2 { margin-top: 30px; }
-    form, table { background: #fff; padding: 20px; border-radius: 10px; }
-    input, select { margin: 5px 0; padding: 8px; width: 100%; }
-    button { padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 5px; }
-    table { width: 100%; margin-top: 30px; border-collapse: collapse; }
-    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
-    th { background-color: #007bff; color: white; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Miembros - Adoración Viva</title>
+  <link rel="stylesheet" href="estilos.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+  <aside id="sidebar">
+    <img id="logo" src="logo_predeterminado.png" alt="Logo" />
+    <h2>ADORACIÓN VIVA</h2>
+    <nav>
+      <ul>
+        <li><a href="inicio.html">Inicio</a></li>
+        <li><a href="miembros.html">Miembros</a></li>
+        <li><a href="disipulado.html">Discipulado</a></li>
+        <!-- Más opciones -->
+      </ul>
+    </nav>
+    <p id="userRol"></p>
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  </aside>
 
-  <h1>Registro de Miembros - ADORACIÓN VIVA</h1>
+  <main>
+    <h1>Gestión de Miembros</h1>
+    <button onclick="abrirFormulario()">➕ Agregar miembro</button>
+    <table id="tablaMiembros">
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Nombre completo</th>
+          <th>Código</th>
+          <th>Edad</th>
+          <th>Dirección</th>
+          <th>Sociedad</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="contenidoTabla"></tbody>
+    </table>
+  </main>
 
-  <form id="formMiembro">
-    <h2>Datos Personales</h2>
-    <input type="text" id="nombre" placeholder="Nombre completo" required />
-    <input type="text" id="codigo" placeholder="Código del miembro" required />
-    <input type="number" id="edad" placeholder="Edad" required />
-    <input type="text" id="direccion" placeholder="Dirección" required />
-    <input type="text" id="sociedad" placeholder="Sociedad" required />
+  <div id="formularioModal" style="display: none">
+    <form id="formularioMiembro">
+      <h2>Datos Personales</h2>
+      <input type="text" id="nombre" placeholder="Nombre completo" required />
+      <input type="text" id="codigo" placeholder="Código" required />
+      <input type="number" id="edad" placeholder="Edad" required />
+      <input type="text" id="direccion" placeholder="Dirección" required />
+      <input type="text" id="sociedad" placeholder="Sociedad" required />
 
-    <h2>Datos Familiares</h2>
-    <input type="text" id="estadoCivil" placeholder="Estado Civil" />
-    <input type="text" id="hijos" placeholder="Número de hijos" />
+      <h2>Datos Familiares</h2>
+      <input type="text" id="nombrePadre" placeholder="Nombre del padre" />
+      <input type="text" id="nombreMadre" placeholder="Nombre de la madre" />
 
-    <h2>Datos Espirituales</h2>
-    <input type="text" id="bautizado" placeholder="¿Está bautizado? (Sí/No)" />
-    <input type="text" id="ministerio" placeholder="Ministerio al que pertenece" />
+      <h2>Datos Espirituales</h2>
+      <input type="text" id="bautizado" placeholder="¿Bautizado? (Sí/No)" />
+      <input type="date" id="fechaBautismo" placeholder="Fecha de bautismo" />
 
-    <br />
-    <button type="submit">Guardar Miembro</button>
-  </form>
-
-  <h2>Miembros Registrados</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Código</th>
-        <th>Edad</th>
-        <th>Dirección</th>
-        <th>Sociedad</th>
-      </tr>
-    </thead>
-    <tbody id="tablaMiembros"></tbody>
-  </table>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+      <input type="file" id="fotoInput" accept="image/*" />
+      <button type="submit">Guardar</button>
+      <button type="button" onclick="cerrarFormulario()">Cancelar</button>
+    </form>
+  </div>
 
   <script>
-    // Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
       authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-      databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
       projectId: "iglesia-adoracion-viva",
-      storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+      storageBucket: "iglesia-adoracion-viva.appspot.com",
       messagingSenderId: "815332010058",
       appId: "1:815332010058:web:d2afff616469349d88deb3",
       measurementId: "G-43MZP6V55D"
     };
-
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const db = firebase.firestore();
 
-    // Guardar miembro
-    document.getElementById("formMiembro").addEventListener("submit", function (e) {
+    const tabla = document.getElementById("contenidoTabla");
+    const formulario = document.getElementById("formularioMiembro");
+
+    formulario.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const miembro = {
-        nombre: document.getElementById("nombre").value,
-        codigo: document.getElementById("codigo").value,
-        edad: document.getElementById("edad").value,
-        direccion: document.getElementById("direccion").value,
-        sociedad: document.getElementById("sociedad").value,
-        estadoCivil: document.getElementById("estadoCivil").value,
-        hijos: document.getElementById("hijos").value,
-        bautizado: document.getElementById("bautizado").value,
-        ministerio: document.getElementById("ministerio").value
+        nombre: nombre.value,
+        codigo: codigo.value,
+        edad: edad.value,
+        direccion: direccion.value,
+        sociedad: sociedad.value,
+        nombrePadre: nombrePadre.value,
+        nombreMadre: nombreMadre.value,
+        bautizado: bautizado.value,
+        fechaBautismo: fechaBautismo.value,
+        foto: ""
       };
 
-      db.ref("miembros/" + miembro.codigo).set(miembro).then(() => {
-        alert("Miembro guardado correctamente");
-        document.getElementById("formMiembro").reset();
-      }).catch(error => {
-        console.error("Error al guardar:", error);
-      });
+      // Subida de foto
+      const file = document.getElementById("fotoInput").files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          miembro.foto = reader.result;
+          await db.collection("miembros").add(miembro);
+          cerrarFormulario();
+        };
+        reader.readAsDataURL(file);
+      } else {
+        await db.collection("miembros").add(miembro);
+        cerrarFormulario();
+      }
     });
 
-    // Cargar miembros
-    const tabla = document.getElementById("tablaMiembros");
-    db.ref("miembros").on("value", (snapshot) => {
+    function abrirFormulario() {
+      document.getElementById("formularioModal").style.display = "block";
+    }
+
+    function cerrarFormulario() {
+      document.getElementById("formularioModal").style.display = "none";
+      formulario.reset();
+    }
+
+    function renderMiembro(doc) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><img src="${doc.data().foto}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; cursor: pointer;" onclick="cambiarFoto('${doc.id}')" /></td>
+        <td>${doc.data().nombre}</td>
+        <td contenteditable onblur="actualizarCampo('${doc.id}', 'codigo', this.innerText)">${doc.data().codigo}</td>
+        <td>${doc.data().edad}</td>
+        <td>${doc.data().direccion}</td>
+        <td>${doc.data().sociedad}</td>
+        <td>
+          <button onclick="editarMiembro('${doc.id}')">✏️</button>
+          <button onclick="eliminarMiembro('${doc.id}')">🗑️</button>
+        </td>
+      `;
+      tabla.appendChild(tr);
+    }
+
+    function cargarMiembros() {
       tabla.innerHTML = "";
-      snapshot.forEach((child) => {
-        const m = child.val();
-        const fila = `<tr>
-          <td>${m.nombre}</td>
-          <td>${m.codigo}</td>
-          <td>${m.edad}</td>
-          <td>${m.direccion}</td>
-          <td>${m.sociedad}</td>
-        </tr>`;
-        tabla.innerHTML += fila;
+      db.collection("miembros").onSnapshot((snapshot) => {
+        tabla.innerHTML = "";
+        snapshot.forEach(renderMiembro);
       });
-    });
+    }
+
+    function actualizarCampo(id, campo, valor) {
+      db.collection("miembros").doc(id).update({ [campo]: valor });
+    }
+
+    function eliminarMiembro(id) {
+      db.collection("miembros").doc(id).delete();
+    }
+
+    function cambiarFoto(id) {
+      const nuevaFoto = document.createElement("input");
+      nuevaFoto.type = "file";
+      nuevaFoto.accept = "image/*";
+      nuevaFoto.onchange = async () => {
+        const file = nuevaFoto.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            db.collection("miembros").doc(id).update({ foto: reader.result });
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      nuevaFoto.click();
+    }
+
+    function editarMiembro(id) {
+      // Aquí puedes cargar los datos al formulario si quieres permitir edición completa
+      alert("Función de edición detallada aún no implementada.");
+    }
+
+    function cerrarSesion() {
+      localStorage.removeItem("usuario");
+      location.href = "index.html";
+    }
+
+    window.onload = cargarMiembros;
   </script>
 </body>
 </html>
