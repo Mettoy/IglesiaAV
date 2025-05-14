@@ -1,309 +1,326 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Miembros - Adoración Viva</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <style>
-    body {
-      background-color: #121212;
-      color: #fff;
-      font-family: 'Arial', sans-serif;
-      display: flex;
-      min-height: 100vh;
-    }
-    .sidebar {
-      width: 250px;
-      background-color: #1c1c2e;
-      transition: all 0.3s;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Miembros - Adoración Viva</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #1c1c2e;
+            transition: all 0.3s;
+        }
 
-    .sidebar.collapsed {
-      width: 60px;
-    }
+        .sidebar.collapsed {
+            width: 60px;
+        }
 
-    .sidebar img {
-      width: 80px;
-      margin: 1rem auto;
-      display: block;
-      border-radius: 50%;
-    }
+        .sidebar img {
+            width: 80px;
+            margin: 1rem auto;
+            display: block;
+            border-radius: 50%;
+        }
 
-    .sidebar a {
-      color: #fff;
-      padding: 12px 16px;
-      display: block;
-      text-decoration: none;
-      font-size: 1.1rem;
-      border-bottom: 1px solid #444;
-    }
+        .sidebar a {
+            color: #fff;
+            padding: 12px 16px;
+            display: block;
+            text-decoration: none;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #444;
+        }
 
-    .sidebar a:hover {
-      background-color: #333;
-    }
+        .sidebar a:hover {
+            background-color: #333;
+        }
 
-    .sidebar a.active {
-      background-color: #565656;
-    }
+        .sidebar a.active {
+            background-color: #565656;
+        }
 
-    .sidebar .menu-toggle {
-      background-color: transparent;
-      border: none;
-      color: #fff;
-      font-size: 24px;
-      padding: 10px;
-      width: 100%;
-      text-align: left;
-    }
+        .sidebar .menu-toggle {
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            padding: 10px;
+            width: 100%;
+            text-align: left;
+        }
 
-    .main-content {
-      flex-grow: 1;
-      padding: 2rem;
-      background-color: #1a1a2e;
-      width: 100%;
-      border-left: 1px solid #444;
-    }
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: #1a1a2e;
+            width: 100%;
+            border-left: 1px solid #444;
+        }
 
-    h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #fff;
-    }
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
 
-    .table {
-      background-color: #222;
-      color: #fff;
-      border-radius: 8px;
-    }
+        .table {
+            background-color: #222;
+            color: #fff;
+            border-radius: 8px;
+        }
 
-    .table th, .table td {
-      padding: 1rem;
-      text-align: center;
-    }
+        .table th, .table td {
+            padding: 1rem;
+            text-align: center;
+        }
 
-    .form-section {
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      border: 1px solid #444;
-      border-radius: 8px;
-      background-color: #333;
-    }
+        .form-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background-color: #333;
+        }
 
-    .form-section input, .form-section select {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 0.8rem;
-      border-radius: 8px;
-      border: none;
-      background-color: #444;
-      color: #fff;
-    }
+        .form-section input, .form-section select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 0.8rem;
+            border-radius: 8px;
+            border: none;
+            background-color: #444;
+            color: #fff;
+        }
 
-    .form-section input:focus, .form-section select:focus {
-      outline: none;
-      background-color: #555;
-    }
+        .form-section input:focus, .form-section select:focus {
+            outline: none;
+            background-color: #555;
+        }
 
-    .btn-custom {
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 1rem;
-      transition: background-color 0.3s;
-    }
+        .btn-custom {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
 
-    .btn-custom:hover {
-      background-color: #0056b3;
-    }
+        .btn-custom:hover {
+            background-color: #0056b3;
+        }
 
-    .modal-content {
-      background-color: #222;
-      color: #fff;
-    }
+        .modal-content {
+            background-color: #222;
+            color: #fff;
+        }
 
-    .modal-header {
-      border-bottom: 1px solid #444;
-    }
+        .modal-header {
+            border-bottom: 1px solid #444;
+        }
 
-    .modal-footer button {
-      background-color: #444;
-      color: #fff;
-      border-radius: 8px;
-    }
+        .modal-footer button {
+            background-color: #444;
+            color: #fff;
+            border-radius: 8px;
+        }
 
-    .modal-footer button:hover {
-      background-color: #555;
-    }
+        .modal-footer button:hover {
+            background-color: #555;
+        }
 
-    .btn-agregar {
-      background-color: #00c853;
-      border-radius: 8px;
-      color: #fff;
-      padding: 12px 20px;
-      font-size: 1rem;
-      transition: background-color 0.3s;
-      width: auto;
-      margin-top: 20px;
-    }
+        .btn-agregar {
+            background-color: #00c853;
+            border-radius: 8px;
+            color: #fff;
+            padding: 12px 20px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            width: auto;
+            margin-top: 20px;
+        }
 
-    .btn-agregar:hover {
-      background-color: #009624;
-    }
+        .btn-agregar:hover {
+            background-color: #009624;
+        }
 
-    .sidebar.collapsed .menu-toggle {
-      font-size: 2rem;
-      padding: 10px;
-    }
-  </style>
+        .sidebar.collapsed .menu-toggle {
+            font-size: 2rem;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-  <div class="sidebar" id="sidebar">
-    <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
-    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" id="logo" onclick="cambiarLogoInput()">
-    <input type="file" id="logoInput" style="display:none;" accept="image/*" onchange="cambiarLogo()">
-    <a href="inicio.html" class="active">Inicio</a>
-    <a href="diezmo.html">Diezmos</a>
-    <a href="#" onclick="mostrarMiembrosBaja()">Miembros de baja</a>
-    <a href="#">Salir</a>
-  </div>
-
-  <div class="main-content">
-    <h2>Listado de Miembros</h2>
-    <button class="btn-agregar" onclick="abrirFormulario()"><i class="bi bi-journal-plus"></i> Agregar Miembro</button>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>Foto</th>
-          <th>Nombre completo</th>
-          <th>Código</th>
-          <th>Edad</th>
-          <th>Dirección</th>
-          <th>Sociedad</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tablaMiembros"></tbody>
-    </table>
-  </div>
-
-  <!-- Modal formulario -->
-  <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Ficha del Miembro</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <form id="formMiembro">
-            <!-- Secciones del formulario -->
-            <div class="form-section">
-              <h6>Datos personales</h6>
-              <input type="text" name="nombre" placeholder="Nombre completo" required>
-              <input type="number" name="edad" placeholder="Edad" required>
-              <input type="text" name="codigo" placeholder="Código" required>
-              <input type="text" name="direccion" placeholder="Dirección">
-              <select name="sociedad">
-                <option value="">Sociedad</option>
-                <option>Jóvenes</option>
-                <option>Damas</option>
-                <option>Caballeros</option>
-              </select>
-            </div>
-            <div class="form-section">
-              <h6>Datos familiares</h6>
-              <input type="text" name="padre" placeholder="Padre">
-              <input type="text" name="madre" placeholder="Madre">
-              <input type="text" name="hermano1" placeholder="Hermano 1">
-              <input type="text" name="hermano2" placeholder="Hermano 2">
-            </div>
-
-            <div class="form-section">
-              <h6>Datos espirituales</h6>
-              <input type="date" name="fechaBautismo">
-              <input type="text" name="lugarBautismo" placeholder="Lugar de bautismo">
-              <input type="date" name="fechaConversion">
-              <input type="text" name="lugarConversion" placeholder="Lugar de conversión">
-            </div>
-
-            <button type="submit" class="btn-custom">Guardar</button>
-          </form>
-        </div>
-      </div>
+    <div class="sidebar" id="sidebar">
+        <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+        <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" id="logo" onclick="cambiarLogoInput()">
+        <input type="file" id="logoInput" style="display:none;" accept="image/*" onchange="cambiarLogo()">
+        <a href="inicio.html" class="active">Inicio</a>
+        <a href="diezmo.html">Diezmos</a>
+        <a href="#" onclick="mostrarMiembrosBaja()">Miembros de baja</a>
+        <a href="#">Salir</a>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.21.0/dist/supabase.min.js"></script>
-  <script>
-    const supabase = supabase.createClient(
-      'https://azywyqozwwbfctxeokug.supabase.co',
-      'YOUR_SUPABASE_KEY'
-    );
+    <div class="main-content">
+        <h2>Listado de Miembros</h2>
+        <button class="btn-agregar" onclick="abrirFormulario()"><i class="bi bi-journal-plus"></i> Agregar Miembro</button>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Nombre completo</th>
+                    <th>Código</th>
+                    <th>Edad</th>
+                    <th>Dirección</th>
+                    <th>Sociedad</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaMiembros"></tbody>
+        </table>
+    </div>
 
-    const modal = new bootstrap.Modal(document.getElementById('modalMiembro'));
+    <div class="modal fade" id="modalMiembro" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ficha del Miembro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formMiembro">
+                        <div class="form-section">
+                            <h6>Datos personales</h6>
+                            <input type="text" name="nombre" placeholder="Nombre completo" required>
+                            <input type="number" name="edad" placeholder="Edad" required>
+                            <input type="text" name="codigo" placeholder="Código" required>
+                            <input type="text" name="direccion" placeholder="Dirección">
+                            <select name="sociedad">
+                                <option value="">Sociedad</option>
+                                <option>Jóvenes</option>
+                                <option>Damas</option>
+                                <option>Caballeros</option>
+                            </select>
+                        </div>
+                        <div class="form-section">
+                            <h6>Datos familiares</h6>
+                            <input type="text" name="padre" placeholder="Padre">
+                            <input type="text" name="madre" placeholder="Madre">
+                            <input type="text" name="hermano1" placeholder="Hermano 1">
+                            <input type="text" name="hermano2" placeholder="Hermano 2">
+                        </div>
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('collapsed');
-    }
+                        <div class="form-section">
+                            <h6>Datos espirituales</h6>
+                            <input type="date" name="fechaBautismo">
+                            <input type="text" name="lugarBautismo" placeholder="Lugar de bautismo">
+                            <input type="date" name="fechaConversion">
+                            <input type="text" name="lugarConversion" placeholder="Lugar de conversión">
+                        </div>
 
-    function cambiarLogoInput() {
-      document.getElementById('logoInput').click();
-    }
+                        <button type="submit" class="btn-custom">Guardar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function cambiarLogo() {
-      const file = document.getElementById('logoInput').files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          document.getElementById('logo').src = reader.result;
-          localStorage.setItem('logo', reader.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.21.0/dist/supabase.min.js"></script>
+    <script>
+        const supabase = supabase.createClient(
+            'https://azywyqozwwbfctxeokug.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk'
+        );
 
-    function abrirFormulario() {
-      document.getElementById('formMiembro').reset();
-      modal.show();
-    }
+        const modal = new bootstrap.Modal(document.getElementById('modalMiembro'));
 
-    function mostrarMiembros() {
-      supabase.from('miembros').select('*').then(({ data, error }) => {
-        if (error) return console.error(error);
-        const tabla = document.getElementById('tablaMiembros');
-        tabla.innerHTML = '';
-        data.forEach(m => {
-          tabla.innerHTML += `
-            <tr>
-              <td><img src="${m.foto || 'https://via.placeholder.com/100'}" width="50"></td>
-              <td>${m.nombre}</td>
-              <td>${m.codigo}</td>
-              <td>${m.edad}</td>
-              <td>${m.direccion}</td>
-              <td>${m.sociedad}</td>
-              <td><button class='btn btn-danger' onclick="eliminarMiembro(${m.id})">Eliminar</button></td>
-            </tr>
-          `;
-        });
-      });
-    }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
 
-    mostrarMiembros();
+        function cambiarLogoInput() {
+            document.getElementById('logoInput').click();
+        }
 
-    document.getElementById('formMiembro').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target).entries());
-      const { error } = await supabase.from('miembros').insert([data]);
-      if (!error) {
-        modal.hide();
+        function cambiarLogo() {
+            const file = document.getElementById('logoInput').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    document.getElementById('logo').src = reader.result;
+                    localStorage.setItem('logo', reader.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function abrirFormulario() {
+            document.getElementById('formMiembro').reset();
+            modal.show();
+        }
+
+        function mostrarMiembros() {
+            supabase.from('miembros').select('*').then(({ data, error }) => {
+                if (error) return console.error(error);
+                const tabla = document.getElementById('tablaMiembros');
+                tabla.innerHTML = '';
+                data.forEach(m => {
+                    tabla.innerHTML += `
+                        <tr>
+                            <td><img src="${m.foto || 'https://via.placeholder.com/100'}" width="50"></td>
+                            <td>${m.nombre}</td>
+                            <td>${m.codigo}</td>
+                            <td>${m.edad}</td>
+                            <td>${m.direccion}</td>
+                            <td>${m.sociedad}</td>
+                            <td><button class='btn btn-danger' onclick="eliminarMiembro(${m.id})">Eliminar</button></td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
         mostrarMiembros();
-      }
-    });
-  </script>
+
+        document.getElementById('formMiembro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target).entries());
+            const { error } = await supabase.from('miembros').insert([data]);
+            if (!error) {
+                modal.hide();
+                mostrarMiembros();
+            }
+        });
+
+        async function eliminarMiembro(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este miembro?')) {
+                const { error } = await supabase.from('miembros').delete().eq('id', id);
+                if (!error) {
+                    mostrarMiembros();
+                } else {
+                    console.error('Error al eliminar miembro:', error);
+                    alert('Ocurrió un error al intentar eliminar el miembro.');
+                }
+            }
+        }
+
+        function mostrarMiembrosBaja() {
+            // Aquí puedes implementar la lógica para mostrar los miembros de baja.
+            // Esto podría implicar una consulta diferente a tu tabla de Supabase
+            // o filtrar los miembros activos basados en un estado.
+            alert('Funcionalidad de "Miembros de baja" aún no implementada en este ejemplo.');
+        }
+    </script>
 </body>
 </html>
