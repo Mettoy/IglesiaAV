@@ -3,12 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Votaciones Elegantes</title>
+<title>Votaciones Simuladas</title>
 <style>
-  /* Reset y base */
-  * {
-    box-sizing: border-box;
-  }
+  /* Igual que antes para estilos */
+  * { box-sizing: border-box; }
   body {
     margin: 0; 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -20,14 +18,12 @@
     align-items: center;
     padding: 30px 15px;
   }
-
   h1 {
     margin-bottom: 30px;
     font-size: 2.8rem;
     text-shadow: 0 0 15px #f7c948aa;
     letter-spacing: 1.5px;
   }
-
   #votacionesContainer {
     display: grid;
     gap: 25px;
@@ -35,7 +31,6 @@
     width: 100%;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
-
   .card-votacion {
     background: #14153a;
     border-radius: 15px;
@@ -51,7 +46,6 @@
     box-shadow: 0 0 30px #f7c948cc;
     cursor: pointer;
   }
-
   .card-votacion h2 {
     margin: 0 0 12px;
     font-size: 1.6rem;
@@ -63,7 +57,6 @@
     margin-bottom: 20px;
     color: #e6d078cc;
   }
-
   .btn-votar {
     align-self: flex-start;
     background: #f7c948;
@@ -76,291 +69,49 @@
     box-shadow: 0 5px 15px #f7c948aa;
     transition: background 0.3s ease, box-shadow 0.3s ease;
   }
-  .btn-votar:hover:not(:disabled) {
+  .btn-votar:hover {
     background: #ddb929;
     box-shadow: 0 8px 25px #ddb929cc;
     cursor: pointer;
   }
-  .btn-votar:disabled {
-    background: #77777788;
-    box-shadow: none;
-    cursor: not-allowed;
-  }
-
-  /* Modal */
-  .modal-fondo {
-    position: fixed;
-    inset: 0;
-    background: rgba(11, 12, 42, 0.9);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-  }
-  .modal-fondo.active {
-    display: flex;
-  }
-  .modal-contenido {
-    background: #14153a;
-    border-radius: 18px;
-    width: 400px;
-    max-width: 90%;
-    padding: 30px 25px;
-    box-shadow: 0 0 25px #f7c948cc;
-    color: #f7c948;
-  }
-  .modal-contenido h3 {
-    margin-top: 0;
-    margin-bottom: 25px;
-    text-align: center;
-  }
-  .modal-contenido form label {
-    display: block;
-    margin-bottom: 15px;
-    cursor: pointer;
-    font-size: 1.05rem;
-  }
-  .modal-contenido form label input[type="radio"] {
-    margin-right: 12px;
-  }
-  .modal-contenido .botones {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-  .btn-cancelar {
-    background: #777777aa;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-weight: 600;
-    color: #14153a;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  .btn-cancelar:hover {
-    background: #a3a3a3;
-  }
-  .btn-enviar {
-    background: #f7c948;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-weight: 700;
-    color: #14153a;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  .btn-enviar:hover {
-    background: #ddb929;
-  }
 </style>
 </head>
 <body>
-
   <h1>Votaciones Activas</h1>
 
   <div id="votacionesContainer">
-    <!-- Tarjetas de votación cargadas aquí -->
+    <!-- Tarjetas generadas por JS -->
   </div>
 
-  <!-- Modal para votar -->
-  <div class="modal-fondo" id="modalVotar">
-    <div class="modal-contenido">
-      <h3 id="modalTitulo">Votar</h3>
-      <form id="formVotar">
-        <!-- Opciones se insertan aquí -->
-        <div class="botones">
-          <button type="button" class="btn-cancelar" id="btnCancelar">Cancelar</button>
-          <button type="submit" class="btn-enviar">Enviar Voto</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-    const supabaseUrl = 'TU_SUPABASE_URL';
-    const supabaseKey = 'TU_SUPABASE_ANON_KEY';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const votacionesSimuladas = [
+      { id: 1, titulo: "Elección del presidente", descripcion: "Vota para elegir al nuevo presidente del club." },
+      { id: 2, titulo: "Decidir nuevo horario", descripcion: "Escoge el horario más conveniente para las reuniones." },
+      { id: 3, titulo: "Aprobación del presupuesto", descripcion: "Confirma el presupuesto para el próximo año." }
+    ];
 
     const container = document.getElementById('votacionesContainer');
-    const modal = document.getElementById('modalVotar');
-    const form = document.getElementById('formVotar');
-    const modalTitulo = document.getElementById('modalTitulo');
-    const btnCancelar = document.getElementById('btnCancelar');
 
-    let votaciones = [];
-    let opcionesActuales = [];
-    let votacionActiva = null;
-    let miembroActivo = null;
+    votacionesSimuladas.forEach(votacion => {
+      const card = document.createElement('div');
+      card.className = 'card-votacion';
 
-    // Obtener email almacenado localStorage para validar miembro
-    async function obtenerMiembro() {
-      const email = localStorage.getItem('usuarioActivo');
-      if(!email) {
-        alert('Debe iniciar sesión como miembro.');
-        window.location.href = 'index.html';
-        return null;
-      }
-      const { data, error } = await supabase
-        .from('miembros')
-        .select('*')
-        .eq('email', email)
-        .single();
+      const titulo = document.createElement('h2');
+      titulo.textContent = votacion.titulo;
 
-      if(error || !data) {
-        alert('Acceso denegado. Solo miembros registrados pueden votar.');
-        window.location.href = 'index.html';
-        return null;
-      }
-      return data;
-    }
+      const descripcion = document.createElement('p');
+      descripcion.textContent = votacion.descripcion;
 
-    async function cargarVotaciones() {
-      const { data, error } = await supabase
-        .from('votaciones')
-        .select('*')
-        .eq('estado', 'activo')
-        .order('fecha_inicio', { ascending: false });
+      const btn = document.createElement('button');
+      btn.textContent = 'Votar';
+      btn.className = 'btn-votar';
+      btn.onclick = () => alert(`Has iniciado votación para: ${votacion.titulo}`);
 
-      if(error) {
-        alert('Error al cargar votaciones: ' + error.message);
-        return;
-      }
-      votaciones = data || [];
-      renderizarVotaciones();
-    }
-
-    function renderizarVotaciones() {
-      container.innerHTML = '';
-      if(votaciones.length === 0) {
-        container.innerHTML = '<p style="text-align:center; font-size:1.2rem; color:#ccc;">No hay votaciones activas.</p>';
-        return;
-      }
-
-      votaciones.forEach(v => {
-        const card = document.createElement('div');
-        card.className = 'card-votacion';
-
-        const titulo = document.createElement('h2');
-        titulo.textContent = v.titulo;
-
-        const descripcion = document.createElement('p');
-        descripcion.textContent = v.descripcion;
-
-        const btn = document.createElement('button');
-        btn.textContent = 'Votar';
-        btn.disabled = true;
-
-        btn.addEventListener('click', () => abrirModal(v));
-
-        card.appendChild(titulo);
-        card.appendChild(descripcion);
-        card.appendChild(btn);
-        container.appendChild(card);
-
-        puedeVotar(v.id).then(puede => {
-          btn.disabled = !puede;
-          if(!puede) btn.textContent = 'Ya votó o no autorizado';
-        });
-      });
-    }
-
-    async function puedeVotar(idVotacion) {
-      if(!miembroActivo) return false;
-      const { data, error } = await supabase
-        .from('votos')
-        .select('*')
-        .eq('id_votacion', idVotacion)
-        .eq('id_miembro', miembroActivo.id)
-        .single();
-      return !data;
-    }
-
-    async function abrirModal(votacion) {
-      votacionActiva = votacion;
-      modalTitulo.textContent = `Votación: ${votacion.titulo}`;
-      opcionesActuales = [];
-
-      // Cargar opciones
-      const { data, error } = await supabase
-        .from('opciones')
-        .select('*')
-        .eq('id_votacion', votacion.id);
-
-      if(error) {
-        alert('Error al cargar opciones: ' + error.message);
-        return;
-      }
-      opcionesActuales = data || [];
-
-      form.innerHTML = '';
-      opcionesActuales.forEach(op => {
-        const label = document.createElement('label');
-        label.innerHTML = `<input type="radio" name="opcion" value="${op.id}" required> ${op.descripcion}`;
-        form.appendChild(label);
-      });
-
-      // Botones
-      const botones = document.createElement('div');
-      botones.className = 'botones';
-      botones.innerHTML = `
-        <button type="button" class="btn-cancelar" id="btnCancelarModal">Cancelar</button>
-        <button type="submit" class="btn-enviar">Enviar Voto</button>
-      `;
-      form.appendChild(botones);
-
-      // Asignar evento a cancelar
-      document.getElementById('btnCancelarModal').onclick = cerrarModal;
-
-      modal.classList.add('active');
-    }
-
-    function cerrarModal() {
-      modal.classList.remove('active');
-      votacionActiva = null;
-      form.reset();
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if(!votacionActiva || !miembroActivo) return;
-
-      const opcion = form.opcion.value;
-      if(!opcion) {
-        alert('Debe seleccionar una opción para votar.');
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('votos')
-        .insert([{ 
-          id_votacion: votacionActiva.id,
-          id_miembro: miembroActivo.id,
-          id_opcion: opcion,
-          fecha_voto: new Date().toISOString()
-        }]);
-
-      if(error) {
-        alert('Error al registrar voto: ' + error.message);
-        return;
-      }
-
-      alert('Su voto ha sido registrado. Gracias por participar.');
-      cerrarModal();
-      cargarVotaciones();
+      card.appendChild(titulo);
+      card.appendChild(descripcion);
+      card.appendChild(btn);
+      container.appendChild(card);
     });
-
-    btnCancelar.onclick = cerrarModal;
-
-    async function iniciar() {
-      miembroActivo = await obtenerMiembro();
-      if(!miembroActivo) return;
-      cargarVotaciones();
-    }
-
-    iniciar();
   </script>
 </body>
 </html>
