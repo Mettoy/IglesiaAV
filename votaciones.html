@@ -1,341 +1,448 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<title>Votaciones - Sistema Real</title>
-<style>
-  body {
-    background: #0b0c2a;
-    color: #f7c948;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 20px;
-  }
-  h1, h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  .container {
-    max-width: 1000px;
-    margin: auto;
-  }
-  /* Formulario agregar evento */
-  #nuevoEventoForm {
-    background: #14153a;
-    padding: 15px 20px;
-    border-radius: 10px;
-    margin-bottom: 30px;
-    box-shadow: 0 0 10px #f7c94888;
-  }
-  #nuevoEventoForm input[type="text"] {
-    width: 30%;
-    padding: 8px;
-    margin-right: 10px;
-    border-radius: 5px;
-    border: none;
-    font-size: 16px;
-  }
-  #nuevoEventoForm input[type="number"] {
-    width: 15%;
-    padding: 8px;
-    margin-right: 10px;
-    border-radius: 5px;
-    border: none;
-    font-size: 16px;
-  }
-  #nuevoEventoForm button {
-    background: #f7c948;
-    border: none;
-    color: #0b0c2a;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  #nuevoEventoForm button:hover {
-    background: #d1a52f;
-  }
-  /* Evento cards */
-  .event-card {
-    background: #14153a;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 10px #f7c948aa;
-  }
-  .event-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  .event-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-  }
-  .event-buttons button {
-    background: #f7c948;
-    border: none;
-    color: #0b0c2a;
-    padding: 8px 15px;
-    border-radius: 8px;
-    font-weight: bold;
-    margin-left: 10px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  .event-buttons button:hover {
-    background: #d1a52f;
-  }
-  /* Tabla votos */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-  th, td {
-    border: 1px solid #f7c94866;
-    padding: 8px 12px;
-    text-align: center;
-  }
-  th {
-    background: #f7c94822;
-  }
-  input[type=number] {
-    width: 60px;
-    font-size: 1rem;
-    padding: 4px;
-    border-radius: 6px;
-    border: none;
-    text-align: center;
-  }
-  /* Resultados */
-  #resultados {
-    margin-top: 40px;
-  }
-  #resultados h2 {
-    margin-bottom: 15px;
-  }
-  .resultado-card {
-    background: #14153a;
-    border-radius: 12px;
-    padding: 15px 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 12px #f7c948cc;
-  }
-  .resultado-title {
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Sistema de Votaciones</title>
+  <style>
+    /* Estilos SCSS transformados a CSS para simplicidad y velocidad */
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121526;
+      color: #f7c948;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #f7c948;
+      text-shadow: 1px 1px 5px #d6a92c;
+    }
+
+    .form-container {
+      max-width: 700px;
+      margin: 0 auto 40px auto;
+      background: #1e204a;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 10px #d6a92c44;
+    }
+
+    .form-container label {
+      display: block;
+      margin: 12px 0 5px;
+      font-weight: 600;
+    }
+
+    .form-container input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+    }
+
+    .form-container .candidatos-inputs {
+      margin-top: 15px;
+    }
+
+    .candidato-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .candidato-row input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px 20px;
+      background-color: #f7c948;
+      color: #121526;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #d6a92c;
+    }
+
+    .eventos-container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .evento-card {
+      background: #1e204a;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 8px #d6a92c99;
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .evento-card h3 {
+      margin: 0 0 10px 0;
+      text-align: center;
+      font-size: 20px;
+      text-shadow: 1px 1px 3px #d6a92c;
+    }
+
+    .botones-evento {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .botones-evento button {
+      width: 48%;
+      background-color: #f7c948;
+      color: #121526;
+    }
+
+    .botones-evento button:hover {
+      background-color: #d6a92c;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #121526;
+      color: #f7c948;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #d6a92c88;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      text-align: center;
+      border-bottom: 1px solid #d6a92c44;
+    }
+
+    th {
+      background-color: #2c2f6d;
+      font-weight: 700;
+    }
+
+    td:last-child button {
+      background-color: #f7c948;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #121526;
+      transition: background-color 0.3s ease;
+    }
+
+    td:last-child button:hover {
+      background-color: #d6a92c;
+    }
+
+    .votar-button {
+      margin-top: 8px;
+      background: #36a2eb;
+      color: white;
+      font-weight: 700;
+    }
+
+    .votar-button:hover {
+      background: #2580c7;
+    }
+
+    .resultado-votos {
+      font-weight: 700;
+      font-size: 18px;
+      margin-top: 10px;
+      text-align: center;
+      color: #f7c948;
+      text-shadow: 0 0 5px #d6a92c;
+    }
+
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Sistema de Votaciones Real</h1>
 
-    <form id="nuevoEventoForm">
-      <input type="text" id="nombreEvento" placeholder="Nombre del Evento" required />
-      <input type="text" class="opcion" placeholder="Opción 1" required />
-      <input type="text" class="opcion" placeholder="Opción 2" required />
-      <input type="text" class="opcion" placeholder="Opción 3" />
-      <input type="text" class="opcion" placeholder="Opción 4" />
-      <button type="submit">Agregar Evento</button>
-    </form>
+  <h1>Sistema de Votaciones</h1>
 
-    <div id="eventosContainer"></div>
+  <div class="form-container">
+    <label for="nombreEvento">Nombre del Evento</label>
+    <input type="text" id="nombreEvento" placeholder="Ejemplo: Elección de líder" />
 
-    <div id="resultados">
-      <h2>Resultados Finalizados</h2>
-      <div id="resultadosContainer"></div>
-    </div>
+    <label>Candidatos (escriba el nombre y presione Enter para agregar)</label>
+    <div id="candidatosContainer"></div>
+    <input type="text" id="inputCandidato" placeholder="Nombre del candidato" />
+
+    <button id="btnAgregarEvento">Guardar Evento</button>
   </div>
 
+  <section>
+    <h2 style="text-align:center; color:#f7c948; margin-bottom:15px;">Eventos Activos</h2>
+    <div class="eventos-container" id="eventosActivos"></div>
+  </section>
+
+  <section>
+    <h2 style="text-align:center; color:#f7c948; margin: "20px 0 15px 0;">Resultados Finales</h2>
+    <div class="eventos-container" id="resultadosFinales"></div>
+  </section>
+
 <script>
-  const form = document.getElementById('nuevoEventoForm');
-  const eventosContainer = document.getElementById('eventosContainer');
-  const resultadosContainer = document.getElementById('resultadosContainer');
+  // Datos guardados en memoria (simulación)
+  const eventos = [];
 
-  // Estado de eventos: 
-  // { id, nombre, opciones: [{nombre, votos}], estado: 'pendiente' | 'enCurso' | 'finalizado' }
-  let eventos = [];
-  let idEvento = 0;
+  const nombreEventoInput = document.getElementById('nombreEvento');
+  const inputCandidato = document.getElementById('inputCandidato');
+  const candidatosContainer = document.getElementById('candidatosContainer');
+  const btnAgregarEvento = document.getElementById('btnAgregarEvento');
+  const eventosActivosDiv = document.getElementById('eventosActivos');
+  const resultadosFinalesDiv = document.getElementById('resultadosFinales');
 
-  form.addEventListener('submit', e => {
-    e.preventDefault();
+  // Lista temporal de candidatos mientras se agrega un evento
+  let candidatos = [];
 
-    const nombre = document.getElementById('nombreEvento').value.trim();
-    if (!nombre) return alert('Debe ingresar un nombre para el evento');
+  // Función para mostrar candidatos en el formulario
+  function mostrarCandidatosForm() {
+    candidatosContainer.innerHTML = '';
+    candidatos.forEach((candidato, i) => {
+      const div = document.createElement('div');
+      div.textContent = candidato;
+      div.style.padding = '4px 8px';
+      div.style.background = '#2c2f6d';
+      div.style.borderRadius = '6px';
+      div.style.marginBottom = '6px';
+      div.style.display = 'inline-block';
+      div.style.color = '#f7c948';
+      div.style.fontWeight = '600';
+      candidatosContainer.appendChild(div);
+    });
+  }
 
-    // Obtener opciones no vacías
-    const opcionesInputs = Array.from(form.querySelectorAll('.opcion'));
-    const opciones = opcionesInputs
-      .map(i => i.value.trim())
-      .filter(op => op !== '')
-      .map(op => ({ nombre: op, votos: 0 }));
+  // Agregar candidato al presionar Enter
+  inputCandidato.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = inputCandidato.value.trim();
+      if (val && !candidatos.includes(val)) {
+        candidatos.push(val);
+        inputCandidato.value = '';
+        mostrarCandidatosForm();
+      }
+    }
+  });
 
-    if (opciones.length < 2) return alert('Debe ingresar al menos dos opciones para votar.');
-
-    // Crear nuevo evento
+  // Guardar evento y mostrar cuadro con botones iniciar/finalizar
+  btnAgregarEvento.addEventListener('click', () => {
+    const nombre = nombreEventoInput.value.trim();
+    if (!nombre) {
+      alert('Por favor, ingrese el nombre del evento.');
+      return;
+    }
+    if (candidatos.length < 1) {
+      alert('Agregue al menos un candidato.');
+      return;
+    }
     const nuevoEvento = {
-      id: idEvento++,
+      id: Date.now(),
       nombre,
-      opciones,
-      estado: 'pendiente'
+      candidatos: candidatos.map(nombre => ({ nombre, votos: 0 })),
+      activo: false,
+      finalizado: false,
     };
     eventos.push(nuevoEvento);
-
-    form.reset();
+    // Reset formulario
+    nombreEventoInput.value = '';
+    candidatos = [];
+    mostrarCandidatosForm();
     renderEventos();
   });
 
+  // Renderiza eventos activos y resultados finales
   function renderEventos() {
-    eventosContainer.innerHTML = '';
+    eventosActivosDiv.innerHTML = '';
+    resultadosFinalesDiv.innerHTML = '';
+
     eventos.forEach(evento => {
-      const card = document.createElement('div');
-      card.classList.add('event-card');
-
-      const header = document.createElement('div');
-      header.classList.add('event-header');
-
-      const title = document.createElement('div');
-      title.classList.add('event-title');
-      title.textContent = evento.nombre;
-
-      const buttonsDiv = document.createElement('div');
-      buttonsDiv.classList.add('event-buttons');
-
-      if (evento.estado === 'pendiente') {
-        const btnIniciar = document.createElement('button');
-        btnIniciar.textContent = 'Iniciar';
-        btnIniciar.onclick = () => iniciarEvento(evento.id);
-        buttonsDiv.appendChild(btnIniciar);
+      if (!evento.finalizado) {
+        const card = crearCardEvento(evento);
+        eventosActivosDiv.appendChild(card);
+      } else {
+        const card = crearCardResultado(evento);
+        resultadosFinalesDiv.appendChild(card);
       }
-
-      if (evento.estado === 'enCurso') {
-        const btnFinalizar = document.createElement('button');
-        btnFinalizar.textContent = 'Finalizar';
-        btnFinalizar.onclick = () => finalizarEvento(evento.id);
-        buttonsDiv.appendChild(btnFinalizar);
-      }
-
-      header.appendChild(title);
-      header.appendChild(buttonsDiv);
-
-      card.appendChild(header);
-
-      if (evento.estado === 'enCurso') {
-        // Mostrar tabla editable votos
-        const tabla = document.createElement('table');
-        const thead = document.createElement('thead');
-        const trHead = document.createElement('tr');
-        trHead.innerHTML = '<th>Opción</th><th>Votos</th>';
-        thead.appendChild(trHead);
-        tabla.appendChild(thead);
-
-        const tbody = document.createElement('tbody');
-        evento.opciones.forEach((opcion, idx) => {
-          const tr = document.createElement('tr');
-
-          const tdNombre = document.createElement('td');
-          tdNombre.textContent = opcion.nombre;
-
-          const tdVotos = document.createElement('td');
-          const inputVotos = document.createElement('input');
-          inputVotos.type = 'number';
-          inputVotos.min = 0;
-          inputVotos.value = opcion.votos;
-          inputVotos.oninput = e => {
-            const val = parseInt(e.target.value);
-            if (isNaN(val) || val < 0) {
-              e.target.value = 0;
-              evento.opciones[idx].votos = 0;
-            } else {
-              evento.opciones[idx].votos = val;
-            }
-          };
-
-          tdVotos.appendChild(inputVotos);
-          tr.appendChild(tdNombre);
-          tr.appendChild(tdVotos);
-          tbody.appendChild(tr);
-        });
-
-        tabla.appendChild(tbody);
-        card.appendChild(tabla);
-      }
-
-      eventosContainer.appendChild(card);
     });
-
-    renderResultados();
   }
 
-  function iniciarEvento(id) {
-    const evento = eventos.find(e => e.id === id);
-    if (evento) {
-      evento.estado = 'enCurso';
-      renderEventos();
-    }
-  }
+  // Crear tarjeta para evento activo con botones
+  function crearCardEvento(evento) {
+    const card = document.createElement('div');
+    card.classList.add('evento-card');
 
-  function finalizarEvento(id) {
-    const evento = eventos.find(e => e.id === id);
-    if (evento) {
-      evento.estado = 'finalizado';
-      renderEventos();
-    }
-  }
+    const titulo = document.createElement('h3');
+    titulo.textContent = evento.nombre;
+    card.appendChild(titulo);
 
-  function renderResultados() {
-    resultadosContainer.innerHTML = '';
+    if (!evento.activo) {
+      // Botones iniciar / finalizar (finalizar inhabilitado)
+      const botonesDiv = document.createElement('div');
+      botonesDiv.classList.add('botones-evento');
 
-    const finalizados = eventos.filter(e => e.estado === 'finalizado');
-    if(finalizados.length === 0) {
-      resultadosContainer.innerHTML = '<p>No hay resultados finalizados aún.</p>';
-      return;
-    }
+      const btnIniciar = document.createElement('button');
+      btnIniciar.textContent = 'Iniciar';
+      btnIniciar.onclick = () => iniciarVotacion(evento.id);
+      botonesDiv.appendChild(btnIniciar);
 
-    finalizados.forEach(evento => {
-      const card = document.createElement('div');
-      card.classList.add('resultado-card');
+      const btnFinalizar = document.createElement('button');
+      btnFinalizar.textContent = 'Finalizar';
+      btnFinalizar.disabled = true;
+      botonesDiv.appendChild(btnFinalizar);
 
-      const title = document.createElement('div');
-      title.classList.add('resultado-title');
-      title.textContent = evento.nombre;
-
-      const tabla = document.createElement('table');
-      const thead = document.createElement('thead');
-      const trHead = document.createElement('tr');
-      trHead.innerHTML = '<th>Opción</th><th>Votos</th>';
-      thead.appendChild(trHead);
-      tabla.appendChild(thead);
-
-      const tbody = document.createElement('tbody');
-      evento.opciones.forEach(opcion => {
-        const tr = document.createElement('tr');
-        const tdNombre = document.createElement('td');
-        tdNombre.textContent = opcion.nombre;
-
-        const tdVotos = document.createElement('td');
-        tdVotos.textContent = opcion.votos;
-
-        tr.appendChild(tdNombre);
-        tr.appendChild(tdVotos);
-        tbody.appendChild(tr);
-      });
-
-      tabla.appendChild(tbody);
-
-      card.appendChild(title);
+      card.appendChild(botonesDiv);
+    } else {
+      // Mostrar tabla votación y botón finalizar habilitado
+      const tabla = crearTablaVotacion(evento);
       card.appendChild(tabla);
 
-      resultadosContainer.appendChild(card);
-    });
+      const botonesDiv = document.createElement('div');
+      botonesDiv.classList.add('botones-evento');
+
+      const btnIniciar = document.createElement('button');
+      btnIniciar.textContent = 'Iniciar';
+      btnIniciar.disabled = true;
+      botonesDiv.appendChild(btnIniciar);
+
+      const btnFinalizar = document.createElement('button');
+      btnFinalizar.textContent = 'Finalizar';
+      btnFinalizar.onclick = () => finalizarVotacion(evento.id);
+      botonesDiv.appendChild(btnFinalizar);
+
+      card.appendChild(botonesDiv);
+
+      // Mostrar total votos
+      const totalVotos = evento.candidatos.reduce((acc, c) => acc + c.votos, 0);
+      const totalDiv = document.createElement('div');
+      totalDiv.classList.add('resultado-votos');
+      totalDiv.textContent = `Total votos emitidos: ${totalVotos}`;
+      card.appendChild(totalDiv);
+    }
+
+    return card;
   }
 
-  // Primera renderización
+  // Crear tabla de votación para evento activo
+  function crearTablaVotacion(evento) {
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.innerHTML = `<tr><th>Candidato</th><th>Votos</th><th>Votar</th></tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    evento.candidatos.forEach((candidato, i) => {
+      const tr = document.createElement('tr');
+
+      const tdNombre = document.createElement('td');
+      tdNombre.textContent = candidato.nombre;
+      tr.appendChild(tdNombre);
+
+      const tdVotos = document.createElement('td');
+      tdVotos.textContent = candidato.votos;
+      tr.appendChild(tdVotos);
+
+      const tdBoton = document.createElement('td');
+      const btnVotar = document.createElement('button');
+      btnVotar.textContent = '+1';
+      btnVotar.classList.add('votar-button');
+      btnVotar.onclick = () => {
+        candidato.votos++;
+        tdVotos.textContent = candidato.votos;
+        // Actualizar total votos
+        renderEventos();
+      };
+      tdBoton.appendChild(btnVotar);
+      tr.appendChild(tdBoton);
+
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    return table;
+  }
+
+  // Crear tarjeta para resultados finalizados
+  function crearCardResultado(evento) {
+    const card = document.createElement('div');
+    card.classList.add('evento-card');
+
+    const titulo = document.createElement('h3');
+    titulo.textContent = `${evento.nombre} (Finalizado)`;
+    card.appendChild(titulo);
+
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.innerHTML = `<tr><th>Candidato</th><th>Votos</th></tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    evento.candidatos.forEach(candidato => {
+      const tr = document.createElement('tr');
+      const tdNombre = document.createElement('td');
+      tdNombre.textContent = candidato.nombre;
+      tr.appendChild(tdNombre);
+      const tdVotos = document.createElement('td');
+      tdVotos.textContent = candidato.votos;
+      tr.appendChild(tdVotos);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    card.appendChild(table);
+
+    // Mostrar total votos
+    const totalVotos = evento.candidatos.reduce((acc, c) => acc + c.votos, 0);
+    const totalDiv = document.createElement('div');
+    totalDiv.classList.add('resultado-votos');
+    totalDiv.textContent = `Total votos emitidos: ${totalVotos}`;
+    card.appendChild(totalDiv);
+
+    return card;
+  }
+
+  // Iniciar votación (evento pasa a activo)
+  function iniciarVotacion(id) {
+    const evento = eventos.find(e => e.id === id);
+    if (evento) {
+      evento.activo = true;
+      renderEventos();
+    }
+  }
+
+  // Finalizar votación (evento pasa a finalizado)
+  function finalizarVotacion(id) {
+    const evento = eventos.find(e => e.id === id);
+    if (evento) {
+      evento.activo = false;
+      evento.finalizado = true;
+      renderEventos();
+    }
+  }
+
+  // Render inicial
   renderEventos();
+
 </script>
 
 </body>
