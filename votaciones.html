@@ -2,296 +2,340 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Votaciones Dinámicas - Su Majestad</title>
+<title>Votaciones - Sistema Real</title>
 <style>
-  /* Reset y básicos */
-  * {
-    box-sizing: border-box;
-  }
   body {
-    background: linear-gradient(135deg, #1e1e3f 0%, #0b0c2a 100%);
+    background: #0b0c2a;
     color: #f7c948;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height: 100vh;
-    margin: 0; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 15px;
+    margin: 0;
+    padding: 20px;
   }
-  h1 {
-    margin-bottom: 30px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    text-shadow: 0 0 15px #f7c948aa;
+  h1, h2 {
+    text-align: center;
+    margin-bottom: 20px;
   }
-
-  /* Contenedor principal */
   .container {
-    width: 100%;
-    max-width: 800px;
+    max-width: 1000px;
+    margin: auto;
+  }
+  /* Formulario agregar evento */
+  #nuevoEventoForm {
     background: #14153a;
-    border-radius: 20px;
-    padding: 25px 30px;
-    box-shadow: 0 0 30px #f7c948aa;
-  }
-
-  /* Botón Agregar Evento */
-  #btnAgregarEvento {
-    background: #f7c948;
-    color: #14153a;
-    border: none;
-    padding: 14px 28px;
-    font-weight: 700;
-    border-radius: 15px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    box-shadow: 0 8px 20px #f7c948bb;
-    transition: background 0.3s ease;
+    padding: 15px 20px;
+    border-radius: 10px;
     margin-bottom: 30px;
+    box-shadow: 0 0 10px #f7c94888;
   }
-  #btnAgregarEvento:hover {
-    background: #ddb929;
+  #nuevoEventoForm input[type="text"] {
+    width: 30%;
+    padding: 8px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 16px;
   }
-
-  /* Tabla estilo Excel */
+  #nuevoEventoForm input[type="number"] {
+    width: 15%;
+    padding: 8px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 16px;
+  }
+  #nuevoEventoForm button {
+    background: #f7c948;
+    border: none;
+    color: #0b0c2a;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #nuevoEventoForm button:hover {
+    background: #d1a52f;
+  }
+  /* Evento cards */
+  .event-card {
+    background: #14153a;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px #f7c948aa;
+  }
+  .event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .event-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+  .event-buttons button {
+    background: #f7c948;
+    border: none;
+    color: #0b0c2a;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  .event-buttons button:hover {
+    background: #d1a52f;
+  }
+  /* Tabla votos */
   table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th, td {
+    border: 1px solid #f7c94866;
+    padding: 8px 12px;
+    text-align: center;
+  }
+  th {
+    background: #f7c94822;
+  }
+  input[type=number] {
+    width: 60px;
     font-size: 1rem;
-    user-select: none;
-  }
-  thead {
-    background: #f7c948;
-    color: #14153a;
-  }
-  thead th {
-    padding: 12px;
-    border-radius: 10px 10px 0 0;
-    text-align: center;
-    font-weight: 700;
-  }
-  tbody tr {
-    background: #1f214d;
-    transition: background 0.2s ease;
-  }
-  tbody tr:nth-child(even) {
-    background: #2a2c6e;
-  }
-  tbody td {
-    padding: 10px 8px;
-    text-align: center;
-    border: 1px solid #3a3d8a;
-  }
-  tbody td input {
-    width: 100%;
+    padding: 4px;
+    border-radius: 6px;
     border: none;
-    background: transparent;
-    color: #f7c948;
-    font-weight: 600;
-    font-size: 1rem;
     text-align: center;
-    outline: none;
   }
-  tbody td input[type="number"]::-webkit-inner-spin-button,
-  tbody td input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  /* Columna Votos (total) */
-  .votos-total {
-    font-weight: 900;
-    font-size: 1.2rem;
-    color: #ffeb3b;
-    text-shadow: 0 0 8px #ffeb3baa;
-  }
-
-  /* Contenedor resultados */
+  /* Resultados */
   #resultados {
     margin-top: 40px;
-    background: #14153a;
-    padding: 20px 25px;
-    border-radius: 20px;
-    box-shadow: 0 0 20px #f7c94888;
   }
   #resultados h2 {
-    margin-top: 0;
     margin-bottom: 15px;
-    font-weight: 900;
-    letter-spacing: 1.2px;
   }
-  #resultados ul {
-    list-style: none;
-    padding-left: 0;
-    max-height: 240px;
-    overflow-y: auto;
-  }
-  #resultados ul li {
-    background: #2a2c6e;
-    margin-bottom: 10px;
-    padding: 12px 18px;
+  .resultado-card {
+    background: #14153a;
     border-radius: 12px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    display: flex;
-    justify-content: space-between;
-    box-shadow: 0 0 10px #f7c948cc;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 12px #f7c948cc;
   }
-
-  /* Responsive */
-  @media (max-width: 520px) {
-    #btnAgregarEvento {
-      width: 100%;
-      font-size: 1rem;
-      padding: 12px 0;
-    }
-    tbody td input {
-      font-size: 0.9rem;
-    }
+  .resultado-title {
+    font-weight: 700;
+    margin-bottom: 10px;
   }
 </style>
 </head>
 <body>
-
-  <h1>Votaciones Dinámicas</h1>
-
   <div class="container">
-    <button id="btnAgregarEvento">Agregar Nueva Opción</button>
+    <h1>Sistema de Votaciones Real</h1>
 
-    <table id="tablaVotacion" aria-label="Tabla de votación dinámica" role="grid">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Voto 1</th>
-          <th>Voto 2</th>
-          <th>Voto 3</th>
-          <th>Voto 4</th>
-          <th>Total Votos</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Filas dinámicas -->
-      </tbody>
-    </table>
+    <form id="nuevoEventoForm">
+      <input type="text" id="nombreEvento" placeholder="Nombre del Evento" required />
+      <input type="text" class="opcion" placeholder="Opción 1" required />
+      <input type="text" class="opcion" placeholder="Opción 2" required />
+      <input type="text" class="opcion" placeholder="Opción 3" />
+      <input type="text" class="opcion" placeholder="Opción 4" />
+      <button type="submit">Agregar Evento</button>
+    </form>
 
-    <div id="resultados" aria-live="polite" aria-atomic="true" role="region" aria-label="Resultados de votación">
-      <h2>Resultados Actuales</h2>
-      <ul id="listaResultados">
-        <!-- Resultados en vivo -->
-      </ul>
+    <div id="eventosContainer"></div>
+
+    <div id="resultados">
+      <h2>Resultados Finalizados</h2>
+      <div id="resultadosContainer"></div>
     </div>
   </div>
 
 <script>
-  const btnAgregar = document.getElementById('btnAgregarEvento');
-  const tbody = document.querySelector('#tablaVotacion tbody');
-  const listaResultados = document.getElementById('listaResultados');
+  const form = document.getElementById('nuevoEventoForm');
+  const eventosContainer = document.getElementById('eventosContainer');
+  const resultadosContainer = document.getElementById('resultadosContainer');
 
-  // Función para crear una fila nueva editable
-  function crearFila() {
-    const tr = document.createElement('tr');
+  // Estado de eventos: 
+  // { id, nombre, opciones: [{nombre, votos}], estado: 'pendiente' | 'enCurso' | 'finalizado' }
+  let eventos = [];
+  let idEvento = 0;
 
-    // Nombre (input texto)
-    const tdNombre = document.createElement('td');
-    const inputNombre = document.createElement('input');
-    inputNombre.type = 'text';
-    inputNombre.placeholder = 'Nombre opción';
-    inputNombre.setAttribute('aria-label', 'Nombre de la opción');
-    inputNombre.required = true;
-    tdNombre.appendChild(inputNombre);
-    tr.appendChild(tdNombre);
+  form.addEventListener('submit', e => {
+    e.preventDefault();
 
-    // Votos (4 casillas numéricas)
-    const votosInputs = [];
-    for(let i=1; i<=4; i++){
-      const tdVoto = document.createElement('td');
-      const inputVoto = document.createElement('input');
-      inputVoto.type = 'number';
-      inputVoto.min = '0';
-      inputVoto.value = 0;
-      inputVoto.setAttribute('aria-label', `Voto ${i}`);
-      inputVoto.required = true;
-      // Escuchar cambio para actualizar total
-      inputVoto.addEventListener('input', () => {
-        if(inputVoto.value === '' || inputVoto.value < 0){
-          inputVoto.value = 0;
-        }
-        actualizarTotal(tr);
-        actualizarResultados();
-      });
-      votosInputs.push(inputVoto);
-      tdVoto.appendChild(inputVoto);
-      tr.appendChild(tdVoto);
+    const nombre = document.getElementById('nombreEvento').value.trim();
+    if (!nombre) return alert('Debe ingresar un nombre para el evento');
+
+    // Obtener opciones no vacías
+    const opcionesInputs = Array.from(form.querySelectorAll('.opcion'));
+    const opciones = opcionesInputs
+      .map(i => i.value.trim())
+      .filter(op => op !== '')
+      .map(op => ({ nombre: op, votos: 0 }));
+
+    if (opciones.length < 2) return alert('Debe ingresar al menos dos opciones para votar.');
+
+    // Crear nuevo evento
+    const nuevoEvento = {
+      id: idEvento++,
+      nombre,
+      opciones,
+      estado: 'pendiente'
+    };
+    eventos.push(nuevoEvento);
+
+    form.reset();
+    renderEventos();
+  });
+
+  function renderEventos() {
+    eventosContainer.innerHTML = '';
+    eventos.forEach(evento => {
+      const card = document.createElement('div');
+      card.classList.add('event-card');
+
+      const header = document.createElement('div');
+      header.classList.add('event-header');
+
+      const title = document.createElement('div');
+      title.classList.add('event-title');
+      title.textContent = evento.nombre;
+
+      const buttonsDiv = document.createElement('div');
+      buttonsDiv.classList.add('event-buttons');
+
+      if (evento.estado === 'pendiente') {
+        const btnIniciar = document.createElement('button');
+        btnIniciar.textContent = 'Iniciar';
+        btnIniciar.onclick = () => iniciarEvento(evento.id);
+        buttonsDiv.appendChild(btnIniciar);
+      }
+
+      if (evento.estado === 'enCurso') {
+        const btnFinalizar = document.createElement('button');
+        btnFinalizar.textContent = 'Finalizar';
+        btnFinalizar.onclick = () => finalizarEvento(evento.id);
+        buttonsDiv.appendChild(btnFinalizar);
+      }
+
+      header.appendChild(title);
+      header.appendChild(buttonsDiv);
+
+      card.appendChild(header);
+
+      if (evento.estado === 'enCurso') {
+        // Mostrar tabla editable votos
+        const tabla = document.createElement('table');
+        const thead = document.createElement('thead');
+        const trHead = document.createElement('tr');
+        trHead.innerHTML = '<th>Opción</th><th>Votos</th>';
+        thead.appendChild(trHead);
+        tabla.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        evento.opciones.forEach((opcion, idx) => {
+          const tr = document.createElement('tr');
+
+          const tdNombre = document.createElement('td');
+          tdNombre.textContent = opcion.nombre;
+
+          const tdVotos = document.createElement('td');
+          const inputVotos = document.createElement('input');
+          inputVotos.type = 'number';
+          inputVotos.min = 0;
+          inputVotos.value = opcion.votos;
+          inputVotos.oninput = e => {
+            const val = parseInt(e.target.value);
+            if (isNaN(val) || val < 0) {
+              e.target.value = 0;
+              evento.opciones[idx].votos = 0;
+            } else {
+              evento.opciones[idx].votos = val;
+            }
+          };
+
+          tdVotos.appendChild(inputVotos);
+          tr.appendChild(tdNombre);
+          tr.appendChild(tdVotos);
+          tbody.appendChild(tr);
+        });
+
+        tabla.appendChild(tbody);
+        card.appendChild(tabla);
+      }
+
+      eventosContainer.appendChild(card);
+    });
+
+    renderResultados();
+  }
+
+  function iniciarEvento(id) {
+    const evento = eventos.find(e => e.id === id);
+    if (evento) {
+      evento.estado = 'enCurso';
+      renderEventos();
     }
-
-    // Total votos (no editable)
-    const tdTotal = document.createElement('td');
-    tdTotal.classList.add('votos-total');
-    tdTotal.textContent = '0';
-    tr.appendChild(tdTotal);
-
-    // Actualizar total al cambiar nombre o votos
-    inputNombre.addEventListener('input', actualizarResultados);
-
-    // Inicialmente actualizar total y resultados
-    actualizarTotal(tr);
-    actualizarResultados();
-
-    return tr;
   }
 
-  // Actualiza el total de votos de una fila
-  function actualizarTotal(fila){
-    const votos = Array.from(fila.querySelectorAll('td input[type="number"]'))
-                       .map(input => parseInt(input.value) || 0);
-    const total = votos.reduce((a,b) => a + b, 0);
-    fila.querySelector('.votos-total').textContent = total;
+  function finalizarEvento(id) {
+    const evento = eventos.find(e => e.id === id);
+    if (evento) {
+      evento.estado = 'finalizado';
+      renderEventos();
+    }
   }
 
-  // Actualiza la lista de resultados
-  function actualizarResultados(){
-    // Recolectar datos
-    const filas = Array.from(tbody.querySelectorAll('tr'));
-    // Crear array de objetos {nombre, total}
-    const datos = filas
-      .map(tr => {
-        const nombre = tr.querySelector('td input[type="text"]').value.trim();
-        const total = parseInt(tr.querySelector('.votos-total').textContent) || 0;
-        return { nombre, total };
-      })
-      .filter(item => item.nombre.length > 0); // Ignorar filas sin nombre
+  function renderResultados() {
+    resultadosContainer.innerHTML = '';
 
-    // Ordenar descendente por total votos
-    datos.sort((a,b) => b.total - a.total);
-
-    // Limpiar lista resultados
-    listaResultados.innerHTML = '';
-
-    if(datos.length === 0){
-      listaResultados.innerHTML = '<li>No hay opciones aún</li>';
+    const finalizados = eventos.filter(e => e.estado === 'finalizado');
+    if(finalizados.length === 0) {
+      resultadosContainer.innerHTML = '<p>No hay resultados finalizados aún.</p>';
       return;
     }
 
-    // Crear <li> por cada opción con votos
-    datos.forEach(({nombre, total}) => {
-      const li = document.createElement('li');
-      li.textContent = nombre;
-      const span = document.createElement('span');
-      span.textContent = total;
-      li.appendChild(span);
-      listaResultados.appendChild(li);
+    finalizados.forEach(evento => {
+      const card = document.createElement('div');
+      card.classList.add('resultado-card');
+
+      const title = document.createElement('div');
+      title.classList.add('resultado-title');
+      title.textContent = evento.nombre;
+
+      const tabla = document.createElement('table');
+      const thead = document.createElement('thead');
+      const trHead = document.createElement('tr');
+      trHead.innerHTML = '<th>Opción</th><th>Votos</th>';
+      thead.appendChild(trHead);
+      tabla.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      evento.opciones.forEach(opcion => {
+        const tr = document.createElement('tr');
+        const tdNombre = document.createElement('td');
+        tdNombre.textContent = opcion.nombre;
+
+        const tdVotos = document.createElement('td');
+        tdVotos.textContent = opcion.votos;
+
+        tr.appendChild(tdNombre);
+        tr.appendChild(tdVotos);
+        tbody.appendChild(tr);
+      });
+
+      tabla.appendChild(tbody);
+
+      card.appendChild(title);
+      card.appendChild(tabla);
+
+      resultadosContainer.appendChild(card);
     });
   }
 
-  // Al hacer click en "Agregar Nueva Opción"
-  btnAgregar.addEventListener('click', () => {
-    tbody.appendChild(crearFila());
-  });
-
-  // Inicialmente agregamos una fila para empezar
-  tbody.appendChild(crearFila());
+  // Primera renderización
+  renderEventos();
 </script>
 
 </body>
