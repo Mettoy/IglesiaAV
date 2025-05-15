@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Votaciones - Sistema Real</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    /* Estilos SCSS convertido a CSS para simplicidad */
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0b0c2a;
+      color: #f7c948;
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #14153a;
+      height: 100vh;
+      padding: 30px 20px;
+      box-shadow: 5px 0 5px rgba(0,0,0,0.3);
+      position: fixed;
+      left: 0;
+      top: 0;
+      overflow-y: auto;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar ul li {
+      margin-bottom: 1rem;
+    }
+    .sidebar ul li a {
+      color: #f7c948;
+      text-decoration: none;
+      font-size: 1.1rem;
+      display: block;
+      padding: 10px 15px;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
+    }
+    .sidebar ul li a:hover {
+      background-color: #1f214d;
+      cursor: pointer;
+    }
+
+    .content {
+      margin-left: 250px;
+      padding: 30px 40px;
+      flex-grow: 1;
+    }
+    .content h1 {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: #f7c948;
+      text-shadow: 0 0 8px rgba(247,201,72,0.7);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+      background-color: #14153a;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.6);
+    }
+    th, td {
+      padding: 15px;
+      text-align: left;
+      color: #f7c948;
+      border-bottom: 1px solid #0b0c2a;
+    }
+    th {
+      background-color: #0b0c2a;
+      font-weight: 700;
+    }
+    tbody tr:hover {
+      background-color: #1f214d;
+      cursor: pointer;
+    }
+    button {
+      background-color: #36a2eb;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      font-size: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(54,162,235,0.5);
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover:not(:disabled) {
+      background-color: #2a82c9;
+    }
+    button:disabled {
+      background-color: gray;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Modal */
+    .modal-votacion {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(11, 12, 42, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    .modal-votacion.active {
+      display: flex;
+    }
+    .modal-contenido {
+      background-color: #14153a;
+      padding: 30px 40px;
+      border-radius: 15px;
+      width: 400px;
+      max-width: 90%;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    }
+    .modal-contenido h2 {
+      margin-top: 0;
+      color: #f7c948;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .modal-contenido form {
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-contenido label {
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #f7c948;
+      cursor: pointer;
+    }
+    .modal-contenido label input[type="radio"] {
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    .acciones {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .btn-cancelar {
+      background-color: gray;
+      color: white;
+    }
+    .btn-cancelar:hover {
+      background-color: darkgray;
+    }
+    .btn-votar {
+      background-color: #36a2eb;
+      color: white;
+    }
+    .btn-votar:hover {
+      background-color: #2a82c9;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        width: 100%;
+        height: auto;
+        padding: 15px 10px;
+        box-shadow: none;
+        display: flex;
+        overflow-x: auto;
+      }
+      .sidebar ul {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+      }
+      .sidebar ul li {
+        margin-bottom: 0;
+      }
+      .content {
+        margin-left: 0;
+        padding: 20px 15px;
+      }
+      table, .modal-contenido {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h2>Menú Real</h2>
+    <ul>
+      <li><a href="miembros.html">Miembros</a></li>
+      <li><a href="votaciones.html">Votaciones</a></li>
+      <li><a href="servicios.html">Servicios</a></li>
+      <li><a href="index.html" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+    </ul>
+  </div>
+
+  <div class="content">
+    <h1>Votaciones Activas y Servicios de Atención</h1>
+
+    <section>
+      <h2>Servicios de Atención</h2>
+      <table id="tablaServicios">
+        <thead>
+          <tr>
+            <th>Servicio</th>
+            <th>Responsable</th>
+            <th>Horario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Datos simulados, puede conectar a BD -->
+          <tr><td>Consejería</td><td>Hermana María</td><td>Lunes 4pm-6pm</td></tr>
+          <tr><td>Oración</td><td>Hermano José</td><td>Miércoles 7pm-8pm</td></tr>
+          <tr><td>Visitas</td><td>Equipo Pastoral</td><td>Viernes 3pm-5pm</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Votaciones</h2>
+      <table id="tablaVotaciones">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Cargado dinámicamente -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- Modal de votación -->
+  <div class="modal-votacion" id="modalVotacion">
+    <div class="modal-contenido">
+      <h2 id="modalTitulo">Votación</h2>
+      <form id="formVotacion">
+        <!-- Opciones generadas dinámicamente -->
+        <div class="acciones">
+          <button type="button" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-votar">Votar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Configuración Supabase (Rey, aquí coloque sus credenciales)
+    const supabaseUrl = 'TU_SUPABASE_URL';
+    const supabaseKey = 'TU_SUPABASE_ANON_KEY';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Elementos
+    const tablaVotaciones = document.querySelector("#tablaVotaciones tbody");
+    const modalVotacion = document.getElementById("modalVotacion");
+    const formVotacion = document.getElementById("formVotacion");
+    const modalTitulo = document.getElementById("modalTitulo");
+
+    let votaciones = [];
+    let opcionesActuales = [];
+    let votacionSeleccionada = null;
+    let miembroActivo = null;
+
+    async function obtenerMiembroActivo() {
+      const email = localStorage.getItem("usuarioActivo");
+      if (!email) {
+        alert("Debe iniciar sesión.");
+        window.location.href = "index.html";
+        return null;
+      }
+      const { data, error } = await supabase
+        .from('miembros')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (error || !data) {
+        alert("Acceso denegado. Solo miembros registrados pueden votar.");
+        window.location.href = "index.html";
+        return null;
+      }
+      return data;
+    }
+
+    // Cargar votaciones activas desde Supabase
+    async function cargarVotaciones() {
+      const { data, error } = await supabase
+        .from('votaciones')
+        .select('*')
+        .eq('estado', 'activo')
+        .order('fecha_inicio', { ascending: false });
+
+      if (error) {    alert("Error cargando votaciones: " + error.message);
+    return;
+  }
+
+  votaciones = data || [];
+  renderizarTablaVotaciones();
+}
+
+function renderizarTablaVotaciones() {
+  tablaVotaciones.innerHTML = '';
+
+  if(votaciones.length === 0){
+    tablaVotaciones.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay votaciones activas.</td></tr>`;
+    return;
+  }
+
+  votaciones.forEach(v => {
+    const tr = document.createElement('tr');
+
+    // Título
+    const tdTitulo = document.createElement('td');
+    tdTitulo.textContent = v.titulo;
+    tr.appendChild(tdTitulo);
+
+    // Descripción
+    const tdDesc = document.createElement('td');
+    tdDesc.textContent = v.descripcion;
+    tr.appendChild(tdDesc);
+
+    // Estado
+    const tdEstado = document.createElement('td');
+    tdEstado.textContent = v.estado.charAt(0).toUpperCase() + v.estado.slice(1);
+    tr.appendChild(tdEstado);
+
+    // Acción
+    const tdAccion = document.createElement('td');
+    const btnIniciar = document.createElement('button');
+
+    // Verificar si el miembro ya votó
+    btnIniciar.textContent = 'Votar';
+    btnIniciar.disabled = true; // Por defecto deshabilitado hasta comprobación
+
+    // Cuando den click a votar
+    btnIniciar.addEventListener('click', () => abrirModalVotacion(v));
+
+    tdAccion.appendChild(btnIniciar);
+    tr.appendChild(tdAccion);
+
+    tablaVotaciones.appendChild(tr);
+
+    // Verificar si puede votar
+    puedeVotar(v.id).then(puede => {
+      btnIniciar.disabled = !puede;
+      if(!puede){
+        btnIniciar.textContent = 'Ya votó o no autorizado';
+      }
+    });
+  });
+}
+
+// Función para verificar si el miembro puede votar
+async function puedeVotar(idVotacion) {
+  if(!miembroActivo) return false;
+  const { data, error } = await supabase
+    .from('votos')
+    .select('*')
+    .eq('id_votacion', idVotacion)
+    .eq('id_miembro', miembroActivo.id)
+    .single();
+
+  // Si ya existe un voto, no puede votar
+  return !data;
+}
+
+// Abrir modal de votación
+async function abrirModalVotacion(votacion) {
+  votacionSeleccionada = votacion;
+  modalTitulo.textContent = `Votación: ${votacion.titulo}`;
+  opcionesActuales = [];
+
+  // Obtener opciones de la votación
+  const { data, error } = await supabase
+    .from('opciones')
+    .select('*')
+    .eq('id_votacion', votacion.id);
+
+  if(error){
+    alert("Error cargando opciones: "+error.message);
+    return;
+  }
+
+  opcionesActuales = data || [];
+
+  // Limpiar el form
+  formVotacion.innerHTML = '';
+
+  if(opcionesActuales.length === 0){
+    formVotacion.innerHTML = `<p>No hay opciones para esta votación.</p>`;
+    return;
+  }
+
+  opcionesActuales.forEach(opcion => {
+    const label = document.createElement('label');
+    label.innerHTML = `<input type="radio" name="opcion" value="${opcion.id}" required> ${opcion.descripcion}`;
+    formVotacion.appendChild(label);
+  });
+
+  // Agregar botones de acción
+  const divAcciones = document.createElement('div');
+  divAcciones.className = 'acciones';
+  divAcciones.innerHTML = `
+    <button type="button" class="btn-cancelar">Cancelar</button>
+    <button type="submit" class="btn-votar">Votar</button>
+  `;
+  formVotacion.appendChild(divAcciones);
+
+  // Eventos botones
+  formVotacion.querySelector('.btn-cancelar').onclick = cerrarModal;
+
+  // Mostrar modal
+  modalVotacion.classList.add('active');
+}
+
+// Cerrar modal
+function cerrarModal() {
+  modalVotacion.classList.remove('active');
+  formVotacion.reset();
+  votacionSeleccionada = null;
+}
+
+// Enviar voto
+formVotacion.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const opcionSeleccionada = formVotacion.opcion.value;
+
+  if(!votacionSeleccionada || !opcionSeleccionada || !miembroActivo) {
+    alert("Datos incompletos para votar.");
+    return;
+  }
+
+  // Insertar voto en Supabase
+  const { data, error } = await supabase
+    .from('votos')
+    .insert([{
+      id_votacion: votacionSeleccionada.id,
+      id_miembro: miembroActivo.id,
+      id_opcion: opcionSeleccionada,
+      fecha_voto: new Date().toISOString()
+    }]);
+
+  if(error){
+    alert("Error al registrar voto: " + error.message);
+    return;
+  }
+
+  alert("Voto registrado con éxito, gracias por su participación.");
+  cerrarModal();
+  cargarVotaciones(); // Refrescar estado para actualizar botones
+});
+
+// Cerrar sesión simple
+function cerrarSesion() {
+  localStorage.removeItem('usuarioActivo');
+}
+
+// Inicialización
+async function iniciar() {
+  miembroActivo = await obtenerMiembroActivo();
+  if(!miembroActivo) return;
+  cargarVotaciones();
+}
+
+iniciar();
+</script>
+</body> 
+</html>
