@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Votaciones Simuladas</title>
+<title>Gestión de Votaciones</title>
 <style>
-  /* Igual que antes para estilos */
   * { box-sizing: border-box; }
   body {
     margin: 0; 
@@ -13,22 +12,59 @@
     background: linear-gradient(135deg, #1e1e3f 0%, #0b0c2a 100%);
     color: #f7c948;
     min-height: 100vh;
+    padding: 30px 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 30px 15px;
   }
-  h1 {
-    margin-bottom: 30px;
-    font-size: 2.8rem;
+  h1, h2 {
+    margin-bottom: 20px;
     text-shadow: 0 0 15px #f7c948aa;
     letter-spacing: 1.5px;
   }
-  #votacionesContainer {
+  #formAgregar {
+    margin-bottom: 40px;
+    width: 100%;
+    max-width: 500px;
+    background: #14153a;
+    padding: 20px 25px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px #f7c94888;
+  }
+  #formAgregar input, #formAgregar textarea {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  #formAgregar button {
+    background: #f7c948;
+    border: none;
+    padding: 12px 25px;
+    font-weight: 700;
+    color: #14153a;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    box-shadow: 0 5px 15px #f7c948aa;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #formAgregar button:hover {
+    background: #ddb929;
+  }
+
+  .contenedor {
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 60px;
+  }
+
+  .grid {
     display: grid;
     gap: 25px;
-    max-width: 900px;
-    width: 100%;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
   .card-votacion {
@@ -36,19 +72,13 @@
     border-radius: 15px;
     padding: 20px 25px;
     box-shadow: 0 0 15px #f7c94888;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
   }
-  .card-votacion:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 0 30px #f7c948cc;
-    cursor: pointer;
-  }
-  .card-votacion h2 {
+  .card-votacion h3 {
     margin: 0 0 12px;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
   .card-votacion p {
     flex-grow: 1;
@@ -57,61 +87,129 @@
     margin-bottom: 20px;
     color: #e6d078cc;
   }
-  .btn-votar {
+  .btn-finalizar {
     align-self: flex-start;
-    background: #f7c948;
+    background: #f44336;
     border: none;
-    padding: 12px 22px;
+    padding: 10px 18px;
     font-weight: 700;
-    color: #14153a;
+    color: white;
     border-radius: 10px;
-    font-size: 1.1rem;
-    box-shadow: 0 5px 15px #f7c948aa;
+    font-size: 1rem;
+    box-shadow: 0 5px 15px #f4433688;
+    cursor: pointer;
     transition: background 0.3s ease, box-shadow 0.3s ease;
   }
-  .btn-votar:hover {
-    background: #ddb929;
-    box-shadow: 0 8px 25px #ddb929cc;
-    cursor: pointer;
+  .btn-finalizar:hover {
+    background: #c63128;
+    box-shadow: 0 8px 25px #c6312888;
   }
 </style>
 </head>
 <body>
-  <h1>Votaciones Activas</h1>
+  <h1>Gestión de Votaciones</h1>
 
-  <div id="votacionesContainer">
-    <!-- Tarjetas generadas por JS -->
+  <form id="formAgregar">
+    <h2>Agregar nuevo evento de votación</h2>
+    <input type="text" id="tituloEvento" placeholder="Título del evento" required />
+    <textarea id="descEvento" rows="3" placeholder="Descripción del evento" required></textarea>
+    <button type="submit">Agregar Evento</button>
+  </form>
+
+  <div class="contenedor">
+    <h2>Eventos Activos</h2>
+    <div id="eventosActivos" class="grid">
+      <!-- Eventos activos aquí -->
+    </div>
   </div>
 
-  <script>
-    const votacionesSimuladas = [
-      { id: 1, titulo: "Elección del presidente", descripcion: "Vota para elegir al nuevo presidente del club." },
-      { id: 2, titulo: "Decidir nuevo horario", descripcion: "Escoge el horario más conveniente para las reuniones." },
-      { id: 3, titulo: "Aprobación del presupuesto", descripcion: "Confirma el presupuesto para el próximo año." }
-    ];
+  <div class="contenedor">
+    <h2>Eventos Finalizados</h2>
+    <div id="eventosFinalizados" class="grid">
+      <!-- Eventos finalizados aquí -->
+    </div>
+  </div>
 
-    const container = document.getElementById('votacionesContainer');
+<script>
+  // Arreglos para guardar eventos activos y finalizados
+  let eventosActivos = [];
+  let eventosFinalizados = [];
 
-    votacionesSimuladas.forEach(votacion => {
-      const card = document.createElement('div');
-      card.className = 'card-votacion';
+  const form = document.getElementById('formAgregar');
+  const eventosActivosDiv = document.getElementById('eventosActivos');
+  const eventosFinalizadosDiv = document.getElementById('eventosFinalizados');
 
-      const titulo = document.createElement('h2');
-      titulo.textContent = votacion.titulo;
+  // Función para crear tarjeta de evento
+  function crearTarjetaEvento(evento, finalizado = false) {
+    const card = document.createElement('div');
+    card.className = 'card-votacion';
 
-      const descripcion = document.createElement('p');
-      descripcion.textContent = votacion.descripcion;
+    const titulo = document.createElement('h3');
+    titulo.textContent = evento.titulo;
 
-      const btn = document.createElement('button');
-      btn.textContent = 'Votar';
-      btn.className = 'btn-votar';
-      btn.onclick = () => alert(`Has iniciado votación para: ${votacion.titulo}`);
+    const desc = document.createElement('p');
+    desc.textContent = evento.descripcion;
 
-      card.appendChild(titulo);
-      card.appendChild(descripcion);
-      card.appendChild(btn);
-      container.appendChild(card);
+    card.appendChild(titulo);
+    card.appendChild(desc);
+
+    if (!finalizado) {
+      const btnFinalizar = document.createElement('button');
+      btnFinalizar.textContent = 'Finalizar';
+      btnFinalizar.className = 'btn-finalizar';
+      btnFinalizar.onclick = () => {
+        // Mover evento a finalizados
+        eventosActivos = eventosActivos.filter(e => e.id !== evento.id);
+        eventosFinalizados.push(evento);
+        renderizarEventos();
+      };
+      card.appendChild(btnFinalizar);
+    }
+
+    return card;
+  }
+
+  // Función para renderizar eventos en pantalla
+  function renderizarEventos() {
+    eventosActivosDiv.innerHTML = '';
+    eventosFinalizadosDiv.innerHTML = '';
+
+    eventosActivos.forEach(evento => {
+      eventosActivosDiv.appendChild(crearTarjetaEvento(evento));
     });
-  </script>
+
+    eventosFinalizados.forEach(evento => {
+      eventosFinalizadosDiv.appendChild(crearTarjetaEvento(evento, true));
+    });
+  }
+
+  // Manejar envío del formulario
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const titulo = document.getElementById('tituloEvento').value.trim();
+    const descripcion = document.getElementById('descEvento').value.trim();
+
+    if (!titulo || !descripcion) return;
+
+    // Crear evento con id único
+    const nuevoEvento = {
+      id: Date.now(),
+      titulo,
+      descripcion
+    };
+
+    eventosActivos.push(nuevoEvento);
+
+    // Limpiar formulario
+    form.reset();
+
+    // Renderizar nuevamente
+    renderizarEventos();
+  });
+
+  // Render inicial (vacío)
+  renderizarEventos();
+</script>
+
 </body>
 </html>
