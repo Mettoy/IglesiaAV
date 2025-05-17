@@ -2,232 +2,305 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sistema de Votaciones</title>
-  <link rel="icon" href="ruta-del-logo.png" />
-
-  <!-- ----------  ESTILOS  ---------- -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Votaciones con Menú Plegable</title>
   <style>
-    body {
+    /* Reset básico */
+    * {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
       font-family: Arial, sans-serif;
-      margin: 0;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: #f5f6fa;
+      color: #333;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: #2c3e50;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.3s ease;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    /* Logo */
+    #logo {
+      width: 180px;
+      margin: 20px auto;
+      cursor: pointer;
+      transition: width 0.3s ease;
+    }
+
+    .sidebar.collapsed #logo {
+      width: 40px;
+      margin: 10px auto;
+    }
+
+    /* User info y menu */
+    .user-info {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      text-align: center;
+    }
+
+    #menuLinks {
+      flex-grow: 1;
+    }
+
+    /* Links */
+    .sidebar-link {
+      display: block;
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-link:hover {
+      background: #34495e;
+    }
+
+    /* Logout */
+    .logout {
+      padding: 12px 20px;
+      cursor: pointer;
+      background: #e74c3c;
+      text-align: center;
+      margin: 15px 10px;
+      border-radius: 5px;
+      user-select: none;
+    }
+
+    .logout:hover {
+      background: #c0392b;
+    }
+
+    /* Toggle botón */
+    .toggle-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin: 10px auto 20px;
+      user-select: none;
+      outline: none;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar.collapsed .toggle-btn {
+      transform: rotate(180deg);
+    }
+
+    /* Contenido principal */
+    main {
+      flex-grow: 1;
+      padding: 20px;
+    }
+
+    /* Botón votar */
+    #btnVotar {
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      border: none;
+      background: #3498db;
+      color: white;
+      border-radius: 5px;
+      transition: background 0.3s ease;
+    }
+
+    #btnVotar:hover {
+      background: #2980b9;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal.active {
       display: flex;
     }
-    .menu-lateral {
-      width: 200px;
-      background-color: #2c3e50;
-      padding: 1rem;
-      color: white;
-      height: 100vh;
-    }
-    .logo-menu {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-    }
-    main {
-      flex: 1;
-      padding: 1rem;
-      background-color: #ecf0f1;
-    }
-    .acciones button {
-      margin: 0.5rem;
-      padding: 0.6rem 1rem;
-      font-weight: bold;
-    }
-    #eventosGuardados { margin-top: 2rem; }
-    .evento {
-      background-color: white;
-      border: 1px solid #ccc;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-    }
-    .evento button { margin-right: 1rem; }
-    .modal {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      display: flex; justify-content: center; align-items: center;
-    }
-    .modal-contenido {
-      background-color: white;
-      padding: 2rem;
-      border-radius: 8px;
-      width: 400px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .oculto { display: none; }
-    input { margin: 0.3rem; padding: 0.4rem; }
-  </style>
 
-  <!-- Firebase SDK (compat para evitar bundlers) -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    .modal-content {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 15px;
+      font-weight: 600;
+      font-size: 1.3rem;
+      text-align: center;
+    }
+
+    .modal-content label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .modal-content input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    .modal-content input[readonly] {
+      background: #eee;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .modal-content button {
+      background: #27ae60;
+      border: none;
+      color: white;
+      padding: 10px;
+      width: 100%;
+      border-radius: 5px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .modal-content button:hover {
+      background: #1e8449;
+    }
+
+    /* Cerrar botón modal */
+    .close-btn {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      color: #888;
+      user-select: none;
+    }
+
+    .close-btn:hover {
+      color: #333;
+    }
+
+  </style>
 </head>
 <body>
 
-  <!-- ----------  MENÚ LATERAL  ---------- -->
-  <div class="menu-lateral">
-    <img src="ruta-del-logo.png" alt="Logo" class="logo-menu" />
+  <div class="sidebar" id="sidebar">
+    <button class="toggle-btn" id="toggleBtn">&#9776;</button>
+    <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" />
+    <div class="user-info" id="userInfo">Usuario</div>
+    <div id="menuLinks"></div>
+    <a href="miembros.html" class="sidebar-link">Miembros</a>
+    <a href="registrar.html" class="sidebar-link">Dar acceso</a>
+    <a href="diezmó.html" class="sidebar-link">Diezmos</a>
+    <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+    <a href="reportes.html" class="sidebar-link">Reportess</a>
+    <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+    <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
   </div>
 
-  <!-- ----------  CONTENIDO PRINCIPAL  ---------- -->
   <main>
-    <div class="acciones">
-      <button id="btnAgregarEvento">Agregar Evento</button>
-      <button id="btnAgregarCandidato">Agregar Candidato</button>
-    </div>
-
-    <section id="eventosGuardados"></section>
-
-    <!-- ----------  MODAL VOTACIÓN  ---------- -->
-    <div id="modalVotacion" class="modal oculto">
-      <div class="modal-contenido">
-        <span class="cerrar" onclick="cerrarModal()">&times;</span>
-        <h2>Ingresar votos</h2>
-        <div id="contenedorCandidatos"></div>
-        <button onclick="guardarVotacion()">Guardar</button>
-      </div>
-    </div>
+    <button id="btnVotar">Votar (0)</button>
   </main>
 
-  <!-- ----------  LÓGICA JS  ---------- -->
-  <script type="module">
-    /* ------------ Configuración Firebase ------------ */
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import {
-      getFirestore, collection, addDoc,
-      getDocs, doc, updateDoc
-    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+  <!-- Modal votos -->
+  <div class="modal" id="modalVotos">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModal">&times;</span>
+      <h2>Votar (0)</h2>
+      <label for="voto1">Votos 1</label>
+      <input type="number" id="voto1" min="0" value="0" />
+      <label for="voto2">Votos 2</label>
+      <input type="number" id="voto2" min="0" value="0" />
+      <label for="total">Total</label>
+      <input type="number" id="total" value="0" readonly />
+      <button id="guardarVotosBtn">Guardar</button>
+    </div>
+  </div>
 
-    const iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggleBtn');
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    function toggleForm() {
-    const app   = initializeApp(firebaseConfig);
-    const db    = getFirestore(app);
-    const colEv = collection(db, "eventos");
-
-    /* ---------------- Estado local ------------------ */
-    let candidatos   = ["Candidato 1", "Candidato 2"];
-    let eventoActual = null;
-
-    /* ---------------- Utilidades -------------------- */
-    const qs  = s => document.querySelector(s);
-    const qsa = s => document.querySelectorAll(s);
-
-    /* ------------- Carga inicial -------------------- */
-    cargarEventos();
-
-    /* ------------- Botones principales -------------- */
-    qs("#btnAgregarEvento").addEventListener("click", async () => {
-      const nombre = prompt("Nombre del evento:");
-      if (!nombre) return;
-      await addDoc(colEv, { nombre, finalizado: false, votos: [] });
-      cargarEventos();
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
     });
 
-    qs("#btnAgregarCandidato").addEventListener("click", () => {
-      const nuevo = prompt("Nombre del nuevo candidato:");
-      if (nuevo) {
-        candidatos.push(nuevo);
-        alert("Candidato agregado.");
-      }
+    function cerrarSesion() {
+      alert('Sesión cerrada'); // Aquí va tu lógica real
+    }
+
+    // Modal y votación
+    const btnVotar = document.getElementById('btnVotar');
+    const modalVotos = document.getElementById('modalVotos');
+    const closeModal = document.getElementById('closeModal');
+    const voto1 = document.getElementById('voto1');
+    const voto2 = document.getElementById('voto2');
+    const total = document.getElementById('total');
+    const guardarVotosBtn = document.getElementById('guardarVotosBtn');
+
+    // Función para actualizar total
+    function actualizarTotal() {
+      const val1 = parseInt(voto1.value) || 0;
+      const val2 = parseInt(voto2.value) || 0;
+      total.value = val1 + val2;
+      btnVotar.textContent = `Votar (${total.value})`;
+    }
+
+    voto1.addEventListener('input', actualizarTotal);
+    voto2.addEventListener('input', actualizarTotal);
+
+    btnVotar.addEventListener('click', () => {
+      // Reiniciamos los campos
+      voto1.value = 0;
+      voto2.value = 0;
+      total.value = 0;
+      modalVotos.querySelector('h2').textContent = `Votar (0)`;
+      modalVotos.classList.add('active');
     });
 
-    /* ------------- Renderizar eventos -------------- */
-    async function cargarEventos() {
-      const snap = await getDocs(colEv);
-      const eventos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const cont = qs("#eventosGuardados");
-      cont.innerHTML = "";
+    closeModal.addEventListener('click', () => {
+      modalVotos.classList.remove('active');
+    });
 
-      eventos.forEach(ev => {
-        const div = document.createElement("div");
-        div.className = "evento";
-        div.innerHTML = `
-          <h3>${ev.nombre}</h3>
-          <button ${ev.finalizado ? "disabled" : ""} onclick="abrirModal('${ev.id}')">Votar</button>
-          <button ${ev.finalizado ? "disabled" : ""} onclick="finalizarEvento('${ev.id}')">Finalizar</button>
-          ${ev.votos.length ? `<button onclick="verResultados('${ev.id}')">Ver resultados</button>` : ""}
-          ${ev.finalizado ? `<p style='color:red;'><strong>Votación cancelada</strong></p>` : ""}
-        `;
-        cont.appendChild(div);
-      });
-    }
-
-    /* ---------------- Modal votación ---------------- */
-    window.abrirModal = async id => {
-      eventoActual = id;
-      qs("#modalVotacion").classList.remove("oculto");
-      const cont = qs("#contenedorCandidatos");
-      cont.innerHTML = "";
-
-      candidatos.forEach(nombre => {
-        cont.insertAdjacentHTML("beforeend", `
-          <div>
-            <label><strong>${nombre}</strong></label><br/>
-            Votos 1: <input type="number" class="voto1" value="0"><br/>
-            Votos 2: <input type="number" class="voto2" value="0"><br/>
-            Total: <input type="number" class="total" readonly><hr/>
-          </div>
-        `);
-      });
-
-      actualizarTotales();
-      qsa(".voto1, .voto2").forEach(inp => inp.addEventListener("input", actualizarTotales));
-    };
-
-    window.cerrarModal = () => qs("#modalVotacion").classList.add("oculto");
-
-    function actualizarTotales() {
-      qsa("#contenedorCandidatos > div").forEach(div => {
-        const v1 = +div.querySelector(".voto1").value || 0;
-        const v2 = +div.querySelector(".voto2").value || 0;
-        div.querySelector(".total").value = v1 + v2;
-      });
-    }
-
-    /* -------------- Guardar votación --------------- */
-    window.guardarVotacion = async () => {
-      const votos = [];
-      qsa("#contenedorCandidatos > div").forEach((div, i) => {
-        const nombre = candidatos[i];
-        const v1 = +div.querySelector(".voto1").value || 0;
-        const v2 = +div.querySelector(".voto2").value || 0;
-        votos.push({ nombre, voto1: v1, voto2: v2, total: v1 + v2 });
-      });
-
-      await updateDoc(doc(db, "eventos", eventoActual), { votos });
-      cerrarModal();
-      cargarEventos();
-    };
-
-    /* ----------------- Finalizar ------------------- */
-    window.finalizarEvento = async id => {
-      await updateDoc(doc(db, "eventos", id), { finalizado: true });
-      cargarEventos();
-    };
-
-    /* -------------- Ver resultados ---------------- */
-    window.verResultados = async id => {
-      const snap = await getDocs(colEv);
-      const docSnap = snap.docs.find(d => d.id === id);
-      if (!docSnap) return;
-      const { nombre, votos } = docSnap.data();
-      let msg = `Resultados de ${nombre}:\n\n`;
-      votos.forEach(v => msg += `${v.nombre}: ${v.voto1} + ${v.voto2} = ${v.total}\n`);
-      alert(msg);
-    };
+    guardarVotosBtn.addEventListener('click', () => {
+      alert(`Votos guardados:\nVotos 1: ${voto1.value}\nVotos 2: ${voto2.value}\nTotal: ${total.value}`);
+      modalVotos.classList.remove('active');
+      btnVotar.textContent = `Votar (${total.value})`;
+    });
   </script>
 </body>
 </html>
