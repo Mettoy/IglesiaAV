@@ -18,25 +18,18 @@
       position: fixed;
       transition: all 0.3s ease;
     }
-    .sidebar .logo {
+    .sidebar img {
       width: 100%;
       padding: 20px;
-      text-align: center;
-    }
-    .sidebar .logo img {
-      width: 80%;
       border-radius: 10px;
     }
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
-    .sidebar ul li {
+    .sidebar a {
+      display: block;
       padding: 15px 20px;
-      cursor: pointer;
       color: white;
+      text-decoration: none;
     }
-    .sidebar ul li:hover {
+    .sidebar a:hover {
       background-color: #ffcc00;
       color: black;
     }
@@ -50,9 +43,6 @@
       font-weight: bold;
       border: none;
     }
-    .btn-add:hover {
-      background-color: #e0b800;
-    }
     .form-card {
       background: white;
       border-radius: 15px;
@@ -60,25 +50,9 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       margin-top: 20px;
     }
-    .nav-tabs .nav-link.active {
-      background-color: #001f3f;
-      color: white !important;
-      border-color: #001f3f #001f3f white;
-    }
-    .nav-tabs .nav-link {
-      color: #001f3f;
-    }
-    table {
-      background: white;
-      border-radius: 10px;
-      margin-top: 30px;
-    }
     th {
       background-color: #001f3f;
       color: white;
-    }
-    td {
-      vertical-align: middle;
     }
     .btn-action {
       background-color: #ffcc00;
@@ -90,76 +64,50 @@
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
- 
-   <div class="sidebar" id="sidebar">
-    <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
-    <div class="user-info" id="userInfo"></div>
-    <div id="menuLinks"></div>
-    <a href="miembros.html" class="sidebar-link">Miembros</a>
-    <a href="registrar.html" class="sidebar-link">Dar acceso</a>
-    <a href="diezmó.html" class="sidebar-link">Diezmos</a>
-    <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-    <a href="reportes.html" class="sidebar-link">Reportess</a>
-    <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+
+  <div class="sidebar" id="sidebar">
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo"/>
+    <a href="miembros.html">Miembros</a>
+    <a href="registrar.html">Dar acceso</a>
+    <a href="diezmó.html">Diezmos</a>
+    <a href="ofrendas.html">Ofrendas</a>
+    <a href="reportes.html">Reportess</a>
+    <a href="discipulado.html">Discipulado</a>
     <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
   </div>
 
-  <div class="content">
-    <h2>Estadísticas Gen
-  <!-- Content -->
   <div class="content">
     <div class="text-center">
       <button class="btn btn-add" onclick="toggleForm()">+ Agregar miembro</button>
     </div>
 
-    <!-- Formulario -->
+    <!-- Formulario restaurado -->
     <div class="form-card" id="formulario" style="display:none;">
-      <ul class="nav nav-tabs" id="tabForm" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#personales" type="button">Personales</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#familiares" type="button">Familiares</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#espirituales" type="button">Espirituales</button>
-        </li>
-      </ul>
-      <div class="tab-content pt-3">
-        <!-- PERSONALES -->
-        <div class="tab-pane fade show active" id="personales">
-          <input class="form-control mb-2" id="nombre" placeholder="Nombre completo"/>
-          <input class="form-control mb-2" id="codigo" placeholder="Código"/>
-          <input class="form-control mb-2" id="telefono" placeholder="Teléfono"/>
-          <input class="form-control mb-2" id="edad" type="number" placeholder="Edad"/>
-          <input class="form-control mb-2" id="cumple" type="date" placeholder="Cumpleaños"/>
-          <input class="form-control mb-2" id="direccion" placeholder="Dirección"/>
+      <h5>Datos del miembro</h5>
+      <form id="formMiembro">
+        <div class="mb-2">
+          <input class="form-control" id="nombre" placeholder="Nombre completo"/>
         </div>
-
-        <!-- FAMILIARES -->
-        <div class="tab-pane fade" id="familiares">
-          <select class="form-select mb-2" id="relacion">
-            <option>Conyugue</option>
-            <option>Papá</option>
-            <option>Mamá</option>
-            <option>Hermano/a</option>
-          </select>
-          <input class="form-control mb-2" id="nombreFamiliar" placeholder="Nombre del familiar"/>
+        <div class="mb-2">
+          <input class="form-control" id="codigo" placeholder="Código"/>
         </div>
-
-        <!-- ESPIRITUALES -->
-        <div class="tab-pane fade" id="espirituales">
-          <input class="form-control mb-2" id="conversion" placeholder="Conversión"/>
-          <input class="form-control mb-2" id="bautismo" placeholder="Bautismo en Agua"/>
-          <input class="form-control mb-2" id="bautismoEsp" placeholder="Bautismo Espíritu Santo"/>
-          <input class="form-control mb-2" id="fechaBautismoEsp" type="date" placeholder="Fecha BA. Esp."/>
-          <input class="form-control mb-2" id="ubicacionBautismo" placeholder="Ubicación BA. Esp."/>
+        <div class="mb-2">
+          <input class="form-control" id="telefono" placeholder="Teléfono"/>
         </div>
-      </div>
-      <div class="text-center mt-3">
-        <button class="btn btn-add" onclick="guardarMiembro()">Guardar miembro</button>
-      </div>
+        <div class="mb-2">
+          <input class="form-control" id="edad" type="number" placeholder="Edad"/>
+        </div>
+        <div class="mb-2">
+          <input class="form-control" id="direccion" placeholder="Dirección"/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Foto del miembro</label>
+          <input type="file" class="form-control" id="foto" accept="image/*"/>
+        </div>
+        <div class="text-center">
+          <button type="button" class="btn btn-add" onclick="guardarMiembro()">Guardar miembro</button>
+        </div>
+      </form>
     </div>
 
     <!-- Tabla -->
@@ -171,6 +119,7 @@
           <th>Edad</th>
           <th>Teléfono</th>
           <th>Dirección</th>
+          <th>Foto</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -180,49 +129,67 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
   <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
-  authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
-  projectId: "iglesia-adoracion-viva-182e6",
-  storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
-  messagingSenderId: "152824399391",
-  appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
-  measurementId: "G-GXV53CPPBT"
-};
+      apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
+      authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
+      projectId: "iglesia-adoracion-viva-182e6",
+      storageBucket: "iglesia-adoracion-viva-182e6.appspot.com",
+      messagingSenderId: "152824399391",
+      appId: "1:152824399391:web:a4fc0937f35935b9b5f72a"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    const supabase = supabase.createClient(
+      'https://azywyqozwwbfctxeokug.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk'
+    );
+
     function toggleForm() {
-      const f = document.getElementById("formulario");
-      f.style.display = f.style.display === "none" ? "block" : "none";
+      const form = document.getElementById("formulario");
+      form.style.display = form.style.display === "none" ? "block" : "none";
     }
 
-    function guardarMiembro() {
-      const miembro = {
-        nombre: document.getElementById("nombre").value,
-        codigo: document.getElementById("codigo").value,
-        telefono: document.getElementById("telefono").value,
-        edad: document.getElementById("edad").value,
-        cumple: document.getElementById("cumple").value,
-        direccion: document.getElementById("direccion").value,
-        relacion: document.getElementById("relacion").value,
-        nombreFamiliar: document.getElementById("nombreFamiliar").value,
-        conversion: document.getElementById("conversion").value,
-        bautismo: document.getElementById("bautismo").value,
-        bautismoEsp: document.getElementById("bautismoEsp").value,
-        fechaBautismoEsp: document.getElementById("fechaBautismoEsp").value,
-        ubicacionBautismo: document.getElementById("ubicacionBautismo").value,
-        baja: false
-      };
+    async function guardarMiembro() {
+      const nombre = document.getElementById("nombre").value;
+      const codigo = document.getElementById("codigo").value;
+      const telefono = document.getElementById("telefono").value;
+      const edad = document.getElementById("edad").value;
+      const direccion = document.getElementById("direccion").value;
+      const file = document.getElementById("foto").files[0];
+      let fotoURL = "";
 
-      db.collection("miembros").add(miembro).then(() => {
-        mostrarMiembros();
-        alert("Miembro guardado");
+      if (file) {
+        const fileName = `${Date.now()}_${file.name}`;
+        const { data, error } = await supabase.storage
+          .from("fotos")
+          .upload(fileName, file);
+
+        if (error) {
+          alert("Error al subir la imagen");
+          return;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from("fotos")
+          .getPublicUrl(fileName);
+
+        fotoURL = urlData.publicUrl;
+      }
+
+      db.collection("miembros").add({
+        nombre, codigo, telefono, edad, direccion, fotoURL, baja: false
+      }).then(() => {
+        alert("Miembro guardado con éxito");
+        document.getElementById("formMiembro").reset();
         document.getElementById("formulario").style.display = "none";
+        mostrarMiembros();
       });
     }
 
@@ -239,8 +206,8 @@
               <td>${m.edad}</td>
               <td>${m.telefono}</td>
               <td>${m.direccion}</td>
+              <td><img src="${m.fotoURL || ''}" width="50" height="50" style="border-radius:5px"/></td>
               <td>
-                <button class="btn-action" onclick="editarMiembro('${doc.id}')">Editar</button>
                 <button class="btn-action" onclick="darDeBaja('${doc.id}')">Baja</button>
               </td>
             </tr>
@@ -254,11 +221,7 @@
       db.collection("miembros").doc(id).update({ baja: true });
     }
 
-    function editarMiembro(id) {
-      alert("Función editar aún no implementada");
-    }
-
-    // Mostrar al cargar
+    // Inicialización
     mostrarMiembros();
   </script>
 </body>
