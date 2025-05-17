@@ -2,297 +2,144 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Sistema de Votaciones</title>
- <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" />
-<style>
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #121212;
-    color: #f7c948;
-  }
+  <title>ADORACION VIVA-Votaciones</title>
+  <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121526;
+      color: #f7c948;
+      margin: 0;
+      padding: 20px;
+    }
 
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 220px;
-    background-color: #1a1a1a;
-    padding: 20px;
-    box-shadow: 2px 0 10px #000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #f7c948;
+      text-shadow: 1px 1px 5px #d6a92c;
+    }
 
-  .sidebar img {
-    width: 100px;
-    height: auto;
-    border-radius: 50%;
-    margin-bottom: 30px;
-    border: 2px solid #f7c948;
-  }
+    .form-container {
+      max-width: 700px;
+      margin: 0 auto 40px auto;
+      background: #1e204a;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 10px #d6a92c44;
+    }
 
-  .sidebar button {
-    width: 100%;
-    padding: 10px;
-    background-color: #333;
-    color: #f7c948;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s;
-  }
+    label {
+      display: block;
+      margin: 12px 0 5px;
+      font-weight: 600;
+    }
 
-  .sidebar button:hover {
-    background-color: #f7c948;
-    color: #1a1a1a;
-  }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
 
-  main {
-    margin-left: 240px;
-    padding: 20px;
-  }
+    #candidatosContainer {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
 
-  .eventos-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 20px;
-  }
+    #candidatosContainer div {
+      background: #2c2f6d;
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: #f7c948;
+      font-weight: 600;
+      user-select: none;
+    }
 
-  .evento-card {
-    background-color: #2b2b2b;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 0 10px #00000088;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
+    .buttons-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+      justify-content: flex-end;
+    }
 
-  .evento-card h3 {
-    margin-bottom: 10px;
-    color: #ffffff;
-  }
+    button {
+      padding: 12px 24px;
+      background-color: #f7c948;
+      color: #121526;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
 
-  .evento-card button {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f7c948;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-
-  .evento-card button:hover {
-    background-color: #ffe57f;
-  }
-
-  .modal input {
-    background-color: #ffffff;
-    border: none;
-    border-radius: 6px;
-    padding: 8px;
-    font-size: 16px;
-    width: 100%;
-  }
-
-  h2 {
-    font-size: 28px;
-    margin-bottom: 20px;
-    color: #f7c948;
-    text-align: center;
-  }
-
-  form {
-    background-color: #1f1f1f;
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 600px;
-    margin: auto;
-    box-shadow: 0 0 10px #00000088;
-  }
-
-  form label {
-    display: block;
-    margin: 10px 0 5px;
-    color: #fff;
-  }
-
-  form input {
-    padding: 10px;
-    border-radius: 6px;
-    border: none;
-    width: 100%;
-    font-size: 16px;
-  }
-
-  form button {
-    margin-top: 15px;
-    padding: 10px 15px;
-    background-color: #f7c948;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-
-  form button:hover {
-    background-color: #ffe57f;
-  }
-</style>
-
+    button:hover {
+      background-color: #d6a92c;
+    }
+  </style>
 </head>
 <body>
-  <div class="sidebar">
-    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" />
-  </div>
-  <div class="main">
-    <h1>Sistema de Votaciones</h1>
 
-    <div class="form-container">
-      <label for="nombreEvento">Nombre del Evento:</label>
-      <input type="text" id="nombreEvento" placeholder="Ejemplo: Elección de líder" />
+  <h1>Sistema de Votaciones</h1>
 
-      <label for="inputCandidato">Agregar Candidato:</label>
-      <input type="text" id="inputCandidato" placeholder="Nombre del candidato" />
+  <div class="form-container">
+    <label for="nombreEvento">Nombre del Evento</label>
+    <input type="text" id="nombreEvento" placeholder="Ejemplo: Elección de líder" />
 
-      <div id="candidatosContainer" style="margin-top: 10px;"></div>
+    <label>Candidatos (escriba el nombre y presione Enter para agregar)</label>
+    <div id="candidatosContainer"></div>
+    <input type="text" id="inputCandidato" placeholder="Nombre del candidato" />
+
+    <div class="buttons-row">
+      <button id="btnAgregarCandidato">Agregar Candidato</button>
       <button id="btnAgregarEvento">Guardar Evento</button>
     </div>
-
-    <h2>Eventos Activos</h2>
-    <div id="eventosActivos"></div>
-
-    <h2>Votaciones Guardadas</h2>
-    <div id="resultadosFinales"></div>
-    </div>
-  </section>
-
-  <!-- Modal de votación -->
-  <div id="modalVotacion" class="modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #00000088; justify-content: center; align-items: center;">
-    <div style="background: #1e204a; padding: 20px; border-radius: 12px; max-width: 400px; width: 100%; box-shadow: 0 0 10px #f7c948;">
-      <h3 id="tituloModalVotacion" style="color:#f7c948; text-align:center;"></h3>
-      <div id="votacionCampos"></div>
-      <div style="margin-top: 15px; font-weight: bold; color: #f7c948; text-align:center;">
-        Total Votos: <span id="sumaTotal">0</span>
-      </div>
-      <div style="margin-top: 20px; display: flex; justify-content: space-between;">
-        <button onclick="guardarVotacion()" style="background-color: #4caf50;">Guardar</button>
-        <button onclick="cerrarModal()" style="background-color: #f44336;">Cancelar</button>
-      </div>
-    </div>
   </div>
 
-  <!-- Resultados guardados -->
-  <section>
-    <h2 style="text-align:center; color:#f7c948; margin-top: 40px;">Votaciones Guardadas</h2>
-    <div class="eventos-container" id="votacionesGuardadas"></div>
-  </section>
-
   <script>
-    let modalEventoActual = null;
+    const nombreEventoInput = document.getElementById('nombreEvento');
+    const inputCandidato = document.getElementById('inputCandidato');
+    const candidatosContainer = document.getElementById('candidatosContainer');
+    const btnAgregarCandidato = document.getElementById('btnAgregarCandidato');
+    const btnAgregarEvento = document.getElementById('btnAgregarEvento');
 
-    function abrirModalVotacion(eventoId) {
-      const evento = eventos.find(e => e.id === eventoId);
-      if (!evento) return;
-      modalEventoActual = evento;
+    let candidatos = [];
 
-      document.getElementById('tituloModalVotacion').textContent = `Votación: ${evento.nombre}`;
-      const contenedor = document.getElementById('votacionCampos');
-      contenedor.innerHTML = '';
-      document.getElementById('sumaTotal').textContent = '0';
-
-      evento.candidatos.forEach((candidato, idx) => {
-        const campo = document.createElement('div');
-        campo.style.marginBottom = '10px';
-
-        const label = document.createElement('label');
-        label.textContent = candidato.nombre;
-        label.style.color = '#f7c948';
-        label.style.fontWeight = '600';
-
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.min = '0';
-        input.value = '0';
-        input.dataset.index = idx;
-        input.oninput = calcularTotalVotos;
-        input.style.width = '100%';
-        input.style.padding = '8px';
-        input.style.borderRadius = '6px';
-        input.style.border = 'none';
-
-        campo.appendChild(label);
-        campo.appendChild(input);
-        contenedor.appendChild(campo);
-      });
-
-      document.getElementById('modalVotacion').style.display = 'flex';
-    }
-
-    function cerrarModal() {
-      document.getElementById('modalVotacion').style.display = 'none';
-      modalEventoActual = null;
-    }
-
-    function calcularTotalVotos() {
-      const inputs = document.querySelectorAll('#votacionCampos input');
-      let suma = 0;
-      inputs.forEach(input => {
-        suma += parseInt(input.value) || 0;
-      });
-      document.getElementById('sumaTotal').textContent = suma;
-    }
-
-    function guardarVotacion() {
-      const inputs = document.querySelectorAll('#votacionCampos input');
-      inputs.forEach(input => {
-        const idx = input.dataset.index;
-        const votos = parseInt(input.value) || 0;
-        modalEventoActual.candidatos[idx].votos += votos;
-      });
-      modalEventoActual.activo = false;
-      modalEventoActual.finalizado = true;
-
-      cerrarModal();
-      renderEventos();
-      renderVotacionesGuardadas();
-    }
-
-    function renderVotacionesGuardadas() {
-      const contenedor = document.getElementById('votacionesGuardadas');
-      contenedor.innerHTML = '';
-
-      const finalizados = eventos.filter(e => e.finalizado);
-      finalizados.forEach(evento => {
-        const card = document.createElement('div');
-        card.className = 'evento-card';
-
-        const titulo = document.createElement('h3');
-        titulo.textContent = evento.nombre;
-        card.appendChild(titulo);
-
-        const btnVer = document.createElement('button');
-        btnVer.textContent = 'Ver Resultados';
-        btnVer.onclick = () => verResultados(evento);
-        card.appendChild(btnVer);
-
-        contenedor.appendChild(card);
+    function mostrarCandidatos() {
+      candidatosContainer.innerHTML = '';
+      candidatos.forEach(candidato => {
+        const div = document.createElement('div');
+        div.textContent = candidato;
+        candidatosContainer.appendChild(div);
       });
     }
 
-    function verResultados(evento) {
-      const detalle = evento.candidatos.map(c => `${c.nombre}: ${c.votos} votos`).join('\n');
-      alert(`Resultados de ${evento.nombre}:\n\n${detalle}`);
-    }
+    // Agregar candidato con botón
+    btnAgregarCandidato.addEventListener('click', () => {
+      const nombre = inputCandidato.value.trim();
+      if (nombre && !candidatos.includes(nombre)) {
+        candidatos.push(nombre);
+        inputCandidato.value = '';
+        mostrarCandidatos();
+      }
+    });
 
-    renderVotacionesGuardadas();
+    // También agregar candidato al presionar Enter en el input
+    inputCandidato.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        btnAgregarCandidato.click();
+      }
+    });
+
+    // Aquí puedes agregar la lógica para guardar evento con btnAgregarEvento...
   </script>
+
 </body>
 </html>
