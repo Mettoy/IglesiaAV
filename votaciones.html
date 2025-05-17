@@ -12,14 +12,12 @@
       margin: 0;
       padding: 20px;
     }
-
     h1 {
       text-align: center;
       margin-bottom: 30px;
       color: #f7c948;
       text-shadow: 1px 1px 5px #d6a92c;
     }
-
     .form-container {
       max-width: 700px;
       margin: 0 auto 40px auto;
@@ -28,14 +26,12 @@
       padding: 20px;
       box-shadow: 0 0 10px #d6a92c44;
     }
-
     label {
       display: block;
       margin: 12px 0 5px;
       font-weight: 600;
     }
-
-    input[type="text"] {
+    input[type="text"], input[type="number"] {
       width: 100%;
       padding: 10px;
       border-radius: 6px;
@@ -43,7 +39,6 @@
       font-size: 16px;
       box-sizing: border-box;
     }
-
     #candidatosContainer {
       margin-top: 10px;
       margin-bottom: 10px;
@@ -51,7 +46,6 @@
       flex-wrap: wrap;
       gap: 8px;
     }
-
     #candidatosContainer div {
       background: #2c2f6d;
       border-radius: 6px;
@@ -60,14 +54,12 @@
       font-weight: 600;
       user-select: none;
     }
-
     .buttons-row {
       display: flex;
       gap: 12px;
       margin-top: 15px;
       justify-content: flex-end;
     }
-
     button {
       padding: 12px 24px;
       background-color: #f7c948;
@@ -78,9 +70,71 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
-
     button:hover {
       background-color: #d6a92c;
+    }
+
+    /* Modal general */
+    .modal-bg {
+      position: fixed;
+      top: 0; left: 0; right:0; bottom:0;
+      background-color: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    .modal-content {
+      background: #1e204a;
+      border-radius: 10px;
+      padding: 20px;
+      width: 400px;
+      max-width: 90%;
+      box-shadow: 0 0 15px #d6a92c99;
+      color: #f7c948;
+    }
+    .modal-header {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    /* Votacion modal */
+    .candidato-voto {
+      background: #2c2f6d;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+    }
+    .candidato-voto > div {
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .votos-inputs {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .votos-inputs input {
+      width: 60px;
+      padding: 6px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      text-align: center;
+      background: #121526;
+      color: #f7c948;
+      font-weight: 700;
+    }
+    .votos-inputs input[readonly] {
+      background: #333866;
+      cursor: default;
     }
   </style>
 </head>
@@ -98,48 +152,178 @@
 
     <div class="buttons-row">
       <button id="btnAgregarCandidato">Agregar Candidato</button>
-      <button id="btnAgregarEvento">Guardar Evento</button>
+      <button id="btnGuardarEvento">Guardar Evento</button>
     </div>
   </div>
 
-  <script>
-    const nombreEventoInput = document.getElementById('nombreEvento');
-    const inputCandidato = document.getElementById('inputCandidato');
-    const candidatosContainer = document.getElementById('candidatosContainer');
-    const btnAgregarCandidato = document.getElementById('btnAgregarCandidato');
-    const btnAgregarEvento = document.getElementById('btnAgregarEvento');
+  <!-- Modal principal (Votar o Finalizar) -->
+  <div class="modal-bg" id="modalEvento">
+    <div class="modal-content" id="modalEventoContent">
+      <div class="modal-header" id="modalEventoTitulo"></div>
+      <div class="modal-buttons">
+        <button id="btnVotar">Votar</button>
+        <button id="btnFinalizar">Finalizar</button>
+      </div>
+    </div>
+  </div>
 
-    let candidatos = [];
+  <!-- Modal votacion -->
+  <div class="modal-bg" id="modalVotacion">
+    <div class="modal-content" id="modalVotacionContent">
+      <div class="modal-header">Votación: <span id="tituloVotacion"></span></div>
+      <div id="votosCandidatos"></div>
+      <div style="text-align:center;">
+        <button id="btnCerrarVotacion" style="margin-top: 15px;">Cerrar</button>
+      </div>
+    </div>
+  </div>
 
-    function mostrarCandidatos() {
-      candidatosContainer.innerHTML = '';
-      candidatos.forEach(candidato => {
-        const div = document.createElement('div');
-        div.textContent = candidato;
-        candidatosContainer.appendChild(div);
-      });
+  <!-- Modal Finalizado -->
+  <div class="modal-bg" id="modalFinalizado">
+    <div class="modal-content">
+      <div class="modal-header">Votación cancelada</div>
+      <div style="text-align:center;">
+        <button id="btnCerrarFinalizado" style="margin-top: 15px;">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const nombreEventoInput = document.getElementById('nombreEvento');
+  const inputCandidato = document.getElementById('inputCandidato');
+  const candidatosContainer = document.getElementById('candidatosContainer');
+  const btnAgregarCandidato = document.getElementById('btnAgregarCandidato');
+  const btnGuardarEvento = document.getElementById('btnGuardarEvento');
+
+  const modalEvento = document.getElementById('modalEvento');
+  const modalEventoTitulo = document.getElementById('modalEventoTitulo');
+  const btnVotar = document.getElementById('btnVotar');
+  const btnFinalizar = document.getElementById('btnFinalizar');
+
+  const modalVotacion = document.getElementById('modalVotacion');
+  const tituloVotacion = document.getElementById('tituloVotacion');
+  const votosCandidatos = document.getElementById('votosCandidatos');
+  const btnCerrarVotacion = document.getElementById('btnCerrarVotacion');
+
+  const modalFinalizado = document.getElementById('modalFinalizado');
+  const btnCerrarFinalizado = document.getElementById('btnCerrarFinalizado');
+
+  let candidatos = [];
+
+  function mostrarCandidatos() {
+    candidatosContainer.innerHTML = '';
+    candidatos.forEach(candidato => {
+      const div = document.createElement('div');
+      div.textContent = candidato;
+      candidatosContainer.appendChild(div);
+    });
+  }
+
+  btnAgregarCandidato.addEventListener('click', () => {
+    const nombre = inputCandidato.value.trim();
+    if (nombre && !candidatos.includes(nombre)) {
+      candidatos.push(nombre);
+      inputCandidato.value = '';
+      mostrarCandidatos();
     }
+  });
 
-    // Agregar candidato con botón
-    btnAgregarCandidato.addEventListener('click', () => {
-      const nombre = inputCandidato.value.trim();
-      if (nombre && !candidatos.includes(nombre)) {
-        candidatos.push(nombre);
-        inputCandidato.value = '';
-        mostrarCandidatos();
+  inputCandidato.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      btnAgregarCandidato.click();
+    }
+  });
+
+  btnGuardarEvento.addEventListener('click', () => {
+    const nombreEvento = nombreEventoInput.value.trim();
+    if (!nombreEvento) {
+      alert('Por favor, ingresa un nombre para el evento.');
+      return;
+    }
+    if (candidatos.length === 0) {
+      alert('Agrega al menos un candidato.');
+      return;
+    }
+    modalEventoTitulo.textContent = nombreEvento;
+    modalEvento.style.display = 'flex';
+  });
+
+  btnFinalizar.addEventListener('click', () => {
+    modalEvento.style.display = 'none';
+    modalFinalizado.style.display = 'flex';
+  });
+
+  btnCerrarFinalizado.addEventListener('click', () => {
+    modalFinalizado.style.display = 'none';
+  });
+
+  btnVotar.addEventListener('click', () => {
+    modalEvento.style.display = 'none';
+    tituloVotacion.textContent = nombreEventoInput.value.trim();
+    votosCandidatos.innerHTML = '';
+    
+    candidatos.forEach((candidato, idx) => {
+      const div = document.createElement('div');
+      div.className = 'candidato-voto';
+
+      const nombreDiv = document.createElement('div');
+      nombreDiv.textContent = candidato;
+      div.appendChild(nombreDiv);
+
+      // Inputs para votos
+      const votosDiv = document.createElement('div');
+      votosDiv.className = 'votos-inputs';
+
+      const input1 = document.createElement('input');
+      input1.type = 'number';
+      input1.min = 0;
+      input1.value = 0;
+
+      const input2 = document.createElement('input');
+      input2.type = 'number';
+      input2.min = 0;
+      input2.value = 0;
+
+      const inputSuma = document.createElement('input');
+      inputSuma.type = 'number';
+      inputSuma.value = 0;
+      inputSuma.readOnly = true;
+
+      // Suma automática
+      function actualizarSuma() {
+        const suma = Number(input1.value) + Number(input2.value);
+        inputSuma.value = suma;
       }
+
+      input1.addEventListener('input', actualizarSuma);
+      input2.addEventListener('input', actualizarSuma);
+
+      votosDiv.appendChild(input1);
+      votosDiv.appendChild(input2);
+      votosDiv.appendChild(inputSuma);
+
+      div.appendChild(votosDiv);
+
+      votosCandidatos.appendChild(div);
     });
 
-    // También agregar candidato al presionar Enter en el input
-    inputCandidato.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        btnAgregarCandidato.click();
+    modalVotacion.style.display = 'flex';
+  });
+
+  btnCerrarVotacion.addEventListener('click', () => {
+    modalVotacion.style.display = 'none';
+  });
+
+  // Para cerrar modales si haces click fuera del contenido
+  [modalEvento, modalVotacion, modalFinalizado].forEach(modal => {
+    modal.addEventListener('click', e => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
       }
     });
+  });
 
-    // Aquí puedes agregar la lógica para guardar evento con btnAgregarEvento...
-  </script>
-
+</script>
 </body>
 </html>
