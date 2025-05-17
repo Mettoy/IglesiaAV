@@ -3,259 +3,216 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestión de Miembros</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+  <title>Sistema de Votaciones</title>
+  <link rel="icon" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" />
   <style>
     body {
-      background-color: #f5f6fa;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: Arial, sans-serif;
+      display: flex;
+      margin: 0;
     }
-    .sidebar {
-      background-color: #001f3f;
-      color: white;
-      width: 250px;
-      min-height: 100vh;
-      position: fixed;
-      transition: all 0.3s ease;
-    }
-    .sidebar .logo {
-      width: 100%;
+
+    aside {
+      width: 220px;
+      background-color: #333;
+      color: #fff;
       padding: 20px;
+      height: 100vh;
+    }
+
+    aside img {
+      width: 100%;
+      margin-bottom: 20px;
+      border-radius: 10px;
+    }
+
+    aside button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+
+    th, td {
+      padding: 10px;
       text-align: center;
     }
-    .sidebar .logo img {
-      width: 80%;
-      border-radius: 10px;
-    }
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
-    .sidebar ul li {
-      padding: 15px 20px;
-      cursor: pointer;
-      color: white;
-    }
-    .sidebar ul li:hover {
-      background-color: #ffcc00;
-      color: black;
-    }
-    .content {
-      margin-left: 250px;
+
+    .modal, .voting-modal {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 30%;
+      width: 40%;
+      background-color: white;
+      border: 1px solid #ccc;
       padding: 20px;
+      z-index: 10;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
-    .btn-add {
-      background-color: #ffcc00;
-      color: black;
-      font-weight: bold;
-      border: none;
+
+    .modal input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 5px;
     }
-    .btn-add:hover {
-      background-color: #e0b800;
+
+    .horizontal-fields {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
     }
-    .form-card {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-top: 20px;
+
+    .horizontal-fields input {
+      flex: 1;
+      padding: 5px;
     }
-    .nav-tabs .nav-link.active {
-      background-color: #001f3f;
-      color: white !important;
-      border-color: #001f3f #001f3f white;
-    }
-    .nav-tabs .nav-link {
-      color: #001f3f;
-    }
-    table {
-      background: white;
-      border-radius: 10px;
-      margin-top: 30px;
-    }
-    th {
-      background-color: #001f3f;
-      color: white;
-    }
-    td {
-      vertical-align: middle;
-    }
-    .btn-action {
-      background-color: #ffcc00;
-      border: none;
-      color: black;
-      padding: 5px 10px;
-      margin-right: 5px;
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 5;
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo"/>
-    </div>
-    <ul>
-      <li>Miembros</li>
-      <li>Diezmos</li>
-      <li>Ofrendas</li>
-    </ul>
-  </div>
+  <aside>
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" />
+    <button onclick="agregarEvento()">Agregar Evento</button>
+    <button onclick="agregarCandidato()">Agregar Candidato</button>
+  </aside>
 
-  <!-- Content -->
-  <div class="content">
-    <div class="text-center">
-      <button class="btn btn-add" onclick="toggleForm()">+ Agregar miembro</button>
-    </div>
-
-    <!-- Formulario -->
-    <div class="form-card" id="formulario" style="display:none;">
-      <ul class="nav nav-tabs" id="tabForm" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#personales" type="button">Personales</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#familiares" type="button">Familiares</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#espirituales" type="button">Espirituales</button>
-        </li>
-      </ul>
-      <div class="tab-content pt-3">
-        <!-- PERSONALES -->
-        <div class="tab-pane fade show active" id="personales">
-          <input class="form-control mb-2" id="nombre" placeholder="Nombre completo"/>
-          <input class="form-control mb-2" id="codigo" placeholder="Código"/>
-          <input class="form-control mb-2" id="telefono" placeholder="Teléfono"/>
-          <input class="form-control mb-2" id="edad" type="number" placeholder="Edad"/>
-          <input class="form-control mb-2" id="cumple" type="date" placeholder="Cumpleaños"/>
-          <input class="form-control mb-2" id="direccion" placeholder="Dirección"/>
-        </div>
-
-        <!-- FAMILIARES -->
-        <div class="tab-pane fade" id="familiares">
-          <select class="form-select mb-2" id="relacion">
-            <option>Conyugue</option>
-            <option>Papá</option>
-            <option>Mamá</option>
-            <option>Hermano/a</option>
-          </select>
-          <input class="form-control mb-2" id="nombreFamiliar" placeholder="Nombre del familiar"/>
-        </div>
-
-        <!-- ESPIRITUALES -->
-        <div class="tab-pane fade" id="espirituales">
-          <input class="form-control mb-2" id="conversion" placeholder="Conversión"/>
-          <input class="form-control mb-2" id="bautismo" placeholder="Bautismo en Agua"/>
-          <input class="form-control mb-2" id="bautismoEsp" placeholder="Bautismo Espíritu Santo"/>
-          <input class="form-control mb-2" id="fechaBautismoEsp" type="date" placeholder="Fecha BA. Esp."/>
-          <input class="form-control mb-2" id="ubicacionBautismo" placeholder="Ubicación BA. Esp."/>
-        </div>
-      </div>
-      <div class="text-center mt-3">
-        <button class="btn btn-add" onclick="guardarMiembro()">Guardar miembro</button>
-      </div>
-    </div>
-
-    <!-- Tabla -->
-    <table class="table table-bordered table-striped mt-4">
+  <main>
+    <h1>Eventos de Votación</h1>
+    <table id="tablaVotaciones">
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Código</th>
-          <th>Edad</th>
-          <th>Teléfono</th>
-          <th>Dirección</th>
-          <th>Acciones</th>
+          <th>Nombre del Evento</th>
+          <th>Acción</th>
         </tr>
       </thead>
-      <tbody id="tablaMiembros"></tbody>
+      <tbody>
+        <!-- Se llenará dinámicamente -->
+      </tbody>
     </table>
-  </div>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <div class="modal" id="modalEvento">
+      <h3>Nombre del Evento</h3>
+      <input type="text" id="nombreEvento" />
+      <button onclick="guardarEvento()">Guardar</button>
+    </div>
+
+    <div class="modal" id="modalOpciones">
+      <h3 id="tituloActividad"></h3>
+      <button onclick="abrirVotacion()">Votar</button>
+      <button onclick="finalizarVotacion()">Finalizar</button>
+    </div>
+
+    <div class="voting-modal" id="modalVotacion">
+      <h3>Votación</h3>
+      <div class="horizontal-fields">
+        <input type="text" placeholder="Nombre del Candidato" id="nombreCandidato" />
+        <input type="number" placeholder="Votos 1" id="votos1" oninput="sumarVotos()" />
+        <input type="number" placeholder="Votos 2" id="votos2" oninput="sumarVotos()" />
+        <input type="number" placeholder="Total" id="votosTotales" readonly />
+      </div>
+      <button onclick="cerrarModal('modalVotacion')">Cerrar</button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="cerrarTodosLosModales()"></div>
+  </main>
+
   <script>
-    const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    function toggleForm() {
-      const f = document.getElementById("formulario");
-      f.style.display = f.style.display === "none" ? "block" : "none";
+    function mostrarModal(id) {
+      document.getElementById(id).style.display = "block";
+      document.getElementById("overlay").style.display = "block";
     }
 
-    function guardarMiembro() {
-      const miembro = {
-        nombre: document.getElementById("nombre").value,
-        codigo: document.getElementById("codigo").value,
-        telefono: document.getElementById("telefono").value,
-        edad: document.getElementById("edad").value,
-        cumple: document.getElementById("cumple").value,
-        direccion: document.getElementById("direccion").value,
-        relacion: document.getElementById("relacion").value,
-        nombreFamiliar: document.getElementById("nombreFamiliar").value,
-        conversion: document.getElementById("conversion").value,
-        bautismo: document.getElementById("bautismo").value,
-        bautismoEsp: document.getElementById("bautismoEsp").value,
-        fechaBautismoEsp: document.getElementById("fechaBautismoEsp").value,
-        ubicacionBautismo: document.getElementById("ubicacionBautismo").value,
-        baja: false
-      };
+    function cerrarModal(id) {
+      document.getElementById(id).style.display = "none";
+      document.getElementById("overlay").style.display = "none";
+    }
 
-      db.collection("miembros").add(miembro).then(() => {
-        mostrarMiembros();
-        alert("Miembro guardado");
-        document.getElementById("formulario").style.display = "none";
+    function cerrarTodosLosModales() {
+      ['modalEvento', 'modalOpciones', 'modalVotacion'].forEach(id => {
+        document.getElementById(id).style.display = "none";
       });
+      document.getElementById("overlay").style.display = "none";
     }
 
-    function mostrarMiembros() {
-      const tabla = document.getElementById("tablaMiembros");
-      tabla.innerHTML = "";
-      db.collection("miembros").where("baja", "==", false).onSnapshot(snapshot => {
-        snapshot.forEach(doc => {
-          const m = doc.data();
-          const fila = `
-            <tr>
-              <td>${m.nombre}</td>
-              <td>${m.codigo}</td>
-              <td>${m.edad}</td>
-              <td>${m.telefono}</td>
-              <td>${m.direccion}</td>
-              <td>
-                <button class="btn-action" onclick="editarMiembro('${doc.id}')">Editar</button>
-                <button class="btn-action" onclick="darDeBaja('${doc.id}')">Baja</button>
-              </td>
-            </tr>
-          `;
-          tabla.innerHTML += fila;
-        });
-      });
+    function agregarEvento() {
+      mostrarModal("modalEvento");
     }
 
-    function darDeBaja(id) {
-      db.collection("miembros").doc(id).update({ baja: true });
+    function guardarEvento() {
+      const nombre = document.getElementById("nombreEvento").value;
+      if (!nombre) return;
+
+      const tabla = document.getElementById("tablaVotaciones").querySelector("tbody");
+      const fila = document.createElement("tr");
+      fila.innerHTML = `
+        <td>${nombre}</td>
+        <td><button onclick="mostrarOpciones('${nombre}')">Guardar</button></td>
+      `;
+      tabla.appendChild(fila);
+      cerrarModal("modalEvento");
     }
 
-    function editarMiembro(id) {
-      alert("Función editar aún no implementada");
+    function mostrarOpciones(nombre) {
+      document.getElementById("tituloActividad").textContent = nombre;
+      mostrarModal("modalOpciones");
     }
 
-    // Mostrar al cargar
-    mostrarMiembros();
+    function abrirVotacion() {
+      cerrarModal("modalOpciones");
+      mostrarModal("modalVotacion");
+    }
+
+    function finalizarVotacion() {
+      const titulo = document.getElementById("tituloActividad").textContent;
+      const tabla = document.getElementById("tablaVotaciones").querySelector("tbody");
+      const fila = document.createElement("tr");
+      fila.innerHTML = `
+        <td>${titulo}</td>
+        <td>Votación cancelada</td>
+      `;
+      tabla.appendChild(fila);
+      cerrarModal("modalOpciones");
+    }
+
+    function sumarVotos() {
+      const votos1 = parseInt(document.getElementById("votos1").value) || 0;
+      const votos2 = parseInt(document.getElementById("votos2").value) || 0;
+      document.getElementById("votosTotales").value = votos1 + votos2;
+    }
+
+    function agregarCandidato() {
+      alert("Funcionalidad para añadir candidatos aún no implementada.");
+    }
   </script>
 </body>
 </html>
