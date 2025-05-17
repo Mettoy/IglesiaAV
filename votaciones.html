@@ -1,227 +1,185 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Sistema de Votaciones</title>
   <style>
     body {
+      display: flex;
       margin: 0;
       font-family: Arial, sans-serif;
       background-color: #121526;
       color: #f7c948;
     }
-
     .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 220px;
-      height: 100vh;
+      width: 250px;
       background-color: #1e204a;
       padding: 20px;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      box-shadow: 2px 0 5px #000;
     }
-
     .sidebar img {
-      max-width: 100%;
-      border-radius: 10px;
+      width: 100%;
+      border-radius: 12px;
       margin-bottom: 20px;
     }
-
     .main {
-      margin-left: 240px;
+      flex-grow: 1;
       padding: 20px;
     }
-
-    .form-container {
-      background: #1e204a;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #d6a92c44;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    label, input, button {
-      display: block;
-      width: 100%;
-      margin-bottom: 10px;
-    }
-
-    input, button {
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      background-color: #f7c948;
-      color: #121526;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .eventos-container, .resultados-guardados-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      margin-top: 40px;
-      justify-content: center;
-    }
-
-    .evento-card {
-      background-color: #1e204a;
-      border-radius: 10px;
-      padding: 20px;
-      width: 300px;
-      box-shadow: 0 0 10px #d6a92c88;
-    }
-
-    .modal {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #1e204a;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 15px #000;
-      z-index: 999;
-      display: none;
-    }
-
-    .modal.active {
-      display: block;
-    }
-
-    .votos-inputs input {
-      margin-bottom: 10px;
-    }
-
-    #contacto {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      font-size: 14px;
+    h1, h2 {
+      text-align: center;
       color: #f7c948;
+    }
+    input, button {
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-
   <div class="sidebar">
     <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" />
   </div>
-
   <div class="main">
     <h1>Sistema de Votaciones</h1>
+
     <div class="form-container">
-      <label for="nombreEvento">Nombre del Evento</label>
-      <input type="text" id="nombreEvento" placeholder="Ej. Elección de delegado" />
+      <label for="nombreEvento">Nombre del Evento:</label>
+      <input type="text" id="nombreEvento" placeholder="Ejemplo: Elección de líder" />
 
-      <label for="candidato">Candidato</label>
-      <input type="text" id="candidato" placeholder="Nombre del candidato" />
+      <label for="inputCandidato">Agregar Candidato:</label>
+      <input type="text" id="inputCandidato" placeholder="Nombre del candidato" />
 
-      <button onclick="crearEvento()">Guardar Evento</button>
+      <div id="candidatosContainer" style="margin-top: 10px;"></div>
+      <button id="btnAgregarEvento">Guardar Evento</button>
     </div>
 
-    <div class="eventos-container" id="eventos"></div>
-    <h2>Resultados Guardados</h2>
-    <div class="resultados-guardados-container" id="resultadosGuardados"></div>
-  </div>
+    <h2>Eventos Activos</h2>
+    <div id="eventosActivos"></div>
 
-  <div id="modalVotacion" class="modal">
-    <h3 id="modalTitulo"></h3>
-    <div id="modalCandidatos"></div>
-    <div class="votos-inputs">
-      <input type="number" id="v1" placeholder="Votos 1" oninput="sumarVotos()" />
-      <input type="number" id="v2" placeholder="Votos 2" oninput="sumarVotos()" />
-      <input type="number" id="v3" placeholder="Votos 3" oninput="sumarVotos()" />
-      <input type="number" id="v4" placeholder="Votos 4" oninput="sumarVotos()" />
-      <input type="number" id="totalVotos" placeholder="Total" readonly />
+    <h2>Votaciones Guardadas</h2>
+    <div id="resultadosFinales"></div>
     </div>
-    <button onclick="guardarResultados()">Guardar</button>
+  </section>
+
+  <!-- Modal de votación -->
+  <div id="modalVotacion" class="modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #00000088; justify-content: center; align-items: center;">
+    <div style="background: #1e204a; padding: 20px; border-radius: 12px; max-width: 400px; width: 100%; box-shadow: 0 0 10px #f7c948;">
+      <h3 id="tituloModalVotacion" style="color:#f7c948; text-align:center;"></h3>
+      <div id="votacionCampos"></div>
+      <div style="margin-top: 15px; font-weight: bold; color: #f7c948; text-align:center;">
+        Total Votos: <span id="sumaTotal">0</span>
+      </div>
+      <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+        <button onclick="guardarVotacion()" style="background-color: #4caf50;">Guardar</button>
+        <button onclick="cerrarModal()" style="background-color: #f44336;">Cancelar</button>
+      </div>
+    </div>
   </div>
 
-  <div id="contacto">Contacto: adoracionviva.ni@gmail.com</div>
+  <!-- Resultados guardados -->
+  <section>
+    <h2 style="text-align:center; color:#f7c948; margin-top: 40px;">Votaciones Guardadas</h2>
+    <div class="eventos-container" id="votacionesGuardadas"></div>
+  </section>
 
   <script>
-    const eventos = [];
-    const resultadosGuardados = [];
+    let modalEventoActual = null;
 
-    function crearEvento() {
-      const nombre = document.getElementById('nombreEvento').value;
-      const candidato = document.getElementById('candidato').value;
-      if (!nombre || !candidato) return alert('Completa todos los campos');
+    function abrirModalVotacion(eventoId) {
+      const evento = eventos.find(e => e.id === eventoId);
+      if (!evento) return;
+      modalEventoActual = evento;
 
-      const evento = { id: Date.now(), nombre, candidato };
-      eventos.push(evento);
+      document.getElementById('tituloModalVotacion').textContent = `Votación: ${evento.nombre}`;
+      const contenedor = document.getElementById('votacionCampos');
+      contenedor.innerHTML = '';
+      document.getElementById('sumaTotal').textContent = '0';
+
+      evento.candidatos.forEach((candidato, idx) => {
+        const campo = document.createElement('div');
+        campo.style.marginBottom = '10px';
+
+        const label = document.createElement('label');
+        label.textContent = candidato.nombre;
+        label.style.color = '#f7c948';
+        label.style.fontWeight = '600';
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.value = '0';
+        input.dataset.index = idx;
+        input.oninput = calcularTotalVotos;
+        input.style.width = '100%';
+        input.style.padding = '8px';
+        input.style.borderRadius = '6px';
+        input.style.border = 'none';
+
+        campo.appendChild(label);
+        campo.appendChild(input);
+        contenedor.appendChild(campo);
+      });
+
+      document.getElementById('modalVotacion').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalVotacion').style.display = 'none';
+      modalEventoActual = null;
+    }
+
+    function calcularTotalVotos() {
+      const inputs = document.querySelectorAll('#votacionCampos input');
+      let suma = 0;
+      inputs.forEach(input => {
+        suma += parseInt(input.value) || 0;
+      });
+      document.getElementById('sumaTotal').textContent = suma;
+    }
+
+    function guardarVotacion() {
+      const inputs = document.querySelectorAll('#votacionCampos input');
+      inputs.forEach(input => {
+        const idx = input.dataset.index;
+        const votos = parseInt(input.value) || 0;
+        modalEventoActual.candidatos[idx].votos += votos;
+      });
+      modalEventoActual.activo = false;
+      modalEventoActual.finalizado = true;
+
+      cerrarModal();
       renderEventos();
+      renderVotacionesGuardadas();
     }
 
-    function renderEventos() {
-      const contenedor = document.getElementById('eventos');
+    function renderVotacionesGuardadas() {
+      const contenedor = document.getElementById('votacionesGuardadas');
       contenedor.innerHTML = '';
-      eventos.forEach(evt => {
+
+      const finalizados = eventos.filter(e => e.finalizado);
+      finalizados.forEach(evento => {
         const card = document.createElement('div');
         card.className = 'evento-card';
-        card.innerHTML = `
-          <h3>${evt.nombre}</h3>
-          <p>Candidato: ${evt.candidato}</p>
-          <button onclick="abrirModal(${evt.id})">Votar</button>
-        `;
+
+        const titulo = document.createElement('h3');
+        titulo.textContent = evento.nombre;
+        card.appendChild(titulo);
+
+        const btnVer = document.createElement('button');
+        btnVer.textContent = 'Ver Resultados';
+        btnVer.onclick = () => verResultados(evento);
+        card.appendChild(btnVer);
+
         contenedor.appendChild(card);
       });
     }
 
-    function abrirModal(id) {
-      const evento = eventos.find(e => e.id === id);
-      document.getElementById('modalTitulo').innerText = evento.nombre + ' - ' + evento.candidato;
-      document.getElementById('modalVotacion').dataset.id = id;
-      document.getElementById('v1').value = '';
-      document.getElementById('v2').value = '';
-      document.getElementById('v3').value = '';
-      document.getElementById('v4').value = '';
-      document.getElementById('totalVotos').value = '';
-      document.getElementById('modalVotacion').classList.add('active');
+    function verResultados(evento) {
+      const detalle = evento.candidatos.map(c => `${c.nombre}: ${c.votos} votos`).join('\n');
+      alert(`Resultados de ${evento.nombre}:\n\n${detalle}`);
     }
 
-    function sumarVotos() {
-      const v1 = parseInt(document.getElementById('v1').value) || 0;
-      const v2 = parseInt(document.getElementById('v2').value) || 0;
-      const v3 = parseInt(document.getElementById('v3').value) || 0;
-      const v4 = parseInt(document.getElementById('v4').value) || 0;
-      document.getElementById('totalVotos').value = v1 + v2 + v3 + v4;
-    }
-
-    function guardarResultados() {
-      const id = parseInt(document.getElementById('modalVotacion').dataset.id);
-      const evento = eventos.find(e => e.id === id);
-      const total = parseInt(document.getElementById('totalVotos').value) || 0;
-      resultadosGuardados.push({ nombre: evento.nombre, candidato: evento.candidato, total });
-      document.getElementById('modalVotacion').classList.remove('active');
-      renderResultados();
-    }
-
-    function renderResultados() {
-      const contenedor = document.getElementById('resultadosGuardados');
-      contenedor.innerHTML = '';
-      resultadosGuardados.forEach(res => {
-        const card = document.createElement('div');
-        card.className = 'evento-card';
-        card.innerHTML = `
-          <h3>${res.nombre}</h3>
-          <p>Candidato: ${res.candidato}</p>
-          <p>Total votos: ${res.total}</p>
-        `;
-        contenedor.appendChild(card);
-      });
-    }
+    renderVotacionesGuardadas();
   </script>
-
 </body>
 </html>
