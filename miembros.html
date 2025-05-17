@@ -91,17 +91,22 @@
 </head>
 <body>
   <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo"/>
-    </div>
-    <ul>
-      <li>Miembros</li>
-      <li>Diezmos</li>
-      <li>Ofrendas</li>
-    </ul>
+ 
+   <div class="sidebar" id="sidebar">
+    <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
+    <div class="user-info" id="userInfo"></div>
+    <div id="menuLinks"></div>
+    <a href="miembros.html" class="sidebar-link">Miembros</a>
+    <a href="registrar.html" class="sidebar-link">Dar acceso</a>
+    <a href="diezmó.html" class="sidebar-link">Diezmos</a>
+    <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+    <a href="reportes.html" class="sidebar-link">Reportess</a>
+    <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+    <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
   </div>
 
+  <div class="content">
+    <h2>Estadísticas Gen
   <!-- Content -->
   <div class="content">
     <div class="text-center">
