@@ -2,15 +2,176 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gestión de Miembros</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/0/09/Star_logo.png" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: white;
+      display: flex;
+    }
+
+    aside {
+      width: 200px;
+      background-color: #1f1f1f;
+      padding: 20px;
+      height: 100vh;
+    }
+
+    aside img {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    h1 {
+      color: white;
+    }
+
+    button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px 0;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #333;
+    }
+
+    tr:hover {
+      background-color: #2a2a2a;
+    }
+
+    .formulario {
+      margin-top: 20px;
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .form-section {
+      margin-bottom: 20px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .familiar-list {
+      margin-top: 10px;
+    }
+
+    .familiar-list div {
+      margin-bottom: 5px;
+    }
+
+    img.foto {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/Star_logo.png" alt="Logo" />
+    <nav>
+      <!-- Aquí puedes agregar más enlaces -->
+    </nav>
+  </aside>
+
+  <main>
+    <h1>Gestión de Miembros</h1>
+    <button id="btnAgregar">Agregar miembro</button>
+
+    <div class="formulario" id="formulario">
+      <!-- DATOS PERSONALES -->
+      <div class="form-section">
+        <h2>Datos Personales</h2>
+        <input type="text" id="nombre" placeholder="Nombre completo">
+        <input type="number" id="edad" placeholder="Edad">
+        <input type="text" id="codigo" placeholder="Código">
+        <input type="text" id="telefono" placeholder="Teléfono">
+        <input type="text" id="direccion" placeholder="Dirección">
+        <input type="date" id="fechaNacimiento" placeholder="Fecha de nacimiento">
+        <input type="file" id="foto">
+      </div>
+
+      <!-- DATOS FAMILIARES -->
+      <div class="form-section">
+        <h2>Datos Familiares</h2>
+        <select id="tipoFamiliar">
+          <option value="">Selecciona un tipo</option>
+          <option>Padre</option>
+          <option>Madre</option>
+          <option>Hermano</option>
+          <option>Hermana</option>
+          <option>Hijo</option>
+          <option>Hija</option>
+          <option>Esposo(a)</option>
+        </select>
+        <input type="text" id="nombreFamiliar" placeholder="Nombre del familiar">
+        <button onclick="agregarFamiliar()">Agregar familiar</button>
+        <div class="familiar-list" id="listaFamiliares"></div>
+      </div>
+
+      <!-- DATOS ESPIRITUALES -->
+      <div class="form-section">
+        <h2>Datos Espirituales</h2>
+        <input type="date" id="fechaConversion" placeholder="Fecha de conversión">
+        <input type="text" id="lugarConversion" placeholder="Lugar de conversión">
+        <input type="date" id="fechaBautismo" placeholder="Fecha de bautismo">
+        <input type="text" id="lugarBautismo" placeholder="Lugar de bautismo">
+        <input type="date" id="fechaBauEspiritu" placeholder="Fecha de bautismo Espíritu">
+        <input type="text" id="lugarBauEspiritu" placeholder="Lugar de bautismo Espíritu">
+      </div>
+
+      <button onclick="guardarMiembro()">Guardar</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Edad</th>
+          <th>Código</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+        </tr>
+      </thead>
+      <tbody id="tablaMiembros"></tbody>
+    </table>
+  </main>
+
+  <!-- Firebase + Supabase Scripts -->
   <script type="module">
-    // Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import {
-      getFirestore, collection, addDoc, getDocs, updateDoc, doc
-    } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
@@ -24,159 +185,86 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Supabase
-    const supabase = createClient(
-      "https://azywyqozwwbfctxeokug.supabase.co",
-      "tu_clave_anon_publica"
-    );
+    const supabaseUrl = "https://azywyqozwwbfctxeokug.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk"; // ← Usa tu clave pública completa aquí
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      const formContainer = document.getElementById("formulario-miembro");
-      const btnAgregar = document.getElementById("btn-agregar-miembro");
-      const btnGuardar = document.getElementById("btn-guardar-miembro");
-      const tablaMiembros = document.getElementById("tabla-miembros");
+    document.getElementById("btnAgregar").addEventListener("click", () => {
+      document.getElementById("formulario").style.display = "block";
+    });
 
-      btnAgregar.addEventListener("click", () => {
-        formContainer.style.display = "block";
-        document.getElementById("formulario").reset();
-        familiaresList.innerHTML = "";
-      });
+    const familiares = [];
 
-      btnGuardar.addEventListener("click", async () => {
-        const nombre = document.getElementById("nombre").value;
-        const edad = document.getElementById("edad").value;
-        const codigo = document.getElementById("codigo").value;
-        const telefono = document.getElementById("telefono").value;
-        const direccion = document.getElementById("direccion").value;
-        const fechaNacimiento = document.getElementById("fecha-nacimiento").value;
+    window.agregarFamiliar = function () {
+      const tipo = document.getElementById("tipoFamiliar").value;
+      const nombre = document.getElementById("nombreFamiliar").value;
+      if (tipo && nombre) {
+        familiares.push({ tipo, nombre });
+        const div = document.createElement("div");
+        div.textContent = `${tipo}: ${nombre}`;
+        document.getElementById("listaFamiliares").appendChild(div);
+        document.getElementById("nombreFamiliar").value = "";
+      }
+    };
 
-        const fechaConversion = document.getElementById("fecha-conversion").value;
-        const lugarConversion = document.getElementById("lugar-conversion").value;
-        const fechaBautismo = document.getElementById("fecha-bautismo").value;
-        const lugarBautismo = document.getElementById("lugar-bautismo").value;
-        const fechaBE = document.getElementById("fecha-be").value;
-        const lugarBE = document.getElementById("lugar-be").value;
+    window.guardarMiembro = async function () {
+      const nombre = document.getElementById("nombre").value;
+      const edad = document.getElementById("edad").value;
+      const codigo = document.getElementById("codigo").value;
+      const telefono = document.getElementById("telefono").value;
+      const direccion = document.getElementById("direccion").value;
+      const fechaNacimiento = document.getElementById("fechaNacimiento").value;
 
-        const fotoFile = document.getElementById("foto").files[0];
-        let fotoURL = "";
-        if (fotoFile) {
-          const { data, error } = await supabase.storage
-            .from("fotos")
-            .upload(`fotos/${Date.now()}_${fotoFile.name}`, fotoFile);
-          if (!error) {
-            const { data: urlData } = supabase.storage.from("fotos").getPublicUrl(data.path);
-            fotoURL = urlData.publicUrl;
-          }
+      const fechaConversion = document.getElementById("fechaConversion").value;
+      const lugarConversion = document.getElementById("lugarConversion").value;
+      const fechaBautismo = document.getElementById("fechaBautismo").value;
+      const lugarBautismo = document.getElementById("lugarBautismo").value;
+      const fechaBauEspiritu = document.getElementById("fechaBauEspiritu").value;
+      const lugarBauEspiritu = document.getElementById("lugarBauEspiritu").value;
+
+      const archivo = document.getElementById("foto").files[0];
+      let fotoURL = "";
+
+      if (archivo) {
+        const { data, error } = await supabase.storage
+          .from("fotos")
+          .upload(`miembros/${Date.now()}_${archivo.name}`, archivo, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (!error) {
+          fotoURL = `${supabaseUrl}/storage/v1/object/public/fotos/${data.path}`;
         }
-
-        const familiares = Array.from(document.querySelectorAll(".familiar-item")).map(item => {
-          return {
-            tipo: item.dataset.tipo,
-            nombre: item.dataset.nombre
-          };
-        });
-
-        const nuevoMiembro = {
-          nombre, edad, codigo, telefono, direccion, fechaNacimiento,
-          fechaConversion, lugarConversion, fechaBautismo, lugarBautismo,
-          fechaBE, lugarBE, fotoURL, familiares
-        };
-
-        await addDoc(collection(db, "miembros"), nuevoMiembro);
-        alert("Miembro guardado exitosamente.");
-        formContainer.style.display = "none";
-        cargarMiembros();
-      });
-
-      document.getElementById("agregar-familiar").addEventListener("click", () => {
-        const tipo = document.getElementById("tipo-familiar").value;
-        const nombre = document.getElementById("nombre-familiar").value;
-        if (tipo && nombre) {
-          const item = document.createElement("div");
-          item.textContent = `${tipo}: ${nombre}`;
-          item.className = "familiar-item";
-          item.dataset.tipo = tipo;
-          item.dataset.nombre = nombre;
-          familiaresList.appendChild(item);
-          document.getElementById("nombre-familiar").value = "";
-        }
-      });
-
-      async function cargarMiembros() {
-        tablaMiembros.innerHTML = "";
-        const querySnapshot = await getDocs(collection(db, "miembros"));
-        querySnapshot.forEach(doc => {
-          const m = doc.data();
-          const fila = document.createElement("tr");
-          fila.innerHTML = `
-            <td><img src="${m.fotoURL || ""}" width="60"/></td>
-            <td>${m.nombre}</td>
-            <td>${m.codigo}</td>
-            <td>${m.telefono}</td>
-            <td>${m.edad}</td>
-            <td>${m.direccion}</td>
-          `;
-          tablaMiembros.appendChild(fila);
-        });
       }
 
-      cargarMiembros();
-    });
+      const miembro = {
+        nombre, edad, codigo, telefono, direccion, fechaNacimiento,
+        fechaConversion, lugarConversion, fechaBautismo, lugarBautismo,
+        fechaBauEspiritu, lugarBauEspiritu, familiares, fotoURL
+      };
+
+      await addDoc(collection(db, "miembros"), miembro);
+      mostrarMiembroEnTabla(miembro);
+      document.getElementById("formulario").reset();
+      document.getElementById("formulario").style.display = "none";
+    };
+
+    function mostrarMiembroEnTabla(miembro) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><img class="foto" src="${miembro.fotoURL}" /></td>
+        <td>${miembro.nombre}</td>
+        <td>${miembro.edad}</td>
+        <td>${miembro.codigo}</td>
+        <td>${miembro.telefono}</td>
+        <td>${miembro.direccion}</td>
+      `;
+      document.getElementById("tablaMiembros").appendChild(tr);
+    }
   </script>
-</head>
-<body>
-  <button id="btn-agregar-miembro">Agregar miembro</button>
 
-  <div id="formulario-miembro" style="display:none;">
-    <form id="formulario">
-      <h2>Datos Personales</h2>
-      <input type="file" id="foto" />
-      <input type="text" id="nombre" placeholder="Nombre completo" required />
-      <input type="number" id="edad" placeholder="Edad" required />
-      <input type="text" id="codigo" placeholder="Código" required />
-      <input type="text" id="telefono" placeholder="Teléfono" required />
-      <input type="text" id="direccion" placeholder="Dirección" required />
-      <input type="date" id="fecha-nacimiento" placeholder="Fecha de nacimiento" required />
-
-      <h2>Datos Familiares</h2>
-      <select id="tipo-familiar">
-        <option value="">Seleccionar tipo</option>
-        <option value="Padre">Padre</option>
-        <option value="Madre">Madre</option>
-        <option value="Hermano">Hermano</option>
-        <option value="Hermana">Hermana</option>
-        <option value="Esposo(a)">Esposo(a)</option>
-        <option value="Hijo(a)">Hijo(a)</option>
-      </select>
-      <input type="text" id="nombre-familiar" placeholder="Nombre del familiar" />
-      <button type="button" id="agregar-familiar">Añadir familiar</button>
-      <div id="familiaresList"></div>
-
-      <h2>Datos Espirituales</h2>
-      <input type="date" id="fecha-conversion" placeholder="Fecha de conversión" />
-      <input type="text" id="lugar-conversion" placeholder="Lugar de conversión" />
-      <input type="date" id="fecha-bautismo" placeholder="Fecha de bautismo" />
-      <input type="text" id="lugar-bautismo" placeholder="Lugar de bautismo" />
-      <input type="date" id="fecha-be" placeholder="Fecha bautismo Espíritu" />
-      <input type="text" id="lugar-be" placeholder="Lugar bautismo Espíritu" />
-
-      <button type="button" id="btn-guardar-miembro">Guardar</button>
-    </form>
-  </div>
-
-  <h2>Miembros Registrados</h2>
-  <table border="1">
-    <thead>
-      <tr>
-        <th>Foto</th>
-        <th>Nombre</th>
-        <th>Código</th>
-        <th>Teléfono</th>
-        <th>Edad</th>
-        <th>Dirección</th>
-      </tr>
-    </thead>
-    <tbody id="tabla-miembros"></tbody>
-  </table>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </body>
 </html>
