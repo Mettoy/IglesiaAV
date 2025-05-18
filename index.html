@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>ADORACION VIVA ENTRAR</title>
-   <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" />
+  <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" />
   <style>
     body {
-      background-color: #0d1b2a;
+      background-image: url('https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//facebook%20av.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -84,15 +87,14 @@
   import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
   const firebaseConfig = {
-  apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
-  authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
-  projectId: "iglesia-adoracion-viva-182e6",
-  storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
-  messagingSenderId: "152824399391",
-  appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
-  measurementId: "G-GXV53CPPBT"
-};
-
+    apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
+    authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
+    projectId: "iglesia-adoracion-viva-182e6",
+    storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
+    messagingSenderId: "152824399391",
+    appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
+    measurementId: "G-GXV53CPPBT"
+  };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
