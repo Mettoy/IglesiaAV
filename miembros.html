@@ -179,10 +179,10 @@
     const db = firebase.firestore();
 
     // Supabase
-    const supabase = supabase.createClient(
-  "https://azywyqozwwbfctxeokug.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk"
-);
+    const supabase = window.supabase.createClient(
+      "https://azywyqozwwbfctxeokug.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk"
+    );
 
     function toggleForm() {
       const f = document.getElementById("formulario");
@@ -196,8 +196,8 @@
         alert("Error al subir la foto: " + error.message);
         return null;
       }
-      const { publicUrl } = supabase.storage.from("fotos").getPublicUrl(nombreArchivo).data;
-      return publicUrl;
+      const urlResponse = supabase.storage.from("fotos").getPublicUrl(nombreArchivo);
+      return urlResponse.data.publicUrl;
     }
 
     async function guardarMiembro() {
