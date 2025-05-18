@@ -13,38 +13,10 @@
       background-color: #f5f6fa;
       font-family: "Segoe UI", sans-serif;
     }
-    .sidebar {
-      background-color: #001f3f;
-      color: white;
-      width: 250px;
-      min-height: 100vh;
-      position: fixed;
-      transition: all 0.3s ease;
-    }
-    .sidebar img {
-      width: 80%;
-      margin: 20px auto;
-      display: block;
-      border-radius: 10px;
-    }
-    .sidebar a {
-      display: block;
-      color: white;
-      padding: 15px 20px;
-      text-decoration: none;
-    }
-    .sidebar a:hover {
-      background-color: #ffcc00;
-      color: black;
-    }
-    .logout {
-      padding: 15px 20px;
-      cursor: pointer;
-      color: white;
-    }
     .content {
-      margin-left: 250px;
       padding: 20px;
+      max-width: 1100px;
+      margin: auto;
     }
     .btn-add {
       background-color: #ffcc00;
@@ -62,6 +34,7 @@
     th {
       background-color: #001f3f;
       color: white;
+      vertical-align: middle;
     }
     td img {
       width: 60px;
@@ -69,6 +42,12 @@
       border-radius: 50%;
       object-fit: cover;
       margin-right: 10px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.3s ease;
+    }
+    td img:hover {
+      border-color: #ffcc00;
     }
     .btn-action {
       background-color: #ffcc00;
@@ -76,30 +55,14 @@
       color: black;
       padding: 5px 10px;
       margin-right: 5px;
+      cursor: pointer;
+    }
+    .file-upload-input {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar" id="sidebar">
-    <img
-      id="logo"
-      src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png"
-      alt="Logo"
-      onclick="cambiarLogo()"
-    />
-    <div class="user-info" id="userInfo"></div>
-    <div id="menuLinks"></div>
-    <a href="miembros.html" class="sidebar-link">Miembros</a>
-    <a href="registrar.html" class="sidebar-link">Dar acceso</a>
-    <a href="diezmó.html" class="sidebar-link">Diezmos</a>
-    <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-    <a href="reportes.html" class="sidebar-link">Reportess</a>
-    <a href="discipulado.html" class="sidebar-link">Discipulado</a>
-    <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
-  </div>
-
-  <!-- Content -->
   <div class="content">
     <h2>Gestión de Miembros</h2>
     <div class="text-center">
@@ -171,13 +134,7 @@
             id="direccion"
             placeholder="Dirección"
           />
-          <label class="form-label mt-2">Foto del miembro:</label>
-          <input
-            class="form-control mb-2"
-            type="file"
-            id="foto"
-            accept="image/*"
-          />
+          <!-- NO foto aquí -->
         </div>
 
         <!-- FAMILIARES -->
@@ -231,7 +188,7 @@
     </div>
 
     <!-- Tabla -->
-    <table class="table table-bordered table-striped mt-4">
+    <table class="table table-bordered table-striped mt-4 align-middle">
       <thead>
         <tr>
           <th>Foto</th>
@@ -245,213 +202,228 @@
       </thead>
       <tbody id="tablaMiembros"></tbody>
     </table>
+
+    <!-- Input invisible para subir foto -->
+    <input type="file" id="uploadFotoInput" class="file-upload-input" accept="image/*" />
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
   <script>
-    // Firebase config
+    // Inicializar Firebase Firestore
     const firebaseConfig = {
-      apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
-      authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
-      projectId: "iglesia-adoracion-viva-182e6",
-      storageBucket: "iglesia-adoracion-viva-182e6.appspot.com",
-      messagingSenderId: "152824399391",
-      appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
+      apiKey: "TU_API_KEY_FIREBASE",
+      authDomain: "TU_AUTH_DOMAIN_FIREBASE",
+      projectId: "TU_PROJECT_ID_FIREBASE",
+      storageBucket: "TU_STORAGE_BUCKET_FIREBASE",
+      messagingSenderId: "TU_MESSAGING_SENDER_ID_FIREBASE",
+      appId: "TU_APP_ID_FIREBASE"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Supabase client
-    const supabase = supabase.createClient(
-      "https://azywyqozwwbfctxeokug.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwczovL3N1cGFiYXNlLmNvbS9hdXRoL3VzZXJJZCI6IjYxMGY4ZjZjLTYxYzctNDQ1Zi05MTg0LTg3Y2EyOTMxZmQxNiIsImlhdCI6MTY4Nzk1NjYxMywiZXhwIjoxOTAzNTEyNjEzfQ.sCSeHMDv8T7N6W_C-A1tx0hYFvJltqH_gNWgaxExoGM"
-);
-    let editId = null;
+    // Inicializar Supabase
+    const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co';
+    const supabaseKey = 'TU_SUPABASE_ANON_KEY';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-function toggleForm() {
-  const form = document.getElementById("formulario");
-  if (form.style.display === "none") {
-    form.style.display = "block";
-  } else {
-    form.style.display = "none";
-    limpiarFormulario();
-  }
-}
+    // Variables globales
+    let miembros = [];
+    let editandoId = null; // ID del miembro en edición
+    let fotoSubiendoId = null; // Para saber a qué miembro se le sube foto
 
-async function subirFoto(file) {
-  const nombreArchivo = `${Date.now()}_${file.name}`;
-  try {
-    const { error } = await supabase.storage
-      .from("fotos")
-      .upload(nombreArchivo, file, { upsert: true });
-    if (error) throw error;
-  } catch (error) {
-    alert("Error al subir la foto: " + error.message);
-    throw error;
-  }
-  const { data: urlData } = supabase.storage
-    .from("fotos")
-    .getPublicUrl(nombreArchivo);
-  return urlData.publicUrl;
-}
-
-async function guardarMiembro() {
-  try {
-    const nombre = document.getElementById("nombre").value;
-    const codigo = document.getElementById("codigo").value;
-    const telefono = document.getElementById("telefono").value;
-    const edad = Number(document.getElementById("edad").value);
-    const cumple = document.getElementById("cumple").value;
-    const direccion = document.getElementById("direccion").value;
-    const relacion = document.getElementById("relacion").value;
-    const nombreFamiliar = document.getElementById("nombreFamiliar").value;
-    const conversion = document.getElementById("conversion").value;
-    const bautismo = document.getElementById("bautismo").value;
-    const bautismoEsp = document.getElementById("bautismoEsp").value;
-    const fechaBautismoEsp = document.getElementById("fechaBautismoEsp").value;
-    const ubicacionBautismo = document.getElementById("ubicacionBautismo").value;
-
-    let fotoUrl = "";
-    const inputFoto = document.getElementById("foto");
-    if (inputFoto.files.length > 0) {
-      fotoUrl = await subirFoto(inputFoto.files[0]);
-    } else if (editId) {
-      fotoUrl = miembros.find((m) => m.id === editId)?.foto || "";
+    // Mostrar/ocultar formulario
+    function toggleForm() {
+      const form = document.getElementById('formulario');
+      if(form.style.display === 'none') {
+        form.style.display = 'block';
+        limpiarFormulario();
+        editandoId = null;
+      } else {
+        form.style.display = 'none';
+      }
     }
 
-    const miembroData = {
-      nombre,
-      codigo,
-      telefono,
-      edad,
-      cumple,
-      direccion,
-      relacion,
-      nombreFamiliar,
-      conversion,
-      bautismo,
-      bautismoEsp,
-      fechaBautismoEsp,
-      ubicacionBautismo,
-      foto: fotoUrl,
-    };
-
-    if (editId) {
-      await db.collection("miembros").doc(editId).set(miembroData);
-      editId = null;
-    } else {
-      await db.collection("miembros").add(miembroData);
+    // Limpiar formulario
+    function limpiarFormulario() {
+      const ids = ['nombre','codigo','telefono','edad','cumple','direccion','relacion','nombreFamiliar','conversion','bautismo','bautismoEsp','fechaBautismoEsp','ubicacionBautismo'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = '';
+      });
+      // Poner tab activos al inicio
+      const firstTab = new bootstrap.Tab(document.querySelector('#tabForm button.nav-link'));
+      firstTab.show();
     }
 
-    limpiarFormulario();
-    document.getElementById("formulario").style.display = "none";
+    // Guardar miembro en Firestore
+    async function guardarMiembro() {
+      const nombre = document.getElementById('nombre').value.trim();
+      if(!nombre) {
+        alert('El nombre es obligatorio');
+        return;
+      }
+      const datos = {
+        nombre,
+        codigo: document.getElementById('codigo').value.trim(),
+        telefono: document.getElementById('telefono').value.trim(),
+        edad: Number(document.getElementById('edad').value) || null,
+        cumple: document.getElementById('cumple').value || null,
+        direccion: document.getElementById('direccion').value.trim(),
+        relacion: document.getElementById('relacion').value || null,
+        nombreFamiliar: document.getElementById('nombreFamiliar').value.trim(),
+        conversion: document.getElementById('conversion').value.trim(),
+        bautismo: document.getElementById('bautismo').value.trim(),
+        bautismoEsp: document.getElementById('bautismoEsp').value.trim(),
+        fechaBautismoEsp: document.getElementById('fechaBautismoEsp').value || null,
+        ubicacionBautismo: document.getElementById('ubicacionBautismo').value.trim(),
+        fotoUrl: null // Se carga aparte desde Supabase
+      };
+
+      try {
+        if(editandoId) {
+          // Actualizar
+          await db.collection('miembros').doc(editandoId).update(datos);
+          alert('Miembro actualizado');
+        } else {
+          // Nuevo
+          const docRef = await db.collection('miembros').add(datos);
+          editandoId = docRef.id;
+          alert('Miembro agregado');
+        }
+        await cargarMiembros();
+        toggleForm();
+      } catch (error) {
+        alert('Error guardando miembro: ' + error.message);
+      }
+    }
+
+    // Cargar miembros de Firestore
+    async function cargarMiembros() {
+      const snapshot = await db.collection('miembros').get();
+      miembros = [];
+      snapshot.forEach(doc => {
+        miembros.push({ id: doc.id, ...doc.data() });
+      });
+      mostrarMiembros();
+    }
+
+    // Mostrar miembros en tabla
+    function mostrarMiembros() {
+      const tbody = document.getElementById('tablaMiembros');
+      tbody.innerHTML = '';
+      miembros.forEach(miembro => {
+        const tr = document.createElement('tr');
+
+        // Foto con clic para subir
+        const tdFoto = document.createElement('td');
+        const img = document.createElement('img');
+        img.src = miembro.fotoUrl || 'https://via.placeholder.com/60?text=Foto';
+        img.alt = 'Foto';
+        img.title = 'Click para cambiar foto';
+        img.style.cursor = 'pointer';
+        img.onclick = () => abrirSelectorFoto(miembro.id);
+        tdFoto.appendChild(img);
+        tr.appendChild(tdFoto);
+
+        // Nombre
+        tr.innerHTML += `<td>${miembro.nombre}</td>`;
+        tr.innerHTML += `<td>${miembro.codigo || ''}</td>`;
+        tr.innerHTML += `<td>${miembro.edad || ''}</td>`;
+        tr.innerHTML += `<td>${miembro.telefono || ''}</td>`;
+        tr.innerHTML += `<td>${miembro.direccion || ''}</td>`;
+
+        // Acciones
+        const tdAcciones = document.createElement('td');
+        const btnEditar = document.createElement('button');
+        btnEditar.className = 'btn-action';
+        btnEditar.textContent = 'Editar';
+        btnEditar.onclick = () => editarMiembro(miembro.id);
+        tdAcciones.appendChild(btnEditar);
+        tr.appendChild(tdAcciones);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Abrir selector para subir foto y guardar en Supabase
+    function abrirSelectorFoto(id) {
+      fotoSubiendoId = id;
+      const inputFile = document.getElementById('uploadFotoInput');
+      inputFile.value = ''; // Reset input para detectar cambio siempre
+      inputFile.click();
+    }
+
+    // Subir foto a Supabase y guardar URL en Firestore
+    async function subirFoto(file) {
+      if (!fotoSubiendoId) return;
+      try {
+        const nombreArchivo = `fotos/${fotoSubiendoId}_${Date.now()}_${file.name}`;
+        const { data, error } = await supabase.storage
+          .from('fotos')
+          .upload(nombreArchivo, file, { upsert: true });
+        if (error) throw error;
+
+        const { data: urlData } = supabase.storage
+          .from('fotos')
+          .getPublicUrl(nombreArchivo);
+
+        // Actualizar Firestore con la URL pública
+        await db.collection('miembros').doc(fotoSubiendoId).update({
+          fotoUrl: urlData.publicUrl,
+        });
+
+        // Refrescar la tabla
+        await cargarMiembros();
+        alert('Foto subida y guardada correctamente');
+      } catch (error) {
+        alert('Error al subir foto: ' + error.message);
+      } finally {
+        fotoSubiendoId = null;
+      }
+    }
+
+    // Al seleccionar archivo de foto
+    document.getElementById('uploadFotoInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      subirFoto(file);
+    });
+
+    // Cargar datos en formulario para editar
+    function editarMiembro(id) {
+      const miembro = miembros.find(m => m.id === id);
+      if (!miembro) return;
+      editandoId = id;
+
+      document.getElementById('nombre').value = miembro.nombre || '';
+      document.getElementById('codigo').value = miembro.codigo || '';
+      document.getElementById('telefono').value = miembro.telefono || '';
+      document.getElementById('edad').value = miembro.edad || '';
+      document.getElementById('cumple').value = miembro.cumple || '';
+      document.getElementById('direccion').value = miembro.direccion || '';
+      document.getElementById('relacion').value = miembro.relacion || 'Conyugue';
+      document.getElementById('nombreFamiliar').value = miembro.nombreFamiliar || '';
+      document.getElementById('conversion').value = miembro.conversion || '';
+      document.getElementById('bautismo').value = miembro.bautismo || '';
+      document.getElementById('bautismoEsp').value = miembro.bautismoEsp || '';
+      document.getElementById('fechaBautismoEsp').value = miembro.fechaBautismoEsp || '';
+      document.getElementById('ubicacionBautismo').value = miembro.ubicacionBautismo || '';
+
+      // Mostrar formulario y poner tab "Personales"
+      toggleForm();
+      const firstTab = new bootstrap.Tab(document.querySelector('#tabForm button.nav-link'));
+      firstTab.show();
+    }
+
+    // Cargar al inicio
     cargarMiembros();
-  } catch (error) {
-    alert("Error al guardar: " + error.message);
-  }
-}
-
-function limpiarFormulario() {
-  const campos = [
-    "nombre",
-    "codigo",
-    "telefono",
-    "edad",
-    "cumple",
-    "direccion",
-    "nombreFamiliar",
-    "conversion",
-    "bautismo",
-    "bautismoEsp",
-    "fechaBautismoEsp",
-    "ubicacionBautismo",
-  ];
-  campos.forEach((c) => (document.getElementById(c).value = ""));
-  document.getElementById("relacion").selectedIndex = 0;
-  document.getElementById("foto").value = "";
-  editId = null;
-}
-
-let miembros = [];
-
-async function cargarMiembros() {
-  const snapshot = await db.collection("miembros").get();
-  miembros = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  mostrarMiembros();
-}
-
-function mostrarMiembros() {
-  const tbody = document.getElementById("tablaMiembros");
-  tbody.innerHTML = "";
-  miembros.forEach((miembro) => {
-    const tr = document.createElement("tr");
-
-    // Foto
-    const tdFoto = document.createElement("td");
-    const img = document.createElement("img");
-    img.src = miembro.foto || "https://via.placeholder.com/60";
-    img.alt = "Foto miembro";
-    tdFoto.appendChild(img);
-    tr.appendChild(tdFoto);
-
-    // Otros campos
-    tr.innerHTML += `
-      <td>${miembro.nombre}</td>
-      <td>${miembro.codigo}</td>
-      <td>${miembro.edad}</td>
-      <td>${miembro.telefono}</td>
-      <td>${miembro.direccion}</td>
-    `;
-
-    // Acciones
-    const tdAcciones = document.createElement("td");
-    const btnEditar = document.createElement("button");
-    btnEditar.classList.add("btn-action");
-    btnEditar.textContent = "Editar";
-    btnEditar.onclick = () => editarMiembro(miembro.id);
-    tdAcciones.appendChild(btnEditar);
-    tr.appendChild(tdAcciones);
-
-    tbody.appendChild(tr);
-  });
-}
-
-function editarMiembro(id) {
-  const miembro = miembros.find((m) => m.id === id);
-  if (!miembro) return alert("Miembro no encontrado");
-
-  toggleForm();
-
-  document.getElementById("nombre").value = miembro.nombre || "";
-  document.getElementById("codigo").value = miembro.codigo || "";
-  document.getElementById("telefono").value = miembro.telefono || "";
-  document.getElementById("edad").value = miembro.edad || "";
-  document.getElementById("cumple").value = miembro.cumple || "";
-  document.getElementById("direccion").value = miembro.direccion || "";
-  document.getElementById("relacion").value = miembro.relacion || "Conyugue";
-  document.getElementById("nombreFamiliar").value = miembro.nombreFamiliar || "";
-  document.getElementById("conversion").value = miembro.conversion || "";
-  document.getElementById("bautismo").value = miembro.bautismo || "";
-  document.getElementById("bautismoEsp").value = miembro.bautismoEsp || "";
-  document.getElementById("fechaBautismoEsp").value = miembro.fechaBautismoEsp || "";
-  document.getElementById("ubicacionBautismo").value = miembro.ubicacionBautismo || "";
-
-  // No se puede precargar el input file por seguridad, si quieres cambiar la foto hay que subir otra
-
-  editId = id;
-}
-
-// Inicializar
-cargarMiembros();
-
-// Funciones sidebar placeholder
-function cambiarLogo() {
-  alert("Función cambiar logo no implementada.");
-}
-function cerrarSesion() {
-  alert("Función cerrar sesión no implementada.");
-}
-
+  </script>
+</body>
+</html>
