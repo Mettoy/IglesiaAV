@@ -3,27 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestión de Miembros</title>
+  <title>Gestión de Miembros con Menú</title>
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
     rel="stylesheet"
   />
   <style>
     body {
-      background-color: #f5f6fa;
+      margin: 0;
       font-family: "Segoe UI", sans-serif;
+      background-color: #f5f6fa;
     }
-    .content {
+    /* Menú lateral */
+    #sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 250px;
+      height: 100vh;
+      background-color: #001f3f;
+      color: white;
       padding: 20px;
-      max-width: 1100px;
-      margin: auto;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .btn-add {
+    #sidebar img {
+      max-width: 120px;
+      margin-bottom: 20px;
+    }
+    #sidebar h3 {
+      margin-bottom: 40px;
+      font-weight: 700;
+      text-align: center;
+    }
+    #sidebar button {
       background-color: #ffcc00;
+      border: none;
       color: black;
       font-weight: bold;
-      border: none;
+      padding: 10px 15px;
+      width: 100%;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
     }
+    #sidebar button:hover {
+      background-color: #e6b800;
+    }
+    /* Contenido principal */
+    #main-content {
+      margin-left: 250px;
+      padding: 30px;
+      max-width: 900px;
+      margin-top: 20px;
+    }
+    /* Formulario */
     .form-card {
       background: white;
       border-radius: 15px;
@@ -56,6 +92,7 @@
       padding: 5px 10px;
       margin-right: 5px;
       cursor: pointer;
+      border-radius: 4px;
     }
     .file-upload-input {
       display: none;
@@ -63,11 +100,15 @@
   </style>
 </head>
 <body>
-  <div class="content">
+
+  <div id="sidebar">
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/fotos/logo.png" alt="Logo" />
+    <h3>Menú</h3>
+    <button id="btnAgregarMiembro">+ Agregar miembro</button>
+  </div>
+
+  <div id="main-content">
     <h2>Gestión de Miembros</h2>
-    <div class="text-center">
-      <button class="btn btn-add" onclick="toggleForm()">+ Agregar miembro</button>
-    </div>
 
     <!-- Formulario -->
     <div class="form-card" id="formulario" style="display: none">
@@ -134,7 +175,7 @@
             id="direccion"
             placeholder="Dirección"
           />
-          <!-- NO foto aquí -->
+          <!-- No subir foto aquí -->
         </div>
 
         <!-- FAMILIARES -->
@@ -183,7 +224,7 @@
         </div>
       </div>
       <div class="text-center mt-3">
-        <button class="btn btn-add" onclick="guardarMiembro()">Guardar miembro</button>
+        <button class="btn btn-add" id="btnGuardar">Guardar miembro</button>
       </div>
     </div>
 
@@ -216,214 +257,228 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
-    // Inicializar Firebase Firestore
+    // Configura Firebase Firestore (pon tus datos reales aquí)
     const firebaseConfig = {
-      apiKey: "TU_API_KEY_FIREBASE",
-      authDomain: "TU_AUTH_DOMAIN_FIREBASE",
-      projectId: "TU_PROJECT_ID_FIREBASE",
-      storageBucket: "TU_STORAGE_BUCKET_FIREBASE",
-      messagingSenderId: "TU_MESSAGING_SENDER_ID_FIREBASE",
-      appId: "TU_APP_ID_FIREBASE"
+      apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
+      authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
+      projectId: "iglesia-adoracion-viva-182e6",
+      storageBucket: "iglesia-adoracion-viva-182e6.appspot.com",
+      messagingSenderId: "152824399391",
+      appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Inicializar Supabase
+    // Configura Supabase
     const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co';
-    const supabaseKey = 'TU_SUPABASE_ANON_KEY';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk';
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Variables globales
     let miembros = [];
-    let editandoId = null; // ID del miembro en edición
-    let fotoSubiendoId = null; // Para saber a qué miembro se le sube foto
+    let editandoId = null;
+    let fotoSubiendoId = null;
 
-    // Mostrar/ocultar formulario
-    function toggleForm() {
-      const form = document.getElementById('formulario');
-      if(form.style.display === 'none') {
-        form.style.display = 'block';
+    // Referencias DOM
+    const btnAgregarMiembro = document.getElementById('btnAgregarMiembro');
+    const formulario = document.getElementById('formulario');
+    const btnGuardar = document.getElementById('btnGuardar');
+    const uploadFotoInput = document.getElementById('uploadFotoInput');
+    const tablaMiembros = document.getElementById('tablaMiembros');
+
+    // Mostrar/ocultar formulario y limpiar
+    function toggleForm(mostrar = true) {
+      if(mostrar) {
+        formulario.style.display = 'block';
         limpiarFormulario();
         editandoId = null;
+        // Poner tab inicial activos
+        const firstTab = new bootstrap.Tab(document.querySelector('#tabForm button.nav-link'));
+        firstTab.show();
       } else {
-        form.style.display = 'none';
+        formulario.style.display = 'none';
       }
     }
 
-    // Limpiar formulario
     function limpiarFormulario() {
-      const ids = ['nombre','codigo','telefono','edad','cumple','direccion','relacion','nombreFamiliar','conversion','bautismo','bautismoEsp','fechaBautismoEsp','ubicacionBautismo'];
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.value = '';
-      });
-      // Poner tab activos al inicio
-      const firstTab = new bootstrap.Tab(document.querySelector('#tabForm button.nav-link'));
-      firstTab.show();
-    }
+      const campos = ['nombre','codigo','telefono','edad','cumple','direccion','relacion','nombreFamiliar','conversion','bautismo','bautismoEsp','fechaBautismoEsp','ubicacionBautismo'];
+campos.forEach(id => {
+const el = document.getElementById(id);
+if (el) el.value = '';
+});
+}
+    // Renderizar tabla
+function renderizarTabla() {
+  tablaMiembros.innerHTML = '';
+  miembros.forEach(m => {
+    const tr = document.createElement('tr');
 
-    // Guardar miembro en Firestore
-    async function guardarMiembro() {
-      const nombre = document.getElementById('nombre').value.trim();
-      if(!nombre) {
-        alert('El nombre es obligatorio');
-        return;
-      }
-      const datos = {
-        nombre,
-        codigo: document.getElementById('codigo').value.trim(),
-        telefono: document.getElementById('telefono').value.trim(),
-        edad: Number(document.getElementById('edad').value) || null,
-        cumple: document.getElementById('cumple').value || null,
-        direccion: document.getElementById('direccion').value.trim(),
-        relacion: document.getElementById('relacion').value || null,
-        nombreFamiliar: document.getElementById('nombreFamiliar').value.trim(),
-        conversion: document.getElementById('conversion').value.trim(),
-        bautismo: document.getElementById('bautismo').value.trim(),
-        bautismoEsp: document.getElementById('bautismoEsp').value.trim(),
-        fechaBautismoEsp: document.getElementById('fechaBautismoEsp').value || null,
-        ubicacionBautismo: document.getElementById('ubicacionBautismo').value.trim(),
-        fotoUrl: null // Se carga aparte desde Supabase
-      };
-
-      try {
-        if(editandoId) {
-          // Actualizar
-          await db.collection('miembros').doc(editandoId).update(datos);
-          alert('Miembro actualizado');
-        } else {
-          // Nuevo
-          const docRef = await db.collection('miembros').add(datos);
-          editandoId = docRef.id;
-          alert('Miembro agregado');
-        }
-        await cargarMiembros();
-        toggleForm();
-      } catch (error) {
-        alert('Error guardando miembro: ' + error.message);
-      }
-    }
-
-    // Cargar miembros de Firestore
-    async function cargarMiembros() {
-      const snapshot = await db.collection('miembros').get();
-      miembros = [];
-      snapshot.forEach(doc => {
-        miembros.push({ id: doc.id, ...doc.data() });
-      });
-      mostrarMiembros();
-    }
-
-    // Mostrar miembros en tabla
-    function mostrarMiembros() {
-      const tbody = document.getElementById('tablaMiembros');
-      tbody.innerHTML = '';
-      miembros.forEach(miembro => {
-        const tr = document.createElement('tr');
-
-        // Foto con clic para subir
-        const tdFoto = document.createElement('td');
-        const img = document.createElement('img');
-        img.src = miembro.fotoUrl || 'https://via.placeholder.com/60?text=Foto';
-        img.alt = 'Foto';
-        img.title = 'Click para cambiar foto';
-        img.style.cursor = 'pointer';
-        img.onclick = () => abrirSelectorFoto(miembro.id);
-        tdFoto.appendChild(img);
-        tr.appendChild(tdFoto);
-
-        // Nombre
-        tr.innerHTML += `<td>${miembro.nombre}</td>`;
-        tr.innerHTML += `<td>${miembro.codigo || ''}</td>`;
-        tr.innerHTML += `<td>${miembro.edad || ''}</td>`;
-        tr.innerHTML += `<td>${miembro.telefono || ''}</td>`;
-        tr.innerHTML += `<td>${miembro.direccion || ''}</td>`;
-
-        // Acciones
-        const tdAcciones = document.createElement('td');
-        const btnEditar = document.createElement('button');
-        btnEditar.className = 'btn-action';
-        btnEditar.textContent = 'Editar';
-        btnEditar.onclick = () => editarMiembro(miembro.id);
-        tdAcciones.appendChild(btnEditar);
-        tr.appendChild(tdAcciones);
-
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Abrir selector para subir foto y guardar en Supabase
-    function abrirSelectorFoto(id) {
-      fotoSubiendoId = id;
-      const inputFile = document.getElementById('uploadFotoInput');
-      inputFile.value = ''; // Reset input para detectar cambio siempre
-      inputFile.click();
-    }
-
-    // Subir foto a Supabase y guardar URL en Firestore
-    async function subirFoto(file) {
-      if (!fotoSubiendoId) return;
-      try {
-        const nombreArchivo = `fotos/${fotoSubiendoId}_${Date.now()}_${file.name}`;
-        const { data, error } = await supabase.storage
-          .from('fotos')
-          .upload(nombreArchivo, file, { upsert: true });
-        if (error) throw error;
-
-        const { data: urlData } = supabase.storage
-          .from('fotos')
-          .getPublicUrl(nombreArchivo);
-
-        // Actualizar Firestore con la URL pública
-        await db.collection('miembros').doc(fotoSubiendoId).update({
-          fotoUrl: urlData.publicUrl,
-        });
-
-        // Refrescar la tabla
-        await cargarMiembros();
-        alert('Foto subida y guardada correctamente');
-      } catch (error) {
-        alert('Error al subir foto: ' + error.message);
-      } finally {
-        fotoSubiendoId = null;
-      }
-    }
-
-    // Al seleccionar archivo de foto
-    document.getElementById('uploadFotoInput').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      subirFoto(file);
+    // Foto
+    const tdFoto = document.createElement('td');
+    const img = document.createElement('img');
+    img.src = m.fotoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; // placeholder
+    img.alt = 'Foto';
+    img.title = 'Click para cambiar foto';
+    img.style.cursor = 'pointer';
+    img.addEventListener('click', () => {
+      fotoSubiendoId = m.id;
+      uploadFotoInput.click();
     });
+    tdFoto.appendChild(img);
+    tr.appendChild(tdFoto);
 
-    // Cargar datos en formulario para editar
-    function editarMiembro(id) {
-      const miembro = miembros.find(m => m.id === id);
-      if (!miembro) return;
-      editandoId = id;
+    // Nombre
+    tr.innerHTML += `
+      <td>${m.nombre || ''}</td>
+      <td>${m.codigo || ''}</td>
+      <td>${m.edad || ''}</td>
+      <td>${m.telefono || ''}</td>
+      <td>${m.direccion || ''}</td>
+    `;
 
-      document.getElementById('nombre').value = miembro.nombre || '';
-      document.getElementById('codigo').value = miembro.codigo || '';
-      document.getElementById('telefono').value = miembro.telefono || '';
-      document.getElementById('edad').value = miembro.edad || '';
-      document.getElementById('cumple').value = miembro.cumple || '';
-      document.getElementById('direccion').value = miembro.direccion || '';
-      document.getElementById('relacion').value = miembro.relacion || 'Conyugue';
-      document.getElementById('nombreFamiliar').value = miembro.nombreFamiliar || '';
-      document.getElementById('conversion').value = miembro.conversion || '';
-      document.getElementById('bautismo').value = miembro.bautismo || '';
-      document.getElementById('bautismoEsp').value = miembro.bautismoEsp || '';
-      document.getElementById('fechaBautismoEsp').value = miembro.fechaBautismoEsp || '';
-      document.getElementById('ubicacionBautismo').value = miembro.ubicacionBautismo || '';
+    // Acciones
+    const tdAcciones = document.createElement('td');
+    const btnEditar = document.createElement('button');
+    btnEditar.textContent = 'Editar';
+    btnEditar.className = 'btn-action';
+    btnEditar.addEventListener('click', () => cargarParaEditar(m.id));
+    tdAcciones.appendChild(btnEditar);
+    tr.appendChild(tdAcciones);
 
-      // Mostrar formulario y poner tab "Personales"
-      toggleForm();
-      const firstTab = new bootstrap.Tab(document.querySelector('#tabForm button.nav-link'));
-      firstTab.show();
+    tablaMiembros.appendChild(tr);
+  });
+}
+
+// Cargar datos para editar
+async function cargarParaEditar(id) {
+  const m = miembros.find(x => x.id === id);
+  if (!m) return;
+  toggleForm(true);
+  editandoId = id;
+
+  // Llenar formulario
+  document.getElementById('nombre').value = m.nombre || '';
+  document.getElementById('codigo').value = m.codigo || '';
+  document.getElementById('telefono').value = m.telefono || '';
+  document.getElementById('edad').value = m.edad || '';
+  document.getElementById('cumple').value = m.cumple || '';
+  document.getElementById('direccion').value = m.direccion || '';
+  document.getElementById('relacion').value = m.relacion || 'Conyugue';
+  document.getElementById('nombreFamiliar').value = m.nombreFamiliar || '';
+  document.getElementById('conversion').value = m.conversion || '';
+  document.getElementById('bautismo').value = m.bautismo || '';
+  document.getElementById('bautismoEsp').value = m.bautismoEsp || '';
+  document.getElementById('fechaBautismoEsp').value = m.fechaBautismoEsp || '';
+  document.getElementById('ubicacionBautismo').value = m.ubicacionBautismo || '';
+}
+
+// Guardar miembro en Firestore
+async function guardarMiembro() {
+  // Leer campos
+  const nuevo = {
+    nombre: document.getElementById('nombre').value.trim(),
+    codigo: document.getElementById('codigo').value.trim(),
+    telefono: document.getElementById('telefono').value.trim(),
+    edad: Number(document.getElementById('edad').value),
+    cumple: document.getElementById('cumple').value,
+    direccion: document.getElementById('direccion').value.trim(),
+    relacion: document.getElementById('relacion').value,
+    nombreFamiliar: document.getElementById('nombreFamiliar').value.trim(),
+    conversion: document.getElementById('conversion').value.trim(),
+    bautismo: document.getElementById('bautismo').value.trim(),
+    bautismoEsp: document.getElementById('bautismoEsp').value.trim(),
+    fechaBautismoEsp: document.getElementById('fechaBautismoEsp').value,
+    ubicacionBautismo: document.getElementById('ubicacionBautismo').value.trim(),
+    fotoURL: null,
+  };
+
+  if (!nuevo.nombre) {
+    alert('Debe ingresar nombre');
+    return;
+  }
+
+  try {
+    if (editandoId) {
+      // Actualizar Firestore
+      await db.collection('miembros').doc(editandoId).update(nuevo);
+      // Actualizar array local
+      const i = miembros.findIndex(m => m.id === editandoId);
+      if(i >= 0) {
+        miembros[i] = { ...miembros[i], ...nuevo };
+      }
+    } else {
+      // Agregar a Firestore
+      const docRef = await db.collection('miembros').add(nuevo);
+      nuevo.id = docRef.id;
+      miembros.push(nuevo);
     }
+    renderizarTabla();
+    toggleForm(false);
+  } catch (error) {
+    alert('Error guardando miembro: ' + error.message);
+  }
+}
 
-    // Cargar al inicio
-    cargarMiembros();
-  </script>
+// Cargar miembros de Firestore
+async function cargarMiembros() {
+  miembros = [];
+  try {
+    const snapshot = await db.collection('miembros').get();
+    snapshot.forEach(doc => {
+      miembros.push({ id: doc.id, ...doc.data() });
+    });
+    renderizarTabla();
+  } catch (e) {
+    alert('Error cargando miembros: ' + e.message);
+  }
+}
+
+// Subir foto a Supabase y actualizar Firestore
+async function subirFoto(file, idMiembro) {
+  if (!file || !idMiembro) return;
+  try {
+    const nombreArchivo = `${idMiembro}_${Date.now()}_${file.name}`;
+    // Subir a Supabase bucket 'fotos'
+    let { data, error } = await supabase.storage
+      .from('fotos')
+      .upload(nombreArchivo, file, { upsert: true });
+    if (error) throw error;
+
+    // Obtener URL pública
+    const { publicURL, error: urlError } = supabase.storage
+      .from('fotos')
+      .getPublicUrl(nombreArchivo);
+    if (urlError) throw urlError;
+
+    // Actualizar en Firestore el campo fotoURL
+    await db.collection('miembros').doc(idMiembro).update({ fotoURL: publicURL });
+
+    // Actualizar en array local y refrescar tabla
+    const i = miembros.findIndex(m => m.id === idMiembro);
+    if (i >= 0) {
+      miembros[i].fotoURL = publicURL;
+      renderizarTabla();
+    }
+  } catch (err) {
+    alert('Error subiendo foto: ' + err.message);
+  }
+}
+
+// Eventos
+btnAgregarMiembro.addEventListener('click', () => toggleForm(true));
+btnGuardar.addEventListener('click', guardarMiembro);
+
+uploadFotoInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!fotoSubiendoId) return alert('Error: No se sabe qué miembro actualizar');
+
+  await subirFoto(file, fotoSubiendoId);
+  uploadFotoInput.value = '';
+  fotoSubiendoId = null;
+});
+
+// Inicial
+cargarMiembros();
+</script> 
 </body>
 </html>
