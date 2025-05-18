@@ -1,459 +1,247 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gestión de Miembros</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0; padding: 0; display: flex;
-  }
-  /* Menú lateral */
-  #menuLateral {
-    width: 220px;
-    background: #2c3e50;
-    color: white;
-    height: 100vh;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-  #menuLateral h2 {
-    margin-top: 0;
-  }
-  #menuLateral nav a {
-    color: white;
-    text-decoration: none;
-    display: block;
-    margin: 12px 0;
-  }
-  #menuLateral nav a:hover {
-    text-decoration: underline;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestión de Miembros</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; }
+    #menuLateral {
+      width: 220px; background: #2c3e50; color: white; height: 100vh; padding: 20px; box-sizing: border-box;
+    }
+    #menuLateral h2 { margin-top: 0; }
+    #menuLateral nav a {
+      color: white; text-decoration: none; display: block; margin: 12px 0;
+    }
+    #menuLateral nav a:hover { text-decoration: underline; }
+    #contenidoPrincipal { flex: 1; padding: 20px; }
 
-  /* Contenedor principal */
-  #contenidoPrincipal {
-    flex: 1;
-    padding: 20px;
-  }
+    .header-tabla {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+    }
+    #btnAgregarMiembro {
+      background-color: #2980b9; color: white; border: none; padding: 8px 14px;
+      font-size: 14px; border-radius: 4px; cursor: pointer;
+    }
+    #btnAgregarMiembro:hover { background-color: #3498db; }
+    #inputBusqueda {
+      padding: 6px 10px; font-size: 14px; width: 250px; border: 1px solid #ccc; border-radius: 4px;
+    }
+    table {
+      width: 100%; border-collapse: collapse;
+    }
+    thead {
+      background-color: #34495e; color: white;
+    }
+    th, td {
+      border: 1px solid #ddd; padding: 8px; text-align: left;
+    }
+    tr:nth-child(even) { background-color: #f4f6f8; }
+    td img {
+      width: 40px; height: 40px; object-fit: cover; border-radius: 50%; cursor: pointer;
+    }
+    .btn-action {
+      background-color: #27ae60; color: white; border: none; padding: 6px 10px;
+      border-radius: 4px; cursor: pointer;
+    }
+    .btn-action:hover { background-color: #2ecc71; }
 
-  /* Botón agregar y búsqueda */
-  .header-tabla {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  #btnAgregarMiembro {
-    background-color: #2980b9;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  #btnAgregarMiembro:hover {
-    background-color: #3498db;
-  }
-  #inputBusqueda {
-    padding: 6px 10px;
-    font-size: 14px;
-    width: 250px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-
-  /* Tabla */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  thead {
-    background-color: #34495e;
-    color: white;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-  tr:nth-child(even) {
-    background-color: #f4f6f8;
-  }
-
-  /* Imagen en tabla */
-  td img {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-
-  /* Botón editar */
-  .btn-action {
-    background-color: #27ae60;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .btn-action:hover {
-    background-color: #2ecc71;
-  }
-
-  /* Formulario miembro */
-  #formMiembro {
-    display: none;
-    margin-top: 20px;
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 6px;
-    max-width: 600px;
-  }
-  #formMiembro h3 {
-    margin-top: 0;
-  }
-  #formMiembro .parte {
-    margin-bottom: 15px;
-  }
-  #formMiembro label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
-  #formMiembro input, #formMiembro select, #formMiembro textarea {
-    width: 100%;
-    padding: 6px 10px;
-    box-sizing: border-box;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  #formMiembro button {
-    background-color: #2980b9;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  #formMiembro button:hover {
-    background-color: #3498db;
-  }
-</style>
+    #formMiembro {
+      display: none; margin-top: 20px; border: 1px solid #ddd;
+      padding: 15px; border-radius: 6px; max-width: 600px;
+    }
+    #formMiembro h3 { margin-top: 0; }
+    #formMiembro .parte { margin-bottom: 15px; }
+    #formMiembro label {
+      display: block; font-weight: bold; margin-bottom: 4px;
+    }
+    #formMiembro input, #formMiembro select, #formMiembro textarea {
+      width: 100%; padding: 6px 10px; box-sizing: border-box;
+      font-size: 14px; border: 1px solid #ccc; border-radius: 4px;
+    }
+    #formMiembro button {
+      background-color: #2980b9; color: white; border: none;
+      padding: 8px 14px; border-radius: 4px; cursor: pointer;
+    }
+    #formMiembro button:hover { background-color: #3498db; }
+  </style>
 </head>
 <body>
 
-<!-- Menú lateral -->
-<div id="menuLateral">
-  <h2>Menú</h2>
-  <nav>
-    <a href="#">Inicio</a>
-    <a href="#">Miembros</a>
-    <a href="#">Eventos</a>
-    <a href="#">Configuración</a>
-  </nav>
-</div>
-
-<!-- Contenido principal -->
-<div id="contenidoPrincipal">
-
-  <h1>Gestión de Miembros</h1>
-
-  <!-- Botón agregar y búsqueda -->
-  <div class="header-tabla">
-    <button id="btnAgregarMiembro">+ Agregar miembro</button>
-    <input id="inputBusqueda" type="text" placeholder="Buscar miembro por nombre..." />
+  <div id="menuLateral">
+    <h2>Menú</h2>
+    <nav>
+      <a href="#">Inicio</a>
+      <a href="#">Miembros</a>
+      <a href="#">Eventos</a>
+      <a href="#">Configuración</a>
+    </nav>
   </div>
 
-  <!-- Tabla de miembros -->
-  <table>
-    <thead>
-      <tr>
-        <th>Foto</th>
-        <th>Nombre</th>
-        <th>Código</th>
-        <th>Edad</th>
-        <th>Teléfono</th>
-        <th>Dirección</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tablaMiembrosBody">
-      <!-- Se llenará con JS -->
-    </tbody>
-  </table>
+  <div id="contenidoPrincipal">
+    <h1>Gestión de Miembros</h1>
 
-  <!-- Formulario para agregar/editar miembro -->
-  <form id="formMiembro">
-    <h3 id="tituloForm">Agregar Miembro</h3>
-    <div class="parte">
-      <label for="inputNombre">Nombre:</label>
-      <input type="text" id="inputNombre" required />
+    <div class="header-tabla">
+      <button id="btnAgregarMiembro">+ Agregar miembro</button>
+      <input id="inputBusqueda" type="text" placeholder="Buscar miembro por nombre..." />
     </div>
-    <div class="parte">
-      <label for="inputCodigo">Código:</label>
-      <input type="text" id="inputCodigo" required />
-    </div>
-    <div class="parte">
-      <label for="inputEdad">Edad:</label>
-      <input type="number" id="inputEdad" min="0" />
-    </div>
-    <div class="parte">
-      <label for="inputTelefono">Teléfono:</label>
-      <input type="tel" id="inputTelefono" />
-    </div>
-    <div class="parte">
-      <label for="inputDireccion">Dirección:</label>
-      <textarea id="inputDireccion" rows="2"></textarea>
-    </div>
-    <button type="submit" id="btnGuardar">Guardar</button>
-    <button type="button" id="btnCancelar" style="margin-left:10px;">Cancelar</button>
-  </form>
 
-  <!-- Input invisible para subir foto -->
-  <input type="file" id="uploadFotoInput" accept="image/*" style="display:none" />
+    <table>
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Edad</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaMiembrosBody"></tbody>
+    </table>
 
-</div>
+    <form id="formMiembro">
+      <h3 id="tituloForm">Agregar Miembro</h3>
+      <div class="parte"><label>Nombre:</label><input type="text" id="inputNombre" required /></div>
+      <div class="parte"><label>Código:</label><input type="text" id="inputCodigo" required /></div>
+      <div class="parte"><label>Edad:</label><input type="number" id="inputEdad" /></div>
+      <div class="parte"><label>Teléfono:</label><input type="tel" id="inputTelefono" /></div>
+      <div class="parte"><label>Dirección:</label><textarea id="inputDireccion" rows="2"></textarea></div>
+      <button type="submit" id="btnGuardar">Guardar</button>
+      <button type="button" id="btnCancelar" style="margin-left:10px;">Cancelar</button>
+    </form>
 
-<script>
-  // Inicialización Firebase y Supabase
-  // Aquí debes configurar con tus datos reales
-  const firebaseConfig = {
-    // Tu configuración Firebase aquífirebaseConfig = {
+    <input type="file" id="uploadFotoInput" accept="image/*" style="display:none" />
+  </div>
+
+  <!-- Scripts (JS) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
       apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
       authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
       projectId: "iglesia-adoracion-viva-182e6",
       storageBucket: "iglesia-adoracion-viva-182e6.appspot.com",
       messagingSenderId: "152824399391",
       appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
-    
-  };
-  const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk';
-  
-  // SDKs y clientes inicializados
-  // Asume ya importaste Firebase y Supabase en tu proyecto o lo haces aquí
-  // Ejemplo:
-  // import { initializeApp } from "firebase/app";
-  // import { getFirestore, collection, getDocs, doc, setDoc } from "firebase/firestore";
-  // import { createClient } from '@supabase/supabase-js';
-  
-  // Para esta demo simplificada usaré objetos ficticios:
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+    };
+    const supabase = supabase.createClient(
+      'https://azywyqozwwbfctxeokug.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk'
+    );
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-  const supabase = supabaseJs.createClient(supabaseUrl, supabaseKey);
+    const btnAgregarMiembro = document.getElementById('btnAgregarMiembro');
+    const inputBusqueda = document.getElementById('inputBusqueda');
+    const tablaMiembrosBody = document.getElementById('tablaMiembrosBody');
+    const formMiembro = document.getElementById('formMiembro');
+    const tituloForm = document.getElementById('tituloForm');
+    const btnGuardar = document.getElementById('btnGuardar');
+    const btnCancelar = document.getElementById('btnCancelar');
+    const uploadFotoInput = document.getElementById('uploadFotoInput');
 
-  // Referencias DOM
-  const btnAgregarMiembro = document.getElementById('btnAgregarMiembro');
-  const inputBusqueda = document.getElementById('inputBusqueda');
-  const tablaMiembrosBody = document.getElementById('tablaMiembrosBody');
-  const formMiembro = document.getElementById('formMiembro');
-  const tituloForm = document.getElementById('tituloForm');
-  const btnGuardar = document.getElementById('btnGuardar');
-  const btnCancelar = document.getElementById('btnCancelar');
-  const uploadFotoInput = document.getElementById('uploadFotoInput');
+    let miembros = [], miembrosFiltrados = [], editandoId = null, fotoSubiendoId = null;
 
-  // Estado
-  let miembros = [];
-  let miembrosFiltrados = [];
-  let editandoId = null; // null = agregar, o id de miembro a editar
-  let fotoSubiendoId = null;
-
-  // Función para cargar miembros desde Firestore
-  async function cargarMiembros() {
-    try {
+    async function cargarMiembros() {
       miembros = [];
       const snapshot = await db.collection('miembros').get();
-      snapshot.forEach(doc => {
-        miembros.push({ id: doc.id, ...doc.data() });
-      });
+      snapshot.forEach(doc => miembros.push({ id: doc.id, ...doc.data() }));
       filtrarMiembros('');
-    } catch (error) {
-      alert('Error al cargar miembros: ' + error.message);
     }
-  }
 
-  // Renderizar tabla con miembros filtrados
-  function renderizarTabla() {
-    tablaMiembrosBody.innerHTML = '';
-    miembrosFiltrados.forEach(m => {
-      const tr = document.createElement('tr');
-
-      // Foto
-      const tdFoto = document.createElement('td');
-      const img = document.createElement('img');
-      img.src = m.fotoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-      img.alt = 'Foto';
-      img.title = 'Click para cambiar foto';
-      img.style.cursor = 'pointer';
-      img.addEventListener('click', () => {
-        fotoSubiendoId = m.id;
-        uploadFotoInput.click();
+    function renderizarTabla() {
+      tablaMiembrosBody.innerHTML = '';
+      miembrosFiltrados.forEach(m => {
+        const tr = document.createElement('tr');
+        const tdFoto = document.createElement('td');
+        const img = document.createElement('img');
+        img.src = m.fotoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+        img.title = 'Click para cambiar foto';
+        img.onclick = () => { fotoSubiendoId = m.id; uploadFotoInput.click(); };
+        tdFoto.appendChild(img);
+        tr.appendChild(tdFoto);
+        tr.innerHTML += `
+          <td>${m.nombre || ''}</td><td>${m.codigo || ''}</td>
+          <td>${m.edad || ''}</td><td>${m.telefono || ''}</td>
+          <td>${m.direccion || ''}</td>
+        `;
+        const tdAcciones = document.createElement('td');
+        const btnEditar = document.createElement('button');
+        btnEditar.textContent = 'Editar';
+        btnEditar.className = 'btn-action';
+        btnEditar.onclick = () => cargarParaEditar(m.id);
+        tdAcciones.appendChild(btnEditar);
+        tr.appendChild(tdAcciones);
+        tablaMiembrosBody.appendChild(tr);
       });
-      tdFoto.appendChild(img);
-      tr.appendChild(tdFoto);
-
-      // Otros datos
-      tr.innerHTML += `
-        <td>${m.nombre || ''}</td>
-        <td>${m.codigo || ''}</td>
-        <td>${m.edad || ''}</td>
-        <td>${m.telefono || ''}</td>
-        <td>${m.direccion || ''}</td>
-      `;
-
-      // Acciones
-      const tdAcciones = document.createElement('td');
-      const btnEditar = document.createElement('button');
-      btnEditar.textContent = 'Editar';
-      btnEditar.className = 'btn-action';
-      btnEditar.addEventListener('click', () => cargarParaEditar(m.id));
-      tdAcciones.appendChild(btnEditar);
-      tr.appendChild(tdAcciones);
-
-      tablaMiembrosBody.appendChild(tr);
-    });
-  }
-
-  // Filtrar miembros por nombre
-  function filtrarMiembros(texto) {
-    texto = texto.trim().toLowerCase();
-    if (!texto) {
-      miembrosFiltrados = [...miembros];
-    } else {
-      miembrosFiltrados = miembros.filter(m => m.nombre.toLowerCase().includes(texto));
     }
-    renderizarTabla();
-  }
 
-  inputBusqueda.addEventListener('input', () => filtrarMiembros(inputBusqueda.value));
-
-  // Mostrar formulario para agregar nuevo miembro
-  btnAgregarMiembro.addEventListener('click', () => {
-    editandoId = null;
-    tituloForm.textContent = 'Agregar Miembro';
-    formMiembro.reset();
-    formMiembro.style.display = 'block';
-  });
-
-  // Cargar datos para editar
-  function cargarParaEditar(id) {
-    const miembro = miembros.find(m => m.id === id);
-    if (!miembro) {
-      alert('Miembro no encontrado');
-      return;
+    function filtrarMiembros(texto) {
+      const t = texto.trim().toLowerCase();
+      miembrosFiltrados = t ? miembros.filter(m => m.nombre.toLowerCase().includes(t)) : [...miembros];
+      renderizarTabla();
     }
-    editandoId = id;
-    tituloForm.textContent = 'Editar Miembro';
-    formMiembro.style.display = 'block';
 
-    // Rellenar formulario
-    document.getElementById('inputNombre').value = miembro.nombre || '';
-    document.getElementById('inputCodigo').value = miembro.codigo || '';
-    document.getElementById('inputEdad').value = miembro.edad || '';
-    document.getElementById('inputTelefono').value = miembro.telefono || '';
-    document.getElementById('inputDireccion').value = miembro.direccion || '';
-  }
+    inputBusqueda.oninput = () => filtrarMiembros(inputBusqueda.value);
+    btnAgregarMiembro.onclick = () => {
+      editandoId = null;
+      tituloForm.textContent = 'Agregar Miembro';
+      formMiembro.reset();
+      formMiembro.style.display = 'block';
+    };
+    btnCancelar.onclick = () => formMiembro.style.display = 'none';
 
-  btnCancelar.addEventListener('click', () => {
-    formMiembro.style.display = 'none';
-  });
+    async function cargarParaEditar(id) {
+      const miembro = miembros.find(m => m.id === id);
+      if (!miembro) return alert('Miembro no encontrado');
+      editandoId = id;
+      tituloForm.textContent = 'Editar Miembro';
+      formMiembro.style.display = 'block';
+      document.getElementById('inputNombre').value = miembro.nombre;
+      document.getElementById('inputCodigo').value = miembro.codigo;
+      document.getElementById('inputEdad').value = miembro.edad;
+      document.getElementById('inputTelefono').value = miembro.telefono;
+      document.getElementById('inputDireccion').value = miembro.direccion;
+    }
 
-  // Guardar datos en Firestore
-  formMiembro.addEventListener('submit', async e => {
-    e.preventDefault();
-    const nuevoMiembro = {
-      nombre: document.getElementById('inputNombre').value.trim(),
-      codigo: document.getElementById('inputCodigo').value.trim(),
-      edad: Number(document.getElementById('inputEdad').value) || null,
-      telefono: document.getElementById('inputTelefono').value.trim(),
-      direccion: document.getElementById('inputDireccion').value.trim(),
-      fotoURL: null // Se mantiene foto si edita, o null al crear
+    formMiembro.onsubmit = async e => {
+      e.preventDefault();
+      const nuevo = {
+        nombre: document.getElementById('inputNombre').value,
+        codigo: document.getElementById('inputCodigo').value,
+        edad: parseInt(document.getElementById('inputEdad').value) || 0,
+        telefono: document.getElementById('inputTelefono').value,
+        direccion: document.getElementById('inputDireccion').value,
+      };
+      try {
+        if (editandoId) {
+          await db.collection('miembros').doc(editandoId).update(nuevo);
+        } else {
+          await db.collection('miembros').add(nuevo);
+        }
+        formMiembro.style.display = 'none';
+        cargarMiembros();
+      } catch (err) {
+        alert('Error al guardar: ' + err.message);
+      }
     };
 
-    try {
-      if (editandoId) {
-        // Mantener fotoURL si existe
-        const miembroActual = miembros.find(m => m.id === editandoId);
-        nuevoMiembro.fotoURL = miembroActual?.fotoURL || null;
-        await db.collection('miembros').doc(editandoId).set(nuevoMiembro);
-        alert('Miembro actualizado');
-      } else {
-        const docRef = await db.collection('miembros').add(nuevoMiembro);
-        nuevoMiembro.id = docRef.id;
-        alert('Miembro agregado');
-      }
-      formMiembro.style.display = 'none';
-      await cargarMiembros();
-    } catch (error) {
-      alert('Error guardando miembro: ' + error.message);
-    }
-  });
+    uploadFotoInput.onchange = async () => {
+      const file = uploadFotoInput.files[0];
+      if (!file || !fotoSubiendoId) return;
+      const filePath = `fotos/${fotoSubiendoId}-${Date.now()}.jpg`;
+      const { data, error } = await supabase.storage.from('fotos').upload(filePath, file, { upsert: true });
+      if (error) return alert('Error al subir foto: ' + error.message);
+      const { data: publicUrl } = supabase.storage.from('fotos').getPublicUrl(filePath);
+      await db.collection('miembros').doc(fotoSubiendoId).update({ fotoURL: publicUrl.publicUrl });
+      cargarMiembros();
+    };
 
-  // Subir foto a Supabase
-  uploadFotoInput.addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (!fotoSubiendoId) {
-      alert('Error: no se sabe a qué miembro asociar la foto');
-      return;
-    }
-    try {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `fotos/${fotoSubiendoId}.${fileExt}`;
-
-      const { data, error } = await supabase.storage
-        .from('fotos')
-        .upload(filePath, file, { upsert: true });
-
-      if (error) {
-        alert('Error subiendo foto: ' + error.message);
-        return;
-      }
-
-      // Obtener URL pública de la foto
-      const { publicURL, error: urlError } = supabase.storage
-        .from('fotos')
-        .getPublicUrl(filePath);
-
-      if (urlError) {
-        alert('Error obteniendo URL pública: ' + urlError.message);
-        return;
-      }
-
-      // Actualizar URL foto en Firestore
-      await db.collection('miembros').doc(fotoSubiendoId).update({ fotoURL: publicURL });
-
-      alert('Foto subida y actualizada correctamente');
-      fotoSubiendoId = null;
-      uploadFotoInput.value = '';
-      await cargarMiembros();
-
-    } catch (error) {
-      alert('Error en subida de foto: ' + error.message);
-    }
-  });
-
-  // Cargar inicial
-  cargarMiembros();
-
-</script>
-
-<!-- Librerías necesarias -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-
-<script>
-  // Inicializa Supabase aquí, ya que no usamos import
-  window.supabaseJs = supabaseJs || supabase;
-  window.supabase = supabase.createClient('https://azywyqozwwbfctxeokug.supabase.co', 'TU_ANON_KEY_SUPABASE');
-</script>
-
+    cargarMiembros();
+  </script>
 </body>
 </html>
