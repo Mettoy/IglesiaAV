@@ -4,167 +4,121 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gestión de Miembros</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
   <style>
     body {
-      background-color: #f5f6fa;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: sans-serif;
+      margin: 40px;
+      background: #f5f5f5;
     }
-    .sidebar {
-      background-color: #001f3f;
-      color: white;
-      width: 250px;
-      min-height: 100vh;
-      position: fixed;
-      transition: all 0.3s ease;
+    h1 {
+      color: #333;
     }
-    .sidebar img {
-      width: 80%;
-      margin: 20px auto;
-      display: block;
+    form {
+      display: none;
+      background: #fff;
+      padding: 20px;
       border-radius: 10px;
+      margin-bottom: 20px;
     }
-    .sidebar a {
+    label {
       display: block;
-      color: white;
-      padding: 15px 20px;
-      text-decoration: none;
+      margin-top: 10px;
     }
-    .sidebar a:hover {
-      background-color: #ffcc00;
-      color: black;
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
-    .logout {
-      padding: 15px 20px;
-      cursor: pointer;
-      color: white;
+    table {
+      width: 100%;
+      background: #fff;
+      border-collapse: collapse;
     }
-    .content {
-      margin-left: 250px;
-      padding: 20px;
-    }
-    .btn-add {
-      background-color: #ffcc00;
-      color: black;
-      font-weight: bold;
-      border: none;
-    }
-    .form-card {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-top: 20px;
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
     }
     th {
-      background-color: #001f3f;
-      color: white;
+      background: #eee;
     }
-    td img {
+    img {
       width: 60px;
       height: 60px;
-      border-radius: 50%;
       object-fit: cover;
-      margin-right: 10px;
+      border-radius: 6px;
     }
     .btn-action {
-      background-color: #ffcc00;
-      border: none;
-      color: black;
       padding: 5px 10px;
       margin-right: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn-action:hover {
+      background-color: #ddd;
+    }
+    #agregar {
+      padding: 10px 20px;
+      margin-bottom: 20px;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #agregar:hover {
+      background: #218838;
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar" id="sidebar">
-    <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
-    <div class="user-info" id="userInfo"></div>
-    <div id="menuLinks"></div>
-    <a href="miembros.html" class="sidebar-link">Miembros</a>
-    <a href="registrar.html" class="sidebar-link">Dar acceso</a>
-    <a href="diezmó.html" class="sidebar-link">Diezmos</a>
-    <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-    <a href="reportes.html" class="sidebar-link">Reportess</a>
-    <a href="discipulado.html" class="sidebar-link">Discipulado</a>
-    <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
-  </div>
+  <h1>Miembros</h1>
 
-  <!-- Content -->
-  <div class="content">
-    <h2>Gestión de Miembros</h2>
-    <div class="text-center">
-      <button class="btn btn-add" onclick="toggleForm()">+ Agregar miembro</button>
-    </div>
+  <button id="agregar" onclick="toggleForm()">Agregar miembro</button>
 
-    <!-- Formulario -->
-    <div class="form-card" id="formulario" style="display:none;">
-      <ul class="nav nav-tabs" id="tabForm" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#personales" type="button">Personales</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#familiares" type="button">Familiares</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#espirituales" type="button">Espirituales</button></li>
-      </ul>
-      <div class="tab-content pt-3">
-        <!-- PERSONALES -->
-        <div class="tab-pane fade show active" id="personales">
-          <input class="form-control mb-2" id="nombre" placeholder="Nombre completo"/>
-          <input class="form-control mb-2" id="codigo" placeholder="Código"/>
-          <input class="form-control mb-2" id="telefono" placeholder="Teléfono"/>
-          <input class="form-control mb-2" id="edad" type="number" placeholder="Edad"/>
-          <input class="form-control mb-2" id="cumple" type="date" placeholder="Cumpleaños"/>
-          <input class="form-control mb-2" id="direccion" placeholder="Dirección"/>
-          <label class="form-label mt-2">Foto del miembro:</label>
-          <input class="form-control mb-2" type="file" id="foto" accept="image/*"/>
-        </div>
+  <form id="formulario">
+    <label>Nombre: <input type="text" id="nombre" /></label>
+    <label>Código: <input type="text" id="codigo" /></label>
+    <label>Teléfono: <input type="text" id="telefono" /></label>
+    <label>Edad: <input type="number" id="edad" /></label>
+    <label>Cumpleaños: <input type="date" id="cumple" /></label>
+    <label>Dirección: <input type="text" id="direccion" /></label>
+    <label>Relación familiar: <input type="text" id="relacion" /></label>
+    <label>Nombre familiar: <input type="text" id="nombreFamiliar" /></label>
+    <label>Conversión: <input type="text" id="conversion" /></label>
+    <label>Bautismo en agua: <input type="text" id="bautismo" /></label>
+    <label>Bautismo Espíritu Santo: <input type="text" id="bautismoEsp" /></label>
+    <label>Fecha Bautismo Espíritu Santo: <input type="date" id="fechaBautismoEsp" /></label>
+    <label>Ubicación Bautismo: <input type="text" id="ubicacionBautismo" /></label>
+    <label>Foto: <input type="file" id="foto" /></label>
+    <button type="button" onclick="guardarMiembro()">Guardar</button>
+  </form>
 
-        <!-- FAMILIARES -->
-        <div class="tab-pane fade" id="familiares">
-          <select class="form-select mb-2" id="relacion">
-            <option>Conyugue</option>
-            <option>Papá</option>
-            <option>Mamá</option>
-            <option>Hermano/a</option>
-          </select>
-          <input class="form-control mb-2" id="nombreFamiliar" placeholder="Nombre del familiar"/>
-        </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Edad</th>
+        <th>Teléfono</th>
+        <th>Dirección</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tablaMiembros"></tbody>
+  </table>
 
-        <!-- ESPIRITUALES -->
-        <div class="tab-pane fade" id="espirituales">
-          <input class="form-control mb-2" id="conversion" placeholder="Conversión"/>
-          <input class="form-control mb-2" id="bautismo" placeholder="Bautismo en Agua"/>
-          <input class="form-control mb-2" id="bautismoEsp" placeholder="Bautismo Espíritu Santo"/>
-          <input class="form-control mb-2" id="fechaBautismoEsp" type="date" placeholder="Fecha BA. Esp."/>
-          <input class="form-control mb-2" id="ubicacionBautismo" placeholder="Ubicación BA. Esp."/>
-        </div>
-      </div>
-      <div class="text-center mt-3">
-        <button class="btn btn-add" onclick="guardarMiembro()">Guardar miembro</button>
-      </div>
-    </div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <!-- Tabla -->
-    <table class="table table-bordered table-striped mt-4">
-      <thead>
-        <tr>
-          <th>Foto</th>
-          <th>Nombre</th>
-          <th>Código</th>
-          <th>Edad</th>
-          <th>Teléfono</th>
-          <th>Dirección</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tablaMiembros"></tbody>
-    </table>
-  </div>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script>
     // Firebase
     const firebaseConfig = {
@@ -184,9 +138,15 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk"
     );
 
-    function toggleForm() {
+    let editandoId = null;
+
+    function toggleForm(mostrar = true) {
       const f = document.getElementById("formulario");
-      f.style.display = f.style.display === "none" ? "block" : "none";
+      f.style.display = mostrar ? "block" : "none";
+      if (!mostrar) {
+        editandoId = null;
+        f.reset?.();
+      }
     }
 
     async function subirFoto(file) {
@@ -196,8 +156,8 @@
         alert("Error al subir la foto: " + error.message);
         return null;
       }
-      const urlResponse = supabase.storage.from("fotos").getPublicUrl(nombreArchivo);
-      return urlResponse.data.publicUrl;
+      const { publicUrl } = supabase.storage.from("fotos").getPublicUrl(nombreArchivo).data;
+      return publicUrl;
     }
 
     async function guardarMiembro() {
@@ -223,15 +183,26 @@
         bautismoEsp: document.getElementById("bautismoEsp").value,
         fechaBautismoEsp: document.getElementById("fechaBautismoEsp").value,
         ubicacionBautismo: document.getElementById("ubicacionBautismo").value,
-        foto: fotoURL,
         baja: false
       };
 
-      db.collection("miembros").add(miembro).then(() => {
-        mostrarMiembros();
-        alert("Miembro guardado");
-        document.getElementById("formulario").style.display = "none";
-      });
+      if (fotoURL) {
+        miembro.foto = fotoURL;
+      }
+
+      if (editandoId) {
+        db.collection("miembros").doc(editandoId).update(miembro).then(() => {
+          mostrarMiembros();
+          alert("Miembro actualizado");
+          toggleForm(false);
+        });
+      } else {
+        db.collection("miembros").add({ ...miembro, foto: fotoURL }).then(() => {
+          mostrarMiembros();
+          alert("Miembro guardado");
+          toggleForm(false);
+        });
+      }
     }
 
     function mostrarMiembros() {
@@ -260,12 +231,29 @@
       });
     }
 
-    function darDeBaja(id) {
-      db.collection("miembros").doc(id).update({ baja: true });
+    function editarMiembro(id) {
+      db.collection("miembros").doc(id).get().then(doc => {
+        const m = doc.data();
+        document.getElementById("nombre").value = m.nombre || "";
+        document.getElementById("codigo").value = m.codigo || "";
+        document.getElementById("telefono").value = m.telefono || "";
+        document.getElementById("edad").value = m.edad || "";
+        document.getElementById("cumple").value = m.cumple || "";
+        document.getElementById("direccion").value = m.direccion || "";
+        document.getElementById("relacion").value = m.relacion || "";
+        document.getElementById("nombreFamiliar").value = m.nombreFamiliar || "";
+        document.getElementById("conversion").value = m.conversion || "";
+        document.getElementById("bautismo").value = m.bautismo || "";
+        document.getElementById("bautismoEsp").value = m.bautismoEsp || "";
+        document.getElementById("fechaBautismoEsp").value = m.fechaBautismoEsp || "";
+        document.getElementById("ubicacionBautismo").value = m.ubicacionBautismo || "";
+        toggleForm(true);
+        editandoId = id;
+      });
     }
 
-    function editarMiembro(id) {
-      alert("Función editar aún no implementada");
+    function darDeBaja(id) {
+      db.collection("miembros").doc(id).update({ baja: true });
     }
 
     mostrarMiembros();
