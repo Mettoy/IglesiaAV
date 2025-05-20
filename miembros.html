@@ -4,16 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gestión de Miembros</title>
-  <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png"/>
+  <link rel="icon" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" />
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
       font-family: "Segoe UI", sans-serif;
-      background-color: #f0f2f5;
+      background-color: #f3f4f6;
       display: flex;
     }
 
@@ -44,7 +40,6 @@
     }
 
     h1 {
-      margin-top: 0;
       color: #1f2937;
     }
 
@@ -55,62 +50,29 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      margin-bottom: 20px;
+      margin-right: 10px;
     }
 
-    .btn-edit {
-      background-color: #2563eb;
-      color: white;
-      padding: 6px 12px;
+    input[type="text"], input[type="date"], input[type="number"], input[type="file"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
       border-radius: 6px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-delete {
-      background-color: #dc2626;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
-    }
-
-    .formulario {
-      background-color: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 30px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      display: none;
     }
 
     .form-section {
+      background-color: white;
+      border-radius: 12px;
+      padding: 20px;
       margin-bottom: 20px;
-      border-bottom: 1px solid #e5e7eb;
-      padding-bottom: 15px;
-    }
-
-    .form-section:last-child {
-      border-bottom: none;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
 
     .form-section h3 {
-      margin-bottom: 10px;
-      color: #111827;
-    }
-
-    .form-section label {
-      display: block;
-      margin: 6px 0 4px;
-    }
-
-    .form-section input {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 10px;
-      border-radius: 6px;
-      border: 1px solid #d1d5db;
+      margin-top: 0;
+      color: #374151;
     }
 
     table {
@@ -128,57 +90,91 @@
       text-align: left;
     }
 
-    th {
-      background-color: #f9fafb;
-    }
-
     img.thumb {
       width: 50px;
       height: 50px;
       border-radius: 50%;
       object-fit: cover;
     }
+
+    .btn-delete {
+      background-color: #dc2626;
+      padding: 6px 12px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-edit {
+      background-color: #2563eb;
+      padding: 6px 12px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .flex {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    #busqueda {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 300px;
+    }
+
+    #formularioMiembro {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="sidebar">
-    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" alt="Logo"/>
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo"/>
     <h2>Miembros</h2>
   </div>
 
   <div class="content">
     <h1>Gestión de Miembros</h1>
-    
-    <form class="formulario" id="formMiembro">
-      <input type="hidden" id="idMiembro">
-      
+
+    <div class="flex">
+      <button onclick="mostrarFormulario()">Añadir miembro</button>
+      <input type="text" id="busqueda" placeholder="Buscar por nombre..." oninput="filtrarTabla()" />
+    </div>
+
+    <div id="formularioMiembro">
       <div class="form-section">
         <h3>Datos Personales</h3>
-        <label>Nombre</label><input type="text" id="nombre">
-        <label>Edad</label><input type="number" id="edad">
-        <label>Código</label><input type="text" id="codigo">
-        <label>Teléfono</label><input type="text" id="telefono">
-        <label>Dirección</label><input type="text" id="direccion">
-        <label>Fecha de Nacimiento</label><input type="date" id="fechaNacimiento">
+        <input type="text" id="nombre" placeholder="Nombre completo">
+        <input type="number" id="edad" placeholder="Edad">
+        <input type="text" id="codigo" placeholder="Código">
+        <input type="text" id="telefono" placeholder="Teléfono">
+        <input type="text" id="direccion" placeholder="Dirección">
+        <input type="date" id="fechaNacimiento" placeholder="Fecha de nacimiento">
+        <input type="file" id="foto">
       </div>
 
       <div class="form-section">
         <h3>Datos Familiares</h3>
-        <label>Familiar (tipo y nombre)</label><input type="text" id="familiar">
+        <input type="text" id="familiar" placeholder="Tipo y nombre de familiar">
       </div>
 
       <div class="form-section">
         <h3>Datos Espirituales</h3>
-        <label>Fecha de Conversión</label><input type="date" id="fechaConversion">
-        <label>Lugar de Conversión</label><input type="text" id="lugarConversion">
-        <label>Fecha de Bautismo</label><input type="date" id="fechaBautismo">
-        <label>Lugar de Bautismo</label><input type="text" id="lugarBautismo">
-        <label>Fecha Bautismo Espíritu</label><input type="date" id="fechaBauEspiritu">
-        <label>Lugar Bautismo Espíritu</label><input type="text" id="lugarBauEspiritu">
+        <input type="date" id="fechaConversion" placeholder="Fecha de conversión">
+        <input type="text" id="lugarConversion" placeholder="Lugar de conversión">
+        <input type="date" id="fechaBautismo" placeholder="Fecha de bautismo">
+        <input type="text" id="lugarBautismo" placeholder="Lugar de bautismo">
+        <input type="date" id="fechaBauEspiritu" placeholder="Fecha de bautismo en el Espíritu">
+        <input type="text" id="lugarBauEspiritu" placeholder="Lugar de bautismo en el Espíritu">
       </div>
 
-      <button type="button" onclick="guardarEdicion()">Guardar</button>
-    </form>
+      <button onclick="guardarMiembro()">Guardar</button>
+    </div>
 
     <table id="tablaMiembros">
       <thead>
@@ -189,6 +185,11 @@
           <th>Código</th>
           <th>Teléfono</th>
           <th>Dirección</th>
+          <th>Fecha Nac.</th>
+          <th>Familiar</th>
+          <th>Conversión</th>
+          <th>Bautismo</th>
+          <th>Bautismo Espíritu</th>
           <th>Editar</th>
           <th>Eliminar</th>
         </tr>
@@ -205,10 +206,9 @@
       deleteDoc, doc, updateDoc, getDoc
     } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-    const supabase = createClient(
-      "https://azywyqozwwbfctxeokug.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELkI"
-    );
+    const supabaseUrl = "https://azywyqozwwbfctxeokug.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const firebaseConfig = {
       apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
@@ -221,44 +221,53 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    function llenarFormulario(docSnap) {
-      const d = docSnap.data();
-      document.getElementById("idMiembro").value = docSnap.id;
-      document.getElementById("nombre").value = d.nombre || "";
-      document.getElementById("edad").value = d.edad || "";
-      document.getElementById("codigo").value = d.codigo || "";
-      document.getElementById("telefono").value = d.telefono || "";
-      document.getElementById("direccion").value = d.direccion || "";
-      document.getElementById("fechaNacimiento").value = d.fechaNacimiento || "";
-      document.getElementById("familiar").value = d.familiar || "";
-      document.getElementById("fechaConversion").value = d.fechaConversion || "";
-      document.getElementById("lugarConversion").value = d.lugarConversion || "";
-      document.getElementById("fechaBautismo").value = d.fechaBautismo || "";
-      document.getElementById("lugarBautismo").value = d.lugarBautismo || "";
-      document.getElementById("fechaBauEspiritu").value = d.fechaBauEspiritu || "";
-      document.getElementById("lugarBauEspiritu").value = d.lugarBauEspiritu || "";
-      document.getElementById("formMiembro").style.display = "block";
+    let idEditando = null;
+
+    function mostrarFormulario() {
+      document.getElementById("formularioMiembro").style.display = "block";
+      idEditando = null;
+      document.querySelectorAll("#formularioMiembro input").forEach(input => input.value = "");
     }
 
-    async function guardarEdicion() {
-      const id = document.getElementById("idMiembro").value;
-      const ref = doc(db, "miembros", id);
-      await updateDoc(ref, {
-        nombre: document.getElementById("nombre").value,
-        edad: document.getElementById("edad").value,
-        codigo: document.getElementById("codigo").value,
-        telefono: document.getElementById("telefono").value,
-        direccion: document.getElementById("direccion").value,
-        fechaNacimiento: document.getElementById("fechaNacimiento").value,
-        familiar: document.getElementById("familiar").value,
-        fechaConversion: document.getElementById("fechaConversion").value,
-        lugarConversion: document.getElementById("lugarConversion").value,
-        fechaBautismo: document.getElementById("fechaBautismo").value,
-        lugarBautismo: document.getElementById("lugarBautismo").value,
-        fechaBauEspiritu: document.getElementById("fechaBauEspiritu").value,
-        lugarBauEspiritu: document.getElementById("lugarBauEspiritu").value
-      });
-      document.getElementById("formMiembro").style.display = "none";
+    async function guardarMiembro() {
+      const datos = {
+        nombre: nombre.value,
+        edad: edad.value,
+        codigo: codigo.value,
+        telefono: telefono.value,
+        direccion: direccion.value,
+        fechaNacimiento: fechaNacimiento.value,
+        familiar: familiar.value,
+        fechaConversion: fechaConversion.value,
+        lugarConversion: lugarConversion.value,
+        fechaBautismo: fechaBautismo.value,
+        lugarBautismo: lugarBautismo.value,
+        fechaBauEspiritu: fechaBauEspiritu.value,
+        lugarBauEspiritu: lugarBauEspiritu.value,
+      };
+
+      const archivo = foto.files[0];
+      if (archivo) {
+        const nombreArchivo = `${Date.now()}_${archivo.name}`;
+        const { data, error } = await supabase.storage
+          .from("fotos")
+          .upload(nombreArchivo, archivo, { upsert: true });
+
+        if (!error) {
+          datos.fotoURL = `${supabaseUrl}/storage/v1/object/public/fotos/${nombreArchivo}`;
+        } else {
+          alert("Error subiendo la foto");
+        }
+      }
+
+      if (idEditando) {
+        await updateDoc(doc(db, "miembros", idEditando), datos);
+        idEditando = null;
+      } else {
+        await addDoc(collection(db, "miembros"), datos);
+      }
+
+      document.getElementById("formularioMiembro").style.display = "none";
       cargarMiembros();
     }
 
@@ -266,39 +275,65 @@
       const querySnapshot = await getDocs(collection(db, "miembros"));
       const cuerpo = document.getElementById("cuerpoTabla");
       cuerpo.innerHTML = "";
+
       querySnapshot.forEach((docSnap) => {
-        const d = docSnap.data();
+        const datos = docSnap.data();
         const fila = document.createElement("tr");
 
-        fila.innerHTML += `
-          <td><img class="thumb" src="${d.fotoURL || ''}" /></td>
-          <td>${d.nombre || ""}</td>
-          <td>${d.edad || ""}</td>
-          <td>${d.codigo || ""}</td>
-          <td>${d.telefono || ""}</td>
-          <td>${d.direccion || ""}</td>
+        fila.innerHTML = `
+          <td><img src="${datos.fotoURL || ''}" class="thumb" /></td>
+          <td>${datos.nombre}</td>
+          <td>${datos.edad}</td>
+          <td>${datos.codigo}</td>
+          <td>${datos.telefono}</td>
+          <td>${datos.direccion}</td>
+          <td>${datos.fechaNacimiento}</td>
+          <td>${datos.familiar}</td>
+          <td>${datos.fechaConversion} - ${datos.lugarConversion}</td>
+          <td>${datos.fechaBautismo} - ${datos.lugarBautismo}</td>
+          <td>${datos.fechaBauEspiritu} - ${datos.lugarBauEspiritu}</td>
+          <td><button class="btn-edit" onclick="editarMiembro('${docSnap.id}')">Editar</button></td>
+          <td><button class="btn-delete" onclick="eliminarMiembro('${docSnap.id}')">Eliminar</button></td>
         `;
 
-        const celdaEditar = document.createElement("td");
-        const btnEditar = document.createElement("button");
-        btnEditar.className = "btn-edit";
-        btnEditar.textContent = "Editar";
-        btnEditar.onclick = () => llenarFormulario(docSnap);
-        celdaEditar.appendChild(btnEditar);
-        fila.appendChild(celdaEditar);
-
-        const celdaEliminar = document.createElement("td");
-        const btnEliminar = document.createElement("button");
-        btnEliminar.className = "btn-delete";
-        btnEliminar.textContent = "Eliminar";
-        btnEliminar.onclick = async () => {
-          await deleteDoc(doc(db, "miembros", docSnap.id));
-          cargarMiembros();
-        };
-        celdaEliminar.appendChild(btnEliminar);
-        fila.appendChild(celdaEliminar);
-
         cuerpo.appendChild(fila);
+      });
+    }
+
+    async function editarMiembro(id) {
+      const ref = doc(db, "miembros", id);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const d = snap.data();
+        nombre.value = d.nombre || "";
+        edad.value = d.edad || "";
+        codigo.value = d.codigo || "";
+        telefono.value = d.telefono || "";
+        direccion.value = d.direccion || "";
+        fechaNacimiento.value = d.fechaNacimiento || "";
+        familiar.value = d.familiar || "";
+        fechaConversion.value = d.fechaConversion || "";
+        lugarConversion.value = d.lugarConversion || "";
+        fechaBautismo.value = d.fechaBautismo || "";
+        lugarBautismo.value = d.lugarBautismo || "";
+        fechaBauEspiritu.value = d.fechaBauEspiritu || "";
+        lugarBauEspiritu.value = d.lugarBauEspiritu || "";
+        document.getElementById("formularioMiembro").style.display = "block";
+        idEditando = id;
+      }
+    }
+
+    async function eliminarMiembro(id) {
+      await deleteDoc(doc(db, "miembros", id));
+      cargarMiembros();
+    }
+
+    function filtrarTabla() {
+      const filtro = document.getElementById("busqueda").value.toLowerCase();
+      const filas = document.querySelectorAll("#cuerpoTabla tr");
+      filas.forEach(fila => {
+        const nombre = fila.children[1].textContent.toLowerCase();
+        fila.style.display = nombre.includes(filtro) ? "" : "none";
       });
     }
 
