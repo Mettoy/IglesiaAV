@@ -13,7 +13,6 @@
       display: flex;
     }
 
-    /* Sidebar */
     .sidebar {
       width: 250px;
       background-color: #1f2937;
@@ -69,6 +68,7 @@
       padding: 12px;
       border-bottom: 1px solid #eee;
       text-align: left;
+      vertical-align: middle;
     }
 
     th {
@@ -195,23 +195,29 @@
         const input = document.createElement("input");
         input.type = "file";
         input.accept = "image/*";
-        input.onchange = async (e) => {
+        input.addEventListener("change", async (e) => {
           const archivo = e.target.files[0];
           if (archivo) {
-            const nombreArchivo = `${Date.now()}_${archivo.name}`;
+            const extension = archivo.name.split(".").pop();
+            const nombreArchivo = `miembro_${Date.now()}.${extension}`;
+
             const { data, error } = await supabase.storage
               .from("fotos")
-              .upload(nombreArchivo, archivo);
+              .upload(nombreArchivo, archivo, {
+                cacheControl: "3600",
+                upsert: false
+              });
 
             if (!error) {
               const urlPublica = `${supabaseUrl}/storage/v1/object/public/fotos/${nombreArchivo}`;
               await updateDoc(doc(db, "miembros", docSnap.id), { fotoURL: urlPublica });
               cargarMiembros();
             } else {
-              alert("Error subiendo imagen.");
+              console.error("Error al subir imagen:", error);
+              alert("Error subiendo imagen: " + error.message);
             }
           }
-        };
+        });
         label.appendChild(input);
         celdaSubir.appendChild(label);
         fila.appendChild(celdaSubir);
