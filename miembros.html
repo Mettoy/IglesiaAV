@@ -2,176 +2,14 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gestión de Miembros</title>
-  <link rel="icon" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png">
+  <link rel="icon" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      background-color: #0d1b2a;
-      color: #f0c929;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      background-color: #1b263b;
-      padding: 10px;
-    }
-
-    header img {
-      height: 40px;
-      margin-right: 10px;
-    }
-
-    .container {
-      padding: 20px;
-    }
-
-    .btn {
-      background-color: #f0c929;
-      color: #0d1b2a;
-      border: none;
-      padding: 10px 20px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-bottom: 20px;
-    }
-
-    .btn:hover {
-      background-color: #e0b820;
-    }
-
-    .table {
-      width: 100%;
-      background-color: #1b263b;
-      color: white;
-      border-collapse: collapse;
-    }
-
-    .table th, .table td {
-      padding: 10px;
-      border: 1px solid #f0c929;
-    }
-
-    .table img {
-      height: 50px;
-      border-radius: 5px;
-    }
-
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(0,0,0,0.7);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background-color: #1b263b;
-      padding: 20px;
-      border-radius: 10px;
-      width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    fieldset {
-      border: 2px solid #f0c929;
-      margin-bottom: 15px;
-      padding: 10px;
-      border-radius: 5px;
-    }
-
-    legend {
-      font-weight: bold;
-      color: #f0c929;
-      padding: 0 10px;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: none;
-      border-radius: 4px;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo">
-    <h1>Gestión de Miembros</h1>
-  </header>
-
-  <div class="container">
-    <button class="btn" onclick="abrirFormulario()">Añadir miembro</button>
-
-    <table class="table" id="tablaMiembros">
-      <thead>
-        <tr>
-          <th>Foto</th><th>Nombre</th><th>Código</th><th>Edad</th><th>Teléfono</th><th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- Modal formulario -->
-  <div class="modal" id="modalFormulario">
-    <div class="modal-content">
-      <form id="formMiembro">
-        <fieldset>
-          <legend>Datos Personales</legend>
-          <label>Nombre completo:<input type="text" id="nombre" /></label>
-          <label>Código:<input type="text" id="codigo" /></label>
-          <label>Edad:<input type="number" id="edad" /></label>
-          <label>Teléfono:<input type="tel" id="telefono" /></label>
-          <label>Dirección:<input type="text" id="direccion" /></label>
-          <label>Fecha de nacimiento:<input type="date" id="fechaNacimiento" /></label>
-        </fieldset>
-
-        <fieldset>
-          <legend>Datos Familiares</legend>
-          <label>Tipo de familiar:
-            <select id="tipoFamiliar">
-              <option>Padre</option><option>Madre</option><option>Hijo</option><option>Esposo/a</option>
-            </select>
-          </label>
-          <label>Nombre del familiar:<input type="text" id="nombreFamiliar" /></label>
-        </fieldset>
-
-        <fieldset>
-          <legend>Datos Espirituales</legend>
-          <label>Fecha de conversión:<input type="date" id="fechaConversion" /></label>
-          <label>Lugar de conversión:<input type="text" id="lugarConversion" /></label>
-          <label>Fecha de bautismo:<input type="date" id="fechaBautismo" /></label>
-          <label>Lugar de bautismo:<input type="text" id="lugarBautismo" /></label>
-          <label>Fecha bautismo Espíritu:<input type="date" id="fechaEspiritu" /></label>
-          <label>Lugar bautismo Espíritu:<input type="text" id="lugarEspiritu" /></label>
-        </fieldset>
-
-        <label>Foto:<input type="file" id="foto" /></label>
-        <input type="hidden" id="idMiembro" />
-        <button type="submit" class="btn">Guardar</button>
-      </form>
-    </div>
-  </div>
-
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, updateDoc, getDocs, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, updateDoc, doc
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
@@ -185,91 +23,202 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const supabase = createClient("https://azywyqozwwbfctxeokug.supabase.co", "eneyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk");
+    const supabase = createClient(
+      'https://azywyqozwwbfctxeokug.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk'
+    );
 
-    const form = document.getElementById("formMiembro");
-    const modal = document.getElementById("modalFormulario");
-    const tabla = document.querySelector("#tablaMiembros tbody");
+    document.addEventListener("DOMContentLoaded", () => {
+      const formContainer = document.getElementById("form-modal");
+      const form = document.getElementById("miembro-form");
+      const btnAdd = document.getElementById("btn-add");
+      const tabla = document.getElementById("miembros-tabla");
+      const cerrarModal = document.getElementById("cerrar-modal");
 
-    window.abrirFormulario = () => {
-      form.reset();
-      document.getElementById("idMiembro").value = "";
-      modal.style.display = "flex";
-    };
+      let editId = null;
 
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      const data = {
-        nombre: nombre.value,
-        codigo: codigo.value,
-        edad: edad.value,
-        telefono: telefono.value,
-        direccion: direccion.value,
-        fechaNacimiento: fechaNacimiento.value,
-        tipoFamiliar: tipoFamiliar.value,
-        nombreFamiliar: nombreFamiliar.value,
-        fechaConversion: fechaConversion.value,
-        lugarConversion: lugarConversion.value,
-        fechaBautismo: fechaBautismo.value,
-        lugarBautismo: lugarBautismo.value,
-        fechaEspiritu: fechaEspiritu.value,
-        lugarEspiritu: lugarEspiritu.value,
+      btnAdd.addEventListener("click", () => {
+        form.reset();
+        formContainer.style.display = "flex";
+        editId = null;
+        document.getElementById("preview").src = "";
+      });
+
+      cerrarModal.onclick = () => formContainer.style.display = "none";
+
+      form.foto.addEventListener("change", () => {
+        const file = form.foto.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = () => document.getElementById("preview").src = reader.result;
+          reader.readAsDataURL(file);
+        }
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(form));
+        const file = form.foto.files[0];
+
+        let fotoURL = data.fotoURL;
+
+        if (file) {
+          const { data: upload, error } = await supabase.storage
+            .from("fotos")
+            .upload(`miembros/${Date.now()}_${file.name}`, file, { upsert: true });
+          if (error) return alert("Error subiendo imagen");
+          const { data: url } = supabase.storage.from("fotos").getPublicUrl(upload.path);
+          fotoURL = url.publicUrl;
+        }
+
+        const miembroData = {
+          nombre: data.nombre,
+          edad: data.edad,
+          codigo: data.codigo,
+          telefono: data.telefono,
+          direccion: data.direccion,
+          nacimiento: data.nacimiento,
+          conversion: data.conversion,
+          lugar_conversion: data.lugar_conversion,
+          bautismo: data.bautismo,
+          lugar_bautismo: data.lugar_bautismo,
+          bautismo_espiritu: data.bautismo_espiritu,
+          lugar_bautismo_espiritu: data.lugar_bautismo_espiritu,
+          familiar_tipo: data.familiar_tipo,
+          familiar_nombre: data.familiar_nombre,
+          fotoURL
+        };
+
+        if (editId) {
+          await updateDoc(doc(db, "miembros", editId), miembroData);
+        } else {
+          await addDoc(collection(db, "miembros"), miembroData);
+        }
+
+        formContainer.style.display = "none";
+        cargarMiembros();
+      });
+
+      async function cargarMiembros() {
+        tabla.innerHTML = "";
+        const querySnapshot = await getDocs(collection(db, "miembros"));
+        querySnapshot.forEach((docSnap) => {
+          const d = docSnap.data();
+          const row = tabla.insertRow();
+          row.insertCell(0).innerHTML = `<img src="${d.fotoURL}" width="60" />`;
+          row.insertCell(1).innerText = d.nombre;
+          row.insertCell(2).innerText = d.codigo;
+          row.insertCell(3).innerText = d.telefono;
+          row.insertCell(4).innerHTML = `<button onclick='editar(${JSON.stringify(d).replace(/'/g, "\\'")}, "${docSnap.id}")'>Editar</button>`;
+        });
+      }
+
+      window.editar = (d, id) => {
+        editId = id;
+        for (let key in d) {
+          if (form[key]) form[key].value = d[key];
+        }
+        document.getElementById("preview").src = d.fotoURL;
+        formContainer.style.display = "flex";
       };
 
-      let fotoURL = "";
-      const archivo = foto.files[0];
-      if (archivo) {
-        const { data: uploadData, error } = await supabase.storage.from("fotos").upload(`miembros/${Date.now()}_${archivo.name}`, archivo);
-        if (!error) {
-          const { data: publicURL } = supabase.storage.from("fotos").getPublicUrl(uploadData.path);
-          fotoURL = publicURL.publicUrl;
-          data.fotoURL = fotoURL;
-        }
-      }
-
-      const id = idMiembro.value;
-      if (id) {
-        const ref = doc(db, "miembros", id);
-        await updateDoc(ref, data);
-      } else {
-        await addDoc(collection(db, "miembros"), data);
-      }
-
-      modal.style.display = "none";
       cargarMiembros();
-    };
-
-    async function cargarMiembros() {
-      tabla.innerHTML = "";
-      const querySnapshot = await getDocs(collection(db, "miembros"));
-      querySnapshot.forEach(docSnap => {
-        const m = docSnap.data();
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><img src="${m.fotoURL || ''}" alt="foto" /></td>
-          <td>${m.nombre}</td>
-          <td>${m.codigo}</td>
-          <td>${m.edad}</td>
-          <td>${m.telefono}</td>
-          <td><button class="btn" onclick='editar("${docSnap.id}", ${JSON.stringify(m)})'>Editar</button></td>
-        `;
-        tabla.appendChild(tr);
-      });
-    }
-
-    window.editar = (id, m) => {
-      document.getElementById("idMiembro").value = id;
-      for (let key in m) {
-        if (document.getElementById(key)) document.getElementById(key).value = m[key];
-      }
-      modal.style.display = "flex";
-    };
-
-    window.onclick = (e) => {
-      if (e.target == modal) modal.style.display = "none";
-    };
-
-    cargarMiembros();
+    });
   </script>
+  <style>
+    body {
+      margin: 0; font-family: Arial; background: #0c1f3c; color: white;
+      display: flex;
+    }
+    aside {
+      width: 200px; background: #08152b; padding: 20px; min-height: 100vh;
+    }
+    aside img {
+      width: 100%; border-radius: 8px;
+    }
+    main {
+      flex: 1; padding: 20px;
+    }
+    h2 { color: gold; }
+    table { width: 100%; background: white; color: black; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    img { border-radius: 6px; }
+    button { background: gold; border: none; padding: 8px 12px; cursor: pointer; }
+    #form-modal {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6); justify-content: center; align-items: center;
+    }
+    #form-box {
+      background: #fff; color: black; padding: 20px; border-radius: 10px; width: 600px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    fieldset {
+      border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; border-radius: 6px;
+    }
+    legend { font-weight: bold; color: #0c1f3c; }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 6px; margin-top: 4px; }
+    #preview { margin-top: 10px; max-width: 100%; }
+    #cerrar-modal { float: right; cursor: pointer; color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <aside>
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" />
+    <nav style="margin-top: 20px;">
+      <button id="btn-add">Añadir miembro</button>
+    </nav>
+  </aside>
+  <main>
+    <h2>Gestión de Miembros</h2>
+    <table>
+      <thead>
+        <tr><th>Foto</th><th>Nombre</th><th>Código</th><th>Teléfono</th><th>Acciones</th></tr>
+      </thead>
+      <tbody id="miembros-tabla"></tbody>
+    </table>
+  </main>
+
+  <!-- Modal de formulario -->
+  <div id="form-modal">
+    <div id="form-box">
+      <span id="cerrar-modal">X</span>
+      <form id="miembro-form">
+        <input type="hidden" name="fotoURL">
+        <fieldset>
+          <legend>Datos Personales</legend>
+          <label>Nombre completo: <input name="nombre" required></label>
+          <label>Edad: <input name="edad" type="number"></label>
+          <label>Código: <input name="codigo"></label>
+          <label>Teléfono: <input name="telefono"></label>
+          <label>Dirección: <input name="direccion"></label>
+          <label>Fecha de nacimiento: <input type="date" name="nacimiento"></label>
+          <label>Foto: <input type="file" name="foto" accept="image/*"></label>
+          <img id="preview" />
+        </fieldset>
+        <fieldset>
+          <legend>Datos Familiares</legend>
+          <label>Tipo de familiar:
+            <select name="familiar_tipo">
+              <option value="Padre">Padre</option>
+              <option value="Madre">Madre</option>
+              <option value="Hermano/a">Hermano/a</option>
+            </select>
+          </label>
+          <label>Nombre del familiar: <input name="familiar_nombre"></label>
+        </fieldset>
+        <fieldset>
+          <legend>Datos Espirituales</legend>
+          <label>Fecha de conversión: <input type="date" name="conversion"></label>
+          <label>Lugar de conversión: <input name="lugar_conversion"></label>
+          <label>Fecha de bautismo: <input type="date" name="bautismo"></label>
+          <label>Lugar de bautismo: <input name="lugar_bautismo"></label>
+          <label>Fecha de bautismo en el Espíritu: <input type="date" name="bautismo_espiritu"></label>
+          <label>Lugar de bautismo en el Espíritu: <input name="lugar_bautismo_espiritu"></label>
+        </fieldset>
+        <button type="submit">Guardar</button>
+      </form>
+    </div>
+  </div>
 </body>
 </html>
