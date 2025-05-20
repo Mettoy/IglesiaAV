@@ -1,260 +1,291 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gestión de Miembros</title>
+  <link rel="icon" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs, addDoc,
+      updateDoc, deleteDoc, doc, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
+      authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
+      projectId: "iglesia-adoracion-viva-182e6",
+      storageBucket: "iglesia-adoracion-viva-182e6.appspot.com",
+      messagingSenderId: "152824399391",
+      appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const supabase = createClient(
+      "https://azywyqozwwbfctxeokug.supabase.co",
+      "eneyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk"
+    );
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const formModal = document.getElementById("form-modal");
+      const openFormBtn = document.getElementById("open-form-btn");
+      const closeFormBtn = document.getElementById("close-form-btn");
+      const saveBtn = document.getElementById("save-btn");
+      const membersTable = document.getElementById("members-body");
+      const searchInput = document.getElementById("search");
+      const pagination = document.getElementById("pagination");
+      let currentId = null;
+      let members = [];
+      let currentPage = 1;
+
+      const form = document.getElementById("member-form");
+      const perPage = 20;
+
+      const openModal = () => { formModal.style.display = "block"; };
+      const closeModal = () => { formModal.style.display = "none"; form.reset(); currentId = null; };
+
+      openFormBtn.addEventListener("click", openModal);
+      closeFormBtn.addEventListener("click", closeModal);
+
+      saveBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        const file = formData.get("foto");
+        let photoURL = "";
+
+        if (file && file.name) {
+          const { data: uploaded, error } = await supabase.storage.from("fotos").upload(`fotos/${Date.now()}_${file.name}`, file);
+          if (!error) {
+            const { data: urlData } = supabase.storage.from("fotos").getPublicUrl(uploaded.path);
+            photoURL = urlData.publicUrl;
+          }
+        }
+
+        data.fotoURL = photoURL;
+
+        if (currentId) {
+          const docRef = doc(db, "miembros", currentId);
+          await updateDoc(docRef, data);
+        } else {
+          await addDoc(collection(db, "miembros"), data);
+        }
+
+        await loadMembers();
+        closeModal();
+      });
+
+      async function loadMembers() {
+        members = [];
+        const q = query(collection(db, "miembros"), orderBy("codigo"));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(doc => {
+          members.push({ id: doc.id, ...doc.data() });
+        });
+        renderTable();
+      }
+
+      function renderTable() {
+        membersTable.innerHTML = "";
+        const filtered = members.filter(m =>
+          m.nombre.toLowerCase().includes(searchInput.value.toLowerCase())
+        );
+        const start = (currentPage - 1) * perPage;
+        const paginated = filtered.slice(start, start + perPage);
+
+        paginated.forEach(member => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td><img src="${member.fotoURL || ''}" width="60"/></td>
+            <td>${member.nombre}</td>
+            <td>${member.codigo}</td>
+            <td>${member.telefono}</td>
+            <td>
+              <button onclick="editMember('${member.id}')">Editar</button>
+              <button onclick="deleteMember('${member.id}')">Dar de baja</button>
+            </td>
+          `;
+          membersTable.appendChild(row);
+        });
+
+        renderPagination(filtered.length);
+      }
+
+      function renderPagination(total) {
+        pagination.innerHTML = "";
+        const totalPages = Math.ceil(total / perPage);
+
+        const prev = document.createElement("button");
+        prev.textContent = "←";
+        prev.disabled = currentPage === 1;
+        prev.onclick = () => { currentPage--; renderTable(); };
+        pagination.appendChild(prev);
+
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement("button");
+          btn.textContent = i;
+          if (i === currentPage) btn.disabled = true;
+          btn.onclick = () => { currentPage = i; renderTable(); };
+          pagination.appendChild(btn);
+        }
+
+        const next = document.createElement("button");
+        next.textContent = "→";
+        next.disabled = currentPage === totalPages;
+        next.onclick = () => { currentPage++; renderTable(); };
+        pagination.appendChild(next);
+      }
+
+      searchInput.addEventListener("input", renderTable);
+
+      window.editMember = async (id) => {
+        const member = members.find(m => m.id === id);
+        if (!member) return;
+        openModal();
+        currentId = id;
+        for (const key in member) {
+          if (form[key]) form[key].value = member[key];
+        }
+      };
+
+      window.deleteMember = async (id) => {
+        await deleteDoc(doc(db, "miembros", id));
+        await loadMembers();
+      };
+
+      loadMembers();
+    });
+  </script>
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #121a2f;
+      margin: 0;
+      font-family: sans-serif;
+      background: #0b1e3d;
       color: white;
-      margin: 20px;
     }
-    h2 {
-      color: #e6b800;
+    #sidebar {
+      width: 220px;
+      background: #06162c;
+      position: fixed;
+      height: 100%;
+      padding: 1em;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.5);
     }
-    .search-bar {
-      margin-bottom: 10px;
+    #sidebar img {
+      width: 100%;
+      margin-bottom: 1em;
     }
-    .search-bar input {
-      padding: 5px;
-      width: 300px;
-      border-radius: 4px;
+    #main {
+      margin-left: 230px;
+      padding: 1em;
+    }
+    button {
+      background: goldenrod;
       border: none;
+      padding: 0.5em 1em;
+      cursor: pointer;
+      margin-right: 0.5em;
+    }
+    #form-modal {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 30%;
+      width: 40%;
+      background: #13294b;
+      padding: 1em;
+      border: 2px solid goldenrod;
+      z-index: 10;
+    }
+    fieldset {
+      border: 1px solid goldenrod;
+      margin-bottom: 1em;
+    }
+    legend {
+      color: goldenrod;
     }
     table {
       width: 100%;
+      margin-top: 1em;
+      background: white;
+      color: black;
       border-collapse: collapse;
-      margin-bottom: 10px;
     }
     th, td {
-      padding: 10px;
-      border: 1px solid #444;
+      padding: 0.5em;
+      border: 1px solid #ccc;
       text-align: left;
     }
-    th {
-      background-color: #1a2639;
-      color: #e6b800;
-    }
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .pagination button {
-      padding: 6px 12px;
-      background-color: #e6b800;
-      color: #121a2f;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .pagination input {
-      width: 50px;
-      text-align: center;
-      padding: 4px;
-      border-radius: 4px;
-      border: none;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.4);
-    }
-    .modal-content {
-      background-color: #1a2639;
-      margin: 10% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 400px;
-      border-radius: 5px;
-    }
-    .modal-content h3 {
-      color: #e6b800;
-    }
-    .modal-content input {
-      width: 100%;
-      padding: 8px;
-      margin: 5px 0 10px 0;
-      border: none;
-      border-radius: 4px;
-    }
-    .modal-content button {
-      padding: 8px 16px;
-      background-color: #e6b800;
-      color: #121a2f;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
+    #pagination button {
+      margin: 0.25em;
     }
   </style>
 </head>
 <body>
-
-  <h2>Gestión de Miembros</h2>
-
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Buscar por código o nombre...">
-    <button onclick="abrirModal()">Añadir Miembro</button>
+  <div id="sidebar">
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" />
+    <nav>
+      <!-- Opciones del menú si deseas -->
+    </nav>
   </div>
 
-  <table id="tablaMiembros">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div id="main">
+    <h1>Gestión de Miembros</h1>
+    <button id="open-form-btn">Añadir Miembro</button>
+    <input type="text" id="search" placeholder="Buscar por nombre..." />
 
-  <div class="pagination">
-    <button onclick="cambiarPagina(-1)">Anterior</button>
-    <span>
-      Página <input type="number" id="paginaActual" min="1" value="1" onchange="irAPagina()"> de
-      <span id="totalPaginas">1</span>
-    </span>
-    <button onclick="cambiarPagina(1)">Siguiente</button>
+    <table>
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Teléfono</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="members-body"></tbody>
+    </table>
+
+    <div id="pagination"></div>
   </div>
 
-  <!-- Modal -->
-  <div id="miModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="cerrarModal()">&times;</span>
-      <h3 id="modalTitulo">Añadir Miembro</h3>
-      <input type="hidden" id="miembroId">
-      <label for="codigo">Código:</label>
-      <input type="text" id="codigo" placeholder="Ingrese el código">
-      <label for="nombre">Nombre:</label>
-      <input type="text" id="nombre" placeholder="Ingrese el nombre">
-      <button onclick="guardarMiembro()">Guardar</button>
-    </div>
+  <div id="form-modal">
+    <form id="member-form">
+      <fieldset>
+        <legend>Datos Personales</legend>
+        <input name="nombre" placeholder="Nombre completo" required /><br/>
+        <input name="edad" placeholder="Edad" /><br/>
+        <input name="codigo" placeholder="Código" required /><br/>
+        <input name="telefono" placeholder="Teléfono" /><br/>
+        <input name="direccion" placeholder="Dirección" /><br/>
+        <input type="date" name="fechaNacimiento" placeholder="Fecha de Nacimiento" /><br/>
+        <input type="file" name="foto" />
+      </fieldset>
+
+      <fieldset>
+        <legend>Datos Familiares</legend>
+        <input name="tipoFamiliar" placeholder="Tipo de familiar" /><br/>
+        <input name="nombreFamiliar" placeholder="Nombre del familiar" />
+      </fieldset>
+
+      <fieldset>
+        <legend>Datos Espirituales</legend>
+        <input type="date" name="fechaConversion" placeholder="Fecha conversión" /><br/>
+        <input name="lugarConversion" placeholder="Lugar conversión" /><br/>
+        <input type="date" name="fechaBautismo" placeholder="Fecha bautismo" /><br/>
+        <input name="lugarBautismo" placeholder="Lugar bautismo" /><br/>
+        <input type="date" name="fechaEspiritu" placeholder="Fecha bautismo Espíritu" /><br/>
+        <input name="lugarEspiritu" placeholder="Lugar bautismo Espíritu" />
+      </fieldset>
+
+      <button id="save-btn">Guardar</button>
+      <button type="button" id="close-form-btn">Cancelar</button>
+    </form>
   </div>
-
-  <script>
-    let miembros = [];
-    let pagina = 1;
-    const porPagina = 20;
-    let totalPaginas = 1;
-
-    // Datos de prueba
-    for (let i = 1; i <= 103; i++) {
-      miembros.push({ id: i, codigo: `C${String(i).padStart(3, '0')}`, nombre: `Miembro ${i}` });
-    }
-
-    // Orden alfabético por código
-    miembros.sort((a, b) => a.codigo.localeCompare(b.codigo));
-
-    function renderizarTabla() {
-      const inicio = (pagina - 1) * porPagina;
-      const fin = inicio + porPagina;
-      const cuerpo = document.querySelector("#tablaMiembros tbody");
-      cuerpo.innerHTML = "";
-      const filtro = document.getElementById("searchInput").value.toLowerCase();
-      const miembrosFiltrados = miembros.filter(m => m.codigo.toLowerCase().includes(filtro) || m.nombre.toLowerCase().includes(filtro));
-      totalPaginas = Math.ceil(miembrosFiltrados.length / porPagina);
-      document.getElementById("totalPaginas").textContent = totalPaginas;
-      const miembrosPagina = miembrosFiltrados.slice(inicio, fin);
-      miembrosPagina.forEach(m => {
-        const fila = `<tr>
-                        <td>${m.codigo}</td>
-                        <td>${m.nombre}</td>
-                        <td><button onclick="editarMiembro(${m.id})">Editar</button></td>
-                      </tr>`;
-        cuerpo.innerHTML += fila;
-      });
-      document.getElementById("paginaActual").value = pagina;
-    }
-
-    function cambiarPagina(direccion) {
-      pagina += direccion;
-      if (pagina < 1) pagina = 1;
-      if (pagina > totalPaginas) pagina = totalPaginas;
-      renderizarTabla();
-    }
-
-    function irAPagina() {
-      const num = parseInt(document.getElementById("paginaActual").value);
-      if (!isNaN(num) && num >= 1 && num <= totalPaginas) {
-        pagina = num;
-        renderizarTabla();
-      }
-    }
-
-    function abrirModal() {
-      document.getElementById("miembroId").value = "";
-      document.getElementById("codigo").value = "";
-      document.getElementById("nombre").value = "";
-      document.getElementById("modalTitulo").textContent = "Añadir Miembro";
-      document.getElementById("miModal").style.display = "block";
-    }
-
-    function cerrarModal() {
-      document.getElementById("miModal").style.display = "none";
-    }
-
-    function guardarMiembro() {
-      const id = document.getElementById("miembroId").value;
-      const codigo = document.getElementById("codigo").value.trim();
-      const nombre = document.getElementById("nombre").value.trim();
-      if (codigo === "" || nombre === "") {
-        alert("Por favor, complete todos los campos.");
-        return;
-      }
-      if (id) {
-        // Editar
-        const index = miembros.findIndex(m => m.id == id);
-        if (index !== -1) {
-          miembros[index].codigo = codigo;
-          miembros[index].nombre = nombre;
-        }
-      } else {
-        // Añadir
-        const nuevoId = miembros.length ? Math.max(...miembros.map(m => m.id)) + 1 : 1;
-        miembros.push({ id: nuevoId, codigo, nombre });
-        miembros.sort((a, b) => a.codigo.localeCompare(b.codigo));
-      }
-      cerrarModal();
-      renderizarTabla();
-    }
-
-    function editarMiembro(id) {
-      const miembro = miembros.find(m => m.id === id);
-      if (miembro) {
-        document.getElementById("miembroId").value = miembro.id;
-        document.getElementById("codigo").value = miembro.codigo;
-        document.getElementById("nombre").value = miembro.nombre;
-        document.getElementById("modalTitulo").textContent = "Editar Miembro";
-        document.getElementById("miModal").style.display = "block";
-      }
-    }
-
-    document.getElementById("searchInput").addEventListener("input", () => {
-      pagina = 1;
-      renderizarTabla();
-    });
-
-    // Inicial
-    renderizarTabla();
-  </script>
-
 </body>
 </html>
