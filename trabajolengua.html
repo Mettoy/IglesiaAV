@@ -1,748 +1,381 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <link rel="shortcut icon" href="./css/images/icono.ico" type="image/x-icon"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
-    <link rel="stylesheet" type="text/css" href="./plugins/font-awesome/css/all.css"  />
-    <link rel="stylesheet" type="text/css" href="./plugins/font-awesome/css/regular.css" />
-    <link rel="stylesheet" type="text/css" href="./plugins/select2/select2.min.css">
-    <link rel="stylesheet" type="text/css" href="./plugins/sweetalert2/sweetalert2.css">
-    <link rel="stylesheet" type="text/css" href="./plugins/jQuery-contextMenu/jquery.contextMenu.min.css">
-    <link rel="stylesheet" type="text/css" href="./plugins/tema/css/adminlte.css"/> 
-    <link rel="stylesheet" type="text/css" href="./plugins/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="./css/stilo.css">
-
-    <script type="text/javascript" src="./plugins/jquery/jquery.min.js"></script>
-    <script type="text/javascript" src="./plugins/chart.js/Chart.min.js"></script>
-    <script type="text/javascript" src="./plugins/chart.js/chartjs-plugin-datalabels.js"></script>
-    <title>.:. Sistema de Administracion de Iglesia (SAI) .:.</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sistema de Administración Iglesia Adoración Viva</title>
+<link rel="icon" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" />
+<style>
+  /* Estilos generales, esquema azul oscuro + dorado + blanco */
+  body {
+    margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0b1d40;
+    color: white;
+  }
+  header {
+    background-color: #08162e;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 2px solid #d4af37;
+  }
+  header img.logo {
+    height: 48px;
+  }
+  header h1 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #d4af37;
+    margin: 0;
+  }
+  main {
+    padding: 1.5rem;
+  }
+  button {
+    background-color: #d4af37;
+    color: #0b1d40;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.25s ease;
+  }
+  button:hover {
+    background-color: #c39f2b;
+  }
+  /* Tabla con foto */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  th, td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #2f3e65;
+    text-align: left;
+  }
+  th {
+    background-color: #152a5a;
+  }
+  td img.photo {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 0.6rem;
+  }
+  /* Formulario */
+  form {
+    background-color: #152a5a;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 6px;
+    max-width: 700px;
+  }
+  form > div.section {
+    margin-bottom: 1rem;
+  }
+  form label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    color: #d4af37;
+  }
+  form input[type=text],
+  form input[type=number],
+  form input[type=date],
+  form select {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    border: none;
+    font-size: 1rem;
+  }
+  form input[type=file] {
+    padding: 0.3rem;
+  }
+  /* Barra búsqueda y botón */
+  .top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    max-width: 700px;
+  }
+  .top-controls input[type=search] {
+    padding: 0.5rem 0.7rem;
+    border-radius: 4px;
+    border: none;
+    font-size: 1rem;
+    width: 60%;
+  }
+</style>
 </head>
-<body class="hold-transition sidebar-mini sidebar-collapse">
-        <div class="wrapper">
-        <nav class="main-header navbar navbar-expand border-bottom navbar-dark bg-dark fixed-top">
-            <ul class="navbar-nav w-50">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" ><i class="fa fa-bars"></i></a>
-                </li>   
-                <li class="form-inline w-75">
-                    <div class="input-group input-group-sm" >
-                        <span class="d-none d-md-block" style="color:#ffffff; padding-top: 2px; font-size: 1.2rem;">
-                            Sistema de Administracion de Iglesia</span>
-                        <span class="d-md-none" style="color:#ffffff; padding-top: 2px; font-size: 1.2rem;" title="Sistema de Administracion de Iglesia">SAI</span>
-                    </div>
-                </li>
-            </ul>
-            <!--Enlaces de la izquierda-->
-            <ul class="navbar-nav ml-auto">               
-                <li class="nav-item dropdown show mr-3">
-                    <img width=42 height=44 src='./fotos/a908.jpg' title="Donald Miguel Mettoy Meza"/>
-                    
-                    <span class="d-none d-lg-block float-right" style="padding-top:8px; padding-left:8px;" >
-                        Donald Miguel Mettoy Meza</span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link btn btn-danger"  onclick="CerrarSesion()" title="Cerrar Sesión">
-                        <i class="fa fa-sign-out-alt"></i>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        <!-- /.navbar-->
-        <!-- Contenedor Principal Barra Lateral -->
-        <aside id="contenedorMenu" class="main-sidebar sidebar-dark-primary">
-            <!-- Brand Logo -->
-            <a  class="brand-link bg-dark" style="height:60px;">
-                <img src="./css/images/icono.ico" class="brand-image" />      
-                <span class="brand-text font-weight-normal" style="color:#ffffff;"> Mi Redentor</span>
-            </a>
-            <!--Barra Lateral-->
-            <div class="sidebar">              
-                <!-- menu Lateral -->
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li class="nav-item text-white-50">
-                                        <a class="nav-link" onclick="mnuCargarPestana(4)" >
-                                            <i class="nav-icon fa fa-address-card "></i><p>Discipulado</p>
-                                        </a>
-                                    </li>
-                            <li class="nav-item text-white-50">
-                                <a class="nav-link"  onclick="mnuCargarPestana(7)" >
-                                    <i class="nav-icon fa fa-address-book "></i><p>Miembros</p>
-                                </a>
-                            </li><li class="dropdown-divider"></li>                        <li class="dropdown-divider"></li>
-                        <li class="nav-item text-white-50">
-                            <a class="nav-link"  onclick="mnuCargarPestana(12)">
-                                <i class="nav-icon fa fa-sticky-note "></i><p>Reportes</p>
-                            </a>
-                        </li>
-                        <li class="dropdown-divider"></li><li class="dropdown-divider"></li>                        <li class="nav-item text-white-50">
-                            <a class="nav-link"  onclick="CambiarPinAcceso()">
-                                <i class="nav-icon fa fa-user-clock"></i><p>Cambiar PIN</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-                <!-- /.sidebar-menu -->
-            </div>
-        </aside>
-        <div class="content-wrapper mb-0 mt-0 p-0">
-            <!-- Main content -->
-            <section class="content">
-                <div class="container-fluid main-conten">
-                    <ul class="nav nav-tabs" role="tablist" id="pentanaMain">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="#tbTablerocontrol" role="tab" data-toggle="tab">Tablero/Control</a>
-                        </li>
-                    </ul>
-                    <!-- Tab panes -->
-                    <div class="tab-content" id="contendorMain">
-                        <div role="tabpanel" class="tab-pane fade in active" id="tbTablerocontrol">
-                            <!--Modal para anular actividad -->
-<div class="modal" id="ViewGraph">
-  	<div class="modal-dialog modal-lg modal-dialog-centered">
-    	<div class="modal-content">
-		<!-- Modal Header -->
-			<div class="modal-header bg-gray p-2 pl-4 pr-4">
-				<h5 id="h5TM" class="modal-title"></h5>
-				<button type="button" class="close" data-dismiss="modal" onclick="CerrarModal()">&times;</button>
-			</div>
-			<!-- Modal body -->
-			<div class="modal-body" id="dvDetalleGrafico">
-			</div>
-		</div>
-  	</div>
-</div>
-    <div class="col-12 float-left pt-2 pb-2 bg-dark-gradient">
-        <input type='date' class="input-group form-control wd-date float-left mr-2 p-1" id='txtPCfechaI' maxlength=10/>    
-        <input type='date' class="input-group form-control wd-date float-left mr-2 p-1" id='txtPCfechaF' maxlength=10/>
-    
-        <button type="button" class="btn btn-primary" onclick="PCCargar()" title="Actualizar Tablero/Control">
-            <i class="fa fa-sync-alt"></i>
-        </button>
+<body>
+<header>
+  <img class="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo Iglesia Adoración Viva" />
+  <h1>Iglesia Adoración Viva</h1>
+</header>
+<main>
+  <div class="top-controls">
+    <button id="btnAddMember">Añadir miembro</button>
+    <input type="search" id="searchMember" placeholder="Buscar miembro..." />
+  </div>
+  <table id="membersTable" aria-label="Lista de miembros">
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nombre completo</th>
+        <th>Código</th>
+        <th>Edad</th>
+        <th>Teléfono</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Miembros cargados aquí -->
+    </tbody>
+  </table>
+
+  <form id="memberForm" style="display:none" aria-label="Formulario para agregar o editar miembros">
+    <!-- Datos personales -->
+    <div class="section">
+      <h3 style="color:#d4af37">Datos personales</h3>
+      <label for="fullName">Nombre completo</label>
+      <input type="text" id="fullName" required />
+      <label for="code">Código</label>
+      <input type="text" id="code" required />
+      <label for="age">Edad</label>
+      <input type="number" id="age" min="0" required />
+      <label for="phone">Teléfono</label>
+      <input type="text" id="phone" />
+      <label for="address">Dirección</label>
+      <input type="text" id="address" />
+      <label for="birthDate">Fecha de nacimiento</label>
+      <input type="date" id="birthDate" />
+      <label for="photo">Foto</label>
+      <input type="file" id="photo" accept="image/*" />
     </div>
-    <div id="dvCG0" class="card col-12 col-md-4 m-0 p-0 float-left ">
-        <div class="card-header m-0">
-            <span id="spCT0">Distribucion Membresia</span>
-            <span class="expandir pl-1 pr-1 float-right" title="Expandir Grafico" onclick="CargarModal(0)"><i class="fas fa-expand"></i></span>
-        </div>
-        <div id="dvCD0" class="card-body P-0">
-            <div id="dvCGF0">
-                <canvas id="cnvMembresiaActiva" class="contendorGrafico" width="400" height="240"></canvas>
-            </div>
-        </div>
+
+    <!-- Datos familiares -->
+    <div class="section">
+      <h3 style="color:#d4af37">Datos familiares</h3>
+      <label for="relativeType">Tipo de familiar</label>
+      <select id="relativeType">
+        <option value="" disabled selected>Seleccione</option>
+        <option value="Padre">Padre</option>
+        <option value="Madre">Madre</option>
+        <option value="Hermano">Hermano</option>
+        <option value="Esposo/a">Esposo/a</option>
+        <option value="Hijo/a">Hijo/a</option>
+      </select>
+      <label for="relativeName">Nombre del familiar</label>
+      <input type="text" id="relativeName" />
+      <button type="button" id="btnAddRelative">Agregar familiar</button>
+      <ul id="relativesList" style="color:#fff; margin-top:0.5rem;"></ul>
     </div>
-    <div id="dvCG1" class="card col-12 col-md-4 m-0 p-0 float-left ">
-        <div class="card-header m-0">
-            <span id="spCT1">Asistencia Actividades</span>
-            <span class="expandir pl-1 pr-1 float-right" title="Expandir Grafico" onclick="CargarModal(1)"><i class="fas fa-expand"></i></span>
-        </div>
-        <div id="dvCD1" class="card-body m-0">
-            <div id="dvCGF1">
-                <canvas id="cnvActividades" class="contendorGrafico" width="400" height="240"></canvas>
-            </div>
-        </div>
+
+    <!-- Datos espirituales -->
+    <div class="section">
+      <h3 style="color:#d4af37">Datos espirituales</h3>
+      <label for="conversionDate">Fecha de conversión</label>
+      <input type="date" id="conversionDate" />
+      <label for="conversionPlace">Lugar de conversión</label>
+      <input type="text" id="conversionPlace" />
+      <label for="baptismDate">Fecha de bautismo</label>
+      <input type="date" id="baptismDate" />
+      <label for="baptismPlace">Lugar de bautismo</label>
+      <input type="text" id="baptismPlace" />
+      <label for="spiritBaptismDate">Fecha de bautismo en el Espíritu</label>
+      <input type="date" id="spiritBaptismDate" />
+      <label for="spiritBaptismPlace">Lugar de bautismo en el Espíritu</label>
+      <input type="text" id="spiritBaptismPlace" />
     </div>
-    <div id="dvCG2" class="card col-12 col-md-4 m-0 p-0 float-left ">
-        <div class="card-header m-0">
-            <span id="spCT2">Asistencia Escuela Dominical</span>
-            <span class="expandir pl-1 pr-1 float-right" title="Expandir Grafico" onclick="CargarModal(2)"><i class="fas fa-expand"></i></span>
-        </div>
-        <div id="dvCD2" class="card-body m-0">
-            <div id="dvCGF2">
-                <canvas id="cnvEscuelaDom" class="contendorGrafico" width="400" height="240"></canvas>
-            </div>
-        </div>
-    </div>
-    <div id="dvCG3" class="card col-12 col-md-4 m-0 p-0 float-left ">
-        <div class="card-header m-0">
-            <span id="spCT3">Aceptaciones y Reconcilios</span>
-            <span class="expandir pl-1 pr-1 float-right" title="Expandir Grafico" onclick="CargarModal(3)"><i class="fas fa-expand"></i></span>
-        </div>
-        <div id="dvCD3" class="card-body m-0">
-            <div id="dvCGF3">
-                <canvas id="cnvTarjetas" class="contendorGrafico" width="400" height="240"></canvas>
-            </div>        
-        </div>
-    </div>
-    <div id="dvCG4" class="card col-12 col-md-4 m-0 p-0 float-left ">
-        <div class="card-header m-0">
-            <span id="spCT4">Estado Discipulado</span>
-            <span class="expandir pl-1 pr-1 float-right" title="Expandir Grafico" onclick="CargarModal(4)"><i class="fas fa-expand"></i></span>
-        </div>
-        <div id="dvCD4" class="card-body m-0">
-            <div id="dvCGF4">
-                <canvas id="cnvTarjetas1" class="contendorGrafico" width="400" height="240"></canvas>
-            </div>    
-        </div>
-    </div>
+
+    <button type="submit">Guardar miembro</button>
+    <button type="button" id="btnCancel">Cancelar</button>
+  </form>
+</main>
+
 <script>
-const generarColor = () => "#000000".replace(/0/g, () => (~~(Math.random() * 16)).toString(16));
+  // Datos simulados (para prueba), aquí integrarás con Firestore y Supabase Storage según tu backend real
+  let members = [];
+  let editingMemberId = null;
+  const relatives = [];
 
-var graficoActivo;
-function CargarModal(opcion) {
-    graficoActivo = opcion;
-    $("#h5TM").html( $("#spCT"+opcion).html() );
-    $("#dvCGF"+opcion).appendTo($('#dvDetalleGrafico'));
-    $("#dvCG"+opcion).css("display","none")
-    $("#ViewGraph").modal();
-}
-function CerrarModal() {
-    $("#dvCGF"+graficoActivo).appendTo($('#dvCD'+graficoActivo));
-    $("#dvCG"+graficoActivo).css("display","inline")
-}
-/*********************************/
-function MembresiaPC(data) {
-    var asociaciones = [], membresia = [], colores = [];
-            
-    for (i in data) {
-        asociaciones.push(data[i].asociacion);
-        membresia.push(data[i].total);
-        colores.push(generarColor());
+  const membersTableBody = document.querySelector("#membersTable tbody");
+  const memberForm = document.getElementById("memberForm");
+  const btnAddMember = document.getElementById("btnAddMember");
+  const btnCancel = document.getElementById("btnCancel");
+  const searchMember = document.getElementById("searchMember");
+
+  const relativesList = document.getElementById("relativesList");
+  const btnAddRelative = document.getElementById("btnAddRelative");
+  const relativeType = document.getElementById("relativeType");
+  const relativeName = document.getElementById("relativeName");
+
+  function renderMembers(filter = "") {
+    membersTableBody.innerHTML = "";
+    let filteredMembers = members.filter(m =>
+      m.fullName.toLowerCase().includes(filter.toLowerCase()) ||
+      m.code.toLowerCase().includes(filter.toLowerCase())
+    );
+    filteredMembers.forEach((member, index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><img class="photo" src="${member.photoURL || 'https://via.placeholder.com/40'}" alt="Foto ${member.fullName}" /></td>
+        <td>${member.fullName}</td>
+        <td>${member.code}</td>
+        <td>${member.age}</td>
+        <td>${member.phone || ""}</td>
+        <td><button type="button" data-index="${index}" class="editBtn">Editar</button></td>
+      `;
+      membersTableBody.appendChild(tr);
+    });
+
+    // Añadir evento editar
+    document.querySelectorAll(".editBtn").forEach(btn => {
+      btn.addEventListener("click", e => {
+        const idx = e.target.dataset.index;
+        loadMemberForm(idx);
+      });
+    });
+  }
+
+  function loadMemberForm(index) {
+    const m = members[index];
+    editingMemberId = index;
+    memberForm.style.display = "block";
+    btnAddMember.style.display = "none";
+    // Cargar datos en formulario
+    document.getElementById("fullName").value = m.fullName;
+    document.getElementById("code").value = m.code;
+    document.getElementById("age").value = m.age;
+    document.getElementById("phone").value = m.phone || "";
+    document.getElementById("address").value = m.address || "";
+    document.getElementById("birthDate").value = m.birthDate || "";
+    // Foto se carga sólo si cambias y subes, no la precargamos aquí
+
+    // Cargar familiares
+    relatives.length = 0; // limpiar array
+    if (m.relatives) {
+      m.relatives.forEach(r => relatives.push(r));
     }
-    var chartdata = {
-        labels: asociaciones,
-        datasets : [{
-            label: 'Membresia Activa',
-            backgroundColor: colores,
-            borderColor: 'rgba(200, 200, 200, 0.75)',
-            hoverBackgroundColor: colores,
-            hoverBorderColor: 'rgba(200, 200, 200, 1)',
-            data: membresia
-        }]
+    updateRelativesList();
+
+    // Datos espirituales
+    document.getElementById("conversionDate").value = m.conversionDate || "";
+    document.getElementById("conversionPlace").value = m.conversionPlace || "";
+    document.getElementById("baptismDate").value = m.baptismDate || "";
+    document.getElementById("baptismPlace").value = m.baptismPlace || "";
+    document.getElementById("spiritBaptismDate").value = m.spiritBaptismDate || "";
+    document.getElementById("spiritBaptismPlace").value = m.spiritBaptismPlace || "";
+  }
+
+  function clearForm() {
+    editingMemberId = null;
+    memberForm.reset();
+    relatives.length = 0;
+    updateRelativesList();
+  }
+
+  btnAddMember.addEventListener("click", () => {
+    clearForm();
+    memberForm.style.display = "block";
+    btnAddMember.style.display = "none";
+  });
+
+  btnCancel.addEventListener("click", () => {
+    memberForm.style.display = "none";
+    btnAddMember.style.display = "inline-block";
+  });
+
+  btnAddRelative.addEventListener("click", () => {
+    const type = relativeType.value;
+    const name = relativeName.value.trim();
+    if (!type || !name) {
+      alert("Por favor, seleccione tipo de familiar y escriba el nombre.");
+      return;
+    }
+    relatives.push({ type, name });
+    updateRelativesList();
+    relativeType.value = "";
+    relativeName.value = "";
+  });
+
+  function updateRelativesList() {
+    relativesList.innerHTML = "";
+    relatives.forEach((r, i) => {
+      const li = document.createElement("li");
+      li.textContent = `${r.type}: ${r.name}`;
+      relativesList.appendChild(li);
+    });
+  }
+
+  memberForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    // Recolectar datos
+    const fullName = document.getElementById("fullName").value.trim();
+    const code = document.getElementById("code").value.trim();
+    const age = parseInt(document.getElementById("age").value);
+    const phone = document.getElementById("phone").value.trim();
+    const address = document.getElementById("address").value.trim();
+    const birthDate = document.getElementById("birthDate").value;
+    const conversionDate = document.getElementById("conversionDate").value;
+    const conversionPlace = document.getElementById("conversionPlace").value.trim();
+    const baptismDate = document.getElementById("baptismDate").value;
+    const baptismPlace = document.getElementById("baptismPlace").value.trim();
+    const spiritBaptismDate = document.getElementById("spiritBaptismDate").value;
+    const spiritBaptismPlace = document.getElementById("spiritBaptismPlace").value.trim();
+
+    // Foto - para este ejemplo se mantiene la URL por defecto
+    let photoURL = 'https://via.placeholder.com/40';
+    const photoInput = document.getElementById("photo");
+    if (photoInput.files.length > 0) {
+      // Aquí deberías subir la foto a Supabase Storage y obtener la URL
+      // Para demo, solo usamos URL local:
+      photoURL = URL.createObjectURL(photoInput.files[0]);
+    } else if (editingMemberId !== null) {
+      photoURL = members[editingMemberId].photoURL || photoURL;
+    }
+
+    const memberData = {
+      fullName,
+      code,
+      age,
+      phone,
+      address,
+      birthDate,
+      relatives: [...relatives],
+      conversionDate,
+      conversionPlace,
+      baptismDate,
+      baptismPlace,
+      spiritBaptismDate,
+      spiritBaptismPlace,
+      photoURL,
     };
-    var ctx = $("#cnvMembresiaActiva");
 
-    if (window.grafica1) {
-        window.grafica1.clear();
-        window.grafica1.destroy();
+    if (editingMemberId !== null) {
+      members[editingMemberId] = memberData;
+    } else {
+      members.push(memberData);
     }
-    window.grafica1 = new Chart(ctx, {
-        type: 'pie',
-        data: chartdata,
-        options: {
-            title: {
-                display: false
-            },
-            plugins: {
-				datalabels: {
-					color: 'black',
-					display: function(context) {
-						return context.dataset.data[context.dataIndex] > 15;
-					},
-					font: {
-						weight: 'bold'
-					},
-					formatter: Math.round
-				}
-			},
-        }
-    });
-}
-function ActividadesPC(data) {
-    var actividades = [], totalACT = [], coloresACT = [];
+    memberForm.style.display = "none";
+    btnAddMember.style.display = "inline-block";
+    clearForm();
+    renderMembers(searchMember.value);
+  });
 
-    for (i in data) {
-        actividades.push(data[i].tipoActividad + " (" +data[i].cantidad+ ")");
-        totalACT.push(data[i].asistencia);
-        coloresACT.push(generarColor());
-    }
-    var chartdataACT = {
-        labels: actividades,
-        datasets : [{
-            label: '',
-            backgroundColor: Chart.helpers.color('#33CEFF').alpha(0.2).rgbString(),
-            borderColor: '#33CEFF',
-            data: totalACT
-        }]
-    };
-    var ctxACT = $("#cnvActividades");
+  searchMember.addEventListener("input", () => {
+    renderMembers(searchMember.value);
+  });
 
-    if (window.grafica2) {
-        window.grafica2.clear();
-        window.grafica2.destroy();
-    }
-    window.grafica2 = new Chart(ctxACT, {
-        type: 'radar',
-        data: chartdataACT,
-        options: {
-            legend:{ display:false },
-            plugins: {
-					datalabels: {
-                        backgroundColor: function(context) {
-                            return Chart.helpers.color('#cdcbcb').alpha(0.5).rgbString();
-                        },
-                        borderRadius: 2,
-                        padding: 3,
-						color: 'red',
-						display: function(context) {
-							return context.dataset.data[context.dataIndex] > 15;
-						},
-						font: {
-                            size: 10,
-							weight: 'bold'
-						},
-						formatter: Math.round
-					}
-			},
-        },
-    });
-}
-function EscuelaDominical(data) {
-    var clases = [], fechas = [], datosED = [];
-
-    for (i in data[3]) {
-        clases.push(data[3][i].curso);
-    }
-    for (i in data[4]) {
-        fechas.push(data[4][i].fecha);
-    }
-    for (i in fechas) {
-        let asistencia = [];
-        for (j in clases) {
-            let dato = data[2].filter( clase => clase.fecha == fechas[i] && clase.curso == clases[j]);
-            if (dato.length > 0) {
-                asistencia.push(dato[0].asistencia);
-            } else
-                asistencia.push(0);
-        }
-        datosED.push({"label":fechas[i], 
-                      "backgroundColor": generarColor(),
-                      "data":asistencia});
-    }
-    var ctx = document.getElementById("cnvEscuelaDom").getContext('2d');
-    
-    if (window.grafica3) {
-        window.grafica3.clear();
-        window.grafica3.destroy();
-    }
-    window.grafica3 = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: clases,
-            datasets: datosED 
-        },
-        options: { 
-            title: { display: false },
-		    responsive: true,
-		    tooltips: { mode: 'index'},
-            plugins: {
-				datalabels: {
-					backgroundColor: function(context) {
-						return Chart.helpers.color('#33CEFF').alpha(0.2).rgbString();
-					},
-					color: 'black',
-                    borderRadius: 4,
-					padding: 2,
-					font: {
-						size: 10,
-						weight: 'bold'
-					},
-					formatter: Math.round
-				}
-			}
-		},
-    });
-}
-function Discipulado(data) {
-    var AsociacionesTJ = [], aceptacionesTJ = [], reconciliosTJ = [];
-
-    for (j in data[5]) {
-        AsociacionesTJ.push(data[5][j].asociacion);
-        aceptacionesTJ.push(data[5][j].aceptaciones);
-        reconciliosTJ.push(data[5][j].reconcilios);
-    }
-
-    var ctx = document.getElementById("cnvTarjetas").getContext('2d');
-    if (window.grafica4) {
-        window.grafica4.clear();
-        window.grafica4.destroy();
-    }
-    window.grafica4 = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: AsociacionesTJ,
-            datasets: [{"label": 'Acepataciones', 
-                      "backgroundColor": generarColor(),
-                      "data": aceptacionesTJ},
-                      {"label": 'Reconcilios', 
-                      "backgroundColor": generarColor(),
-                      "data":reconciliosTJ}] 
-        },
-        options: { 
-            title: { display: false },
-		    responsive: true,
-		    tooltips: { mode: 'index'},
-            scales: {
-				xAxes: [{ stacked: true, }],
-				yAxes: [{ stacked: true }]
-			},
-            plugins: {
-				datalabels: {
-					backgroundColor: function(context) {
-						return Chart.helpers.color('#cdcbcb').alpha(0.5).rgbString();
-					},
-					color: 'black',
-                    borderRadius: 2,
-					padding: 3,
-					font: {
-						size: 10,
-						weight: 'bold'
-					},
-					formatter: Math.round
-				}
-			}
-		},
-    });
-}
-function ResumenTarjetas(data) {
-    var asociacionesRTJ = [], estados = [], resumenTJ = [], controlEST = "";
-    
-    for (i in data) {
-        if (data[i].estado != controlEST){
-            estados.push(data[i].estado);
-            controlEST = data[i].estado;
-        }
-        let dato = asociacionesRTJ.filter( aso => aso == data[i].asociacion);
-        
-        if (dato.length == 0) {
-            asociacionesRTJ.push(data[i].asociacion);
-        }
-    }
-    for (i in asociacionesRTJ) {
-        let totalTJ = [];
-        for (j in estados) {
-            let dato = data.filter( resumen => resumen.estado == estados[j] && resumen.asociacion == asociacionesRTJ[i]);
-            if (dato.length > 0) {
-                totalTJ.push(dato[0].total);
-            } else {
-                totalTJ.push(0);
-            }
-        }
-        resumenTJ.push({"label":asociacionesRTJ[i], 
-                      "backgroundColor": generarColor(),
-                      "data":totalTJ});
-    }
-    var ctx = document.getElementById("cnvTarjetas1").getContext('2d');
-    if (window.grafica5) {
-        window.grafica5.clear();
-        window.grafica5.destroy();
-    }
-    window.grafica5 = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: estados,
-            datasets: resumenTJ 
-        },
-        options: {
-            title: { display: false },
-		    responsive: true,
-		    tooltips: { mode: 'index'},
-            scales: {
-				xAxes: [{ stacked: true, }],
-				yAxes: [{ stacked: true }]
-			},
-            plugins: {
-				datalabels: {
-					backgroundColor: function(context) {
-						return Chart.helpers.color('#33CEFF').alpha(0.2).rgbString();//context.dataset.borderColor;
-					},
-					color: 'black',
-                    borderRadius: 4,
-					padding: 3,
-					font: {
-						size: 10,
-						weight: 'bold'
-					},
-					formatter: Math.round
-				}
-			}
-		},
-    });
-}
-function PCCargar(){
-    $.ajax({
-        url: './controller/panelControl/panel_control_detalle.php',
-        method: "GET",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        data: { "fechaI" : $("#txtPCfechaI").val(), "fechaF" : $("#txtPCfechaF").val() },
-        success: function(data) {
-            /// MEMBRESIA
-            MembresiaPC(data[0]);
-            /// ACTIVIDADES
-            ActividadesPC(data[1]);
-            /// ESCUELA DOMINICAL
-            EscuelaDominical(data);
-            /// TARJETA DECISION
-            Discipulado(data); 
-            /// TARJETAS ESTADO
-            ResumenTarjetas(data[6])
-        },
-        error: function(data) {
-            //alert(data);
-        }
-    });
-}
-$(document).ready(function() {
-    $("#txtPCfechaI").val(PrimerDiaMes());
-    $("#txtPCfechaF").val(UltimoDiaMes());
-    PCCargar();
-
-    $('.nav-tabs a:first').tab('show') 
-});
-</script>                        </div>
-                    </div>
-                </div>
-            </section>
-            <!-- /.content -->
-        </div>
-    </div>
-    <div class="modal" id="cambiarPindUsuario">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
-            <div class="modal-content">
-            <!-- Modal Header -->
-                <div class="modal-header bg-gray p-2 pl-4 pr-4">
-                    <h5 class="modal-title">Cambiar Pin de Usuario</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <!-- Modal body -->
-                <div class="modal-body">
-                    <form id='frmcambiarPinUsuario' method='POST'>
-                        <input type='hidden' id='txtUSidnuevopin' name='txtUSid' value=0>
-                        <div class="form-group float-left col-12">
-                            <input type='password' placeholder = 'PIN' id='txtUSnuevopin' name='txtUSpin' class="form-control" maxlength='20'>
-                            <label data-placeholder="PIN de Acceso"></label>
-                        </div>
-                        <div class="form-group float-left col-12">
-                            <input type='password' placeholder = 'Confirmacion' id='txtUSnuevopin1' class="form-control" maxlength='20'>
-                        </div>
-                    </form>
-                </div>
-                <!-- Modal footer -->
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" onclick="CambiarPIN()">Cambiar</button>
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-<script type="text/javascript" src="./plugins/sweetalert2/sweetalert2.all.js"></script>
-<script type="text/javascript" src="./plugins/bootstrap/bootstrap.min.js"></script>
-<script type="text/javascript" src="./plugins/select2/select2.full.min.js"></script>
-<script type="text/javascript" src="./plugins/jquery/jquery.slimscroll.min.js"></script>
-<script type="text/javascript" src="./plugins/tema/js/adminlte.js"></script>
-<script type="text/javascript" src="./plugins/jQuery-contextMenu/jquery.contextMenu.min.js"></script>
-<script type="text/javascript" src="./plugins/jQuery-contextMenu/jquery.ui.position.js"></script>
-<script type="text/javascript" src="./plugins/cleave/cleave.min.js"></script>
-<script type="text/javascript" src="./plugins/moments/moment.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.7/signalr.min.js"></script>
-<script>
-        var controladores = new Array("actividades/actividades", "celulas/celulas", "discipuladores/discipuladores", "doctrinas/doctrinas", "tarjetas/tarjetas","diezmos/diezmos", "liderazgo/liderazgo", "membresia/membresia", "catalogos/catalogos", "usuarios/usuarios", "tesoreria/tesoreria", "reportes/reportes", "reportes/reportes", "bautizados/bautizados","elecciones/elecciones");
-
-        var opciones = ["Actividades", "Celulas", "Discipuladores", "Doctrinas", "Discipulado", "Diezmos", "Liderazgo", "Membresia", "Catalogos", "Usuarios", "Tesoreria", "Reportes", "Reportes", "Bautizos", "Elecciones"];
-
-        function AddPestana(indice) {
-            let existe = ($('#li' + opciones[indice]).length > 0 ? false : true);
-
-            if (existe) {
-                $('<li class="nav-item active" id="li' + opciones[indice] + '"><a class="nav-link" href="#tb' + opciones[indice] + '" data-toggle="tab">' + opciones[indice] + ' <span class="crPestana" title="Cerrar pesta&ntilde;a" onclick="QuitarPestana(' + indice + ')">&Chi;</span></a></li>').appendTo('#pentanaMain');
-                
-                // create the tab content
-                $('<div class="tab-pane" id="tb' + opciones[indice] + '"></div>').appendTo('#contendorMain');
-            } else {
-                $('.nav-tabs a[href="#tb' + opciones[indice] + '"]').tab('show');
-                
-            }
-            return existe;
-        }
-        function QuitarPestana(indice) {
-            $("#li" + opciones[indice]).remove();
-            $("#tb" + opciones[indice]).remove();
-        }
-        function mnuCargarPestana(indice) {
-            if (AddPestana(indice)) {
-                $('.nav-tabs a[href="#tb' + opciones[indice] + '"]').tab('show');
-                $.ajax({
-                    type: "POST",
-                    url: "./controller/" + controladores[indice] + ".php",
-                    beforeSend: function (data) {
-                        //$("#tb" + opciones[indice]).html("Cargando...");
-                        //$("#tb" + opciones[indice]).append("<img src='/Content/Images/loader1.gif'/>");
-                    },
-                    success: function (data) {
-                        $("#tb" + opciones[indice]).html(data);
-                    },
-                    error: function () {
-                    },
-                    complete: function () {
-                    }
-                });
-            }
-        }
+  // Render inicial
+  renderMembers();
 </script>
 </body>
-</html><script>
-	const idUSU = 61;
-	const toast = swal.mixin({
-		toast: true,
-		position: 'top-end',
-		showConfirmButton: false,
-		timer: 3500
-	});
-	function confirmacion(texto, manejador, id = 0, id1 = 0) {
-		swal({
-			text: texto,
-			width: 350,
-			showCancelButton: true,
-			focusConfirm: false,
-			confirmButtonText: 'Si',
-			cancelButtonText: 'No'
-		}).then((result) => {
-			if (id > 0)
-				manejador(result.value, id, id1);
-			else
-				manejador(result.value);
-		});
-	}
-	function CerrarSesion(){
-		confirmacion("Confirma cerrar esta sesion de trabajo?", RGCerrarSesion);
-	}
-	function RGCerrarSesion(retorno){
-		if (retorno) {
-			location.href ="./index.php?doLogout=true";
-		}
-	}
-	function TryParseInt(str, defaultValue) {
-		let retValue = defaultValue;
-		if (str !== null) {
-	    	if (str.length > 0) {
-	        	if (!isNaN(str)) {
-	        		if (parseInt(str) > 0) {
-						retValue = parseInt(str);
-	        		}
-	             }
-	         }
-	     }
-	     return retValue;
-	}
-	$(function() {
-		$('.sidebar').slimScroll({height: ($(window).height() - $('.main-header').height() - 20) + 'px'});
-	});
-	function altoContenedor(){
-		var myHeight = 0;
-		var altoOcupado = $(".ap_encabezado").height()+$(".ap_subencabezado").height();
-
-		if (typeof(window.innerHeight) == 'number') {
-			myHeight = window.innerHeight;
-		} else if(document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)){
-			myHeight = document.documentElement.clientHeight;
-		} else if(document.body && (document.body.clientWidth || document.body.clientHeight)){
-			myHeight = document.body.clientHeight;}
-		return (myHeight - 240);
-	}
-	function anchoContenedor(){
-		var myWidth = 0;
-
-		if (typeof(window.innerWidth) == 'number') {
-			myWidth = window.innerWidth;
-		} else if(document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)){
-			myWidth = document.documentElement.clientWidth;
-		} else if(document.body && (document.body.clientWidth || document.body.clientHeight)){
-			myWidth = document.body.clientWidth;}
-		return (myWidth);
-	}
-	$(function() {
-		$("input[type=number]").keyup(function() {
-			var valor = parseInt(this.value);
-			if (isNaN(valor)) {
-				this.value = 0;
-			}
-		});
-		$("input, textarea").focus(function(){
-			this.select();});
-	});
-	function CambiarPinAcceso() {
-		$("#frmcambiarPinUsuario input").val("");
-		$("#txtUSidnuevopin").val(idUSU);
-		$("#cambiarPindUsuario").modal();
-	}
-	function CambiarPIN() {
-		if (validarCPUS()){
-			confirmacion("Confirma cambiar el Pin de Acceso de este Usuario", RGCambiarPinAcceso);
-		}
-	}
-	function RGCambiarPinAcceso(retorno){
-		if (retorno) {
-			$.ajax({
-				type: 'post',
-				data: $("#frmcambiarPinUsuario").serialize() + "&opcion=CambiarPinAcceso",
-				url: './controller/usuarios/usuarios_admon.php',
-				success: function(info) {
-					if (info == true || info == 1) {
-						$("#frmcambiarPinUsuario input").val('');
-						$("#cambiarPindUsuario").modal("toggle");
-						toast({type: 'success', html: "Cambio de Pin de Acceso realizado"});
-					} else {
-						toast({type: 'error', html: "Se presento un error"});
-					}
-				},
-				error: function(info) {
-					toast({type: 'error', html: "Se presento un error"});
-				}
-			});
-		}
-	}
-	/*****FUNCIONES DE FECHA*************/
-	function FechaToFecha(fecha) {
-    	return fecha.getFullYear() + "-" + ((fecha.getMonth() + 1) <= 9 ? "0" : "") + (fecha.getMonth() + 1) + "-" + (fecha.getDate() <= 9 ? "0" : "") + fecha.getDate()
-	}
-	function PrimerDiaMes() {
-		var date = new Date();
-	    var primerDia = new Date(date.getFullYear(), date.getMonth(), 1);
-		return FechaToFecha(primerDia);
-	}
-	function UltimoDiaMes() {
-		var date = new Date();
-		var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-		return FechaToFecha(ultimoDia);
-	}
-	function FechaActual(){
-		let f = new Date();
-		let fecha = f.getFullYear()+ "-" 
-		fecha += ((f.getMonth()+1) > 9 ? (f.getMonth()+1) : "0" + (f.getMonth()+1)) + "-" ;
-		fecha += (f.getDate() > 9 ? f.getDate() : "0" + f.getDate());
-		return fecha;
-	}
-	function validarCPUS() {
-		var mensageerror = "";
-		var pin = $("#txtUSnuevopin").val();
-		var pin1 = $("#txtUSnuevopin1").val();
-
-		retorno = validarPIN(pin, pin1);
-		if (retorno.length > 0) {
-			mensageerror += retorno;
-		}
-		if (mensageerror.length > 0) {
-			toast({type: 'error', html: mensageerror});
-			return false;
-		} else
-			return true;
-	}
-	function validarPIN(pin, pin1) {
-		let mensageerror = "";
-		if (pin == null || /^\s+$/.test(pin)) {
-			mensageerror += "Ingrese el PIN de acceso<br>";
-		}
-		if (pin.length < 8) {
-			mensageerror += "La longitud minima de su PIN de ser 8 caracteres<br>";
-		}
-		if (pin !== pin1) {
-			mensageerror += "El PIN y su Confirmacion deben ser iguales<br>";
-		}
-		return mensageerror;
-	}
-</script>
 </html>
