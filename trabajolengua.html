@@ -1,211 +1,489 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Gestión Miembros - Iglesia</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #0b2241;
-      color: #f0e9db;
-      padding: 20px;
-    }
-    input, button {
-      padding: 8px;
-      margin: 5px 0;
-      width: 100%;
-      max-width: 300px;
-      border-radius: 4px;
-      border: none;
-    }
-    button {
-      background-color: #b9a550;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .miembro {
-      background: #142c5c;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .miembro img {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-  </style>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="shortcut icon" href="./css/images/icono.ico" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" type="text/css" href="./plugins/font-awesome/css/all.css"  />
+    <link rel="stylesheet" type="text/css" href="./plugins/font-awesome/css/regular.css" />
+    <link rel="stylesheet" type="text/css" href="./plugins/select2/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="./plugins/sweetalert2/sweetalert2.css">
+    <link rel="stylesheet" type="text/css" href="./plugins/jQuery-contextMenu/jquery.contextMenu.min.css">
+    <link rel="stylesheet" type="text/css" href="./plugins/tema/css/adminlte.css"/>
+    <link rel="stylesheet" type="text/css" href="./plugins/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/stilo.css">
+    <script type="text/javascript" src="./plugins/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="./plugins/chart.js/Chart.min.js"></script>
+    <script type="text/javascript" src="./plugins/chart.js/chartjs-plugin-datalabels.js"></script>
+    <title>.:. Sistema de Administracion de Iglesia (SAI) - Registro Miembros .:.</title>
 </head>
-<body>
+<body class="hold-transition sidebar-mini sidebar-collapse">
+    <div class="wrapper">
+        <nav class="main-header navbar navbar-expand border-bottom navbar-dark bg-dark fixed-top">
+            <ul class="navbar-nav w-50">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" ><i class="fa fa-bars"></i></a>
+                </li>
+                <li class="form-inline w-75">
+                    <div class="input-group input-group-sm" >
+                        <span class="d-none d-md-block" style="color:#ffffff; padding-top: 2px; font-size: 1.2rem;">
+                            Sistema de Administracion de Iglesia</span>
+                        <span class="d-md-none" style="color:#ffffff; padding-top: 2px; font-size: 1.2rem;" title="Sistema de Administracion de Iglesia">SAI</span>
+                    </div>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown show mr-3">
+                    <img width=42 height=44 src='./fotos/a908.jpg' title="Donald Miguel Mettoy Meza"/>
+                    <span class="d-none d-lg-block float-right" style="padding-top:8px; padding-left:8px;" >
+                        Donald Miguel Mettoy Meza</span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-danger"  onclick="CerrarSesion()" title="Cerrar Sesión">
+                        <i class="fa fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <aside id="contenedorMenu" class="main-sidebar sidebar-dark-primary">
+            <a  class="brand-link bg-dark" style="height:60px;">
+                <img src="./css/images/icono.ico" class="brand-image" />
+                <span class="brand-text font-weight-normal" style="color:#ffffff;"> Mi Redentor</span>
+            </a>
+            <div class="sidebar">
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item text-white-50">
+                            <a class="nav-link" onclick="mnuCargarPestana(4)" >
+                                <i class="nav-icon fa fa-address-card "></i><p>Discipulado</p>
+                            </a>
+                        </li>
+                        <li class="nav-item text-white-50">
+                            <a class="nav-link"  onclick="mnuCargarPestana(7)" >
+                                <i class="nav-icon fa fa-address-book "></i><p>Miembros</p>
+                            </a>
+                        </li><li class="dropdown-divider"></li>
+                        <li class="dropdown-divider"></li>
+                        <li class="nav-item text-white-50">
+                            <a class="nav-link"  onclick="mnuCargarPestana(12)">
+                                <i class="nav-icon fa fa-sticky-note "></i><p>Reportes</p>
+                            </a>
+                        </li>
+                        <li class="dropdown-divider"></li><li class="dropdown-divider"></li>
+                        <li class="nav-item text-white-50">
+                            <a class="nav-link"  onclick="CambiarPinAcceso()">
+                                <i class="nav-icon fa fa-user-clock"></i><p>Cambiar PIN</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                </div>
+        </aside>
 
-<h1>Gestión de Miembros - Iglesia Adoración Viva</h1>
+        <div class="content-wrapper mb-0 mt-0 p-0">
+            <section class="content">
+                <div class="container-fluid main-conten">
+                    <ul class="nav nav-tabs" role="tablist" id="pentanaMain">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#tbRegistroMiembros" role="tab" data-toggle="tab">Registro de Miembros</a>
+                        </li>
+                        </ul>
+                    <div class="tab-content" id="contendorMain">
+                        <div role="tabpanel" class="tab-pane fade show active" id="tbRegistroMiembros">
+                            <div class="card card-primary card-outline mt-3">
+                                <div class="card-header">
+                                    <h3 class="card-title">Formulario de Registro de Nuevo Miembro</h3>
+                                </div>
+                                <form id="frmRegistroMiembro" method="POST">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="form-group col-md-6">
+                                                <label for="txtNombre">Nombre(s):</label>
+                                                <input type="text" class="form-control" id="txtNombre" name="nombre" placeholder="Ingrese nombre(s)" required>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="txtApellido">Apellido(s):</label>
+                                                <input type="text" class="form-control" id="txtApellido" name="apellido" placeholder="Ingrese apellido(s)" required>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-6">
+                                                <label for="txtFechaNacimiento">Fecha de Nacimiento:</label>
+                                                <input type="date" class="form-control" id="txtFechaNacimiento" name="fecha_nacimiento" required>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="slcGenero">Género:</label>
+                                                <select class="form-control select2" id="slcGenero" name="genero" style="width: 100%;">
+                                                    <option value="">Seleccione</option>
+                                                    <option value="M">Masculino</option>
+                                                    <option value="F">Femenino</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-6">
+                                                <label for="txtDireccion">Dirección:</label>
+                                                <input type="text" class="form-control" id="txtDireccion" name="direccion" placeholder="Ingrese dirección completa" required>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="txtTelefono">Teléfono:</label>
+                                                <input type="text" class="form-control" id="txtTelefono" name="telefono" placeholder="Ej: 5555-5555">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="txtEmail">Correo Electrónico:</label>
+                                            <input type="email" class="form-control" id="txtEmail" name="email" placeholder="Ingrese correo electrónico">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="txtFechaConversion">Fecha de Conversión:</label>
+                                            <input type="date" class="form-control" id="txtFechaConversion" name="fecha_conversion">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="slcEstadoMiembro">Estado del Miembro:</label>
+                                            <select class="form-control select2" id="slcEstadoMiembro" name="estado_miembro" style="width: 100%;">
+                                                <option value="Activo">Activo</option>
+                                                <option value="Inactivo">Inactivo</option>
+                                                <option value="Trasladado">Trasladado</option>
+                                                <option value="Fallecido">Fallecido</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button type="submit" class="btn btn-primary" onclick="guardarMiembro()">Guardar Miembro</button>
+                                        <button type="reset" class="btn btn-secondary">Limpiar Formulario</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        </div>
 
-<form id="formMiembro">
-  <label>Nombre completo:
-    <input type="text" id="nombre" required placeholder="Nombre completo" />
-  </label>
-  <label>Código:
-    <input type="text" id="codigo" required placeholder="Código único" />
-  </label>
-  <label>Edad:
-    <input type="number" id="edad" required min="0" />
-  </label>
-  <label>Teléfono:
-    <input type="tel" id="telefono" placeholder="Opcional" />
-  </label>
-  <label>Dirección:
-    <input type="text" id="direccion" placeholder="Opcional" />
-  </label>
-  <label>Foto:
-    <input type="file" id="foto" accept="image/*" required />
-  </label>
-  <button type="submit">Agregar Miembro</button>
-</form>
+    <div class="modal" id="cambiarPindUsuario">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-gray p-2 pl-4 pr-4">
+                    <h5 class="modal-title">Cambiar Pin de Usuario</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id='frmcambiarPinUsuario' method='POST'>
+                        <input type='hidden' id='txtUSidnuevopin' name='txtUSid' value=0>
+                        <div class="form-group float-left col-12">
+                            <input type='password' placeholder = 'PIN' id='txtUSnuevopin' name='txtUSpin' class="form-control" maxlength='20'>
+                            <label data-placeholder="PIN de Acceso"></label>
+                        </div>
+                        <div class="form-group float-left col-12">
+                            <input type='password' placeholder = 'Confirmacion' id='txtUSnuevopin1' class="form-control" maxlength='20'>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="CambiarPIN()">Cambiar</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<h2>Lista de Miembros</h2>
-<div id="listaMiembros"></div>
+    <script type="text/javascript" src="./plugins/sweetalert2/sweetalert2.all.js"></script>
+    <script type="text/javascript" src="./plugins/bootstrap/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./plugins/select2/select2.full.min.js"></script>
+    <script type="text/javascript" src="./plugins/jquery/jquery.slimscroll.min.js"></script>
+    <script type="text/javascript" src="./plugins/tema/js/adminlte.js"></script>
+    <script type="text/javascript" src="./plugins/jQuery-contextMenu/jquery.contextMenu.min.js"></script>
+    <script type="text/javascript" src="./plugins/jQuery-contextMenu/jquery.ui.position.js"></script>
+    <script type="text/javascript" src="./plugins/cleave/cleave.min.js"></script>
+    <script type="text/javascript" src="./plugins/moments/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.7/signalr.min.js"></script>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script>
+        // Tu array de controladores y opciones
+        var controladores = new Array("actividades/actividades", "celulas/celulas", "discipuladores/discipuladores", "doctrinas/doctrinas", "tarjetas/tarjetas","diezmos/diezmos", "liderazgo/liderazgo", "membresia/membresia", "catalogos/catalogos", "usuarios/usuarios", "tesoreria/tesoreria", "reportes/reportes", "reportes/reportes", "bautizados/bautizados","elecciones/elecciones");
+        var opciones = ["Actividades", "Celulas", "Discipuladores", "Doctrinas", "Discipulado", "Diezmos", "Liderazgo", "Miembros", "Catalogos", "Usuarios", "Tesoreria", "Reportes", "Reportes", "Bautizos", "Elecciones"];
 
-<!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+        function AddPestana(indice) {
+            let existe = ($('#li' + opciones[indice]).length > 0 ? false : true);
 
-<script>
-  // --- CONFIGURACIÓN FIREBASE ---
-  const firebaseConfig = {
-    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-    databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-    projectId: "iglesia-adoracion-viva",
-    storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-    messagingSenderId: "815332010058",
-    appId: "1:815332010058:web:d2afff616469349d88deb3",
-    measurementId: "G-43MZP6V55D"
-  };
+            if (existe) {
+                $('<li class="nav-item active" id="li' + opciones[indice] + '"><a class="nav-link" href="#tb' + opciones[indice] + '" data-toggle="tab">' + opciones[indice] + ' <span class="crPestana" title="Cerrar pesta&ntilde;a" onclick="QuitarPestana(' + indice + ')">&Chi;</span></a></li>').appendTo('#pentanaMain');
+                $('<div class="tab-pane" id="tb' + opciones[indice] + '"></div>').appendTo('#contendorMain');
+            } else {
+                $('.nav-tabs a[href="#tb' + opciones[indice] + '"]').tab('show');
+            }
+            return existe;
+        }
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+        function QuitarPestana(indice) {
+            $("#li" + opciones[indice]).remove();
+            $("#tb" + opciones[indice]).remove();
+        }
 
-  // --- CONFIGURACIÓN SUPABASE ---
-  const SUPABASE_URL = 'https://azywyqozwwbfctxeokug.supabase.co';
-  const SUPABASE_ANON_KEY = 'eneyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk';
+        function mnuCargarPestana(indice) {
+            if (AddPestana(indice)) {
+                $('.nav-tabs a[href="#tb' + opciones[indice] + '"]').tab('show');
+                $.ajax({
+                    type: "POST",
+                    url: "./controller/" + controladores[indice] + ".php",
+                    beforeSend: function (data) {
+                        //$("#tb" + opciones[indice]).html("Cargando...");
+                    },
+                    success: function (data) {
+                        $("#tb" + opciones[indice]).html(data);
+                    },
+                    error: function () {
+                        // Manejo de errores
+                    },
+                    complete: function () {
+                        // Completado
+                    }
+                });
+            }
+        }
+    </script>
 
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script>
+        const idUSU = 61;
+        const toast = swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3500
+        });
 
-  // --- FUNCIONES ---
+        function confirmacion(texto, manejador, id = 0, id1 = 0) {
+            swal({
+                text: texto,
+                width: 350,
+                showCancelButton: true,
+                focusConfirm: false,
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No'
+            }).then((result) => {
+                if (result.value) { // Verifica si el usuario hizo clic en "Si"
+                    if (id > 0)
+                        manejador(true, id, id1); // Pasa true para indicar confirmación
+                    else
+                        manejador(true);
+                } else {
+                    if (id > 0)
+                        manejador(false, id, id1); // Pasa false si hizo clic en "No" o cerró
+                    else
+                        manejador(false);
+                }
+            });
+        }
 
-  async function subirFoto(file) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `fotos/${fileName}`;
+        function CerrarSesion(){
+            confirmacion("¿Confirma cerrar esta sesión de trabajo?", RGCerrarSesion);
+        }
 
-    const { data, error } = await supabase.storage
-      .from('fotos')
-      .upload(filePath, file);
+        function RGCerrarSesion(retorno){
+            if (retorno) {
+                location.href ="./index.php?doLogout=true";
+            }
+        }
 
-    if (error) {
-      alert('Error al subir la foto: ' + error.message);
-      return null;
-    }
+        function TryParseInt(str, defaultValue) {
+            let retValue = defaultValue;
+            if (str !== null && str.length > 0 && !isNaN(str) && parseInt(str) > 0) {
+                retValue = parseInt(str);
+            }
+            return retValue;
+        }
 
-    // Obtener URL pública
-    const { data: urlData } = supabase.storage
-      .from('fotos')
-      .getPublicUrl(filePath);
+        $(function() {
+            $('.sidebar').slimScroll({height: ($(window).height() - $('.main-header').height() - 20) + 'px'});
+        });
 
-    return urlData.publicUrl;
-  }
+        // Estas funciones de alto y ancho generalmente se usan para ajustar elementos dinámicamente
+        // Si no las usas, puedes omitirlas para un código más limpio.
+        function altoContenedor(){
+            var myHeight = 0;
+            var altoOcupado = $(".ap_encabezado").height()+$(".ap_subencabezado").height();
+            if (typeof(window.innerHeight) == 'number') { myHeight = window.innerHeight; }
+            else if(document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)){ myHeight = document.documentElement.clientHeight; }
+            else if(document.body && (document.body.clientWidth || document.body.clientHeight)){ myHeight = document.body.clientHeight; }
+            return (myHeight - 240);
+        }
 
-  async function agregarMiembro(event) {
-    event.preventDefault();
+        function anchoContenedor(){
+            var myWidth = 0;
+            if (typeof(window.innerWidth) == 'number') { myWidth = window.innerWidth; }
+            else if(document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)){ myWidth = document.documentElement.clientWidth; }
+            else if(document.body && (document.body.clientWidth || document.body.clientHeight)){ myWidth = document.body.clientWidth; }
+            return (myWidth);
+        }
 
-    const nombre = document.getElementById('nombre').value.trim();
-    const codigo = document.getElementById('codigo').value.trim();
-    const edad = Number(document.getElementById('edad').value);
-    const telefono = document.getElementById('telefono').value.trim();
-    const direccion = document.getElementById('direccion').value.trim();
-    const fotoInput = document.getElementById('foto');
+        $(function() {
+            $("input[type=number]").keyup(function() {
+                var valor = parseInt(this.value);
+                if (isNaN(valor)) {
+                    this.value = 0;
+                }
+            });
+            $("input, textarea").focus(function(){
+                this.select();
+            });
+        });
 
-    if (fotoInput.files.length === 0) {
-      alert('Por favor, selecciona una foto.');
-      return;
-    }
+        function CambiarPinAcceso() {
+            $("#frmcambiarPinUsuario input").val("");
+            $("#txtUSidnuevopin").val(idUSU);
+            $("#cambiarPindUsuario").modal();
+        }
 
-    const fotoFile = fotoInput.files[0];
-    const urlFoto = await subirFoto(fotoFile);
-    if (!urlFoto) return;
+        function CambiarPIN() {
+            if (validarCPUS()){
+                confirmacion("¿Confirma cambiar el Pin de Acceso de este Usuario?", RGCambiarPinAcceso);
+            }
+        }
 
-    // Guardar en Firestore
-    try {
-      await db.collection('miembros').add({
-        nombre,
-        codigo,
-        edad,
-        telefono,
-        direccion,
-        fotoURL: urlFoto,
-        creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      alert('Miembro agregado con éxito.');
-      document.getElementById('formMiembro').reset();
-      cargarMiembros();
-    } catch (error) {
-      alert('Error guardando miembro: ' + error.message);
-    }
-  }
+        function RGCambiarPinAcceso(retorno){
+            if (retorno) {
+                $.ajax({
+                    type: 'post',
+                    data: $("#frmcambiarPinUsuario").serialize() + "&opcion=CambiarPinAcceso",
+                    url: './controller/usuarios/usuarios_admon.php',
+                    success: function(info) {
+                        if (info == true || info == 1) {
+                            $("#frmcambiarPinUsuario input").val('');
+                            $("#cambiarPindUsuario").modal("toggle");
+                            toast({type: 'success', html: "Cambio de Pin de Acceso realizado"});
+                        } else {
+                            toast({type: 'error', html: "Se presentó un error al cambiar el PIN."});
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        toast({type: 'error', html: "Se presentó un error en la comunicación con el servidor al cambiar el PIN."});
+                        console.error("AJAX Error:", status, error, xhr.responseText);
+                    }
+                });
+            }
+        }
 
-  async function cargarMiembros() {
-    const lista = document.getElementById('listaMiembros');
-    lista.innerHTML = 'Cargando...';
+        /*****FUNCIONES DE FECHA*************/
+        function FechaToFecha(fecha) {
+            return fecha.getFullYear() + "-" + ((fecha.getMonth() + 1) <= 9 ? "0" : "") + (fecha.getMonth() + 1) + "-" + (fecha.getDate() <= 9 ? "0" : "") + fecha.getDate();
+        }
 
-    try {
-      const snapshot = await db.collection('miembros').orderBy('creadoEn', 'desc').get();
-      lista.innerHTML = '';
-      if (snapshot.empty) {
-        lista.innerHTML = '<p>No hay miembros registrados.</p>';
-        return;
-      }
+        function PrimerDiaMes() {
+            var date = new Date();
+            var primerDia = new Date(date.getFullYear(), date.getMonth(), 1);
+            return FechaToFecha(primerDia);
+        }
 
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement('div');
-        div.className = 'miembro';
+        function UltimoDiaMes() {
+            var date = new Date();
+            var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            return FechaToFecha(ultimoDia);
+        }
 
-        const img = document.createElement('img');
-        img.src = data.fotoURL;
-        img.alt = data.nombre;
+        function FechaActual(){
+            let f = new Date();
+            let fecha = f.getFullYear()+ "-" ;
+            fecha += ((f.getMonth()+1) > 9 ? (f.getMonth()+1) : "0" + (f.getMonth()+1)) + "-" ;
+            fecha += (f.getDate() > 9 ? f.getDate() : "0" + f.getDate());
+            return fecha;
+        }
 
-        const info = document.createElement('div');
-        info.innerHTML = `<strong>${data.nombre}</strong><br>Código: ${data.codigo}<br>Edad: ${data.edad}<br>Teléfono: ${data.telefono || 'N/A'}<br>Dirección: ${data.direccion || 'N/A'}`;
+        function validarCPUS() {
+            var mensageerror = "";
+            var pin = $("#txtUSnuevopin").val();
+            var pin1 = $("#txtUSnuevopin1").val();
 
-        div.appendChild(img);
-        div.appendChild(info);
+            let retornoValidacionPIN = validarPIN(pin, pin1);
+            if (retornoValidacionPIN.length > 0) {
+                mensageerror += retornoValidacionPIN;
+            }
+            if (mensageerror.length > 0) {
+                toast({type: 'error', html: mensageerror});
+                return false;
+            } else {
+                return true;
+            }
+        }
 
-        lista.appendChild(div);
-      });
-    } catch (error) {
-      lista.innerHTML = 'Error cargando miembros: ' + error.message;
-    }
-  }
+        function validarPIN(pin, pin1) {
+            let mensageerror = "";
+            if (pin === null || pin.trim() === "") { // Usar trim() para quitar espacios en blanco
+                mensageerror += "Ingrese el PIN de acceso.<br>";
+            }
+            if (pin.length < 8) {
+                mensageerror += "La longitud mínima de su PIN debe ser 8 caracteres.<br>";
+            }
+            if (pin !== pin1) {
+                mensageerror += "El PIN y su confirmación deben ser iguales.<br>";
+            }
+            return mensageerror;
+        }
 
-  // --- EVENTOS ---
-  document.getElementById('formMiembro').addEventListener('submit', agregarMiembro);
+        // --- Funciones específicas para el registro de miembros ---
+        $(document).ready(function() {
+            // Inicializar Select2 para los selects
+            $('.select2').select2();
 
-  // Cargar miembros al inicio
-  cargarMiembros();
+            // Para que la pestaña de Registro de Miembros se muestre al cargar la página
+            $('.nav-tabs a[href="#tbRegistroMiembros"]').tab('show');
+        });
 
-</script>
+        function guardarMiembro() {
+            event.preventDefault(); // Evita que el formulario se envíe de forma tradicional
 
+            const nombre = $("#txtNombre").val();
+            const apellido = $("#txtApellido").val();
+            const fechaNacimiento = $("#txtFechaNacimiento").val();
+            const genero = $("#slcGenero").val();
+            const direccion = $("#txtDireccion").val();
+            const telefono = $("#txtTelefono").val();
+            const email = $("#txtEmail").val();
+            const fechaConversion = $("#txtFechaConversion").val();
+            const estadoMiembro = $("#slcEstadoMiembro").val();
+
+            // Validación básica (puedes añadir más validaciones aquí según tus necesidades)
+            if (!nombre || !apellido || !fechaNacimiento || !genero || !direccion || genero === "") {
+                toast({type: 'error', html: "Por favor, complete todos los campos obligatorios."});
+                return;
+            }
+
+            confirmacion("¿Confirma guardar los datos del nuevo miembro?", function(retorno) {
+                if (retorno) {
+                    $.ajax({
+                        type: 'POST',
+                        url: './controller/miembros/miembros_admon.php', // Esta es la ruta a tu script PHP
+                        data: {
+                            opcion: 'guardar', // Un identificador para la acción en tu PHP
+                            nombre: nombre,
+                            apellido: apellido,
+                            fecha_nacimiento: fechaNacimiento,
+                            genero: genero,
+                            direccion: direccion,
+                            telefono: telefono,
+                            email: email,
+                            fecha_conversion: fechaConversion,
+                            estado_miembro: estadoMiembro
+                        },
+                        success: function(response) {
+                            // Asume que tu PHP devuelve "true" o "1" si todo va bien
+                            if (response.trim() === "true" || response.trim() === "1") {
+                                toast({type: 'success', html: "Miembro registrado exitosamente."});
+                                $('#frmRegistroMiembro')[0].reset(); // Limpia el formulario
+                                $('.select2').val(null).trigger('change'); // Asegura que los selects se limpien también
+                            } else {
+                                toast({type: 'error', html: "Error al registrar el miembro: " + response});
+                                console.error("Respuesta del servidor:", response);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            toast({type: 'error', html: "Se presentó un error en la comunicación con el servidor al guardar el miembro."});
+                            console.error("AJAX Error:", status, error, xhr.responseText);
+                        }
+                    });
+                }
+            });
+        }
+    </script>
 </body>
 </html>
