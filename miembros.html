@@ -41,6 +41,19 @@
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1); /* Makes the calendar icon white */
         }
+        /* Style for the custom scrollbar in the familiares list */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #4b5563; /* gray-600 */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #fcd34d; /* yellow-400 */
+            border-radius: 10px;
+            border: 1px solid #4b5563;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white font-sans">
@@ -69,7 +82,7 @@
                                 <i class="fas fa-vote-yea mr-2"></i>Votaciones
                             </a>
                         </li>
-                    </ul>
+                        </ul>
                 </nav>
             </div>
             <div class="mt-8 text-sm text-gray-400 text-center">
@@ -88,7 +101,7 @@
                 </div>
             </div>
 
-            <div id="formContainer" class="bg-gray-800 rounded-lg shadow-xl p-8 mb-8 hidden animate__animated animate__fadeInUp">
+            <div id="formContainer" class="bg-gray-800 rounded-lg shadow-xl p-8 mb-8 hidden">
                 <form id="formMiembro" class="space-y-6">
                     <div>
                         <h2 class="text-yellow-400 text-2xl font-bold mb-4 flex items-center">
@@ -214,7 +227,7 @@
                             <tr>
                                 <td colspan="6" class="text-center py-6 text-gray-400">
                                     Cargando miembros...
-                                    <div id="loadingAnimation" style="width: 50px; height: 50px; margin: 10px auto;"></div>
+                                    <i class="fas fa-spinner fa-spin text-yellow-500 text-3xl mb-2"></i>
                                 </td>
                             </tr>
                         </tbody>
@@ -227,487 +240,282 @@
     <script src="https://kit.fontawesome.com/your-font-awesome-kit-code.js" crossorigin="anonymous"></script>
 
     <script type="module">
-        // =========================================================
-        // 1. CONFIGURACIÓN DE FIREBASE Y SUPABASE
-        // ** ¡IMPORTANTE! REEMPLAZA LOS VALORES CON LOS DE TU PROYECTO **
-        // =========================================================
-        const firebaseConfig = {
-            apiKey: "TU_FIREBASE_API_KEY",
-            authDomain: "TU_FIREBASE_AUTH_DOMAIN",
-            projectId: "TU_FIREBASE_PROJECT_ID",
-            storageBucket: "TU_FIREBASE_STORAGE_BUCKET",
-            messagingSenderId: "TU_FIREBASE_MESSAGING_SENDER_ID",
-            appId: "TU_FIREBASE_APP_ID"
-        };
+        // Ensure all DOM interactions happen after the document is loaded
+        document.addEventListener('DOMContentLoaded', () => {
 
-        const supabaseUrl = 'TU_SUPABASE_URL';
-        const supabaseAnonKey = 'TU_SUPABASE_ANON_KEY';
+            // =========================================================
+            // 1. FIREBASE & SUPABASE CONFIGURATION
+            // ** IMPORTANT! REPLACE THESE VALUES WITH YOUR PROJECT'S CREDENTIALS **
+            // =========================================================
+          const firebaseConfig = {
+  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+  projectId: "iglesia-adoracion-viva",
+  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+  messagingSenderId: "815332010058",
+  appId: "1:815332010058:web:d2afff616469349d88deb3",
+  measurementId: "G-43MZP6V55D"
+};
 
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const miembrosCollection = db.collection('miembros');
+            const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co';
+            const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk';
 
-        // Inicializar Supabase
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
-        const fotosBucket = 'fotos_miembros'; // Asegúrate de que este bucket exista en Supabase Storage
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            const miembrosCollection = db.collection('miembros');
 
-        // =========================================================
-        // 2. REFERENCIAS A ELEMENTOS DEL DOM
-        // =========================================================
-        const btnAgregarMiembro = document.getElementById('btnAgregarMiembro');
-        const formContainer = document.getElementById('formContainer'); // Contenedor del formulario
-        const formMiembro = document.getElementById('formMiembro');
-        const btnCancelForm = document.getElementById('btnCancelForm');
-        const btnAgregarFamiliar = document.getElementById('btnAgregarFamiliar');
-        const listaFamiliares = document.getElementById('listaFamiliares');
-        const tablaMiembros = document.getElementById('tablaMiembros');
-        const searchInput = document.getElementById('searchInput');
-        const fotoInput = document.getElementById('fotoInput');
-        // const loadingAnimation = document.getElementById('loadingAnimation'); // Para LottieFiles, si lo descomentas
+            // Initialize Supabase
+            const supabase = createClient(supabaseUrl, supabaseAnonKey);
+            const fotosBucket = 'fotos_miembros'; // Ensure this bucket exists in Supabase Storage
 
-        // =========================================================
-        // 3. VARIABLES GLOBALES Y ESTADO
-        // =========================================================
-        let familiaresData = []; // Para almacenar temporalmente los familiares del miembro actual
-        let editingMemberId = null; // Guarda el ID del miembro que se está editando
+            // =========================================================
+            // 2. DOM ELEMENT REFERENCES
+            // =========================================================
+            // All DOM element references are safely retrieved inside DOMContentLoaded
+            const btnAgregarMiembro = document.getElementById('btnAgregarMiembro');
+            const formContainer = document.getElementById('formContainer');
+            const formMiembro = document.getElementById('formMiembro');
+            const btnCancelForm = document.getElementById('btnCancelForm');
+            const btnAgregarFamiliar = document.getElementById('btnAgregarFamiliar');
+            const listaFamiliares = document.getElementById('listaFamiliares');
+            const tablaMiembros = document.getElementById('tablaMiembros');
+            const searchInput = document.getElementById('searchInput');
+            const fotoInput = document.getElementById('fotoInput');
 
-        // =========================================================
-        // 4. FUNCIONES DE UTILIDAD Y UI
-        // =========================================================
+            // =========================================================
+            // 3. GLOBAL VARIABLES AND STATE
+            // =========================================================
+            let familiaresData = []; // Temporarily stores family members for the current form
+            let editingMemberId = null; // Stores the ID of the member being edited
 
-        /**
-         * Muestra el formulario con una animación.
-         */
-        function showForm() {
-            formContainer.classList.remove('hidden');
-            formContainer.classList.remove('animate__fadeOutUp'); // Remove previous exit animation
-            formContainer.classList.add('animate__fadeInDown'); // Add entry animation
-            formMiembro.reset(); // Limpiar el formulario
-            familiaresData = []; // Resetear familiares
-            renderFamiliares();
-            editingMemberId = null; // No estamos editando
-        }
+            // =========================================================
+            // 4. UTILITY & UI FUNCTIONS
+            // =========================================================
 
-        /**
-         * Oculta el formulario con una animación.
-         */
-        function hideForm() {
-            formContainer.classList.remove('animate__fadeInDown');
-            formContainer.classList.add('animate__fadeOutUp'); // Add exit animation
-            formMiembro.addEventListener('animationend', () => {
-                if (formContainer.classList.contains('animate__fadeOutUp')) {
-                    formContainer.classList.add('hidden');
-                    formMiembro.reset(); // Limpiar el formulario después de la animación
-                    familiaresData = [];
-                    renderFamiliares();
-                    editingMemberId = null;
-                }
-            }, { once: true }); // Ensure event listener runs only once
-        }
-
-        /**
-         * Muestra una alerta con SweetAlert2.
-         * @param {string} icon - 'success', 'error', 'warning', 'info', 'question'
-         * @param {string} title - Título de la alerta.
-         * @param {string} text - Texto del cuerpo de la alerta.
-         */
-        function showAlert(icon, title, text) {
-            Swal.fire({
-                icon: icon,
-                title: title,
-                text: text,
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.addEventListener('mouseenter', Swal.stopTimer);
-                    toast.addEventListener('mouseleave', Swal.resumeTimer);
-                }
-            });
-        }
-
-        /**
-         * Muestra una confirmación con SweetAlert2.
-         * @param {string} title - Título de la confirmación.
-         * @param {string} text - Texto del cuerpo de la confirmación.
-         * @returns {Promise<boolean>} - True si se confirma, false si se cancela.
-         */
-        async function showConfirm(title, text) {
-            const result = await Swal.fire({
-                title: title,
-                text: text,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, continuar',
-                cancelButtonText: 'No, cancelar'
-            });
-            return result.isConfirmed;
-        }
-
-        /**
-         * Renderiza la lista de familiares en el formulario.
-         */
-        function renderFamiliares() {
-            listaFamiliares.innerHTML = ''; // Limpiar la lista actual
-            if (familiaresData.length === 0) {
-                listaFamiliares.innerHTML = '<li class="text-gray-500 italic p-2">No hay familiares agregados.</li>';
-                return;
+            /**
+             * Shows the form with an animation.
+             */
+            function showForm() {
+                formContainer.classList.remove('hidden');
+                formContainer.classList.remove('animate__fadeOutUp'); // Remove previous exit animation
+                formContainer.classList.add('animate__animated', 'animate__fadeInDown'); // Add entry animation
+                formMiembro.reset(); // Clear the form
+                familiaresData = []; // Reset family members data
+                renderFamiliares(); // Re-render the empty list
+                editingMemberId = null; // Ensure we're adding a new member, not editing
             }
-            familiaresData.forEach((familiar, index) => {
-                const li = document.createElement('li');
-                li.className = 'flex justify-between items-center bg-gray-700 p-3 rounded-lg mb-2 shadow-sm animate__animated animate__fadeIn';
-                li.innerHTML = `
-                    <span><strong>${familiar.tipo}:</strong> ${familiar.nombre}</span>
-                    <button type="button" data-index="${index}" class="btn-eliminar-familiar text-red-400 hover:text-red-600 ml-4 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                `;
-                listaFamiliares.appendChild(li);
-            });
 
-            // Añadir event listeners a los botones de eliminar
-            document.querySelectorAll('.btn-eliminar-familiar').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const index = e.currentTarget.dataset.index; // Usar currentTarget
-                    familiaresData.splice(index, 1);
-                    renderFamiliares(); // Volver a renderizar la lista
-                    showAlert('info', 'Familiar Eliminado', 'El familiar ha sido retirado de la lista.');
+            /**
+             * Hides the form with an animation.
+             */
+            function hideForm() {
+                formContainer.classList.remove('animate__fadeInDown');
+                formContainer.classList.add('animate__fadeOutUp'); // Add exit animation
+                // Listen for the end of the animation to truly hide the element
+                formContainer.addEventListener('animationend', function handler() {
+                    if (formContainer.classList.contains('animate__fadeOutUp')) {
+                        formContainer.classList.add('hidden');
+                        formMiembro.reset(); // Clear form after animation
+                        familiaresData = [];
+                        renderFamiliares();
+                        editingMemberId = null;
+                    }
+                    formContainer.removeEventListener('animationend', handler); // Remove the listener after execution
+                }, { once: true }); // Ensure the listener runs only once
+            }
+
+            /**
+             * Displays an alert using SweetAlert2.
+             * @param {string} icon - 'success', 'error', 'warning', 'info', 'question'
+             * @param {string} title - Title of the alert.
+             * @param {string} text - Body text of the alert.
+             */
+            function showAlert(icon, title, text) {
+                Swal.fire({
+                    icon: icon,
+                    title: title,
+                    text: text,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+                    }
                 });
-            });
-        }
+            }
 
-        // =========================================================
-        // 5. GESTIÓN DE FOTOS (SUPABASE STORAGE)
-        // =========================================================
+            /**
+             * Displays a confirmation dialog using SweetAlert2.
+             * @param {string} title - Title of the confirmation.
+             * @param {string} text - Body text of the confirmation.
+             * @returns {Promise<boolean>} - True if confirmed, false if cancelled.
+             */
+            async function showConfirm(title, text) {
+                const result = await Swal.fire({
+                    title: title,
+                    text: text,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, continuar',
+                    cancelButtonText: 'No, cancelar'
+                });
+                return result.isConfirmed;
+            }
 
-        /**
-         * Sube un archivo de imagen a Supabase Storage.
-         * @param {File} file - El archivo de imagen a subir.
-         * @returns {Promise<string|null>} - La URL pública de la foto o null si falla.
-         */
-        async function uploadPhoto(file) {
-            if (!file) return null;
+            /**
+             * Renders the list of family members in the form.
+             */
+            function renderFamiliares() {
+                listaFamiliares.innerHTML = ''; // Clear current list
+                if (familiaresData.length === 0) {
+                    listaFamiliares.innerHTML = '<li class="text-gray-500 italic p-2">No hay familiares agregados.</li>';
+                    return;
+                }
+                familiaresData.forEach((familiar, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center bg-gray-700 p-3 rounded-lg mb-2 shadow-sm animate__animated animate__fadeIn';
+                    li.innerHTML = `
+                        <span><strong>${familiar.tipo}:</strong> ${familiar.nombre}</span>
+                        <button type="button" data-index="${index}" class="btn-eliminar-familiar text-red-400 hover:text-red-600 ml-4 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    `;
+                    listaFamiliares.appendChild(li);
+                });
 
-            const uniqueFileName = `${Luxon.DateTime.now().toMillis()}_${file.name}`; // Nombre único con timestamp
-            const filePath = uniqueFileName;
-
-            try {
-                const { data, error } = await supabase.storage
-                    .from(fotosBucket)
-                    .upload(filePath, file, {
-                        cacheControl: '3600',
-                        upsert: false // No sobrescribir si ya existe
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.btn-eliminar-familiar').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const index = e.currentTarget.dataset.index;
+                        familiaresData.splice(index, 1);
+                        renderFamiliares(); // Re-render the list
+                        showAlert('info', 'Familiar Eliminado', 'El familiar ha sido retirado de la lista.');
                     });
+                });
+            }
 
-                if (error) throw error;
+            // =========================================================
+            // 5. PHOTO MANAGEMENT (SUPABASE STORAGE)
+            // =========================================================
 
-                // Obtener la URL pública
-                const { data: publicURLData } = supabase.storage
-                    .from(fotosBucket)
-                    .getPublicUrl(filePath);
+            /**
+             * Uploads an image file to Supabase Storage.
+             * @param {File} file - The image file to upload.
+             * @returns {Promise<string|null>} - The public URL of the photo or null if it fails.
+             */
+            async function uploadPhoto(file) {
+                if (!file) return null;
 
-                if (publicURLData && publicURLData.publicUrl) {
-                    return publicURLData.publicUrl;
-                } else {
-                    console.error('Error: No se pudo obtener la URL pública de la foto.');
+                const uniqueFileName = `${Luxon.DateTime.now().toMillis()}_${file.name}`; // Unique name with timestamp
+                const filePath = uniqueFileName;
+
+                try {
+                    const { data, error } = await supabase.storage
+                        .from(fotosBucket)
+                        .upload(filePath, file, {
+                            cacheControl: '3600',
+                            upsert: false // Do not overwrite if it already exists
+                        });
+
+                    if (error) throw error;
+
+                    // Get the public URL
+                    const { data: publicURLData } = supabase.storage
+                        .from(fotosBucket)
+                        .getPublicUrl(filePath);
+
+                    if (publicURLData && publicURLData.publicUrl) {
+                        return publicURLData.publicUrl;
+                    } else {
+                        console.error('Error: Could not get public URL for the photo.');
+                        return null;
+                    }
+                } catch (error) {
+                    showAlert('error', 'Error de Subida', `No se pudo subir la foto: ${error.message}`);
+                    console.error('Error uploading photo to Supabase:', error);
                     return null;
                 }
-            } catch (error) {
-                showAlert('error', 'Error de Subida', `No se pudo subir la foto: ${error.message}`);
-                console.error('Error al subir la foto a Supabase:', error);
-                return null;
-            }
-        }
-
-        /**
-         * Elimina una foto de Supabase Storage.
-         * @param {string} photoUrl - La URL pública de la foto a eliminar.
-         */
-        async function deletePhoto(photoUrl) {
-            if (!photoUrl) return;
-
-            try {
-                // Extraer la ruta del archivo de la URL pública
-                // Ejemplo: https://[project_id].supabase.co/storage/v1/object/public/fotos_miembros/timestamp_nombre.png
-                const parts = photoUrl.split(`/${fotosBucket}/`);
-                if (parts.length < 2) {
-                    console.warn('URL de foto inválida para eliminar:', photoUrl);
-                    return;
-                }
-                const filePath = parts[1];
-
-                const { error } = await supabase.storage
-                    .from(fotosBucket)
-                    .remove([filePath]);
-
-                if (error) throw error;
-                console.log('Foto eliminada de Supabase:', filePath);
-
-            } catch (error) {
-                showAlert('error', 'Error al Eliminar Foto', `No se pudo eliminar la foto anterior: ${error.message}`);
-                console.error('Error al eliminar la foto de Supabase:', error);
-            }
-        }
-
-        // =========================================================
-        // 6. OPERACIONES CRUD (FIRESTORE)
-        // =========================================================
-
-        /**
-         * Guarda un nuevo miembro o actualiza uno existente en Firestore.
-         * Maneja la subida/eliminación de fotos en Supabase.
-         * @param {Event} event - El evento de envío del formulario.
-         */
-        async function saveMiembro(event) {
-            event.preventDefault(); // Evita el envío tradicional del formulario
-
-            const formElements = formMiembro.elements;
-            const miembroData = {};
-
-            // Recopilar datos del formulario
-            for (let i = 0; i < formElements.length; i++) {
-                const element = formElements[i];
-                if (element.name && element.id !== 'fotoInput') { // Excluir input de archivo
-                    miembroData[element.name] = element.value.trim();
-                }
             }
 
-            // Validar campos obligatorios
-            if (!miembroData.nombre || !miembroData.codigo) {
-                showAlert('error', 'Campos Obligatorios', 'El nombre y el código son obligatorios.');
-                return;
-            }
+            /**
+             * Deletes a photo from Supabase Storage.
+             * @param {string} photoUrl - The public URL of the photo to delete.
+             */
+            async function deletePhoto(photoUrl) {
+                if (!photoUrl) return;
 
-            // Asegurarse de que la edad es un número
-            miembroData.edad = parseInt(miembroData.edad) || null; // Convertir a número o null
-
-            // Añadir familiares
-            miembroData.familiares = familiaresData;
-
-            // Obtener el archivo de la foto
-            const file = fotoInput.files[0];
-            let photoUrl = null;
-
-            // Iniciar animación de carga
-            Swal.fire({
-                title: 'Guardando Miembro...',
-                text: 'Por favor, espere.',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            try {
-                if (file) {
-                    photoUrl = await uploadPhoto(file);
-                    if (photoUrl) {
-                        miembroData.fotoUrl = photoUrl;
-                    } else {
-                        Swal.close();
-                        showAlert('error', 'Error de Foto', 'No se pudo subir la foto. Inténtelo de nuevo.');
+                try {
+                    // Extract the file path from the public URL
+                    // Example: https://[project_id].supabase.co/storage/v1/object/public/fotos_miembros/timestamp_name.png
+                    const parts = photoUrl.split(`/${fotosBucket}/`);
+                    if (parts.length < 2) {
+                        console.warn('Invalid photo URL for deletion:', photoUrl);
                         return;
                     }
+                    const filePath = parts[1];
+
+                    const { error } = await supabase.storage
+                        .from(fotosBucket)
+                        .remove([filePath]);
+
+                    if (error) throw error;
+                    console.log('Photo deleted from Supabase:', filePath);
+
+                } catch (error) {
+                    showAlert('error', 'Error al Eliminar Foto', `No se pudo eliminar la foto anterior: ${error.message}`);
+                    console.error('Error deleting photo from Supabase:', error);
                 }
-
-                if (editingMemberId) {
-                    // Actualizar miembro existente
-                    const memberRef = miembrosCollection.doc(editingMemberId);
-                    const currentMemberSnapshot = await memberRef.get();
-                    const currentMemberData = currentMemberSnapshot.data();
-                    const oldPhotoUrl = currentMemberData.fotoUrl;
-
-                    // Si hay una nueva foto y había una vieja diferente, eliminar la vieja
-                    if (photoUrl && oldPhotoUrl && photoUrl !== oldPhotoUrl) {
-                        await deletePhoto(oldPhotoUrl);
-                    } else if (!file && oldPhotoUrl) {
-                        // Si no se selecciona nueva foto y había una vieja, mantener la vieja
-                        miembroData.fotoUrl = oldPhotoUrl;
-                    } else if (!file && !oldPhotoUrl) {
-                        // Si no hay foto y no había, asegurar que el campo no exista o sea null
-                        delete miembroData.fotoUrl;
-                    }
-
-
-                    await memberRef.update(miembroData);
-                    showAlert('success', '¡Actualizado!', 'Miembro actualizado exitosamente.');
-
-                } else {
-                    // Crear nuevo miembro
-                    miembroData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); // Fecha de creación
-                    await miembrosCollection.add(miembroData);
-                    showAlert('success', '¡Registrado!', 'Miembro agregado exitosamente.');
-                }
-
-                Swal.close(); // Cerrar el SweetAlert de carga
-                hideForm(); // Ocultar el formulario
-                loadMiembros(); // Recargar la tabla
-            } catch (error) {
-                Swal.close();
-                showAlert('error', 'Error al Guardar', `No se pudo guardar el miembro: ${error.message}`);
-                console.error("Error al guardar miembro: ", error);
             }
-        }
 
-        /**
-         * Carga y muestra los miembros de Firestore en la tabla.
-         * Permite buscar por nombre.
-         * @param {string} searchTerm - Término de búsqueda (opcional).
-         */
-        async function loadMiembros(searchTerm = '') {
-            // Muestra animación de carga en la tabla
-            tablaMiembros.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center py-6 text-gray-400">
-                        <i class="fas fa-spinner fa-spin text-yellow-500 text-3xl mb-2"></i>
-                        <p>Cargando miembros...</p>
-                    </td>
-                </tr>
-            `;
+            // =========================================================
+            // 6. CRUD OPERATIONS (FIRESTORE)
+            // =========================================================
 
-            try {
-                let query = miembrosCollection.orderBy('nombre');
+            /**
+             * Saves a new member or updates an existing one in Firestore.
+             * Handles photo upload/deletion in Supabase.
+             * @param {Event} event - The form submission event.
+             */
+            async function saveMiembro(event) {
+                event.preventDefault(); // Prevents traditional form submission
 
-                if (searchTerm) {
-                    // Simulación de búsqueda "starts with" en Firestore
-                    const endTerm = searchTerm + '\uf8ff';
-                    query = query.where('nombre', '>=', searchTerm).where('nombre', '<=', endTerm);
+                const formElements = formMiembro.elements;
+                const miembroData = {};
+
+                // Collect form data
+                for (let i = 0; i < formElements.length; i++) {
+                    const element = formElements[i];
+                    if (element.name && element.id !== 'fotoInput') { // Exclude file input
+                        miembroData[element.name] = element.value.trim();
+                    }
                 }
 
-                const snapshot = await query.get();
-                tablaMiembros.innerHTML = ''; // Limpiar la tabla antes de añadir filas
-
-                if (snapshot.empty) {
-                    tablaMiembros.innerHTML = `
-                        <tr>
-                            <td colspan="6" class="text-center py-6 text-gray-400 animate__animated animate__fadeIn">
-                                <i class="fas fa-box-open text-5xl mb-3"></i>
-                                <p>No hay miembros registrados.</p>
-                                <p class="text-sm">¡Añade uno para empezar!</p>
-                            </td>
-                        </tr>
-                    `;
+                // Validate required fields
+                if (!miembroData.nombre || !miembroData.codigo) {
+                    showAlert('error', 'Campos Obligatorios', 'El nombre y el código son obligatorios.');
                     return;
                 }
 
-                snapshot.forEach(doc => {
-                    const miembro = doc.data();
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-gray-700 transition-colors duration-200 animate__animated animate__fadeInUp'; // Animación para cada fila
-                    tr.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <img src="${miembro.fotoUrl || 'placeholder.png'}" alt="${miembro.nombre}"
-                                 class="w-12 h-12 rounded-full object-cover border-2 border-yellow-500 shadow-md">
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap font-medium">${miembro.nombre}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-gray-300">${miembro.codigo}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${miembro.edad || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${miembro.telefono || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button data-id="${doc.id}" class="btn-editar bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-500 transition-colors duration-200 mr-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button data-id="${doc.id}" data-foto-url="${miembro.fotoUrl || ''}" class="btn-eliminar bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-500 transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400">
-                                <i class="fas fa-trash-alt"></i> Eliminar
-                            </button>
-                        </td>
-                    `;
-                    tablaMiembros.appendChild(tr);
-                });
+                // Ensure age is a number
+                miembroData.edad = parseInt(miembroData.edad) || null; // Convert to number or null
 
-                // Añadir event listeners a los botones de editar y eliminar
-                document.querySelectorAll('.btn-editar').forEach(button => {
-                    button.addEventListener('click', (e) => editMiembro(e.currentTarget.dataset.id));
-                });
-                document.querySelectorAll('.btn-eliminar').forEach(button => {
-                    button.addEventListener('click', (e) => deleteMiembro(e.currentTarget.dataset.id, e.currentTarget.dataset.fotoUrl));
-                });
+                // Add family members
+                miembroData.familiares = familiaresData;
 
-            } catch (error) {
-                showAlert('error', 'Error de Carga', `No se pudieron cargar los miembros: ${error.message}`);
-                console.error("Error al cargar miembros: ", error);
-                tablaMiembros.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center py-6 text-red-500 animate__animated animate__shakeX">
-                            <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
-                            <p>¡Ups! Hubo un problema al cargar los datos.</p>
-                        </td>
-                    </tr>
-                `;
-            }
-        }
+                // Get the photo file
+                const file = fotoInput.files[0];
+                let photoUrl = null;
 
-        /**
-         * Carga los datos de un miembro en el formulario para su edición.
-         * @param {string} id - El ID del documento del miembro en Firestore.
-         */
-        async function editMiembro(id) {
-            // Iniciar SweetAlert de carga
-            Swal.fire({
-                title: 'Cargando datos...',
-                text: 'Preparando formulario para edición.',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            try {
-                const doc = await miembrosCollection.doc(id).get();
-                if (doc.exists) {
-                    const miembro = doc.data();
-                    editingMemberId = id; // Establecer el ID para edición
-                    showForm(); // Mostrar el formulario
-
-                    // Llenar los campos del formulario
-                    document.getElementById('nombre').value = miembro.nombre || '';
-                    document.getElementById('codigo').value = miembro.codigo || '';
-                    document.getElementById('edad').value = miembro.edad || '';
-                    document.getElementById('telefono').value = miembro.telefono || '';
-                    document.getElementById('direccion').value = miembro.direccion || '';
-                    document.getElementById('fechaNacimiento').value = miembro.fechaNacimiento || '';
-
-                    document.getElementById('fechaConversion').value = miembro.fechaConversion || '';
-                    document.getElementById('lugarConversion').value = miembro.lugarConversion || '';
-                    document.getElementById('fechaBautismo').value = miembro.fechaBautismo || '';
-                    document.getElementById('lugarBautismo').value = miembro.lugarBautismo || '';
-                    document.getElementById('fechaEspiritu').value = miembro.fechaEspiritu || '';
-                    document.getElementById('lugarEspiritu').value = miembro.lugarEspiritu || '';
-
-                    // Cargar familiares
-                    familiaresData = miembro.familiares || [];
-                    renderFamiliares();
-
-                    Swal.close(); // Cerrar el SweetAlert de carga
-                    showAlert('info', 'Editando Miembro', `Cargando datos de ${miembro.nombre}.`);
-                } else {
-                    Swal.close();
-                    showAlert('error', 'No Encontrado', 'Miembro no encontrado.');
-                }
-            } catch (error) {
-                Swal.close();
-                showAlert('error', 'Error de Edición', `Error al cargar datos del miembro: ${error.message}`);
-                console.error("Error al editar miembro: ", error);
-            }
-        }
-
-        /**
-         * Elimina un miembro de Firestore y su foto de Supabase Storage.
-         * @param {string} id - El ID del documento del miembro en Firestore.
-         * @param {string} photoUrl - La URL de la foto del miembro (puede ser vacía).
-         */
-        async function deleteMiembro(id, photoUrl) {
-            const confirmed = await showConfirm('Confirmar Eliminación', '¿Está seguro de que desea eliminar este miembro? Esta acción es irreversible.');
-
-            if (confirmed) {
-                // Iniciar SweetAlert de carga
+                // Start loading animation with SweetAlert2
                 Swal.fire({
-                    title: 'Eliminando Miembro...',
+                    title: 'Guardando Miembro...',
                     text: 'Por favor, espere.',
                     allowOutsideClick: false,
                     didOpen: () => {
@@ -716,61 +524,281 @@
                 });
 
                 try {
-                    await miembrosCollection.doc(id).delete();
-                    if (photoUrl) {
-                        await deletePhoto(photoUrl); // Eliminar la foto de Supabase
+                    if (file) {
+                        photoUrl = await uploadPhoto(file);
+                        if (photoUrl) {
+                            miembroData.fotoUrl = photoUrl;
+                        } else {
+                            // If photo upload fails, close the alert and exit.
+                            Swal.close();
+                            showAlert('error', 'Error de Foto', 'No se pudo subir la foto. Inténtelo de nuevo.');
+                            return;
+                        }
                     }
-                    Swal.close();
-                    showAlert('success', '¡Eliminado!', 'Miembro eliminado exitosamente.');
-                    loadMiembros(); // Recargar la tabla
+
+                    if (editingMemberId) {
+                        // Update existing member
+                        const memberRef = miembrosCollection.doc(editingMemberId);
+                        const currentMemberSnapshot = await memberRef.get();
+                        const currentMemberData = currentMemberSnapshot.data();
+                        const oldPhotoUrl = currentMemberData ? currentMemberData.fotoUrl : null;
+
+                        // Logic to handle photo when updating:
+                        if (file) { // If a new photo has been selected
+                            if (oldPhotoUrl && oldPhotoUrl !== photoUrl) {
+                                // If there was an old photo and it's different from the new one, delete the old one
+                                await deletePhoto(oldPhotoUrl);
+                            }
+                            miembroData.fotoUrl = photoUrl; // Use the URL of the newly uploaded photo
+                        } else { // No new photo has been selected
+                            if (oldPhotoUrl) {
+                                // Keep the old photo if it existed
+                                miembroData.fotoUrl = oldPhotoUrl;
+                            } else {
+                                // If there was no photo before and no new one is uploaded, ensure the field doesn't exist or is null
+                                delete miembroData.fotoUrl;
+                            }
+                        }
+
+                        await memberRef.update(miembroData);
+                        showAlert('success', '¡Actualizado!', 'Miembro actualizado exitosamente.');
+
+                    } else {
+                        // Create new member
+                        miembroData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); // Creation date
+                        await miembrosCollection.add(miembroData);
+                        showAlert('success', '¡Registrado!', 'Miembro agregado exitosamente.');
+                    }
+
+                    Swal.close(); // Close the SweetAlert loading animation
+                    hideForm(); // Hide the form
+                    loadMiembros(); // Reload the table
                 } catch (error) {
-                    Swal.close();
-                    showAlert('error', 'Error al Eliminar', `No se pudo eliminar el miembro: ${error.message}`);
-                    console.error("Error al eliminar miembro: ", error);
+                    Swal.close(); // Ensure loading alert is closed on error
+                    showAlert('error', 'Error al Guardar', `No se pudo guardar el miembro: ${error.message}`);
+                    console.error("Error saving member: ", error);
                 }
             }
-        }
 
-        // =========================================================
-        // 7. EVENT LISTENERS
-        // =========================================================
+            /**
+             * Loads and displays members from Firestore in the table.
+             * Allows searching by name.
+             * @param {string} searchTerm - Search term (optional).
+             */
+            async function loadMiembros(searchTerm = '') {
+                // Show loading animation in the table
+                tablaMiembros.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-6 text-gray-400">
+                            <i class="fas fa-spinner fa-spin text-yellow-500 text-3xl mb-2"></i>
+                            <p>Cargando miembros...</p>
+                        </td>
+                    </tr>
+                `;
 
-        // Botón "Añadir Miembro"
-        btnAgregarMiembro.addEventListener('click', showForm);
+                try {
+                    let query = miembrosCollection.orderBy('nombre');
 
-        // Botón "Cancelar" en el formulario
-        btnCancelForm.addEventListener('click', hideForm);
+                    if (searchTerm) {
+                        // "Starts with" search simulation in Firestore
+                        // Firestore does not support "starts with" queries directly, but this pattern
+                        // works for basic prefix matching if you ensure the `nombre` field is indexed.
+                        const endTerm = searchTerm + '\uf8ff'; // \uf8ff is a special unicode character greater than any possible character
+                        query = query.where('nombre', '>=', searchTerm).where('nombre', '<=', endTerm);
+                    }
 
-        // Envío del formulario
-        formMiembro.addEventListener('submit', saveMiembro);
+                    const snapshot = await query.get();
+                    tablaMiembros.innerHTML = ''; // Clear the table before adding rows
 
-        // Botón "Agregar Familiar"
-        btnAgregarFamiliar.addEventListener('click', () => {
-            const tipo = document.getElementById('tipoFamiliar').value;
-            const nombre = document.getElementById('nombreFamiliar').value.trim();
+                    if (snapshot.empty) {
+                        tablaMiembros.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="text-center py-6 text-gray-400 animate__animated animate__fadeIn">
+                                    <i class="fas fa-box-open text-5xl mb-3"></i>
+                                    <p>No hay miembros registrados.</p>
+                                    <p class="text-sm">¡Añade uno para empezar!</p>
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
 
-            if (tipo && nombre) {
-                familiaresData.push({ tipo, nombre });
-                renderFamiliares();
-                document.getElementById('tipoFamiliar').value = ''; // Limpiar campos
-                document.getElementById('nombreFamiliar').value = '';
-                showAlert('success', 'Familiar Agregado', 'Familiar añadido a la lista temporal.');
-            } else {
-                showAlert('warning', 'Campos Incompletos', 'Por favor, seleccione un tipo y escriba el nombre del familiar.');
+                    snapshot.forEach(doc => {
+                        const miembro = doc.data();
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-gray-700 transition-colors duration-200 animate__animated animate__fadeInUp'; // Animation for each row
+                        tr.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <img src="${miembro.fotoUrl || 'https://via.placeholder.com/48?text=No+Foto'}" alt="${miembro.nombre}"
+                                     class="w-12 h-12 rounded-full object-cover border-2 border-yellow-500 shadow-md">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap font-medium">${miembro.nombre}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-gray-300">${miembro.codigo}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${miembro.edad || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${miembro.telefono || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button data-id="${doc.id}" class="btn-editar bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-500 transition-colors duration-200 mr-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button data-id="${doc.id}" data-foto-url="${miembro.fotoUrl || ''}" class="btn-eliminar bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-500 transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                </button>
+                            </td>
+                        `;
+                        tablaMiembros.appendChild(tr);
+                    });
+
+                    // Add event listeners to edit and delete buttons
+                    document.querySelectorAll('.btn-editar').forEach(button => {
+                        button.addEventListener('click', (e) => editMiembro(e.currentTarget.dataset.id));
+                    });
+                    document.querySelectorAll('.btn-eliminar').forEach(button => {
+                        button.addEventListener('click', (e) => deleteMiembro(e.currentTarget.dataset.id, e.currentTarget.dataset.fotoUrl));
+                    });
+
+                } catch (error) {
+                    showAlert('error', 'Error de Carga', `No se pudieron cargar los miembros: ${error.message}`);
+                    console.error("Error loading members: ", error);
+                    tablaMiembros.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center py-6 text-red-500 animate__animated animate__shakeX">
+                                <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+                                <p>¡Ups! Hubo un problema al cargar los datos.</p>
+                            </td>
+                        </tr>
+                    `;
+                }
             }
-        });
 
-        // Búsqueda en tiempo real
-        searchInput.addEventListener('input', () => {
-            loadMiembros(searchInput.value.trim());
-        });
+            /**
+             * Loads a member's data into the form for editing.
+             * @param {string} id - The Firestore document ID of the member.
+             */
+            async function editMiembro(id) {
+                // Start loading SweetAlert
+                Swal.fire({
+                    title: 'Cargando datos...',
+                    text: 'Preparando formulario para edición.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
-        // =========================================================
-        // 8. INICIALIZACIÓN
-        // =========================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            loadMiembros(); // Cargar los miembros al cargar la página
-        });
+                try {
+                    const doc = await miembrosCollection.doc(id).get();
+                    if (doc.exists) {
+                        const miembro = doc.data();
+                        editingMemberId = id; // Set the ID for editing
+                        showForm(); // Show the form
+
+                        // Populate form fields
+                        document.getElementById('nombre').value = miembro.nombre || '';
+                        document.getElementById('codigo').value = miembro.codigo || '';
+                        document.getElementById('edad').value = miembro.edad || '';
+                        document.getElementById('telefono').value = miembro.telefono || '';
+                        document.getElementById('direccion').value = miembro.direccion || '';
+                        document.getElementById('fechaNacimiento').value = miembro.fechaNacimiento || '';
+
+                        document.getElementById('fechaConversion').value = miembro.fechaConversion || '';
+                        document.getElementById('lugarConversion').value = miembro.lugarConversion || '';
+                        document.getElementById('fechaBautismo').value = miembro.fechaBautismo || '';
+                        document.getElementById('lugarBautismo').value = miembro.lugarBautismo || '';
+                        document.getElementById('fechaEspiritu').value = miembro.fechaEspiritu || '';
+                        document.getElementById('lugarEspiritu').value = miembro.lugarEspiritu || '';
+
+                        // Load family members
+                        familiaresData = miembro.familiares || [];
+                        renderFamiliares();
+
+                        Swal.close(); // Close SweetAlert loading
+                        showAlert('info', 'Editando Miembro', `Cargando datos de ${miembro.nombre}.`);
+                    } else {
+                        Swal.close();
+                        showAlert('error', 'No Encontrado', 'Miembro no encontrado.');
+                    }
+                } catch (error) {
+                    Swal.close();
+                    showAlert('error', 'Error de Edición', `Error al cargar datos del miembro: ${error.message}`);
+                    console.error("Error editing member: ", error);
+                }
+            }
+
+            /**
+             * Deletes a member from Firestore and their photo from Supabase Storage.
+             * @param {string} id - The Firestore document ID of the member.
+             * @param {string} photoUrl - The URL of the member's photo (can be empty).
+             */
+            async function deleteMiembro(id, photoUrl) {
+                const confirmed = await showConfirm('Confirmar Eliminación', '¿Está seguro de que desea eliminar este miembro? Esta acción es irreversible.');
+
+                if (confirmed) {
+                    // Start loading SweetAlert
+                    Swal.fire({
+                        title: 'Eliminando Miembro...',
+                        text: 'Por favor, espere.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    try {
+                        await miembrosCollection.doc(id).delete();
+                        // Only try to delete the photo if a valid URL exists and it's not the placeholder
+                        if (photoUrl && photoUrl !== 'https://via.placeholder.com/48?text=No+Foto') {
+                            await deletePhoto(photoUrl); // Delete photo from Supabase
+                        }
+                        Swal.close();
+                        showAlert('success', '¡Eliminado!', 'Miembro eliminado exitosamente.');
+                        loadMiembros(); // Reload the table
+                    } catch (error) {
+                        Swal.close();
+                        showAlert('error', 'Error al Eliminar', `No se pudo eliminar el miembro: ${error.message}`);
+                        console.error("Error deleting member: ", error);
+                    }
+                }
+            }
+
+            // =========================================================
+            // 7. EVENT LISTENERS (REGISTERED INSIDE DOMContentLoaded)
+            // =========================================================
+
+            // "Add Member" button
+            btnAgregarMiembro.addEventListener('click', showForm);
+
+            // "Cancel" button in the form
+            btnCancelForm.addEventListener('click', hideForm);
+
+            // Form submission
+            formMiembro.addEventListener('submit', saveMiembro);
+
+            // "Add Family Member" button
+            btnAgregarFamiliar.addEventListener('click', () => {
+                const tipo = document.getElementById('tipoFamiliar').value;
+                const nombre = document.getElementById('nombreFamiliar').value.trim();
+
+                if (tipo && nombre) {
+                    familiaresData.push({ tipo, nombre });
+                    renderFamiliares();
+                    document.getElementById('tipoFamiliar').value = ''; // Clear fields
+                    document.getElementById('nombreFamiliar').value = '';
+                    showAlert('success', 'Familiar Agregado', 'Familiar añadido a la lista temporal.');
+                } else {
+                    showAlert('warning', 'Campos Incompletos', 'Por favor, seleccione un tipo y escriba el nombre del familiar.');
+                }
+            });
+
+            // Real-time search
+            searchInput.addEventListener('input', () => {
+                loadMiembros(searchInput.value.trim());
+            });
+
+            // =========================================================
+            // 8. INITIALIZATION (CALLED AFTER DOMContentLoaded)
+            // =========================================================
+            loadMiembros(); // Load members when the page loads
+        }); // End of document.addEventListener('DOMContentLoaded')
     </script>
 </body>
 </html>
