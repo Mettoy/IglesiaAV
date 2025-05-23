@@ -1,645 +1,118 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gestión de Miembros</title>
-<style>
-  /* Variables de color */
-  :root {
-    --azul-oscuro: #0a1e3f;
-    --dorado: #c9a34f;
-    --dorado-claro: #e6c969;
-    --blanco: #fefefe;
-    --gris-texto: #ccc;
-    --fondo-form: #142a5c;
-  }
-
-  body {
-    margin: 0;
-    background-color: var(--azul-oscuro);
-    color: var(--blanco);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    user-select: none;
-  }
-
-  h1 {
-    color: var(--dorado);
-    margin-bottom: 10px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-  }
-
-  /* Contenedor principal */
-  .contenedor {
-    width: 100%;
-    max-width: 1100px;
-  }
-
-  /* Barra arriba: Añadir miembro + búsqueda */
-  .barra-accion {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    gap: 10px;
-  }
-
-  button#btnAgregarMiembro {
-    background: var(--dorado);
-    border: none;
-    color: var(--azul-oscuro);
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-shrink: 0;
-  }
-  button#btnAgregarMiembro:hover {
-    background: var(--dorado-claro);
-  }
-
-  input#searchInput {
-    flex-grow: 1;
-    padding: 10px 14px;
-    border-radius: 8px;
-    border: none;
-    font-size: 1rem;
-    color: var(--azul-oscuro);
-    font-weight: 600;
-  }
-
-  /* Tabla */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #13254a;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 0 12px rgba(201,163,79,0.3);
-    animation: fadeIn 0.6s ease forwards;
-  }
-
-  thead {
-    background-color: var(--dorado);
-    color: var(--azul-oscuro);
-    font-weight: 700;
-  }
-
-  thead th {
-    padding: 14px 10px;
-    text-align: left;
-  }
-
-  tbody tr {
-    border-bottom: 1px solid rgba(201,163,79,0.3);
-    transition: background-color 0.3s ease;
-    cursor: default;
-  }
-
-  tbody tr:hover {
-    background-color: rgba(201,163,79,0.15);
-  }
-
-  tbody td {
-    padding: 10px;
-    color: var(--blanco);
-  }
-
-  /* Botones acción en tabla */
-  .btn-accion {
-    background: var(--dorado);
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--azul-oscuro);
-    margin-right: 6px;
-    transition: background-color 0.3s ease;
-    user-select: none;
-  }
-  .btn-accion:hover {
-    background: var(--dorado-claro);
-  }
-
-  /* Formulario modal */
-  .modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(10,30,63,0.85);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    animation: fadeIn 0.3s ease forwards;
-  }
-  .modal.active {
-    display: flex;
-  }
-
-  .modal-contenido {
-    background: var(--fondo-form);
-    padding: 25px 30px;
-    border-radius: 14px;
-    max-width: 700px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 0 20px var(--dorado);
-    animation: slideIn 0.35s ease forwards;
-  }
-
-  /* Categorías form */
-  .form-categoria {
-    margin-bottom: 24px;
-  }
-  .form-categoria h3 {
-    color: var(--dorado);
-    margin-bottom: 14px;
-    font-weight: 700;
-    border-bottom: 2px solid var(--dorado);
-    padding-bottom: 6px;
-  }
-
-  /* Inputs */
-  label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: var(--dorado-claro);
-  }
-  input, select {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: none;
-    margin-bottom: 14px;
-    font-size: 1rem;
-    color: var(--azul-oscuro);
-    font-weight: 600;
-  }
-
-  /* Botones del form */
-  .form-botones {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-  }
-
-  .btn-cancelar {
-    background: transparent;
-    color: var(--dorado);
-    border: 2px solid var(--dorado);
-    font-weight: 700;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background-color 0.25s ease;
-  }
-  .btn-cancelar:hover {
-    background: var(--dorado);
-    color: var(--azul-oscuro);
-  }
-
-  .btn-guardar {
-    background: var(--dorado);
-    color: var(--azul-oscuro);
-    font-weight: 700;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    border: none;
-    transition: background-color 0.25s ease;
-  }
-  .btn-guardar:hover {
-    background: var(--dorado-claro);
-  }
-
-  /* Paginación */
-  .paginacion {
-    margin-top: 14px;
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-  }
-  .paginacion button {
-    background: var(--dorado);
-    border: none;
-    color: var(--azul-oscuro);
-    font-weight: 700;
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  .paginacion button:hover:not([disabled]) {
-    background: var(--dorado-claro);
-  }
-  .paginacion button[disabled] {
-    cursor: default;
-    opacity: 0.6;
-  }
-
-  /* Animaciones */
-  @keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity: 1;}
-  }
-  @keyframes slideIn {
-    from {opacity: 0; transform: translateY(-30px);}
-    to {opacity: 1; transform: translateY(0);}
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Miembros</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    body {
+      background-color: #0d1b2a;
+      color: white;
+    }
+    .gold {
+      color: #ffd700;
+    }
+    .bg-gold {
+      background-color: #ffd700;
+    }
+    .btn-gold {
+      background-color: #ffd700;
+      color: #0d1b2a;
+    }
+    .btn-gold:hover {
+      background-color: #e6c200;
+    }
+    .sidebar {
+      background-color: #1b263b;
+      min-height: 100vh;
+      padding: 1rem;
+      color: white;
+    }
+    .sidebar img {
+      max-width: 100%;
+      margin-bottom: 1rem;
+    }
+    .form-section {
+      display: none;
+      margin-top: 1rem;
+    }
+    .form-section.active {
+      display: block;
+      animation: fadeIn 0.5s;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    .table img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+  </style>
 </head>
 <body>
-
-  <h1>Gestión de Miembros</h1>
-
-  <div class="contenedor">
-
-    <div class="barra-accion">
-      <button id="btnAgregarMiembro" type="button">+ Añadir Miembro</button>
-      <input type="text" id="searchInput" placeholder="Buscar por código o nombre..." />
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Código</th>
-          <th>Edad</th>
-          <th>Teléfono</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tablaMiembrosBody">
-        <!-- Filas dinámicas -->
-      </tbody>
-    </table>
-
-    <div class="paginacion" id="paginacion">
-      <!-- Botones paginación -->
-    </div>
+<div class="d-flex">
+  <div class="sidebar">
+    <img src="logo.png" alt="Logo" />
+    <h4 class="gold">Menú</h4>
+    <ul class="nav flex-column">
+      <li class="nav-item"><a class="nav-link text-white" href="#">Miembros</a></li>
+      <li class="nav-item"><a class="nav-link text-white" href="#">Reportes</a></li>
+    </ul>
   </div>
 
-  <!-- Modal Formulario -->
-  <div class="modal" id="modalForm">
-    <div class="modal-contenido" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
-      <h2 id="tituloModal" style="color: var(--dorado); margin-bottom: 20px;">Agregar / Editar Miembro</h2>
-
-      <form id="formMiembro">
-        <!-- PERSONALES -->
-        <section class="form-categoria">
-          <h3>Datos Personales</h3>
-          <label for="nombre">Nombre completo</label>
-          <input type="text" id="nombre" name="nombre" required autocomplete="off" />
-
-          <label for="codigo">Código</label>
-          <input type="text" id="codigo" name="codigo" required autocomplete="off" />
-
-          <label for="edad">Edad</label>
-          <input type="number" id="edad" name="edad" min="0" max="150" />
-
-          <label for="telefono">Teléfono</label>
-          <input type="tel" id="telefono" name="telefono" autocomplete="off" />
-
-          <label for="direccion">Dirección</label>
-          <input type="text" id="direccion" name="direccion" autocomplete="off" />
-
-          <label for="fechaNacimiento">Fecha de nacimiento</label>
-          <input type="date" id="fechaNacimiento" name="fechaNacimiento" />
-        </section>
-
-        <!-- FAMILIARES -->
-        <section class="form-categoria">
-          <h3>Datos Familiares</h3>
-          <label for="tipoFamiliar">Tipo de familiar</label>
-          <select id="tipoFamiliar" name="tipoFamiliar">
-            <option value="">-- Seleccionar --</option>
-            <option value="Padre">Padre</option>
-            <option value="Madre">Madre</option>
-            <option value="Hermano">Hermano</option>
-            <option value="Hermana">Hermana</option>
-            <option value="Cónyuge">Cónyuge</option>
-            <option value="Hijo">Hijo</option>
-            <option value="Hija">Hija</option>
-          </select>
-
-          <label for="nombreFamiliar">Nombre familiar</label>
-          <input type="text" id="nombreFamiliar" name="nombreFamiliar" autocomplete="off" />
-
-          <button type="button" id="btnAgregarFamiliar" style="background: var(--dorado); border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; color: var(--azul-oscuro); margin-top: 6px;">
-            Agregar familiar
-          </button>
-
-          <ul id="listaFamiliares" style="margin-top: 12px; list-style: none; padding-left: 0;"></ul>
-        </section>
-
-        <!-- ESPIRITUALES -->
-        <section class="form-categoria">
-          <h3>Datos Espirituales</h3>
-          <label for="fechaConversion">Fecha de conversión</label>
-          <input type="date" id="fechaConversion" name="fechaConversion" />
-
-          <label for="lugarConversion">Lugar de conversión</label>
-          <input type="text" id="lugarConversion" name="lugarConversion" autocomplete="off" />
-
-          <label for="fechaBautismo">Fecha de bautismo</label>
-          <input type="date" id="fechaBautismo" name="fechaBautismo" />
-
-          <label for="lugarBautismo">Lugar de bautismo</label>
-          <input type="text" id="lugarBautismo" name="lugarBautismo" autocomplete="off" />
-
-          <label for="fechaBautismoEspiritu">Fecha bautismo en Espíritu</label>
-          <input type="date" id="fechaBautismoEspiritu" name="fechaBautismoEspiritu" />
-
-          <label for="lugarBautismoEspiritu">Lugar bautismo en Espíritu</label>
-          <input type="text" id="lugarBautismoEspiritu" name="lugarBautismoEspiritu" autocomplete="off" />
-        </section>
-
-        <div class="form-botones">
-          <button type="button" class="btn-cancelar" id="btnCancelar">Cancelar</button>
-          <button type="submit" class="btn-guardar">Guardar</button>
-        </div>
-      </form>
+  <div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <input type="text" id="busqueda" class="form-control w-50" placeholder="Buscar miembro por nombre o código" />
+      <button id="btnMostrarFormulario" class="btn btn-gold ms-3">Añadir miembro</button>
     </div>
+
+    <!-- Formulario -->
+    <div id="formularioMiembro" class="form-section card p-3">
+      <h5 class="gold">Datos Personales</h5>
+      <div class="row">
+        <div class="col-md-4"><input class="form-control mb-2" placeholder="Nombre" id="nombre" /></div>
+        <div class="col-md-2"><input class="form-control mb-2" placeholder="Código" id="codigo" /></div>
+        <div class="col-md-2"><input class="form-control mb-2" placeholder="Edad" id="edad" type="number" /></div>
+        <div class="col-md-2"><input class="form-control mb-2" placeholder="Teléfono" id="telefono" /></div>
+        <div class="col-md-2"><input class="form-control mb-2" placeholder="Dirección" id="direccion" /></div>
+        <div class="col-md-4"><input class="form-control mb-2" type="date" id="fechaNacimiento" /></div>
+        <div class="col-md-4"><input class="form-control mb-2" type="file" id="foto" accept="image/*" /></div>
+      </div>
+
+      <h5 class="gold mt-3">Datos Familiares</h5>
+      <div class="row">
+        <div class="col-md-4"><select class="form-control mb-2" id="tipoFamiliar">
+          <option value="Padre">Padre</option>
+          <option value="Madre">Madre</option>
+          <option value="Hermano/a">Hermano/a</option>
+        </select></div>
+        <div class="col-md-4"><input class="form-control mb-2" placeholder="Nombre Familiar" id="nombreFamiliar" /></div>
+        <div class="col-md-4"><button class="btn btn-gold" onclick="agregarFamiliar()">Agregar Familiar</button></div>
+      </div>
+
+      <h5 class="gold mt-3">Datos Espirituales</h5>
+      <div class="row">
+        <div class="col-md-4"><input class="form-control mb-2" placeholder="Lugar Conversión" id="lugarConversion" /></div>
+        <div class="col-md-4"><input class="form-control mb-2" type="date" id="fechaConversion" /></div>
+        <div class="col-md-4"><input class="form-control mb-2" placeholder="Lugar Bautismo" id="lugarBautismo" /></div>
+        <div class="col-md-4"><input class="form-control mb-2" type="date" id="fechaBautismo" /></div>
+        <div class="col-md-4"><input class="form-control mb-2" placeholder="Lugar Bautismo Espíritu" id="lugarEspiritu" /></div>
+        <div class="col-md-4"><input class="form-control mb-2" type="date" id="fechaEspiritu" /></div>
+      </div>
+      <button class="btn btn-gold mt-3" onclick="guardarMiembro()">Guardar</button>
+    </div>
+
+    <!-- Tabla de miembros -->
+    <div id="tablaMiembros" class="mt-4"></div>
   </div>
+</div>
 
-<script>
-  // Datos simulados para demo - normalmente vendrían de base de datos
-  let miembros = [
-    { id: 1, nombre: "Juan Perez", codigo: "A001", edad: 35, telefono: "555123456", familiares: [], direccion: "Calle Falsa 123", fechaNacimiento: "1988-02-14", espirituales: {} },
-    { id: 2, nombre: "Ana Gomez", codigo: "B003", edad: 28, telefono: "555654321", familiares: [], direccion: "Av Siempre Viva 742", fechaNacimiento: "1995-07-30", espirituales: {} },
-    { id: 3, nombre: "Carlos Ruiz", codigo: "A002", edad: 42, telefono: "555789012", familiares: [], direccion: "Calle Luna 88", fechaNacimiento: "1981-05-12", espirituales: {} },
-    // Agrega más para probar paginación
-  ];
-
-  // Variables UI
-  const tbody = document.getElementById('tablaMiembrosBody');
-  const paginacionCont = document.getElementById('paginacion');
-  const btnAgregarMiembro = document.getElementById('btnAgregarMiembro');
-  const modalForm = document.getElementById('modalForm');
-  const formMiembro = document.getElementById('formMiembro');
-  const btnCancelar = document.getElementById('btnCancelar');
-  const searchInput = document.getElementById('searchInput');
-  const listaFamiliares = document.getElementById('listaFamiliares');
-  const btnAgregarFamiliar = document.getElementById('btnAgregarFamiliar');
-  const tipoFamiliarInput = document.getElementById('tipoFamiliar');
-  const nombreFamiliarInput = document.getElementById('nombreFamiliar');
-
-  let currentPage = 1;
-  const rowsPerPage = 20;
-  let currentEditId = null;
-  let familiaresArray = [];
-
-  // ----- Funciones -----
-
-  // Ordenar miembros alfabéticamente por código
-  function ordenarMiembros() {
-    miembros.sort((a, b) => {
-      const codA = a.codigo.toUpperCase();
-      const codB = b.codigo.toUpperCase();
-      if(codA < codB) return -1;
-      if(codA > codB) return 1;
-      return 0;
-    });
-  }
-
-  // Render tabla con paginación y búsqueda
-  function renderTabla() {
-    ordenarMiembros();
-
-    let filtro = searchInput.value.trim().toLowerCase();
-    let miembrosFiltrados = miembros.filter(m => 
-      m.codigo.toLowerCase().includes(filtro) || m.nombre.toLowerCase().includes(filtro)
-    );
-
-    const totalPages = Math.ceil(miembrosFiltrados.length / rowsPerPage);
-    if(currentPage > totalPages) currentPage = totalPages || 1;
-
-    const start = (currentPage - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-    const paginados = miembrosFiltrados.slice(start, end);
-
-    // Construir filas
-    tbody.innerHTML = '';
-    if(paginados.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color: var(--dorado-claro);">No hay miembros</td></tr>';
-    } else {
-      paginados.forEach(m => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${m.nombre}</td>
-          <td>${m.codigo}</td>
-          <td>${m.edad ?? ''}</td>
-          <td>${m.telefono ?? ''}</td>
-          <td>
-            <button class="btn-accion btn-editar" data-id="${m.id}">Editar</button>
-            <button class="btn-accion btn-dar-baja" data-id="${m.id}">Dar de baja</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-    renderPaginacion(totalPages);
-  }
-
-  // Render paginación
-  function renderPaginacion(totalPages) {
-    paginacionCont.innerHTML = '';
-    if(totalPages <= 1) return;
-
-    const btnPrev = document.createElement('button');
-    btnPrev.textContent = 'Anterior';
-    btnPrev.disabled = currentPage === 1;
-    btnPrev.addEventListener('click', () => {
-      currentPage--;
-      renderTabla();
-    });
-    paginacionCont.appendChild(btnPrev);
-
-    for(let i=1; i<=totalPages; i++) {
-      const btn = document.createElement('button');
-      btn.textContent = i;
-      if(i === currentPage) {
-        btn.disabled = true;
-      }
-      btn.addEventListener('click', () => {
-        currentPage = i;
-        renderTabla();
-      });
-      paginacionCont.appendChild(btn);
-    }
-
-    const btnNext = document.createElement('button');
-    btnNext.textContent = 'Siguiente';
-    btnNext.disabled = currentPage === totalPages;
-    btnNext.addEventListener('click', () => {
-      currentPage++;
-      renderTabla();
-    });
-    paginacionCont.appendChild(btnNext);
-  }
-
-  // Abrir modal para añadir o editar
-  function abrirModal(edicion = false, miembro = null) {
-    modalForm.classList.add('active');
-    familiaresArray = [];
-    listaFamiliares.innerHTML = '';
-    formMiembro.reset();
-    currentEditId = null;
-
-    if(edicion && miembro) {
-      currentEditId = miembro.id;
-      // Rellenar formulario
-      formMiembro.nombre.value = miembro.nombre || '';
-      formMiembro.codigo.value = miembro.codigo || '';
-      formMiembro.edad.value = miembro.edad || '';
-      formMiembro.telefono.value = miembro.telefono || '';
-      formMiembro.direccion.value = miembro.direccion || '';
-      formMiembro.fechaNacimiento.value = miembro.fechaNacimiento || '';
-
-      // Familiares (suponemos array con objetos tipo/nombre)
-      familiaresArray = miembro.familiares || [];
-      renderFamiliares();
-
-      // Espirituales
-      const esp = miembro.espirituales || {};
-      formMiembro.fechaConversion.value = esp.fechaConversion || '';
-      formMiembro.lugarConversion.value = esp.lugarConversion || '';
-      formMiembro.fechaBautismo.value = esp.fechaBautismo || '';
-      formMiembro.lugarBautismo.value = esp.lugarBautismo || '';
-      formMiembro.fechaBautismoEspiritu.value = esp.fechaBautismoEspiritu || '';
-      formMiembro.lugarBautismoEspiritu.value = esp.lugarBautismoEspiritu || '';
-    }
-  }
-
-  // Cerrar modal
-  function cerrarModal() {
-    modalForm.classList.remove('active');
-  }
-
-  // Render lista familiares en formulario
-  function renderFamiliares() {
-    listaFamiliares.innerHTML = '';
-    familiaresArray.forEach((fam, i) => {
-      const li = document.createElement('li');
-      li.style.marginBottom = '6px';
-      li.style.color = 'var(--dorado-claro)';
-      li.textContent = `${fam.tipo} - ${fam.nombre}`;
-      // Botón eliminar familiar
-      const btnEliminarFam = document.createElement('button');
-      btnEliminarFam.textContent = '×';
-      btnEliminarFam.style.marginLeft = '10px';
-      btnEliminarFam.style.background = 'transparent';
-      btnEliminarFam.style.color = 'var(--dorado)';
-      btnEliminarFam.style.border = 'none';
-      btnEliminarFam.style.cursor = 'pointer';
-      btnEliminarFam.style.fontWeight = '700';
-      btnEliminarFam.style.fontSize = '18px';
-      btnEliminarFam.addEventListener('click', () => {
-        familiaresArray.splice(i,1);
-        renderFamiliares();
-      });
-      li.appendChild(btnEliminarFam);
-      listaFamiliares.appendChild(li);
-    });
-  }
-
-  // Guardar miembro (nuevo o editar)
-  function guardarMiembro(data) {
-    if(currentEditId === null) {
-      // Nuevo ID simulando autoincremental
-      const nuevoId = miembros.length ? Math.max(...miembros.map(m => m.id)) + 1 : 1;
-      data.id = nuevoId;
-      miembros.push(data);
-    } else {
-      // Editar existente
-      const index = miembros.findIndex(m => m.id === currentEditId);
-      if(index > -1) {
-        data.id = currentEditId;
-        miembros[index] = data;
-      }
-    }
-  }
-
-  // Eventos
-  btnAgregarMiembro.addEventListener('click', () => abrirModal());
-
-  btnCancelar.addEventListener('click', (e) => {
-    e.preventDefault();
-    cerrarModal();
-  });
-
-  formMiembro.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const data = {
-      nombre: formMiembro.nombre.value.trim(),
-      codigo: formMiembro.codigo.value.trim(),
-      edad: formMiembro.edad.value ? parseInt(formMiembro.edad.value) : null,
-      telefono: formMiembro.telefono.value.trim(),
-      direccion: formMiembro.direccion.value.trim(),
-      fechaNacimiento: formMiembro.fechaNacimiento.value,
-      familiares: familiaresArray,
-      espirituales: {
-        fechaConversion: formMiembro.fechaConversion.value,
-        lugarConversion: formMiembro.lugarConversion.value.trim(),
-        fechaBautismo: formMiembro.fechaBautismo.value,
-        lugarBautismo: formMiembro.lugarBautismo.value.trim(),
-        fechaBautismoEspiritu: formMiembro.fechaBautismoEspiritu.value,
-        lugarBautismoEspiritu: formMiembro.lugarBautismoEspiritu.value.trim()
-      }
-    };
-
-    guardarMiembro(data);
-    cerrarModal();
-    renderTabla();
-  });
-
-  // Añadir familiar
-  btnAgregarFamiliar.addEventListener('click', () => {
-    const tipo = tipoFamiliarInput.value.trim();
-    const nombreFam = nombreFamiliarInput.value.trim();
-    if(tipo && nombreFam) {
-      familiaresArray.push({ tipo, nombre: nombreFam });
-      renderFamiliares();
-      tipoFamiliarInput.value = '';
-      nombreFamiliarInput.value = '';
-    }
-  });
-
-  // Buscar miembros
-  searchInput.addEventListener('input', () => {
-    currentPage = 1;
-    renderTabla();
-  });
-
-  // Delegación eventos para botones editar y dar de baja
-  tbody.addEventListener('click', (e) => {
-    const target = e.target;
-    if(target.classList.contains('btn-editar')) {
-      const id = parseInt(target.dataset.id);
-      const miembro = miembros.find(m => m.id === id);
-      if(miembro) abrirModal(true, miembro);
-    } else if(target.classList.contains('btn-dar-baja')) {
-      const id = parseInt(target.dataset.id);
-      // Remover miembro de la lista y redirigir a miembrosbaja.html
-      miembros = miembros.filter(m => m.id !== id);
-      renderTabla();
-      alert('Miembro dado de baja. Será redirigido a la página de miembros dados de baja.');
-      window.location.href = 'miembrosbaja.html';
-    }
-  });
-
-  // Inicializar tabla
-  renderTabla();
-</script>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="module" src="miembros.js"></script>
 </body>
 </html>
