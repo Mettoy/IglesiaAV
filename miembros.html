@@ -1,477 +1,268 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gestión de Miembros</title>
-<!-- Tailwind CSS CDN (para estilos rápidos y responsive) -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-  rel="stylesheet"
-/>
-<style>
-  body {
-    background-color: #0f172a; /* Azul oscuro */
-    color: #fbbf24; /* Dorado */
-  }
-  /* Scroll para tabla */
-  .table-container {
-    max-height: 600px;
-    overflow-y: auto;
-  }
-  /* Animaciones SweetAlert personalizadas */
-  .swal2-popup {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Miembros</title>
+  <link rel="icon" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20(1).png" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0c1a2c;
+      color: white;
+    }
+
+    header {
+      background-color: #08121f;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    header img {
+      height: 50px;
+      margin-right: 1rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: gold;
+    }
+
+    .contenedor {
+      padding: 1rem;
+    }
+
+    .boton {
+      background-color: gold;
+      color: #0c1a2c;
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 5px;
+      margin-right: 1rem;
+    }
+
+    .formulario {
+      margin-top: 1rem;
+      background-color: #11243d;
+      padding: 1rem;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .formulario input,
+    .formulario select {
+      display: block;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      width: 100%;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .miembro {
+      background-color: #1a2f4d;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .miembro button {
+      background-color: gold;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 3px;
+      cursor: pointer;
+      color: #0c1a2c;
+    }
+
+    .barra-superior {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
 </head>
-<body class="flex h-screen">
-
-<!-- MENÚ LATERAL -->
-<nav class="bg-gray-900 w-60 flex flex-col p-6 shadow-lg">
-  <div class="mb-8 flex items-center space-x-3">
-    <img src="https://yourdomain.com/logo.png" alt="Logo" class="w-12 h-12 rounded-full" />
-    <span class="text-2xl font-bold tracking-wide">MiembrosApp</span>
-  </div>
-  <ul class="flex flex-col gap-4 text-lg">
-    <li><a href="#" class="hover:text-yellow-400 transition">Inicio</a></li>
-    <li><a href="#" class="hover:text-yellow-400 transition">Miembros</a></li>
-    <li><a href="#" class="hover:text-yellow-400 transition">Configuración</a></li>
-  </ul>
-</nav>
-
-<!-- CONTENIDO PRINCIPAL -->
-<main class="flex-1 p-8 overflow-auto">
-  <header class="flex justify-between items-center mb-6">
-    <div class="flex gap-2">
-      <button id="btnAgregarMiembro" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-300 transition shadow font-semibold">
-        <i class="fas fa-user-plus mr-1"></i> Añadir Miembro
-      </button>
-      <input
-        id="searchInput"
-        type="search"
-        placeholder="Buscar por código..."
-        class="px-3 py-2 rounded bg-gray-800 border border-gray-700 text-yellow-300 focus:outline-yellow-400"
-      />
-    </div>
+<body>
+  <header>
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//image.png" alt="Logo" />
+    <h1>Gestión de Miembros</h1>
   </header>
 
-  <!-- FORMULARIO OCULTO -->
-  <section id="formContainer" class="hidden bg-gray-800 p-6 rounded shadow max-w-4xl mb-8 animate__animated animate__fadeInDown">
-    <form id="formMiembro" class="space-y-6 text-yellow-300">
+  <div class="contenedor">
+    <div class="barra-superior">
+      <button id="btn-agregar" class="boton">Añadir Miembro</button>
+      <input type="text" id="busqueda" placeholder="Buscar por nombre..." />
+    </div>
 
-      <!-- Categoría Personal -->
-      <fieldset>
-        <legend class="text-xl font-semibold mb-3 border-b border-yellow-300 pb-1">Datos Personales</legend>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input id="nombre" type="text" placeholder="Nombre completo" required class="input-field" />
-          <input id="codigo" type="text" placeholder="Código" required class="input-field" />
-          <input id="edad" type="number" min="0" placeholder="Edad" class="input-field" />
-          <input id="telefono" type="tel" placeholder="Teléfono" class="input-field" />
-          <input id="direccion" type="text" placeholder="Dirección" class="input-field" />
-          <input id="fechaNacimiento" type="date" placeholder="Fecha Nacimiento" class="input-field" />
-          <input id="fotoInput" type="file" accept="image/*" class="col-span-full" />
-        </div>
-      </fieldset>
+    <form id="form-miembro" class="formulario">
+      <!-- Datos personales -->
+      <h3>Datos Personales</h3>
+      <input type="text" name="nombre" placeholder="Nombre completo" required />
+      <input type="number" name="edad" placeholder="Edad" required />
+      <input type="text" name="codigo" placeholder="Código" required />
+      <input type="text" name="telefono" placeholder="Teléfono" />
+      <input type="text" name="direccion" placeholder="Dirección" />
+      <input type="date" name="nacimiento" placeholder="Fecha de nacimiento" />
 
-      <!-- Categoría Familiares -->
-      <fieldset>
-        <legend class="text-xl font-semibold mb-3 border-b border-yellow-300 pb-1">Datos Familiares</legend>
-        <div class="flex gap-2 flex-wrap items-center mb-2">
-          <select id="tipoFamiliar" class="input-field w-48" >
-            <option value="" disabled selected>Tipo familiar</option>
-            <option value="Padre">Padre</option>
-            <option value="Madre">Madre</option>
-            <option value="Hermano">Hermano</option>
-            <option value="Hijo">Hijo</option>
-            <option value="Esposo/a">Esposo/a</option>
-          </select>
-          <input id="nombreFamiliar" type="text" placeholder="Nombre familiar" class="input-field flex-grow" />
-          <button id="btnAgregarFamiliar" type="button" class="bg-yellow-400 text-gray-900 px-3 py-1 rounded hover:bg-yellow-300 transition font-semibold shadow">Agregar</button>
-        </div>
-        <ul id="listaFamiliares" class="list-disc list-inside space-y-1 text-yellow-300 max-h-40 overflow-auto"></ul>
-      </fieldset>
+      <!-- Foto -->
+      <input type="file" name="foto" accept="image/*" />
 
-      <!-- Categoría Espirituales -->
-      <fieldset>
-        <legend class="text-xl font-semibold mb-3 border-b border-yellow-300 pb-1">Datos Espirituales</legend>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input id="fechaConversion" type="date" placeholder="Fecha Conversión" class="input-field" />
-          <input id="lugarConversion" type="text" placeholder="Lugar Conversión" class="input-field" />
-          <input id="fechaBautismo" type="date" placeholder="Fecha Bautismo" class="input-field" />
-          <input id="lugarBautismo" type="text" placeholder="Lugar Bautismo" class="input-field" />
-          <input id="fechaEspiritu" type="date" placeholder="Fecha Bautismo Espíritu" class="input-field" />
-          <input id="lugarEspiritu" type="text" placeholder="Lugar Bautismo Espíritu" class="input-field" />
-        </div>
-      </fieldset>
+      <!-- Datos espirituales -->
+      <h3>Datos Espirituales</h3>
+      <input type="date" name="conversion" placeholder="Fecha de conversión" />
+      <input type="text" name="lugarConversion" placeholder="Lugar de conversión" />
+      <input type="date" name="bautismo" placeholder="Fecha de bautismo en agua" />
+      <input type="text" name="lugarBautismo" placeholder="Lugar de bautismo en agua" />
+      <input type="date" name="espiritu" placeholder="Fecha de bautismo en el Espíritu" />
+      <input type="text" name="lugarEspiritu" placeholder="Lugar de bautismo en el Espíritu" />
 
-      <div class="flex justify-end space-x-3">
-        <button type="button" id="btnCancelForm" class="px-4 py-2 rounded bg-red-600 hover:bg-red-500 transition shadow font-semibold">Cancelar</button>
-        <button type="submit" class="px-4 py-2 rounded bg-yellow-400 text-gray-900 hover:bg-yellow-300 transition shadow font-semibold">Guardar Miembro</button>
-      </div>
+      <button type="submit" class="boton">Guardar</button>
     </form>
-  </section>
 
-  <!-- TABLA -->
-  <div class="table-container border border-yellow-400 rounded shadow bg-gray-900 text-yellow-300">
-    <table class="min-w-full table-auto">
-      <thead class="bg-gray-800 sticky top-0">
-        <tr>
-          <th class="px-4 py-3">Foto</th>
-          <th class="px-4 py-3 cursor-pointer" id="headerCodigo">Código <i class="fas fa-sort"></i></th>
-          <th class="px-4 py-3">Nombre</th>
-          <th class="px-4 py-3">Edad</th>
-          <th class="px-4 py-3">Teléfono</th>
-          <th class="px-4 py-3">Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tablaMiembros" class="divide-y divide-gray-700"></tbody>
-    </table>
+    <div id="lista-miembros"></div>
   </div>
 
-  <!-- PAGINACIÓN -->
-  <div class="mt-4 flex justify-center space-x-4" id="paginacion"></div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      updateDoc,
+      doc,
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-</main>
-
-<script type="module">
-// Importa Firebase y Supabase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-// --- CONFIGURACIÓN FIREBASE ---
-const firebaseConfig = {
-  apiKey: "TU_API_KEY_FIREBASE",
-  authDomain: "TU_AUTH_DOMAIN_FIREBASE",
-  projectId: "TU_PROJECT_ID_FIREBASE",
-  storageBucket: "TU_STORAGE_BUCKET_FIREBASE",
-  messagingSenderId: "TU_SENDER_ID_FIREBASE",
-  appId: "TU_APP_ID_FIREBASE"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// --- CONFIGURACIÓN SUPABASE ---
-const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co';
-const supabaseKey = 'TU_ANON_KEY_SUPABASE';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// --- VARIABLES DE ESTADO ---
-let miembros = [];
-let paginaActual = 1;
-const registrosPorPagina = 20;
-let ordenAscendente = true;
-
-// --- ELEMENTOS DOM ---
-const tablaMiembros = document.getElementById('tablaMiembros');
-const paginacionDiv = document.getElementById('paginacion');
-const btnAgregarMiembro = document.getElementById('btnAgregarMiembro');
-const formContainer = document.getElementById('formContainer');
-const formMiembro = document.getElementById('formMiembro');
-const btnCancelForm = document.getElementById('btnCancelForm');
-const searchInput = document.getElementById('searchInput');
-
-const listaFamiliares = document.getElementById('listaFamiliares');
-const btnAgregarFamiliar = document.getElementById('btnAgregarFamiliar');
-const tipoFamiliarInput = document.getElementById('tipoFamiliar');
-const nombreFamiliarInput = document.getElementById('nombreFamiliar');
-
-let familiaresArray = [];
-let editandoId = null;
-
-// --- FUNCIONES AUXILIARES ---
-
-function limpiarFormulario() {
-  formMiembro.reset();
-  familiaresArray = [];
-  actualizarListaFamiliares();
-  editandoId = null;
-}
-
-function actualizarListaFamiliares() {
-  listaFamiliares.innerHTML = '';
-  familiaresArray.forEach(({ tipo, nombre }, i) => {
-    const li = document.createElement('li');
-    li.textContent = `${tipo}: ${nombre}`;
-    const btnEliminar = document.createElement('button');
-    btnEliminar.textContent = '✖';
-    btnEliminar.className = 'ml-3 text-red-500 hover:text-red-400';
-    btnEliminar.onclick = () => {
-      familiaresArray.splice(i, 1);
-      actualizarListaFamiliares();
+    const firebaseConfig = {
+      apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
+      authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
+      projectId: "iglesia-adoracion-viva-182e6",
+      storageBucket: "iglesia-adoracion-viva-182e6.appspot.com",
+      messagingSenderId: "152824399391",
+      appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
     };
-    li.appendChild(btnEliminar);
-    listaFamiliares.appendChild(li);
-  });
-}
 
-btnAgregarFamiliar.addEventListener('click', () => {
-  const tipo = tipoFamiliarInput.value;
-  const nombre = nombreFamiliarInput.value.trim();
-  if (!tipo || !nombre) {
-    Swal.fire('Error', 'Selecciona tipo y escribe nombre del familiar', 'error');
-    return;
-  }
-  familiaresArray.push({ tipo, nombre });
-  actualizarListaFamiliares();
-  tipoFamiliarInput.value = '';
-  nombreFamiliarInput.value = '';
-});
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-// --- OBTENER MIEMBROS DE FIRESTORE (ORDEN ALFABÉTICO POR CÓDIGO) ---
-async function cargarMiembros() {
-  const q = query(collection(db, "miembros"), orderBy("codigo", ordenAscendente ? "asc" : "desc"));
-  const querySnapshot = await getDocs(q);
-  miembros = [];
-  querySnapshot.forEach(docSnap => {
-    miembros.push({ id: docSnap.id, ...docSnap.data() });
-  });
-  filtrarYMostrarMiembros();
-}
+    const supabaseUrl = "https://azywyqozwwbfctxeokug.supabase.co";
+    const supabaseKey = "eneyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+    const bucket = "fotos";
 
-// --- FILTRAR Y MOSTRAR MIEMBROS ---
-function filtrarYMostrarMiembros() {
-  const filtro = searchInput.value.trim().toLowerCase();
-  let filtrados = miembros.filter(m => m.codigo.toLowerCase().includes(filtro));
-  mostrarTabla(filtrados);
-  paginar(filtrados);
-}
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("form-miembro");
+      const btnAgregar = document.getElementById("btn-agregar");
+      const miembrosLista = document.getElementById("lista-miembros");
+      const busqueda = document.getElementById("busqueda");
+      let editandoId = null;
 
-// --- MOSTRAR TABLA ---
-async function mostrarTabla(lista) {
-  tablaMiembros.innerHTML = "";
-  // Calcular los registros de la página actual
-  const inicio = (paginaActual - 1) * registrosPorPagina;
-  const fin = inicio + registrosPorPagina;
-  const pagina = lista.slice(inicio, fin);
-
-  for (const miembro of pagina) {
-    // Generar URL firmada para la foto
-    let urlFoto = '';
-    if (miembro.fotoPath) {
-      try {
-        const { data, error } = await supabase
-          .storage
-          .from('fotos')
-          .createSignedUrl(miembro.fotoPath, 60 * 60);
-        if (error) throw error;
-        urlFoto = data.signedUrl;
-      } catch (e) {
-        console.error('Error creando URL firmada:', e.message);
-      }
-    }
-
-    const tr = document.createElement("tr");
-    tr.className = "hover:bg-gray-700 cursor-pointer";
-    tr.innerHTML = `
-      <td class="p-3"><img src="${urlFoto}" alt="Foto" class="w-12 h-12 rounded-full object-cover" /></td>
-      <td class="p-3">${miembro.codigo}</td>
-      <td class="p-3">${miembro.nombre}</td>
-      <td class="p-3">${miembro.edad || ''}</td>
-      <td class="p-3">${miembro.telefono || ''}</td>
-      <td class="p-3 space-x-3">
-        <button data-id="${miembro.id}" class="editar-btn bg-yellow-400 px-3 py-1 rounded text-gray-900 hover:bg-yellow-300 transition"><i class="fas fa-edit"></i> Editar</button>
-        <button data-id="${miembro.id}" class="baja-btn bg-red-600 px-3 py-1 rounded hover:bg-red-500 transition"><i class="fas fa-user-slash"></i> Dar de baja</button>
-      </td>
-    `;
-    tablaMiembros.appendChild(tr);
-  }
-
-  // Agregar eventos a botones
-  document.querySelectorAll(".editar-btn").forEach(btn => {
-    btn.onclick = async () => {
-      const id = btn.dataset.id;
-      await cargarMiembroParaEditar(id);
-    };
-  });
-
-  document.querySelectorAll(".baja-btn").forEach(btn => {
-    btn.onclick = async () => {
-      const id = btn.dataset.id;
-      const resp = await Swal.fire({
-        title: "Confirmar",
-        text: "¿Deseas dar de baja a este miembro?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Sí, dar de baja",
-        cancelButtonText: "Cancelar",
+      btnAgregar.addEventListener("click", () => {
+        form.reset();
+        editandoId = null;
+        form.style.display = "block";
       });
-      if (resp.isConfirmed) {
-        await darDeBajaMiembro(id);
-      }
-    };
-  });
-}
 
-// --- CARGAR MIEMBRO PARA EDITAR ---
-async function cargarMiembroParaEditar(id) {
-  const docRef = doc(db, "miembros", id);
-  const docSnap = await getDocs(docRef);
-  if (!docSnap.exists()) {
-    Swal.fire("Error", "Miembro no encontrado", "error");
-    return;
-  }
-  const data = docSnap.data();
-  editandoId = id;
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const datos = {
+          nombre: form.nombre.value,
+          codigo: form.codigo.value,
+          edad: form.edad.value,
+          telefono: form.telefono.value,
+          direccion: form.direccion.value,
+          nacimiento: form.nacimiento.value,
+          fechaConversion: form.conversion.value,
+          lugarConversion: form.lugarConversion.value,
+          fechaBautismo: form.bautismo.value,
+          lugarBautismo: form.lugarBautismo.value,
+          fechaEspiritu: form.espiritu.value,
+          lugarEspiritu: form.lugarEspiritu.value,
+        };
 
-  // Mostrar formulario y cargar datos
-  formContainer.classList.remove('hidden');
-  formMiembro.nombre.value = data.nombre || '';
-  formMiembro.codigo.value = data.codigo || '';
-  formMiembro.edad.value = data.edad || '';
-  formMiembro.telefono.value = data.telefono || '';
-  formMiembro.direccion.value = data.direccion || '';
-  formMiembro.fechaNacimiento.value = data.fechaNacimiento || '';
+        const archivo = form.foto.files[0];
+        if (archivo) {
+          const nombreArchivo = `${Date.now()}_${archivo.name}`;
+          const { error } = await fetch(`${supabaseUrl}/storage/v1/object/${bucket}/${nombreArchivo}`, {
+            method: "POST",
+            headers: {
+              "apikey": supabaseKey,
+              "Authorization": `Bearer ${supabaseKey}`,
+              "Content-Type": archivo.type,
+              "x-upsert": "true",
+            },
+            body: archivo,
+          });
+          if (error) console.error("Error al subir imagen:", error.message);
+        }
 
-  familiaresArray = data.familiares || [];
-  actualizarListaFamiliares();
-
-  formMiembro.fechaConversion.value = data.fechaConversion || '';
-  formMiembro.lugarConversion.value = data.lugarConversion || '';
-  formMiembro.fechaBautismo.value = data.fechaBautismo || '';
-  formMiembro.lugarBautismo.value = data.lugarBautismo || '';
-  formMiembro.fechaEspiritu.value = data.fechaEspiritu || '';
-  formMiembro.lugarEspiritu.value = data.lugarEspiritu || '';
-}
-
-// --- DAR DE BAJA MIEMBRO ---
-async function darDeBajaMiembro(id) {
-  try {
-    await deleteDoc(doc(db, "miembros", id));
-    Swal.fire("Éxito", "Miembro dado de baja correctamente", "success");
-    await cargarMiembros();
-  } catch (e) {
-    Swal.fire("Error", "No se pudo dar de baja el miembro", "error");
-  }
-}
-
-// --- GUARDAR MIEMBRO ---
-formMiembro.addEventListener("submit", async e => {
-  e.preventDefault();
-
-  // Validar código único si es nuevo
-  const codigoNuevo = formMiembro.codigo.value.trim();
-  if (!codigoNuevo) {
-    Swal.fire('Error', 'El código es obligatorio', 'error');
-    return;
-  }
-  // Foto a subir (archivo)
-  const archivoFoto = formMiembro.fotoInput.files[0];
-  let rutaFoto = null;
-
-  if (archivoFoto) {
-    try {
-      const nombreArchivo = `miembros/${Date.now()}_${archivoFoto.name}`;
-      const { data, error } = await supabase.storage.from('fotos').upload(nombreArchivo, archivoFoto, {
-        cacheControl: '3600',
-        upsert: false,
+        try {
+          if (editandoId) {
+            await updateDoc(doc(db, "miembros", editandoId), datos);
+          } else {
+            await addDoc(collection(db, "miembros"), datos);
+          }
+          form.reset();
+          form.style.display = "none";
+          editandoId = null;
+          cargarMiembros();
+        } catch (err) {
+          console.error("Error guardando miembro:", err);
+        }
       });
-      if (error) throw error;
-      rutaFoto = nombreArchivo;
-    } catch (err) {
-      Swal.fire('Error', 'Error subiendo la foto: ' + err.message, 'error');
-      return;
-    }
-  }
 
-  const dataMiembro = {
-    nombre: formMiembro.nombre.value.trim(),
-    codigo: codigoNuevo,
-    edad: formMiembro.edad.value ? Number(formMiembro.edad.value) : null,
-    telefono: formMiembro.telefono.value.trim(),
-    direccion: formMiembro.direccion.value.trim(),
-    fechaNacimiento: formMiembro.fechaNacimiento.value || null,
-    familiares: familiaresArray,
-    fechaConversion: formMiembro.fechaConversion.value || null,
-    lugarConversion: formMiembro.lugarConversion.value.trim() || null,
-    fechaBautismo: formMiembro.fechaBautismo.value || null,
-    lugarBautismo: formMiembro.lugarBautismo.value.trim() || null,
-    fechaEspiritu: formMiembro.fechaEspiritu.value || null,
-    lugarEspiritu: formMiembro.lugarEspiritu.value.trim() || null,
-  };
-  if (rutaFoto) dataMiembro.fotoPath = rutaFoto;
+      async function cargarMiembros() {
+        miembrosLista.innerHTML = "";
+        const snapshot = await getDocs(collection(db, "miembros"));
+        snapshot.forEach((docu) => {
+          const data = docu.data();
+          const div = document.createElement("div");
+          div.className = "miembro";
+          div.innerHTML = `
+            <span>${data.nombre} - Código: ${data.codigo}</span>
+            <button class="editar" data-id="${docu.id}">Editar</button>
+          `;
+          miembrosLista.appendChild(div);
+        });
 
-  try {
-    if (editandoId) {
-      await updateDoc(doc(db, "miembros", editandoId), dataMiembro);
-      Swal.fire('Éxito', 'Miembro actualizado correctamente', 'success');
-    } else {
-      // Verificar código único
-      const q = query(collection(db, "miembros"), where("codigo", "==", codigoNuevo));
-      const querySnap = await getDocs(q);
-      if (!querySnap.empty) {
-        Swal.fire('Error', 'El código ya existe', 'error');
-        return;
+        document.querySelectorAll(".editar").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            editandoId = btn.dataset.id;
+            const docs = await getDocs(collection(db, "miembros"));
+            const datos = docs.docs.find(d => d.id === editandoId).data();
+            form.nombre.value = datos.nombre || "";
+            form.codigo.value = datos.codigo || "";
+            form.edad.value = datos.edad || "";
+            form.telefono.value = datos.telefono || "";
+            form.direccion.value = datos.direccion || "";
+            form.nacimiento.value = datos.nacimiento || "";
+            form.conversion.value = datos.fechaConversion || "";
+            form.lugarConversion.value = datos.lugarConversion || "";
+            form.bautismo.value = datos.fechaBautismo || "";
+            form.lugarBautismo.value = datos.lugarBautismo || "";
+            form.espiritu.value = datos.fechaEspiritu || "";
+            form.lugarEspiritu.value = datos.lugarEspiritu || "";
+            form.style.display = "block";
+          });
+        });
       }
-      await addDoc(collection(db, "miembros"), dataMiembro);
-      Swal.fire('Éxito', 'Miembro agregado correctamente', 'success');
-    }
-    formContainer.classList.add('hidden');
-    limpiarFormulario();
-    await cargarMiembros();
-  } catch (error) {
-    Swal.fire('Error', 'No se pudo guardar el miembro: ' + error.message, 'error');
-  }
-});
 
-// --- CANCELAR FORMULARIO ---
-btnCancelForm.addEventListener('click', () => {
-  formContainer.classList.add('hidden');
-  limpiarFormulario();
-});
+      busqueda.addEventListener("input", () => {
+        const texto = busqueda.value.toLowerCase();
+        document.querySelectorAll(".miembro").forEach((div) => {
+          const nombre = div.textContent.toLowerCase();
+          div.style.display = nombre.includes(texto) ? "flex" : "none";
+        });
+      });
 
-// --- BÚSQUEDA ---
-searchInput.addEventListener('input', () => {
-  paginaActual = 1;
-  filtrarYMostrarMiembros();
-});
-
-// --- PAGINACIÓN ---
-function paginar(lista) {
-  paginacionDiv.innerHTML = '';
-  const totalPaginas = Math.ceil(lista.length / registrosPorPagina);
-  if (totalPaginas <= 1) return;
-
-  for (let i = 1; i <= totalPaginas; i++) {
-    const btn = document.createElement('button');
-    btn.textContent = i;
-    btn.className = 'px-3 py-1 rounded mx-1 ' + (i === paginaActual ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300');
-    btn.onclick = () => {
-      paginaActual = i;
-      filtrarYMostrarMiembros();
-    };
-    paginacionDiv.appendChild(btn);
-  }
-}
-
-// --- ORDENAR POR CÓDIGO ---
-const thCodigo = document.getElementById('thCodigo');
-thCodigo.addEventListener('click', () => {
-  ordenAscendente = !ordenAscendente;
-  cargarMiembros();
-});
-
-// --- INICIALIZACIÓN ---
-document.addEventListener('DOMContentLoaded', () => {
-  cargarMiembros();
-});
-</script>
-
-<style>
-  #formContainer {
-    background: #1e293b;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-top: 1rem;
-  }
-  #listaFamiliares li {
-    margin-bottom: 0.25rem;
-  }
-</style>
-
+      cargarMiembros();
+    });
+  </script>
 </body>
 </html>
