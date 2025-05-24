@@ -4,537 +4,404 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Gestión de Miembros</title>
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20(1).png" />
 
+<!-- Estilos básicos -->
 <style>
   body {
-    background-color: #0a1a2b;
-    color: #f1c40f;
+    margin: 0;
     font-family: Arial, sans-serif;
-    margin: 0; padding: 20px;
+    display: flex;
   }
-  h1 {
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  button {
-    background-color: #f1c40f;
-    color: #0a1a2b;
-    border: none;
-    padding: 10px 16px;
-    cursor: pointer;
-    font-weight: bold;
-    border-radius: 4px;
-    margin-right: 8px;
-    transition: background-color 0.3s ease;
-  }
-  button:hover {
-    background-color: #d4ac0d;
-  }
-  #form-container {
-    background: #122244;
+  /* Menú lateral */
+  nav {
+    width: 220px;
+    background-color: #0d1b2a;
+    color: white;
+    min-height: 100vh;
     padding: 20px;
-    border-radius: 8px;
-    max-width: 700px;
-    margin: 1rem auto 2rem auto;
-    box-shadow: 0 0 12px #f1c40f88;
+    box-sizing: border-box;
   }
-  form > div.section {
+  nav img.logo {
+    width: 150px;
     margin-bottom: 20px;
   }
-  form label {
-    display: block;
-    margin-bottom: 4px;
-    font-weight: bold;
+  nav h2 {
+    font-weight: normal;
+    margin-top: 0;
   }
-  form input[type="text"],
-  form input[type="number"],
-  form input[type="date"],
-  form select {
-    width: 100%;
-    padding: 6px 8px;
-    margin-bottom: 10px;
-    border-radius: 4px;
+  main {
+    flex-grow: 1;
+    padding: 20px;
+    background: #f0f4f8;
+  }
+  /* Botón Añadir */
+  button#addMemberBtn {
+    background-color: #0077cc;
     border: none;
-  }
-  form input[type="file"] {
-    margin-bottom: 10px;
-  }
-  #familiares-list {
-    margin-top: 8px;
-    padding-left: 20px;
-    list-style-type: disc;
-    color: #ffeb3b;
-  }
-  #miembros-container {
-    max-width: 900px;
-    margin: 0 auto;
-  }
-  #search-bar {
-    width: 300px;
-    padding: 8px;
+    padding: 10px 20px;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
     margin-bottom: 15px;
-    border-radius: 4px;
-    border: none;
   }
+  /* Tabla */
   table {
-    width: 100%;
     border-collapse: collapse;
-    background: #122244;
-    box-shadow: 0 0 12px #f1c40f66;
+    width: 100%;
+    background: white;
+    border-radius: 5px;
+    overflow: hidden;
   }
   th, td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #f1c40f33;
     text-align: left;
-    vertical-align: middle;
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
   }
   th {
-    background-color: #203366;
+    background-color: #005599;
+    color: white;
   }
   tr:hover {
-    background-color: #274e8e;
+    background-color: #e0e8f0;
   }
-  td img {
-    width: 40px;
-    height: 40px;
+  /* Imagen en tabla */
+  td.photo img {
+    width: 50px;
+    height: 50px;
     object-fit: cover;
     border-radius: 50%;
-    margin-right: 10px;
-    vertical-align: middle;
   }
-  .td-nombre {
-    display: flex;
+  /* Formulario modal */
+  #memberFormModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right:0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
     align-items: center;
   }
-  .btn-editar {
-    background-color: #f39c12;
-    color: #0a1a2b;
-    border-radius: 4px;
-    padding: 6px 12px;
-    cursor: pointer;
+  #memberFormModal.active {
+    display: flex;
   }
-  .btn-editar:hover {
-    background-color: #d48806;
+  form#memberForm {
+    background: white;
+    padding: 20px;
+    border-radius: 6px;
+    width: 400px;
+    max-width: 95vw;
+  }
+  form#memberForm label {
+    display: block;
+    margin-top: 10px;
+  }
+  form#memberForm input[type="text"],
+  form#memberForm input[type="number"],
+  form#memberForm input[type="file"] {
+    width: 100%;
+    padding: 7px;
+    margin-top: 4px;
+    box-sizing: border-box;
+  }
+  form#memberForm button {
+    margin-top: 15px;
+    padding: 10px;
+    width: 100%;
+    background-color: #0077cc;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  /* Paginación */
+  #pagination {
+    margin-top: 15px;
+    text-align: center;
+  }
+  #pagination button {
+    margin: 0 5px;
+    padding: 7px 12px;
+    border: 1px solid #0077cc;
+    background: white;
+    color: #0077cc;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  #pagination button.active {
+    background: #0077cc;
+    color: white;
   }
 </style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-
-<!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-
 </head>
 <body>
 
-<h1>Gestión de Miembros</h1>
+<!-- Menú lateral -->
+<nav>
+  <img class="logo" src="https://tulogo.com/logo.png" alt="Logo" />
+  <h2>Miembros</h2>
+</nav>
 
-<div id="miembros-container">
-  <button id="btn-agregar-miembro">Añadir Miembro</button>
-  <input type="search" id="search-bar" placeholder="Buscar por nombre o código..." />
-  
-  <div id="form-container" style="display:none;">
-    <form id="form-miembro">
-      <h2 id="form-title">Agregar Miembro</h2>
-      <!-- Datos Personales -->
-      <div class="section">
-        <h3>Datos Personales</h3>
-        <label for="nombre">Nombre Completo</label>
-        <input type="text" id="nombre" name="nombre" required />
-        
-        <label for="codigo">Código</label>
-        <input type="text" id="codigo" name="codigo" required />
+<!-- Contenido principal -->
+<main>
+  <button id="addMemberBtn">Añadir Miembro</button>
 
-        <label for="edad">Edad</label>
-        <input type="number" id="edad" name="edad" min="0" max="120" required />
-
-        <label for="telefono">Teléfono</label>
-        <input type="text" id="telefono" name="telefono" />
-
-        <label for="direccion">Dirección</label>
-        <input type="text" id="direccion" name="direccion" />
-
-        <label for="fechaNacimiento">Fecha de Nacimiento</label>
-        <input type="date" id="fechaNacimiento" name="fechaNacimiento" />
-
-        <label for="foto">Foto</label>
-        <input type="file" id="foto" name="foto" accept="image/*" />
-      </div>
-
-      <!-- Datos Familiares -->
-      <div class="section">
-        <h3>Datos Familiares</h3>
-        <label for="tipo-familiar">Tipo de Familiar</label>
-        <select id="tipo-familiar">
-          <option value="" disabled selected>Seleccione tipo</option>
-          <option value="Padre">Padre</option>
-          <option value="Madre">Madre</option>
-          <option value="Hermano/a">Hermano/a</option>
-          <option value="Cónyuge">Cónyuge</option>
-          <option value="Hijo/a">Hijo/a</option>
-          <option value="Otro">Otro</option>
-        </select>
-        <label for="nombre-familiar">Nombre del Familiar</label>
-        <input type="text" id="nombre-familiar" />
-        <button type="button" id="btn-agregar-familiar">Agregar Familiar</button>
-        <ul id="familiares-list"></ul>
-      </div>
-
-      <!-- Datos Espirituales -->
-      <div class="section">
-        <h3>Datos Espirituales</h3>
-        <label for="fechaConversion">Fecha de Conversión</label>
-        <input type="date" id="fechaConversion" name="fechaConversion" />
-        <label for="lugarConversion">Lugar de Conversión</label>
-        <input type="text" id="lugarConversion" name="lugarConversion" />
-        
-        <label for="fechaBautismo">Fecha de Bautismo</label>
-        <input type="date" id="fechaBautismo" name="fechaBautismo" />
-        <label for="lugarBautismo">Lugar de Bautismo</label>
-        <input type="text" id="lugarBautismo" name="lugarBautismo" />
-        
-        <label for="fechaBautismoEspiritu">Fecha de Bautismo en el Espíritu</label>
-        <input type="date" id="fechaBautismoEspiritu" name="fechaBautismoEspiritu" />
-        <label for="lugarBautismoEspiritu">Lugar de Bautismo en el Espíritu</label>
-        <input type="text" id="lugarBautismoEspiritu" name="lugarBautismoEspiritu" />
-      </div>
-
-      <button type="submit" id="btn-guardar">Guardar Miembro</button>
-      <button type="button" id="btn-cancelar">Cancelar</button>
-    </form>
-  </div>
-
-  <table id="tabla-miembros" style="display:none;">
+  <table id="membersTable">
     <thead>
       <tr>
         <th>Foto</th>
-        <th>Nombre</th>
         <th>Código</th>
+        <th>Nombre</th>
         <th>Edad</th>
         <th>Teléfono</th>
         <th>Dirección</th>
-        <th>Acciones</th>
       </tr>
     </thead>
-    <tbody id="tabla-cuerpo">
-      <!-- Aquí van los miembros -->
+    <tbody>
+      <!-- Miembros aquí -->
     </tbody>
   </table>
+
+  <div id="pagination"></div>
+</main>
+
+<!-- Modal formulario -->
+<div id="memberFormModal">
+  <form id="memberForm">
+    <h3>Agregar/Editar Miembro</h3>
+    <input type="hidden" id="memberId" />
+
+    <label for="codigo">Código</label>
+    <input type="text" id="codigo" required />
+
+    <label for="nombre">Nombre completo</label>
+    <input type="text" id="nombre" required />
+
+    <label for="edad">Edad</label>
+    <input type="number" id="edad" required min="0" />
+
+    <label for="telefono">Teléfono</label>
+    <input type="text" id="telefono" />
+
+    <label for="direccion">Dirección</label>
+    <input type="text" id="direccion" />
+
+    <label for="foto">Foto</label>
+    <input type="file" id="foto" accept="image/*" />
+
+    <button type="submit">Guardar</button>
+    <button type="button" id="cancelBtn" style="background:#aaa; margin-top:5px;">Cancelar</button>
+  </form>
 </div>
 
-<script>
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
-    authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
-    projectId: "iglesia-adoracion-viva-182e6",
-    storageBucket: "iglesia-adoracion-viva-182e6.appspot.com",
-    messagingSenderId: "152824399391",
-    appId: "1:152824399391:web:a4fc0937f35935b9b5f72a"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+<!-- Scripts Firestore y Supabase -->
+<script type="module">
+// Importamos Firebase y Supabase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import {
+  getFirestore, collection, getDocs, addDoc, updateDoc, doc
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-  // Supabase config
-  const SUPABASE_URL = 'https://azywyqozwwbfctxeokug.supabase.co';
-  const SUPABASE_ANON_KEY = 'eneyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk';
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  // Estado global
-  let miembros = [];
-  let editarId = null;
-  let familiares = [];
+// Configuraciones
+const firebaseConfig = {
+  apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
+  authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
+  projectId: "iglesia-adoracion-viva-182e6",
+  storageBucket: "iglesia-adoracion-viva-182e6.appspot.com",
+  messagingSenderId: "152824399391",
+  appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
+};
 
-  const btnAgregarMiembro = document.getElementById('btn-agregar-miembro');
-  const formContainer = document.getElementById('form-container');
-  const formMiembro = document.getElementById('form-miembro');
-  const btnCancelar = document.getElementById('btn-cancelar');
-  const tablaMiembros = document.getElementById('tabla-miembros');
-  const tablaCuerpo = document.getElementById('tabla-cuerpo');
-  const formTitle = document.getElementById('form-title');
-  const searchBar = document.getElementById('search-bar');
-  const familiaresList = document.getElementById('familiares-list');
-  const btnAgregarFamiliar = document.getElementById('btn-agregar-familiar');
+const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co';
+const supabaseAnonKey = 'eneyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6eXd5cW96d3diZmN0eGVva3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNzM1NjAsImV4cCI6MjA2MjY0OTU2MH0.tzJiz2LKQcVTb94uncIrGMfi4NV9XwR7xR6lzP3EELk';
 
-  // Campos form familiares
-  const selectTipoFamiliar = document.getElementById('tipo-familiar');
-  const inputNombreFamiliar = document.getElementById('nombre-familiar');
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  btnAgregarMiembro.onclick = () => {
-    limpiarFormulario();
-    editarId = null;
-    familiares = [];
-    renderFamiliares();
-    formTitle.textContent = 'Agregar Miembro';
-    formContainer.style.display = 'block';
-    tablaMiembros.style.display = 'none';
-  };
+const membersCollection = collection(db, 'miembros');
 
-  btnCancelar.onclick = () => {
-    formContainer.style.display = 'none';
-    tablaMiembros.style.display = miembros.length ? 'table' : 'none';
-  };
+// Variables para paginación y orden
+let membersData = [];
+let currentPage = 1;
+const rowsPerPage = 20;
 
-  btnAgregarFamiliar.onclick = () => {
-    const tipo = selectTipoFamiliar.value;
-    const nombre = inputNombreFamiliar.value.trim();
-    if (!tipo) {
-      alert('Seleccione el tipo de familiar.');
-      return;
-    }
-    if (!nombre) {
-      alert('Ingrese el nombre del familiar.');
-      return;
-    }
-    familiares.push({ tipo, nombre });
-    renderFamiliares();
-    // Limpiar inputs
-    selectTipoFamiliar.selectedIndex = 0;
-    inputNombreFamiliar.value = '';
-  };
+// Elementos DOM
+const membersTableBody = document.querySelector('#membersTable tbody');
+const addMemberBtn = document.getElementById('addMemberBtn');
+const memberFormModal = document.getElementById('memberFormModal');
+const memberForm = document.getElementById('memberForm');
+const cancelBtn = document.getElementById('cancelBtn');
+const paginationDiv = document.getElementById('pagination');
 
-  function renderFamiliares() {
-    familiaresList.innerHTML = '';
-    familiares.forEach(({tipo,nombre}, idx) => {
-      const li = document.createElement('li');
-      li.textContent = `${tipo}: ${nombre}`;
-      // Añadir botón eliminar
-      const btnEliminar = document.createElement('button');
-      btnEliminar.textContent = 'X';
-      btnEliminar.style.marginLeft = '8px';
-      btnEliminar.style.backgroundColor = '#c0392b';
-      btnEliminar.style.color = 'white';
-      btnEliminar.style.border = 'none';
-      btnEliminar.style.borderRadius = '50%';
-      btnEliminar.style.width = '20px';
-      btnEliminar.style.height = '20px';
-      btnEliminar.style.cursor = 'pointer';
-      btnEliminar.onclick = () => {
-        familiares.splice(idx, 1);
-        renderFamiliares();
-      };
-      li.appendChild(btnEliminar);
-      familiaresList.appendChild(li);
-    });
-  }
+// Función para limpiar el formulario
+function resetForm() {
+  memberForm.reset();
+  document.getElementById('memberId').value = '';
+}
 
-  // Cargar miembros de Firestore y mostrar
-  async function cargarMiembros() {
-    try {
-      const snapshot = await db.collection('miembros').orderBy('codigo').get();
-      miembros = [];
-      snapshot.forEach(doc => {
-        miembros.push({ id: doc.id, ...doc.data() });
-      });
-      renderTabla(miembros);
-      tablaMiembros.style.display = miembros.length ? 'table' : 'none';
-    } catch (error) {
-      console.error('Error al cargar miembros:', error);
-      alert('Error al cargar miembros. Revise consola.');
-    }
-  }
+// Abrir modal formulario
+addMemberBtn.onclick = () => {
+  resetForm();
+  memberFormModal.classList.add('active');
+};
 
-  function renderTabla(miembrosRender) {
-    tablaCuerpo.innerHTML = '';
-    if (miembrosRender.length === 0) {
-      tablaCuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ffeb3b;">No se encontraron miembros.</td></tr>';
-      return;
-    }
-    miembrosRender.forEach(miembro => {
-      const tr = document.createElement('tr');
-      
-      const tdFoto = document.createElement('td');
-      const img = document.createElement('img');
-      img.src = miembro.fotoURL || 'https://via.placeholder.com/40?text=Sin+Foto';
-      img.alt = "Foto";
-      tdFoto.appendChild(img);
-      
-      const tdNombre = document.createElement('td');
-      tdNombre.textContent = miembro.nombre || '';
+// Cancelar formulario
+cancelBtn.onclick = () => {
+  memberFormModal.classList.remove('active');
+};
 
-      const tdCodigo = document.createElement('td');
-      tdCodigo.textContent = miembro.codigo || '';
-
-      const tdEdad = document.createElement('td');
-      tdEdad.textContent = miembro.edad || '';
-
-      const tdTelefono = document.createElement('td');
-      tdTelefono.textContent = miembro.telefono || '';
-
-      const tdDireccion = document.createElement('td');
-      tdDireccion.textContent = miembro.direccion || '';
-
-      const tdAcciones = document.createElement('td');
-      const btnEditar = document.createElement('button');
-      btnEditar.textContent = 'Editar';
-      btnEditar.className = 'btn-editar';
-      btnEditar.onclick = () => editarMiembro(miembro.id);
-      tdAcciones.appendChild(btnEditar);
-
-      tr.appendChild(tdFoto);
-      tr.appendChild(tdNombre);
-      tr.appendChild(tdCodigo);
-      tr.appendChild(tdEdad);
-      tr.appendChild(tdTelefono);
-      tr.appendChild(tdDireccion);
-      tr.appendChild(tdAcciones);
-
-      tablaCuerpo.appendChild(tr);
-    });
-  }
-
-  // Buscar en tabla
-  searchBar.addEventListener('input', () => {
-    const query = searchBar.value.toLowerCase();
-    const filtrados = miembros.filter(m => 
-      (m.nombre && m.nombre.toLowerCase().includes(query)) ||
-      (m.codigo && m.codigo.toLowerCase().includes(query))
-    );
-    renderTabla(filtrados);
+// Cargar todos los miembros de Firestore y ordenar alfabéticamente por 'codigo'
+async function loadMembers() {
+  const snapshot = await getDocs(membersCollection);
+  membersData = [];
+  snapshot.forEach(docSnap => {
+    membersData.push({ id: docSnap.id, ...docSnap.data() });
   });
+  // Orden alfabético por código
+  membersData.sort((a,b) => (a.codigo || '').localeCompare(b.codigo || ''));
 
-  // Editar miembro (cargar datos al formulario)
-  async function editarMiembro(id) {
-    try {
-      const doc = await db.collection('miembros').doc(id).get();
-      if (!doc.exists) {
-        alert('Miembro no encontrado.');
-        return;
-      }
-      const data = doc.data();
-      editarId = id;
-      formTitle.textContent = 'Editar Miembro';
-      formContainer.style.display = 'block';
-      tablaMiembros.style.display = 'none';
+  renderTable();
+  renderPagination();
+}
 
-      // Llenar formulario
-      formMiembro.nombre.value = data.nombre || '';
-      formMiembro.codigo.value = data.codigo || '';
-      formMiembro.edad.value = data.edad || '';
-      formMiembro.telefono.value = data.telefono || '';
-      formMiembro.direccion.value = data.direccion || '';
-      formMiembro.fechaNacimiento.value = data.fechaNacimiento || '';
+// Función para renderizar la tabla con paginación
+function renderTable() {
+  membersTableBody.innerHTML = '';
+  const start = (currentPage -1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const pageMembers = membersData.slice(start, end);
 
-      // Datos familiares
-      familiares = Array.isArray(data.familiares) ? data.familiares : [];
-      renderFamiliares();
+  for(const member of pageMembers){
+    const tr = document.createElement('tr');
 
-      // Datos espirituales
-      formMiembro.fechaConversion.value = data.fechaConversion || '';
-      formMiembro.lugarConversion.value = data.lugarConversion || '';
-      formMiembro.fechaBautismo.value = data.fechaBautismo || '';
-      formMiembro.lugarBautismo.value = data.lugarBautismo || '';
-      formMiembro.fechaBautismoEspiritu.value = data.fechaBautismoEspiritu || '';
-      formMiembro.lugarBautismoEspiritu.value = data.lugarBautismoEspiritu || '';
+    // Célula foto (a cargar desde Supabase con ruta: "fotos/{member.id}.jpg" o la que corresponda)
+    const tdPhoto = document.createElement('td');
+    tdPhoto.classList.add('photo');
+    // Intentamos obtener URL pública con supabase
+    // El archivo en supabase debe tener el nombre {member.id} + extensión
 
-    } catch (error) {
-      console.error('Error al cargar miembro:', error);
-      alert('Error al cargar miembro para edición.');
+    // Suponemos que la foto se subió con nombre: `${member.id}.jpg` (puedes cambiar lógica si quieres)
+    // Aquí intentamos obtener URL pública para mostrar foto
+
+    let photoUrl = null;
+    // Método getPublicUrl no da error aunque no exista el archivo
+    const { data } = supabase.storage.from('fotos').getPublicUrl(`${member.id}.jpg`);
+    photoUrl = data.publicUrl;
+
+    // Si quieres agregar una imagen placeholder en caso que no exista, puedes hacerlo así:
+    const img = document.createElement('img');
+    img.src = photoUrl || 'https://via.placeholder.com/50?text=Sin+foto';
+    img.alt = member.nombre || 'Foto';
+    tdPhoto.appendChild(img);
+    tr.appendChild(tdPhoto);
+
+    // Código
+    const tdCodigo = document.createElement('td');
+    tdCodigo.textContent = member.codigo || '';
+    tr.appendChild(tdCodigo);
+
+    // Nombre
+    const tdNombre = document.createElement('td');
+    tdNombre.textContent = member.nombre || '';
+    tr.appendChild(tdNombre);
+
+    // Edad
+    const tdEdad = document.createElement('td');
+    tdEdad.textContent = member.edad || '';
+    tr.appendChild(tdEdad);
+
+    // Teléfono
+    const tdTelefono = document.createElement('td');
+    tdTelefono.textContent = member.telefono || '';
+    tr.appendChild(tdTelefono);
+
+    // Dirección
+    const tdDireccion = document.createElement('td');
+    tdDireccion.textContent = member.direccion || '';
+    tr.appendChild(tdDireccion);
+
+    membersTableBody.appendChild(tr);
+  }
+}
+
+// Renderizar paginación
+function renderPagination() {
+  paginationDiv.innerHTML = '';
+  const pageCount = Math.ceil(membersData.length / rowsPerPage);
+  for(let i=1; i<=pageCount; i++){
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    if(i === currentPage) btn.classList.add('active');
+    btn.onclick = () => {
+      currentPage = i;
+      renderTable();
+      renderPagination();
     }
+    paginationDiv.appendChild(btn);
   }
+}
 
-  // Limpiar formulario
-  function limpiarFormulario() {
-    formMiembro.reset();
-    familiaresList.innerHTML = '';
-    familiares = [];
-    selectTipoFamiliar.selectedIndex = 0;
-    inputNombreFamiliar.value = '';
-  }
+// Guardar o actualizar miembro en Firestore + subir foto a Supabase
+memberForm.onsubmit = async (e) => {
+  e.preventDefault();
 
-  // Subir foto a Supabase Storage
-  async function subirFoto(file, codigo) {
-    if (!file) return null;
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `foto_${codigo}.${fileExt}`;
-      const filePath = `${fileName}`;
-      let { data, error } = await supabase.storage
+  const id = document.getElementById('memberId').value.trim();
+  const codigo = document.getElementById('codigo').value.trim();
+  const nombre = document.getElementById('nombre').value.trim();
+  const edad = Number(document.getElementById('edad').value);
+  const telefono = document.getElementById('telefono').value.trim();
+  const direccion = document.getElementById('direccion').value.trim();
+
+  // Archivo foto (puede ser undefined)
+  const fotoFile = document.getElementById('foto').files[0];
+
+  try {
+    let docId = id;
+
+    if(!docId) {
+      // Agregar nuevo
+      const docRef = await addDoc(membersCollection, {
+        codigo, nombre, edad, telefono, direccion
+      });
+      docId = docRef.id;
+    } else {
+      // Actualizar existente
+      await updateDoc(doc(db, 'miembros', docId), {
+        codigo, nombre, edad, telefono, direccion
+      });
+    }
+
+    // Subir foto a Supabase con el nombre: docId.jpg (podrías adaptar extensión)
+    if(fotoFile){
+      // Eliminar el input para que no guarde url en firestore.
+      const ext = fotoFile.name.split('.').pop();
+      const filePath = `${docId}.jpg`; // fija jpg aunque el archivo original tenga otra extensión
+      const { error: uploadError } = await supabase.storage
         .from('fotos')
-        .upload(filePath, file, { upsert: true });
-      if (error) {
-        console.error('Error al subir foto:', error);
-        alert('Error al subir la foto.');
-        return null;
+        .upload(filePath, fotoFile, { upsert: true });
+
+      if(uploadError){
+        alert('Error al subir la foto: ' + uploadError.message);
       }
-      const { data: urlData, error: urlError } = supabase.storage
-        .from('fotos')
-        .getPublicUrl(filePath);
-      if (urlError) {
-        console.error('Error al obtener URL de foto:', urlError);
-        return null;
-      }
-      return urlData.publicUrl;
-    } catch (error) {
-      console.error('Error subir foto:', error);
-      return null;
     }
+
+    alert('Miembro guardado con éxito');
+    memberFormModal.classList.remove('active');
+    loadMembers();
+
+  } catch(err){
+    alert('Error guardando el miembro: ' + err.message);
   }
+};
 
-  // Guardar miembro (nuevo o editar)
-  formMiembro.onsubmit = async (e) => {
-    e.preventDefault();
-    const nombre = formMiembro.nombre.value.trim();
-    const codigo = formMiembro.codigo.value.trim();
-    if (!nombre || !codigo) {
-      alert('Los campos Nombre y Código son obligatorios.');
-      return;
-    }
-
-    const miembroData = {
-      nombre,
-      codigo,
-      edad: formMiembro.edad.value || null,
-      telefono: formMiembro.telefono.value.trim() || null,
-      direccion: formMiembro.direccion.value.trim() || null,
-      fechaNacimiento: formMiembro.fechaNacimiento.value || null,
-      familiares: familiares,
-      fechaConversion: formMiembro.fechaConversion.value || null,
-      lugarConversion: formMiembro.lugarConversion.value.trim() || null,
-      fechaBautismo: formMiembro.fechaBautismo.value || null,
-      lugarBautismo: formMiembro.lugarBautismo.value.trim() || null,
-      fechaBautismoEspiritu: formMiembro.fechaBautismoEspiritu.value || null,
-      lugarBautismoEspiritu: formMiembro.lugarBautismoEspiritu.value.trim() || null,
-      fotoURL: null
-    };
-
-    // Subir foto si seleccionada
-    const fileInput = formMiembro.foto;
-    if (fileInput.files.length > 0) {
-      const fotoUrl = await subirFoto(fileInput.files[0], codigo);
-      if (fotoUrl) {
-        miembroData.fotoURL = fotoUrl;
-      }
-    } else if (editarId) {
-      // Si es edición y no se cambió foto, mantener la existente
-      const miembroExistente = miembros.find(m => m.id === editarId);
-      if (miembroExistente && miembroExistente.fotoURL) {
-        miembroData.fotoURL = miembroExistente.fotoURL;
-      }
-    }
-
-    try {
-      if (editarId) {
-        await db.collection('miembros').doc(editarId).update(miembroData);
-        alert('Miembro actualizado correctamente.');
-      } else {
-        await db.collection('miembros').add(miembroData);
-        alert('Miembro agregado correctamente.');
-      }
-      editarId = null;
-      limpiarFormulario();
-      formContainer.style.display = 'none';
-      await cargarMiembros();
-      tablaMiembros.style.display = miembros.length ? 'table' : 'none';
-    } catch (error) {
-      console.error('Error al guardar miembro:', error);
-      alert('Error al guardar miembro.');
-    }
-  };
-
-  // Inicialización
-  cargarMiembros();
+// Cargar miembros al iniciar
+loadMembers();
 
 </script>
 
