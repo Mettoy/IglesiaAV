@@ -6,14 +6,13 @@
 <title>Gestión de Miembros</title>
 
 <style>
-  /* Estilos generales */
+  /* (mismo CSS que me diste, lo dejo para no repetirlo aquí) */
   body {
     background-color: #0d1a33; /* azul oscuro */
     color: #d4af37; /* dorado */
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0; padding: 0;
   }
-
   header {
     background-color: #09214d;
     padding: 1rem;
@@ -22,36 +21,30 @@
     font-weight: bold;
     color: #d4af37;
   }
-
   main {
     max-width: 1100px;
     margin: 2rem auto;
     padding: 1rem;
   }
-
   form {
     background-color: #14325c;
     padding: 1rem 2rem;
     border-radius: 8px;
     margin-bottom: 2rem;
   }
-
   form h2 {
     border-bottom: 1px solid #d4af37;
     padding-bottom: 0.5rem;
     margin-bottom: 1rem;
   }
-
   form section {
     margin-bottom: 1.5rem;
   }
-
   label {
     display: block;
     margin-bottom: 0.25rem;
     font-weight: 600;
   }
-
   input[type="text"],
   input[type="number"],
   input[type="tel"],
@@ -64,12 +57,10 @@
     margin-bottom: 0.8rem;
     font-size: 1rem;
   }
-
   input[type="file"] {
     margin-top: 0.4rem;
     margin-bottom: 1rem;
   }
-
   button {
     background-color: #d4af37;
     color: #0d1a33;
@@ -80,16 +71,13 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
-
   button:disabled {
     background-color: #999;
     cursor: not-allowed;
   }
-
   button:hover:not(:disabled) {
     background-color: #b79023;
   }
-
   table {
     width: 100%;
     border-collapse: collapse;
@@ -97,18 +85,15 @@
     border-radius: 8px;
     overflow: hidden;
   }
-
   thead {
     background-color: #0a1b3a;
   }
-
   th, td {
     padding: 0.75rem 1rem;
     text-align: left;
     border-bottom: 1px solid #d4af37;
     vertical-align: middle;
   }
-
   img.foto-miembro {
     width: 50px;
     height: 50px;
@@ -116,14 +101,12 @@
     border-radius: 50%;
     border: 2px solid #d4af37;
   }
-
   .busqueda-container {
     margin-bottom: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-
   #busqueda-miembros {
     padding: 0.5rem 1rem;
     font-size: 1rem;
@@ -234,241 +217,262 @@
       <tbody id="tabla-miembros"></tbody>
     </table>
   </main>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+  <!-- Supabase -->
   <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  // Configura tu Supabase aquí
-  const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co'
-  const supabaseAnonKey = 'TU_ANON_KEY_AQUI'  // Cambia por tu anon key real
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    // Configura tu Supabase aquí
+    const supabaseUrl = 'https://azywyqozwwbfctxeokug.supabase.co' // Cambia por tu URL real
+    const supabaseAnonKey = 'TU_ANON_KEY_AQUI' // Cambia por tu anon key real
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-  // Elementos
-  const form = document.getElementById('form-miembro')
-  const inputFoto = document.getElementById('foto')
-  const tabla = document.getElementById('tabla-miembros')
-  const btnGuardar = document.getElementById('btn-guardar')
-  const inputBusqueda = document.getElementById('busqueda-miembros')
-  const btnAgregarMiembro = document.getElementById('btn-agregar-miembro')
+    // Configura Firebase
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY_FIREBASE",
+      authDomain: "TU_AUTH_DOMAIN_FIREBASE",
+      projectId: "TU_PROJECT_ID_FIREBASE",
+      // el resto según tu configuración
+    };
 
-  // Para manejar familiares en lista temporal
-  const listaFamiliares = document.getElementById('lista-familiares')
-  const btnAgregarFamiliar = document.getElementById('btn-agregar-familiar')
-  const inputTipoFamiliar = document.getElementById('tipoFamiliar')
-  const inputNombreFamiliar = document.getElementById('nombreFamiliar')
-  let familiares = []
+    firebase.initializeApp(firebaseConfig)
+    const db = firebase.firestore()
 
-  let miembros = []
-  let editandoId = null
+    // Elementos
+    const form = document.getElementById('form-miembro')
+    const inputFoto = document.getElementById('foto')
+    const tabla = document.getElementById('tabla-miembros')
+    const btnGuardar = document.getElementById('btn-guardar')
+    const inputBusqueda = document.getElementById('busqueda-miembros')
+    const btnAgregarMiembro = document.getElementById('btn-agregar-miembro')
 
-  // Mostrar formulario al hacer click en Añadir Miembro
-  btnAgregarMiembro.addEventListener('click', () => {
-    form.style.display = 'block'
-    form.reset()
-    familiares = []
-    actualizarListaFamiliares()
-    editandoId = null
-  })
+    const listaFamiliares = document.getElementById('lista-familiares')
+    const btnAgregarFamiliar = document.getElementById('btn-agregar-familiar')
+    const inputTipoFamiliar = document.getElementById('tipoFamiliar')
+    const inputNombreFamiliar = document.getElementById('nombreFamiliar')
+    let familiares = []
 
-  // Agregar familiar a la lista temporal
-  btnAgregarFamiliar.addEventListener('click', () => {
-    const tipo = inputTipoFamiliar.value.trim()
-    const nombre = inputNombreFamiliar.value.trim()
-    if (!tipo || !nombre) {
-      alert('Por favor selecciona tipo y nombre del familiar')
-      return
-    }
-    familiares.push({ tipo, nombre })
-    actualizarListaFamiliares()
-    inputTipoFamiliar.value = ''
-    inputNombreFamiliar.value = ''
-  })
+    let miembros = []
+    let editandoId = null
 
-  // Actualizar la lista visible de familiares en el formulario
-  function actualizarListaFamiliares() {
-    listaFamiliares.innerHTML = ''
-    familiares.forEach((fam, i) => {
-      const li = document.createElement('li')
-      li.textContent = `${fam.tipo}: ${fam.nombre}`
-      listaFamiliares.appendChild(li)
-    })
-  }
-
-  // Cargar miembros desde Supabase
-  async function cargarMiembros() {
-    const { data, error } = await supabase
-      .from('miembros')
-      .select('*')
-      .order('codigo', { ascending: true })
-
-    if (error) {
-      console.error('Error cargando miembros:', error)
-      return
-    }
-    miembros = data
-    mostrarMiembros(miembros)
-  }
-
-  // Mostrar miembros en la tabla
-  async function mostrarMiembros(datos) {
-    tabla.innerHTML = ''
-
-    for (const miembro of datos) {
-      let fotoUrl = ''
-
-      if (miembro.foto) {
-        const { data: urlData, error } = await supabase.storage
-          .from('fotos')
-          .createSignedUrl(miembro.foto, 60) // url válida 60 seg
-
-        if (!error && urlData?.signedUrl) {
-          fotoUrl = urlData.signedUrl
-        }
-      }
-
-      tabla.innerHTML += `
-        <tr>
-          <td><img src="${fotoUrl}" alt="Foto" class="foto-miembro"></td>
-          <td>${miembro.nombre}</td>
-          <td>${miembro.codigo}</td>
-          <td>${miembro.edad}</td>
-          <td>${miembro.telefono}</td>
-          <td>${miembro.direccion}</td>
-          <td><button data-id="${miembro.id}" class="btn-editar">Editar</button></td>
-        </tr>
-      `
-    }
-
-    // Agregar evento a botones editar
-    document.querySelectorAll('.btn-editar').forEach(boton => {
-      boton.addEventListener('click', () => {
-        const id = boton.getAttribute('data-id')
-        cargarFormulario(id)
-      })
-    })
-  }
-
-  // Cargar datos en formulario para editar
-  async function cargarFormulario(id) {
-    const miembro = miembros.find(m => m.id === id)
-    if (!miembro) return
-
-    editandoId = id
-    form.style.display = 'block'
-
-    document.getElementById('nombre').value = miembro.nombre || ''
-    document.getElementById('codigo').value = miembro.codigo || ''
-    document.getElementById('edad').value = miembro.edad || ''
-    document.getElementById('telefono').value = miembro.telefono || ''
-    document.getElementById('direccion').value = miembro.direccion || ''
-    document.getElementById('fechaNacimiento').value = miembro.fechaNacimiento || ''
-
-    // Datos espirituales
-    document.getElementById('fechaConversion').value = miembro.fechaConversion || ''
-    document.getElementById('lugarConversion').value = miembro.lugarConversion || ''
-    document.getElementById('fechaBautismo').value = miembro.fechaBautismo || ''
-    document.getElementById('lugarBautismo').value = miembro.lugarBautismo || ''
-    document.getElementById('fechaBautismoEspiritu').value = miembro.fechaBautismoEspiritu || ''
-    document.getElementById('lugarBautismoEspiritu').value = miembro.lugarBautismoEspiritu || ''
-
-    // Datos familiares (cargar lista)
-    familiares = miembro.familiares || []
-    actualizarListaFamiliares()
-  }
-
-  // Guardar nuevo miembro o actualizar existente
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault()
-    btnGuardar.disabled = true
-
-    // Leer datos del formulario
-    const nombre = document.getElementById('nombre').value.trim()
-    const codigo = document.getElementById('codigo').value.trim()
-    const edad = Number(document.getElementById('edad').value)
-    const telefono = document.getElementById('telefono').value.trim()
-    const direccion = document.getElementById('direccion').value.trim()
-    const fechaNacimiento = document.getElementById('fechaNacimiento').value
-
-    const fechaConversion = document.getElementById('fechaConversion').value
-    const lugarConversion = document.getElementById('lugarConversion').value.trim()
-    const fechaBautismo = document.getElementById('fechaBautismo').value
-    const lugarBautismo = document.getElementById('lugarBautismo').value.trim()
-    const fechaBautismoEspiritu = document.getElementById('fechaBautismoEspiritu').value
-    const lugarBautismoEspiritu = document.getElementById('lugarBautismoEspiritu').value.trim()
-
-    // Subir foto si hay
-    let fotoPath = null
-    if (inputFoto.files.length > 0) {
-      const archivo = inputFoto.files[0]
-      const nombreArchivo = `${Date.now()}_${archivo.name}`
-      const { data, error } = await supabase.storage
-        .from('fotos')
-        .upload(nombreArchivo, archivo, { upsert: true })
-
-      if (error) {
-        alert('Error subiendo la foto: ' + error.message)
-        btnGuardar.disabled = false
-        return
-      }
-      fotoPath = data.path
-    }
-
-    const miembroData = {
-      nombre,
-      codigo,
-      edad,
-      telefono,
-      direccion,
-      fechaNacimiento,
-      fechaConversion,
-      lugarConversion,
-      fechaBautismo,
-      lugarBautismo,
-      fechaBautismoEspiritu,
-      lugarBautismoEspiritu,
-      familiares,
-    }
-    if (fotoPath) miembroData.foto = fotoPath
-
-    try {
-      if (editandoId) {
-        // Actualizar
-        const { error } = await supabase
-          .from('miembros')
-          .update(miembroData)
-          .eq('id', editandoId)
-        if (error) throw error
-      } else {
-        // Insertar nuevo
-        const { error } = await supabase
-          .from('miembros')
-          .insert(miembroData)
-        if (error) throw error
-      }
-      await cargarMiembros()
-      form.style.display = 'none'
+    // Mostrar formulario al hacer click en Añadir Miembro
+    btnAgregarMiembro.addEventListener('click', () => {
+      form.style.display = 'block'
       form.reset()
       familiares = []
       actualizarListaFamiliares()
       editandoId = null
-    } catch (err) {
-      alert('Error guardando datos: ' + err.message)
+    })
+
+    // Agregar familiar a la lista temporal
+    btnAgregarFamiliar.addEventListener('click', () => {
+      const tipo = inputTipoFamiliar.value.trim()
+      const nombre = inputNombreFamiliar.value.trim()
+      if (!tipo || !nombre) {
+        alert('Por favor selecciona tipo y nombre del familiar')
+        return
+      }
+      familiares.push({ tipo, nombre })
+      actualizarListaFamiliares()
+      inputTipoFamiliar.value = ''
+      inputNombreFamiliar.value = ''
+    })
+
+    // Actualizar lista visibles de familiares en el formulario
+    function actualizarListaFamiliares() {
+      listaFamiliares.innerHTML = ''
+      familiares.forEach((fam) => {
+        const li = document.createElement('li')
+        li.textContent = `${fam.tipo}: ${fam.nombre}`
+        listaFamiliares.appendChild(li)
+      })
     }
 
-    btnGuardar.disabled = false
-  })
+    // Cargar miembros desde Firestore
+    async function cargarMiembros() {
+      const snapshot = await db.collection('miembros').orderBy('codigo').get()
+      miembros = snapshot.docs.map(doc => {
+        return { id: doc.id, ...doc.data() }
+      })
+      mostrarMiembros(miembros)
+    }
 
-  // Filtro de búsqueda
-  inputBusqueda.addEventListener('input', () => {
-    const texto = inputBusqueda.value.toLowerCase()
-    const filtrados = miembros.filter(m =>
-      m.nombre.toLowerCase().includes(texto) ||
-      m.codigo.toLowerCase().includes(texto)
-    )
-    mostrarMiembros(filtrados)
-  })
+    // Mostrar miembros en la tabla
+    function mostrarMiembros(datos) {
+      tabla.innerHTML = ''
+      for (const miembro of datos) {
+        const fotoUrl = miembro.fotoUrl || ''
 
-  // Carga inicial
-  cargarMiembros()
-</script>
+        tabla.innerHTML += `
+          <tr>
+            <td>${fotoUrl ? `<img src="${fotoUrl}" alt="Foto" class="foto-miembro">` : ''}</td>
+            <td>${miembro.nombre || ''}</td>
+            <td>${miembro.codigo || ''}</td>
+            <td>${miembro.edad || ''}</td>
+            <td>${miembro.telefono || ''}</td>
+            <td>${miembro.direccion || ''}</td>
+            <td>
+              <button class="btn-editar" data-id="${miembro.id}">Editar</button>
+              <button class="btn-eliminar" data-id="${miembro.id}">Eliminar</button>
+            </td>
+          </tr>
+        `
+      }
+      // Asociar eventos de editar y eliminar
+      document.querySelectorAll('.btn-editar').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const id = e.target.dataset.id
+          editarMiembro(id)
+        })
+      })
+      document.querySelectorAll('.btn-eliminar').forEach(btn => {
+        btn.addEventListener('click', async e => {
+          const id = e.target.dataset.id
+          if (confirm('¿Seguro que quieres eliminar este miembro?')) {
+            await db.collection('miembros').doc(id).delete()
+            cargarMiembros()
+          }
+        })
+      })
+    }
+
+    // Editar miembro
+    function editarMiembro(id) {
+      const miembro = miembros.find(m => m.id === id)
+      if (!miembro) return
+
+      form.style.display = 'block'
+      editandoId = id
+
+      form.nombre.value = miembro.nombre || ''
+      form.codigo.value = miembro.codigo || ''
+      form.edad.value = miembro.edad || ''
+      form.telefono.value = miembro.telefono || ''
+      form.direccion.value = miembro.direccion || ''
+      form.fechaNacimiento.value = miembro.fechaNacimiento || ''
+
+      // Familiares
+      familiares = miembro.familiares || []
+      actualizarListaFamiliares()
+
+      // Datos espirituales
+      form.fechaConversion.value = miembro.fechaConversion || ''
+      form.lugarConversion.value = miembro.lugarConversion || ''
+      form.fechaBautismo.value = miembro.fechaBautismo || ''
+      form.lugarBautismo.value = miembro.lugarBautismo || ''
+      form.fechaBautismoEspiritu.value = miembro.fechaBautismoEspiritu || ''
+      form.lugarBautismoEspiritu.value = miembro.lugarBautismoEspiritu || ''
+    }
+
+    // Buscar miembros
+    inputBusqueda.addEventListener('input', () => {
+      const valor = inputBusqueda.value.toLowerCase()
+      const filtrados = miembros.filter(m =>
+        (m.nombre && m.nombre.toLowerCase().includes(valor)) ||
+        (m.codigo && m.codigo.toLowerCase().includes(valor))
+      )
+      mostrarMiembros(filtrados)
+    })
+
+    // Subir foto a Supabase y obtener URL pública
+    async function subirFotoYObtenerURL(file, codigo) {
+      if (!file) return ''
+
+      // Renombrar archivo para evitar duplicados: ejemplo codigo + timestamp + extension
+      const extension = file.name.split('.').pop()
+      const nombreArchivo = `${codigo}_${Date.now()}.${extension}`
+
+      const { data, error } = await supabase.storage
+        .from('miembros')
+        .upload(nombreArchivo, file, { upsert: true })
+
+      if (error) {
+        alert('Error subiendo la foto: ' + error.message)
+        return ''
+      }
+
+      // URL pública directa
+      const urlPublica = `${supabaseUrl}/storage/v1/object/public/miembros/${nombreArchivo}`
+      return urlPublica
+    }
+
+    // Guardar formulario
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      btnGuardar.disabled = true
+
+      const formData = new FormData(form)
+      const codigo = formData.get('codigo').trim()
+
+      if (!codigo) {
+        alert('El código es obligatorio.')
+        btnGuardar.disabled = false
+        return
+      }
+
+      // Verificar si ya existe el código y no es edición
+      if (!editandoId && miembros.find(m => m.codigo === codigo)) {
+        alert('Ya existe un miembro con ese código.')
+        btnGuardar.disabled = false
+        return
+      }
+
+      // Subir foto si hay archivo
+      let fotoUrl = ''
+      const archivoFoto = inputFoto.files[0]
+      if (archivoFoto) {
+        fotoUrl = await subirFotoYObtenerURL(archivoFoto, codigo)
+      } else if (editandoId) {
+        // Si está editando y no cambia foto, mantener la existente
+        const miembroActual = miembros.find(m => m.id === editandoId)
+        fotoUrl = miembroActual ? miembroActual.fotoUrl : ''
+      }
+
+      // Preparar objeto a guardar
+      const miembroData = {
+        nombre: formData.get('nombre'),
+        codigo,
+        edad: Number(formData.get('edad')),
+        telefono: formData.get('telefono'),
+        direccion: formData.get('direccion'),
+        fechaNacimiento: formData.get('fechaNacimiento'),
+        familiares,
+        fechaConversion: formData.get('fechaConversion'),
+        lugarConversion: formData.get('lugarConversion'),
+        fechaBautismo: formData.get('fechaBautismo'),
+        lugarBautismo: formData.get('lugarBautismo'),
+        fechaBautismoEspiritu: formData.get('fechaBautismoEspiritu'),
+        lugarBautismoEspiritu: formData.get('lugarBautismoEspiritu'),
+        fotoUrl,
+      }
+
+      try {
+        if (editandoId) {
+          await db.collection('miembros').doc(editandoId).set(miembroData)
+          alert('Miembro actualizado correctamente.')
+        } else {
+          await db.collection('miembros').add(miembroData)
+          alert('Miembro agregado correctamente.')
+        }
+        form.reset()
+        familiares = []
+        actualizarListaFamiliares()
+        form.style.display = 'none'
+        editandoId = null
+        cargarMiembros()
+      } catch (error) {
+        alert('Error guardando el miembro: ' + error.message)
+      } finally {
+        btnGuardar.disabled = false
+      }
+    })
+
+    // Carga inicial
+    cargarMiembros()
+  </script>
 </body>
 </html>
