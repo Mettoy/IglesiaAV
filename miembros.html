@@ -1,416 +1,357 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gestión de Miembros</title>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-
-<style>
-  /* Reset básico */
-  * {
-    box-sizing: border-box;
-  }
-  body, html {
-    margin: 0; padding: 0; height: 100%;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #0a142f;
-    color: #d4af37;
-  }
-  a {
-    color: #d4af37;
-    text-decoration: none;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-  /* Layout */
-  .container {
-    display: flex;
-    height: 100vh;
-  }
-  /* Menú lateral */
-  nav.sidebar {
-    width: 220px;
-    background-color: #08122b;
-    border-right: 2px solid #d4af37;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 20px;
-  }
-  nav.sidebar img.logo {
-    width: 130px;
-    margin-bottom: 15px;
-  }
-  nav.sidebar ul {
-    list-style: none;
-    padding-left: 0;
-    width: 100%;
-  }
-  nav.sidebar ul li {
-    padding: 12px 20px;
-    cursor: pointer;
-    border-left: 4px solid transparent;
-    transition: background-color 0.3s, border-left-color 0.3s;
-  }
-  nav.sidebar ul li:hover,
-  nav.sidebar ul li.active {
-    background-color: #192a59;
-    border-left-color: #d4af37;
-  }
-  nav.sidebar ul li a {
-    display: block;
-    color: #d4af37;
-    font-weight: 600;
-  }
-
-  /* Contenido principal */
-  main.content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 20px 30px;
-    overflow-y: auto;
-  }
-
-  /* Título y barra superior */
-  header.topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  header.topbar h1 {
-    margin: 0;
-    font-weight: 700;
-    font-size: 1.8rem;
-  }
-
-  /* Pestañas para activos / baja */
-  .tabs {
-    display: flex;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #d4af37;
-  }
-  .tabs button {
-    background: transparent;
-    border: none;
-    color: #d4af37;
-    padding: 10px 25px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: border-color 0.3s;
-  }
-  .tabs button.active {
-    border-bottom-color: #d4af37;
-    font-weight: 700;
-  }
-  .tabs button:hover:not(.active) {
-    color: #f0d876;
-  }
-
-  /* Barra de búsqueda y botón añadir */
-  .search-add-container {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-  }
-  .search-add-container input[type="text"] {
-    width: 60%;
-    padding: 8px 12px;
-    border-radius: 4px;
-    border: 1.5px solid #d4af37;
-    background-color: #08122b;
-    color: #d4af37;
-    font-size: 1rem;
-    transition: background-color 0.3s;
-  }
-  .search-add-container input[type="text"]::placeholder {
-    color: #d4af37cc;
-  }
-  .search-add-container input[type="text"]:focus {
-    outline: none;
-    background-color: #14275f;
-  }
-  .search-add-container button.add-member-btn {
-    background-color: #d4af37;
-    border: none;
-    color: #08122b;
-    font-weight: 700;
-    padding: 9px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  .search-add-container button.add-member-btn:hover {
-    background-color: #f0d876;
-  }
-
-  /* Tabla */
-  table.members-table {
-    width: 100%;
-    border-collapse: collapse;
-    color: #d4af37;
-  }
-  table.members-table thead {
-    background-color: #192a59;
-  }
-  table.members-table th, table.members-table td {
-    padding: 12px 10px;
-    text-align: left;
-    border-bottom: 1px solid #0a142f;
-    vertical-align: middle;
-  }
-  table.members-table th {
-    font-weight: 700;
-    user-select: none;
-  }
-  table.members-table img.member-photo {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #d4af37;
-  }
-  table.members-table button.action-btn {
-    background-color: transparent;
-    border: 1.5px solid #d4af37;
-    color: #d4af37;
-    padding: 6px 12px;
-    border-radius: 5px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
-  }
-  table.members-table button.action-btn:hover {
-    background-color: #d4af37;
-    color: #08122b;
-  }
-
-  /* Paginación */
-  .pagination {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-  }
-  .pagination button {
-    background-color: #08122b;
-    border: 1.5px solid #d4af37;
-    color: #d4af37;
-    padding: 7px 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.3s;
-  }
-  .pagination button:hover:not(:disabled) {
-    background-color: #192a59;
-  }
-  .pagination button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-
-  /* Modal fondo */
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0,0,0,0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  .modal-overlay.active {
-    display: flex;
-  }
-  /* Modal contenido */
-  .modal {
-    background-color: #08122b;
-    border-radius: 8px;
-    padding: 25px 30px;
-    width: 90%;
-    max-width: 700px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 0 20px #d4af37aa;
-    position: relative;
-  }
-  .modal h2 {
-    color: #d4af37;
-    margin-bottom: 20px;
-    font-weight: 700;
-    font-size: 1.7rem;
-  }
-  .modal .close-btn {
-    position: absolute;
-    right: 15px;
-    top: 15px;
-    background: none;
-    border: none;
-    color: #d4af37;
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: color 0.3s;
-  }
-  .modal .close-btn:hover {
-    color: #f0d876;
-  }
-  /* Formulario Categorías */
-  .form-category {
-    margin-bottom: 25px;
-  }
-  .form-category h3 {
-    border-bottom: 2px solid #d4af37;
-    padding-bottom: 6px;
-    margin-bottom: 15px;
-  }
-  .form-category label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-  }
-  .form-category input[type="text"],
-  .form-category input[type="email"],
-  .form-category input[type="date"],
-  .form-category select,
-  .form-category textarea,
-  .form-category input[type="file"] {
-    width: 100%;
-    padding: 7px 10px;
-    border-radius: 5px;
-    border: 1.5px solid #d4af37;
-    background-color: #08122b;
-    color: #d4af37;
-    font-size: 1rem;
-    margin-bottom: 15px;
-    transition: background-color 0.3s;
-  }
-  .form-category input[type="text"]:focus,
-  .form-category input[type="email"]:focus,
-  .form-category input[type="date"]:focus,
-  .form-category select:focus,
-  .form-category textarea:focus,
-  .form-category input[type="file"]:focus {
-    outline: none;
-    background-color: #14275f;
-  }
-
-  /* Botón guardar */
-  .modal .save-btn {
-    background-color: #d4af37;
-    border: none;
-    padding: 12px 25px;
-    color: #08122b;
-    font-weight: 700;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  .modal .save-btn:hover {
-    background-color: #f0d876;
-  }
-
-  /* Responsive */
-  @media (max-width: 720px) {
-    nav.sidebar {
-      width: 60px;
-      padding-top: 15px;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestión de Miembros</title>
+  <style>
+    /* Estilos básicos azul oscuro / dorado */
+    body {
+      margin: 0; font-family: Arial, sans-serif;
+      background: #0a1128;
+      color: #f0c987;
+      display: flex;
+      min-height: 100vh;
     }
-    nav.sidebar img.logo {
-      width: 40px;
-      margin-bottom: 10px;
-    }
-    nav.sidebar ul li {
-      padding: 12px 8px;
-      font-size: 0;
-      border-left: none;
-      text-align: center;
-    }
-    nav.sidebar ul li a::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      left: 70px;
-      background: #d4af37;
-      color: #08122b;
-      padding: 3px 8px;
-      border-radius: 4px;
-      white-space: nowrap;
-      font-weight: 700;
-      font-size: 0.85rem;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-    nav.sidebar ul li:hover a::after {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .search-add-container input[type="text"] {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    .search-add-container {
+    /* Menú lateral */
+    #menu {
+      width: 220px;
+      background: #091832;
+      display: flex;
       flex-direction: column;
-      align-items: stretch;
+      padding: 1rem;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.8);
+      animation: slideInLeft 0.5s ease forwards;
     }
-    .search-add-container button.add-member-btn {
+    #menu img {
+      width: 150px;
+      margin-bottom: 2rem;
+      align-self: center;
+    }
+    #menu a {
+      color: #f0c987;
+      text-decoration: none;
+      margin: 1rem 0;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    #menu a:hover {
+      color: #ffcc00;
+    }
+    /* Contenido principal */
+    main {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-x: auto;
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn 0.5s ease forwards;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+
+    /* Barra de búsqueda y añadir miembro */
+    #controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    #search-input {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+      width: 250px;
+      max-width: 100%;
+    }
+    #btn-add-member {
+      background: #f0c987;
+      color: #091832;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #btn-add-member:hover {
+      background: #ffcc00;
+    }
+
+    /* Pestañas */
+    #tabs {
+      display: flex;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid #f0c987;
+    }
+    .tab {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      color: #f0c987;
+      font-weight: bold;
+      border-bottom: 3px solid transparent;
+      transition: border-color 0.3s;
+      user-select: none;
+    }
+    .tab.active {
+      border-color: #ffcc00;
+    }
+
+    /* Tabla */
+    table {
       width: 100%;
+      border-collapse: collapse;
+      color: #f0c987;
     }
-  }
-</style>
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #222f4a;
+      vertical-align: middle;
+    }
+    th {
+      background: #112244;
+    }
+    tbody tr:hover {
+      background: #223366;
+    }
+    td img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #f0c987;
+    }
+
+    /* Botones en tabla */
+    .btn {
+      padding: 0.25rem 0.5rem;
+      margin-right: 0.3rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .btn-edit {
+      background: #ffcc00;
+      color: #091832;
+    }
+    .btn-edit:hover {
+      background: #e6b800;
+    }
+    .btn-baja {
+      background: #bb0000;
+      color: white;
+    }
+    .btn-baja:hover {
+      background: #aa0000;
+    }
+    .btn-reactivar {
+      background: #009900;
+      color: white;
+    }
+    .btn-reactivar:hover {
+      background: #007700;
+    }
+
+    /* Paginación */
+    #pagination {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .page-btn {
+      background: #223366;
+      border: none;
+      color: #f0c987;
+      padding: 0.5rem 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .page-btn:hover {
+      background: #335599;
+    }
+    .page-btn.active {
+      background: #ffcc00;
+      color: #091832;
+    }
+
+    /* Modal overlay */
+    #modal-overlay {
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      animation: fadeIn 0.3s ease forwards;
+    }
+    #modal-overlay.active {
+      display: flex;
+    }
+    /* Modal content */
+    #modal {
+      background: #112244;
+      padding: 1.5rem;
+      border-radius: 10px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 0 15px #ffcc00aa;
+      animation: slideDown 0.3s ease forwards;
+      color: #f0c987;
+    }
+    #modal h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+    #modal-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      color: #ffcc00;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      cursor: pointer;
+    }
+
+    /* Formulario dividido en categorías */
+    .form-section {
+      margin-bottom: 1rem;
+      border: 1px solid #223366;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #091832;
+      animation: fadeIn 0.4s ease forwards;
+    }
+    .form-section h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #ffcc00;
+      padding-bottom: 0.25rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="email"], select, input[type="file"] {
+      width: 100%;
+      padding: 0.4rem;
+      border-radius: 5px;
+      border: none;
+      margin-bottom: 0.7rem;
+      font-size: 1rem;
+    }
+    button[type="submit"] {
+      background: #ffcc00;
+      color: #091832;
+      font-weight: bold;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button[type="submit"]:hover {
+      background: #e6b800;
+    }
+
+    /* Animations */
+    @keyframes slideInLeft {
+      0% {transform: translateX(-100%);opacity:0;}
+      100% {transform: translateX(0);opacity:1;}
+    }
+    @keyframes fadeIn {
+      0% {opacity:0;}
+      100% {opacity:1;}
+    }
+    @keyframes slideDown {
+      0% {transform: translateY(-20px);opacity:0;}
+      100% {transform: translateY(0);opacity:1;}
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      #menu {
+        width: 70px;
+        padding: 0.5rem;
+      }
+      #menu img {
+        width: 40px;
+        margin-bottom: 1rem;
+      }
+      #menu a {
+        font-size: 0;
+        margin: 0.5rem 0;
+      }
+      #menu a::before {
+        content: attr(data-icon);
+        font-size: 1.5rem;
+        display: block;
+        color: #f0c987;
+        margin: 0 auto 0.3rem auto;
+      }
+      main {
+        padding: 1rem;
+      }
+      #controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      #search-input {
+        width: 100%;
+      }
+      #btn-add-member {
+        width: 100%;
+      }
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 <body>
 
-<div class="container">
-
-  <!-- Menú lateral -->
-  <nav class="sidebar" aria-label="Menú lateral">
-    <img src="logo.png" alt="Logo" class="logo" />
-    <ul>
-      <li class="active"><a href="inicio.html" data-tooltip="Inicio">Inicio</a></li>
-      <li><a href="diezmo.html" data-tooltip="Diezmo">Diezmo</a></li>
-      <!-- Más opciones aquí si quieres -->
-    </ul>
+  <nav id="menu" aria-label="Menú principal">
+    <img src="https://i.imgur.com/fVrq1Iq.png" alt="Logo Iglesia" />
+    <a href="inicio.html" data-icon="🏠">Inicio</a>
+    <a href="diezmo.html" data-icon="💰">Diezmo</a>
+    <a href="#" data-icon="👥" style="color:#ffcc00; font-weight:bold;">Miembros</a>
   </nav>
 
-  <!-- Contenido principal -->
-  <main class="content" role="main">
-    <header class="topbar">
-      <h1>Gestión de Miembros</h1>
-    </header>
+  <main>
+    <h1>Gestión de Miembros</h1>
 
-    <!-- Pestañas -->
-    <div class="tabs" role="tablist" aria-label="Filtrar miembros activos o de baja">
-      <button id="tab-activos" class="active" role="tab" aria-selected="true" aria-controls="panel-activos" tabindex="0">Miembros Activos</button>
-      <button id="tab-baja" role="tab" aria-selected="false" aria-controls="panel-baja" tabindex="-1">Miembros de Baja</button>
+    <div id="controls">
+      <input type="text" id="search-input" placeholder="Buscar por nombre o código" />
+      <button id="btn-add-member" aria-haspopup="dialog" aria-controls="modal">Añadir Miembro</button>
     </div>
 
-    <!-- Buscador y botón Añadir -->
-    <div class="search-add-container">
-      <input
-        type="text"
-        id="busqueda"
-        placeholder="Buscar por código o nombre..."
-        aria-label="Buscar miembros"
-      />
-      <button id="btn-add-member" class="add-member-btn" aria-haspopup="dialog">Añadir Miembro</button>
+    <div id="tabs" role="tablist" aria-label="Pestañas Miembros">
+      <div class="tab active" id="tab-activos" role="tab" tabindex="0" aria-selected="true" aria-controls="panel-activos">Miembros Activos</div>
+      <div class="tab" id="tab-baja" role="tab" tabindex="-1" aria-selected="false" aria-controls="panel-baja">Miembros Baja</div>
     </div>
 
-    <!-- Tabla -->
     <section id="panel-activos" role="tabpanel" aria-labelledby="tab-activos">
-      <table class="members-table" aria-describedby="desc-activos">
-        <caption id="desc-activos" class="sr-only">Lista de miembros activos</caption>
+      <table aria-describedby="table-description" id="tabla-miembros">
         <thead>
           <tr>
             <th>Foto</th>
@@ -419,14 +360,14 @@
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tabla-activos"></tbody>
+        <tbody>
+          <!-- Miembros activos se cargan aquí -->
+        </tbody>
       </table>
-      <div class="pagination" id="paginacion-activos"></div>
     </section>
 
     <section id="panel-baja" role="tabpanel" aria-labelledby="tab-baja" hidden>
-      <table class="members-table" aria-describedby="desc-baja">
-        <caption id="desc-baja" class="sr-only">Lista de miembros de baja</caption>
+      <table aria-describedby="table-description" id="tabla-baja">
         <thead>
           <tr>
             <th>Foto</th>
@@ -435,387 +376,404 @@
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tabla-baja"></tbody>
+        <tbody>
+          <!-- Miembros baja se cargan aquí -->
+        </tbody>
       </table>
-      <div class="pagination" id="paginacion-baja"></div>
     </section>
+
+    <div id="pagination" aria-label="Paginación"></div>
   </main>
-</div>
 
-<!-- Modal formulario -->
-<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
-  <div class="modal">
-    <button class="close-btn" aria-label="Cerrar formulario" id="modal-close-btn">&times;</button>
-    <h2 id="modal-title">Añadir Miembro</h2>
-    <form id="form-miembro" novalidate>
-      <!-- Categoría 1: Datos personales -->
-      <div class="form-category">
-        <h3>Datos Personales</h3>
-        <label for="codigo">Código *</label>
-        <input type="text" id="codigo" name="codigo" required autocomplete="off" />
-        <label for="nombre">Nombre Completo *</label>
-        <input type="text" id="nombre" name="nombre" required autocomplete="off" />
-        <label for="foto">Foto</label>
-        <input type="file" id="foto" name="foto" accept="image/*" />
-      </div>
-
-      <!-- Categoría 2: Datos Familiares -->
-      <div class="form-category">
-        <h3>Datos Familiares</h3>
-        <label for="conyuge">Cónyuge</label>
-        <input type="text" id="conyuge" name="conyuge" autocomplete="off" />
-        <label for="hijos">Hijos</label>
-        <input type="text" id="hijos" name="hijos" autocomplete="off" />
-      </div>
-
-      <!-- Categoría 3: Datos Espirituales -->
-      <div class="form-category">
-        <h3>Datos Espirituales</h3>
-        <label for="fecha_bautizo">Fecha de Bautizo</label>
-        <input type="date" id="fecha_bautizo" name="fecha_bautizo" />
-        <label for="ministerio">Ministerio</label>
-        <input type="text" id="ministerio" name="ministerio" autocomplete="off" />
-      </div>
-
-      <button type="submit" class="save-btn">Guardar</button>
-    </form>
+  <!-- Modal para añadir miembro -->
+  <div id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div id="modal">
+      <button id="modal-close-btn" aria-label="Cerrar formulario">&times;</button>
+      <h2 id="modal-title">Añadir Nuevo Miembro</h2>
+      <form id="form-miembro">
+        <div class="form-section">
+          <h3>Datos Personales</h3>
+          <label for="nombre">Nombre Completo</label>
+          <input type="text" id="nombre" name="nombre" required />
+          <label for="codigo">Código</label>
+          <input type="text" id="codigo" name="codigo" required />
+          <label for="foto">Foto</label>
+          <input type="file" id="foto" name="foto" accept="image/*" />
+        </div>
+        <div class="form-section">
+          <h3>Datos Familiares</h3>
+          <label for="conyuge">Cónyuge</label>
+          <input type="text" id="conyuge" name="conyuge" />
+          <label for="hijos">Hijos</label>
+          <input type="text" id="hijos" name="hijos" />
+        </div>
+        <div class="form-section">
+          <h3>Datos Espirituales</h3>
+          <label for="bautizo">Bautizo</label>
+          <select id="bautizo" name="bautizo">
+            <option value="Sí">Sí</option>
+            <option value="No" selected>No</option>
+          </select>
+          <label for="ministerio">Ministerio</label>
+          <input type="text" id="ministerio" name="ministerio" />
+          <label for="estado">Estado</label>
+          <select id="estado" name="estado" required>
+            <option value="activos" selected>Activo</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+        <button type="submit">Guardar Miembro</button>
+      </form>
+    </div>
   </div>
-</div>
 
-<script>
-  // Configuración Firebase
-  const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
+  <script>
+    // Configuración Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+      authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+      databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+      projectId: "iglesia-adoracion-viva",
+      storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+      messagingSenderId: "815332010058",
+      appId: "1:815332010058:web:d2afff616469349d88deb3",
+      measurementId: "G-43MZP6V55D"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const firestore = firebase.firestore();
 
-  firebase.initializeApp(firebaseConfig);
-  const firestore = firebase.firestore();
+    // Configuración Supabase
+    const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co';  // Cambia esto a tu URL Supabase
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';  // Cambia esto a tu anon key
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  // Configuración Supabase
-  const supabaseUrl = "https://xyptydnouyddzvrffaby.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o";
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    // Variables globales
+    let miembrosActivos = [];
+    let miembrosBaja = [];
+    const itemsPorPagina = 20;
+    let paginaActual = 1;
+    let tabActual = 'activos';
 
-  // Estado global
-  let miembrosActivos = [];
-  let miembrosBaja = [];
-  let paginaActivaActivos = 1;
-  let paginaActivaBaja = 1;
-  const itemsPorPagina = 20;
-  let filtroBusqueda = '';
+    // Elementos DOM
+    const btnAddMember = document.getElementById('btn-add-member');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const formMiembro = document.getElementById('form-miembro');
+    const searchInput = document.getElementById('search-input');
+    const tabActivos = document.getElementById('tab-activos');
+    const tabBaja = document.getElementById('tab-baja');
+    const tablaActivos = document.querySelector('#panel-activos tbody');
+    const tablaBaja = document.querySelector('#panel-baja tbody');
+    const pagination = document.getElementById('pagination');
 
-  // DOM references
-  const tablaActivos = document.getElementById('tabla-activos');
-  const tablaBaja = document.getElementById('tabla-baja');
-  const paginacionActivos = document.getElementById('paginacion-activos');
-  const paginacionBaja = document.getElementById('paginacion-baja');
-  const tabActivos = document.getElementById('tab-activos');
-  const tabBaja = document.getElementById('tab-baja');
-  const panelActivos = document.getElementById('panel-activos');
-  const panelBaja = document.getElementById('panel-baja');
-  const busquedaInput = document.getElementById('busqueda');
-  const btnAddMember = document.getElementById('btn-add-member');
-  const modalOverlay = document.getElementById('modal-overlay');
-  const modalCloseBtn = document.getElementById('modal-close-btn');
-  const formMiembro = document.getElementById('form-miembro');
+    // Abrir modal
+    btnAddMember.addEventListener('click', () => {
+      modalOverlay.classList.add('active');
+      formMiembro.reset();
+    });
 
-  // Cambiar pestañas
-  function cambiarPestania(activa) {
-    if (activa === 'activos') {
+    // Cerrar modal
+    modalCloseBtn.addEventListener('click', () => {
+      modalOverlay.classList.remove('active');
+    });
+
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        modalOverlay.classList.remove('active');
+      }
+    });
+
+    // Cambiar pestañas
+    tabActivos.addEventListener('click', () => {
+      tabActual = 'activos';
+      paginaActual = 1;
       tabActivos.classList.add('active');
-      tabActivos.setAttribute('aria-selected', 'true');
-      tabActivos.tabIndex = 0;
       tabBaja.classList.remove('active');
-      tabBaja.setAttribute('aria-selected', 'false');
-      tabBaja.tabIndex = -1;
+      document.getElementById('panel-activos').hidden = false;
+      document.getElementById('panel-baja').hidden = true;
+      cargarTabla();
+    });
 
-      panelActivos.hidden = false;
-      panelBaja.hidden = true;
-    } else {
+    tabBaja.addEventListener('click', () => {
+      tabActual = 'baja';
+      paginaActual = 1;
       tabBaja.classList.add('active');
-      tabBaja.setAttribute('aria-selected', 'true');
-      tabBaja.tabIndex = 0;
       tabActivos.classList.remove('active');
-      tabActivos.setAttribute('aria-selected', 'false');
-      tabActivos.tabIndex = -1;
+      document.getElementById('panel-activos').hidden = true;
+      document.getElementById('panel-baja').hidden = false;
+      cargarTabla();
+    });
 
-      panelBaja.hidden = false;
-      panelActivos.hidden = true;
-    }
-  }
+    // Buscar en tabla
+    searchInput.addEventListener('input', () => {
+      paginaActual = 1;
+      cargarTabla();
+    });
 
-  tabActivos.addEventListener('click', () => {
-    cambiarPestania('activos');
-    renderizarTabla('activos');
-  });
-  tabBaja.addEventListener('click', () => {
-    cambiarPestania('baja');
-    renderizarTabla('baja');
-  });
-
-  // Función para mostrar página de resultados con paginación
-  function paginar(items, pagina) {
-    const inicio = (pagina - 1) * itemsPorPagina;
-    const fin = inicio + itemsPorPagina;
-    return items.slice(inicio, fin);
-  }
-
-  // Crear filas de tabla con miembros filtrados y paginados
-  function crearFilas(miembros, tipo) {
-    if (miembros.length === 0) {
-      return `<tr><td colspan="4" style="text-align:center; color:#f0d876;">No hay miembros</td></tr>`;
+    // Función para subir foto a Supabase y obtener URL pública
+    async function subirFoto(file, codigo) {
+      if (!file) return null;
+      const ext = file.name.split('.').pop();
+      const fileName = `ftmember/${codigo}.${ext}`;
+      const { data, error } = await supabase.storage.from('ftmember').upload(fileName, file, {
+        upsert: true,
+      });
+      if (error) {
+        alert("Error subiendo la foto: " + error.message);
+        return null;
+      }
+      // Obtener URL pública
+      const { data: publicURLData } = supabase.storage.from('ftmember').getPublicUrl(fileName);
+      return publicURLData.publicUrl;
     }
 
-    return miembros.map(miembro => {
-      const fotoUrl = miembro.foto_url ? miembro.foto_url : 'https://via.placeholder.com/50?text=Sin+Foto';
-      const nombreEsc = escapeHtml(miembro.nombre);
-      const codigoEsc = escapeHtml(miembro.codigo);
-      // Botón según estado
-      const accionBtn = tipo === 'activos' ?
-        `<button class="action-btn baja-btn" data-id="${miembro.id}">Dar de Baja</button>` :
-        `<button class="action-btn reactivar-btn" data-id="${miembro.id}">Reactivar</button>`;
-
-      return `<tr>
-        <td><img class="member-photo" src="${fotoUrl}" alt="Foto de ${nombreEsc}" loading="lazy" /></td>
-        <td>${nombreEsc}</td>
-        <td>${codigoEsc}</td>
-        <td>${accionBtn}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  // Escape HTML para prevenir XSS
-  function escapeHtml(text) {
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  // Renderizar tabla según filtro y paginación
-  function renderizarTabla(tipo) {
-    let miembros = tipo === 'activos' ? miembrosActivos : miembrosBaja;
-    // Filtrar por búsqueda
-    if (filtroBusqueda.trim() !== '') {
-      const filtro = filtroBusqueda.toLowerCase();
-      miembros = miembros.filter(m =>
-        (m.codigo && m.codigo.toLowerCase().includes(filtro)) ||
-        (m.nombre && m.nombre.toLowerCase().includes(filtro))
-      );
+    // Guardar miembro en Firestore
+    async function guardarMiembro(miembro) {
+      try {
+        await firestore.collection('miembros').add(miembro);
+      } catch (error) {
+        alert("Error guardando miembro en Firestore: " + error.message);
+      }
     }
 
-    // Obtener página actual
-    const paginaActual = tipo === 'activos' ? paginaActivaActivos : paginaActivaBaja;
+    // Cargar todos los miembros desde Firestore
+    async function cargarMiembros() {
+      miembrosActivos = [];
+      miembrosBaja = [];
+      try {
+        const snapshot = await firestore.collection('miembros').get();
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          data.id = doc.id;
+          if(data.estado === 'activos') {
+            miembrosActivos.push(data);
+          } else {
+            miembrosBaja.push(data);
+          }
+        });
+      } catch (error) {
+        alert("Error cargando miembros: " + error.message);
+      }
+    }
 
-    // Paginar
-    const miembrosPagina = paginar(miembros, paginaActual);
+    // Renderizar tabla (activos o baja según tabActual)
+    function renderizarTabla(miembros, tablaBody) {
+      tablaBody.innerHTML = '';
+      const busqueda = searchInput.value.toLowerCase().trim();
+      let filtrados = miembros.filter(m => {
+        return m.nombre.toLowerCase().includes(busqueda) || m.codigo.toLowerCase().includes(busqueda);
+      });
+      const totalPaginas = Math.ceil(filtrados.length / itemsPorPagina);
+      if(paginaActual > totalPaginas) paginaActual = 1;
+      const inicio = (paginaActual -1) * itemsPorPagina;
+      const fin = inicio + itemsPorPagina;
+      const paginaMiembros = filtrados.slice(inicio, fin);
 
-    // Crear filas
-    const filasHtml = crearFilas(miembrosPagina, tipo);
+      paginaMiembros.forEach(m => {
+        const tr = document.createElement('tr');
 
-    // Insertar filas en tabla
-    if (tipo === 'activos') {
-      tablaActivos.innerHTML = filasHtml;
-    } else {
-      tablaBaja.innerHTML = filasHtml;
+        // Foto
+        const tdFoto = document.createElement('td');
+        const img = document.createElement('img');
+        img.alt = `Foto de ${m.nombre}`;
+        img.src = m.fotoURL || 'https://via.placeholder.com/50x50?text=No+Foto';
+        tdFoto.appendChild(img);
+        tr.appendChild(tdFoto);
+
+        // Nombre
+        const tdNombre = document.createElement('td');
+        tdNombre.textContent = m.nombre || '';
+        tr.appendChild(tdNombre);
+
+        // Código
+        const tdCodigo = document.createElement('td');
+        tdCodigo.textContent = m.codigo || '';
+        tr.appendChild(tdCodigo);
+
+        // Acciones
+        const tdAcciones = document.createElement('td');
+
+        const btnEditar = document.createElement('button');
+        btnEditar.textContent = 'Editar';
+        btnEditar.className = 'btn btn-edit';
+        btnEditar.title = `Editar ${m.nombre}`;
+        btnEditar.addEventListener('click', () => editarMiembro(m));
+        tdAcciones.appendChild(btnEditar);
+
+        if(tabActual === 'activos'){
+          const btnBaja = document.createElement('button');
+          btnBaja.textContent = 'Dar de Baja';
+          btnBaja.className = 'btn btn-baja';
+          btnBaja.title = `Dar de baja a ${m.nombre}`;
+          btnBaja.addEventListener('click', () => cambiarEstado(m, 'baja'));
+          tdAcciones.appendChild(btnBaja);
+        } else {
+          const btnReactivar = document.createElement('button');
+          btnReactivar.textContent = 'Reactivar';
+          btnReactivar.className = 'btn btn-reactivar';
+          btnReactivar.title = `Reactivar a ${m.nombre}`;
+          btnReactivar.addEventListener('click', () => cambiarEstado(m, 'activos'));
+          tdAcciones.appendChild(btnReactivar);
+        }
+
+        tr.appendChild(tdAcciones);
+
+        tablaBody.appendChild(tr);
+      });
+
+      renderizarPaginacion(filtrados.length, totalPaginas);
     }
 
     // Renderizar paginación
-    renderizarPaginacion(miembros.length, paginaActual, tipo);
-  }
+    function renderizarPaginacion(totalItems, totalPaginas) {
+      pagination.innerHTML = '';
+      if(totalPaginas <= 1) return;
 
-  // Renderizar paginación
-  function renderizarPaginacion(totalItems, paginaActual, tipo) {
-    const totalPaginas = Math.ceil(totalItems / itemsPorPagina);
-    let html = '';
-
-    if (totalPaginas <= 1) {
-      if (tipo === 'activos') paginacionActivos.innerHTML = '';
-      else paginacionBaja.innerHTML = '';
-      return;
-    }
-
-    html += `<button ${paginaActual === 1 ? 'disabled' : ''} data-page="1" aria-label="Primera página">«</button>`;
-    html += `<button ${paginaActual === 1 ? 'disabled' : ''} data-page="${paginaActual - 1}" aria-label="Página anterior">‹</button>`;
-
-    // Mostrar máximo 5 botones de página centrados en la actual
-    let startPage = Math.max(1, paginaActual - 2);
-    let endPage = Math.min(totalPaginas, paginaActual + 2);
-
-    if (paginaActual <= 2) endPage = Math.min(5, totalPaginas);
-    if (paginaActual >= totalPaginas - 1) startPage = Math.max(1, totalPaginas - 4);
-
-    for (let i = startPage; i <= endPage; i++) {
-      html += `<button ${paginaActual === i ? 'disabled' : ''} data-page="${i}" aria-current="${paginaActual === i ? 'page' : false}">${i}</button>`;
-    }
-
-    html += `<button ${paginaActual === totalPaginas ? 'disabled' : ''} data-page="${paginaActual + 1}" aria-label="Página siguiente">›</button>`;
-    html += `<button ${paginaActual === totalPaginas ? 'disabled' : ''} data-page="${totalPaginas}" aria-label="Última página">»</button>`;
-
-    if (tipo === 'activos') paginacionActivos.innerHTML = html;
-    else paginacionBaja.innerHTML = html;
-
-    // Añadir evento a botones de paginación
-    const botones = (tipo === 'activos' ? paginacionActivos : paginacionBaja).querySelectorAll('button[data-page]');
-    botones.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const nuevaPagina = Number(btn.getAttribute('data-page'));
-        if (tipo === 'activos') {
-          paginaActivaActivos = nuevaPagina;
-        } else {
-          paginaActivaBaja = nuevaPagina;
+      // Botón página anterior
+      const btnPrev = document.createElement('button');
+      btnPrev.textContent = '« Anterior';
+      btnPrev.className = 'page-btn';
+      btnPrev.disabled = paginaActual === 1;
+      btnPrev.addEventListener('click', () => {
+        if(paginaActual > 1){
+          paginaActual--;
+          cargarTabla();
         }
-        renderizarTabla(tipo);
       });
+      pagination.appendChild(btnPrev);
+
+      // Botones páginas
+      for(let i=1; i<= totalPaginas; i++){
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = 'page-btn' + (i === paginaActual ? ' active' : '');
+        btn.addEventListener('click', () => {
+          paginaActual = i;
+          cargarTabla();
+        });
+        pagination.appendChild(btn);
+      }
+
+      // Botón página siguiente
+      const btnNext = document.createElement('button');
+      btnNext.textContent = 'Siguiente »';
+      btnNext.className = 'page-btn';
+      btnNext.disabled = paginaActual === totalPaginas;
+      btnNext.addEventListener('click', () => {
+        if(paginaActual < totalPaginas){
+          paginaActual++;
+          cargarTabla();
+        }
+      });
+      pagination.appendChild(btnNext);
+    }
+
+    // Cargar tabla según pestaña
+    function cargarTabla() {
+      if(tabActual === 'activos'){
+        renderizarTabla(miembrosActivos, tablaActivos);
+      } else {
+        renderizarTabla(miembrosBaja, tablaBaja);
+      }
+    }
+
+    // Cambiar estado del miembro (activo/baja)
+    async function cambiarEstado(miembro, nuevoEstado) {
+      if(!confirm(`¿Seguro que deseas cambiar el estado de ${miembro.nombre} a ${nuevoEstado}?`)) return;
+      try {
+        await firestore.collection('miembros').doc(miembro.id).update({ estado: nuevoEstado });
+        await cargarMiembros();
+        cargarTabla();
+      } catch (error) {
+        alert("Error cambiando estado: " + error.message);
+      }
+    }
+
+    // Editar miembro: abre modal con datos precargados
+    function editarMiembro(miembro) {
+      modalOverlay.classList.add('active');
+      formMiembro['nombre'].value = miembro.nombre || '';
+      formMiembro['codigo'].value = miembro.codigo || '';
+      formMiembro['conyuge'].value = miembro.conyuge || '';
+      formMiembro['hijos'].value = miembro.hijos || '';
+      formMiembro['bautizo'].value = miembro.bautizo || 'No';
+      formMiembro['ministerio'].value = miembro.ministerio || '';
+      formMiembro['estado'].value = miembro.estado || 'activos';
+      formMiembro.dataset.editingId = miembro.id;
+    }
+
+    // Guardar nuevo miembro o editar existente
+    formMiembro.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      // Leer datos formulario
+      const nombre = formMiembro['nombre'].value.trim();
+      const codigo = formMiembro['codigo'].value.trim();
+      const conyuge = formMiembro['conyuge'].value.trim();
+      const hijos = formMiembro['hijos'].value.trim();
+      const bautizo = formMiembro['bautizo'].value;
+      const ministerio = formMiembro['ministerio'].value.trim();
+      const estado = formMiembro['estado'].value;
+      const fotoFile = formMiembro['foto'].files[0];
+
+      if(!nombre || !codigo){
+        alert('Nombre y Código son obligatorios.');
+        return;
+      }
+
+      // Mostrar mensaje mientras guarda
+      const btnGuardar = formMiembro.querySelector('button[type="submit"]');
+      btnGuardar.disabled = true;
+      btnGuardar.textContent = 'Guardando...';
+
+      try {
+        // Subir foto si hay archivo
+        let fotoURL = null;
+        if(fotoFile){
+          fotoURL = await subirFoto(fotoFile, codigo);
+        }
+
+        const miembroData = {
+          nombre,
+          codigo,
+          conyuge,
+          hijos,
+          bautizo,
+          ministerio,
+          estado,
+          fotoURL: fotoURL || null,
+          fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if(formMiembro.dataset.editingId){
+          // Editar
+          await firestore.collection('miembros').doc(formMiembro.dataset.editingId).update(miembroData);
+          delete formMiembro.dataset.editingId;
+        } else {
+          // Nuevo miembro
+          await firestore.collection('miembros').add(miembroData);
+        }
+
+        // Recargar datos
+        await cargarMiembros();
+        cargarTabla();
+
+        // Cerrar modal y reset
+        modalOverlay.classList.remove('active');
+        formMiembro.reset();
+
+      } catch (error) {
+        alert("Error guardando miembro: " + error.message);
+      } finally {
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = 'Guardar Miembro';
+      }
     });
-  }
 
-  // Cambiar página al escribir en buscador
-  busquedaInput.addEventListener('input', () => {
-    filtroBusqueda = busquedaInput.value;
-    paginaActivaActivos = 1;
-    paginaActivaBaja = 1;
-    renderizarTabla(tabActivos.classList.contains('active') ? 'activos' : 'baja');
-  });
+    // Inicializar carga
+    cargarMiembros().then(() => cargarTabla());
 
-  // Abrir modal al hacer clic en Añadir Miembro
-  btnAddMember.addEventListener('click', () => {
-    modalOverlay.classList.add('active');
-    formMiembro.reset();
-  });
+  </script>
 
-  // Cerrar modal
-  modalCloseBtn.addEventListener('click', () => {
-    modalOverlay.classList.remove('active');
-  });
-  modalOverlay.addEventListener('click', (e) => {
-    if (e.target === modalOverlay) {
-      modalOverlay.classList.remove('active');
-    }
-  });
-
-  // Subir foto a Supabase Storage y obtener URL pública
-  async function subirFoto(file, codigo) {
-    if (!file) return null;
-    const fileExt = file.name.split('.').pop();
-    const filePath = `ftmember/${codigo}.${fileExt}`;
-
-    const { data, error } = await supabase.storage
-      .from('ftmember')
-      .upload(filePath, file, { upsert: true });
-
-    if (error) {
-      alert('Error al subir la foto: ' + error.message);
-      return null;
-    }
-
-    // Obtener URL pública (asumiendo bucket público)
-    const { data: urlData, error: urlError } = supabase.storage
-      .from('ftmember')
-      .getPublicUrl(filePath);
-
-    if (urlError) {
-      alert('Error al obtener la URL de la foto: ' + urlError.message);
-      return null;
-    }
-
-    return urlData.publicUrl;
-  }
-
-  // Guardar nuevo miembro en Firestore
-  async function guardarMiembro(datos) {
-    try {
-      // Validar código único
-      const codigoBuscado = await firestore.collection('miembros').where('codigo', '==', datos.codigo).get();
-      if (!codigoBuscado.empty) {
-        alert('El código ya existe, elija otro.');
-        return false;
-      }
-
-      await firestore.collection('miembros').add(datos);
-      return true;
-    } catch (error) {
-      alert('Error al guardar miembro: ' + error.message);
-      return false;
-    }
-  }
-
-  // Manejar envío del formulario
-  formMiembro.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const nombre = formMiembro['nombre'].value.trim();
-    const codigo = formMiembro['codigo'].value.trim();
-    const estado = 'activos'; // Por defecto
-    const fotoFile = formMiembro['foto'].files[0];
-
-    if (!nombre || !codigo) {
-      alert('Nombre y código son obligatorios.');
-      return;
-    }
-
-    // Subir foto y obtener URL
-    const fotoUrl = await subirFoto(fotoFile, codigo);
-
-    // Guardar datos en Firestore
-    const datosMiembro = {
-      nombre,
-      codigo,
-      estado,
-      foto_url: fotoUrl || null,
-      creado_en: new Date()
-    };
-
-    const exito = await guardarMiembro(datosMiembro);
-    if (exito) {
-      modalOverlay.classList.remove('active');
-      cargarMiembros(); // Recargar datos
-    }
-  });
-
-  // Cambiar estado de miembro (baja/reactivar)
-  async function cambiarEstadoMiembro(id, nuevoEstado) {
-    try {
-      const miembroRef = firestore.collection('miembros').doc(id);
-      await miembroRef.update({ estado: nuevoEstado });
-      cargarMiembros();
-    } catch (error) {
-      alert('Error al cambiar estado: ' + error.message);
-    }
-  }
-
-  // Delegar eventos de botones en tablas
-  tablaActivos.addEventListener('click', (e) => {
-    if (e.target.classList.contains('baja-btn')) {
-      const id = e.target.getAttribute('data-id');
-      if (confirm('¿Dar de baja este miembro?')) {
-        cambiarEstadoMiembro(id, 'baja');
-      }
-    }
-  });
-
-  tablaBaja.addEventListener('click', (e) => {
-    if (e.target.classList.contains('reactivar-btn')) {
-      const id = e.target.getAttribute('data-id');
-      if (confirm('¿Reactivar este miembro?')) {
-        cambiarEstadoMiembro(id, 'activos');
-      }
-    }
-  });
-
-  // Inicializar app cargando miembros y mostrando activos
-  cambiarPestania('activos');
-  cargarMiembros();
-})();
-</script>
 </body>
 </html>
