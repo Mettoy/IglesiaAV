@@ -6,12 +6,54 @@
 <title>Gestión de Miembros</title>
 
 <style>
-  /* (mismo CSS que me diste, lo dejo para no repetirlo aquí) */
+  /* Estilos base (igual que antes) */
   body {
-    background-color: #0d1a33; /* azul oscuro */
-    color: #d4af37; /* dorado */
+    background-color: #0d1a33;
+    color: #d4af37;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0; padding: 0;
+    display: flex;
+  }
+  /* Menú lateral */
+  nav {
+    width: 220px;
+    background-color: #09214d;
+    padding: 1rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  nav img.logo {
+    width: 150px;
+    margin-bottom: 2rem;
+  }
+  nav button {
+    background-color: transparent;
+    color: #d4af37;
+    border: none;
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+  }
+  nav button.active,
+  nav button:hover {
+    background-color: #b79023;
+    color: #0d1a33;
+    font-weight: bold;
+  }
+  /* Contenido principal */
+  main {
+    flex-grow: 1;
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 1rem;
+    box-sizing: border-box;
   }
   header {
     background-color: #09214d;
@@ -20,12 +62,30 @@
     font-size: 1.8rem;
     font-weight: bold;
     color: #d4af37;
+    margin-bottom: 1rem;
   }
-  main {
-    max-width: 1100px;
-    margin: 2rem auto;
-    padding: 1rem;
+  /* Tabs filtro */
+  .filtros {
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
   }
+  .filtros button {
+    background-color: #14325c;
+    color: #d4af37;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+  }
+  .filtros button.active,
+  .filtros button:hover {
+    background-color: #b79023;
+    color: #0d1a33;
+  }
+  /* Formulario */
   form {
     background-color: #14325c;
     padding: 1rem 2rem;
@@ -78,6 +138,7 @@
   button:hover:not(:disabled) {
     background-color: #b79023;
   }
+  /* Tabla */
   table {
     width: 100%;
     border-collapse: collapse;
@@ -114,13 +175,30 @@
     border: none;
     width: 300px;
   }
+  /* Paginación */
+  .paginacion {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+  .paginacion button {
+    padding: 0.5rem 1rem;
+  }
 </style>
 </head>
 <body>
-  <header>Gestión de Miembros</header>
+  <nav>
+    <img class="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20(1).png" alt="Logo" />
+    <button id="btn-activos" class="active">Miembros Activos</button>
+    <button id="btn-baja">Miembros de Baja</button>
+    <button id="btn-agregar-miembro" style="margin-top: 2rem; background-color: #b79023; color: #0d1a33;">Añadir Miembro</button>
+  </nav>
+
   <main>
+    <header>Gestión de Miembros</header>
+
     <div class="busqueda-container">
-      <button id="btn-agregar-miembro">Añadir Miembro</button>
       <input type="text" id="busqueda-miembros" placeholder="Buscar por nombre o código..." />
     </div>
 
@@ -185,21 +263,16 @@
 
         <label for="lugarBautismo">Lugar de Bautismo</label>
         <input type="text" id="lugarBautismo" name="lugarBautismo" />
-
-        <label for="fechaBautismoEspiritu">Fecha de Bautismo en el Espíritu</label>
-        <input type="date" id="fechaBautismoEspiritu" name="fechaBautismoEspiritu" />
-
-        <label for="lugarBautismoEspiritu">Lugar de Bautismo en el Espíritu</label>
-        <input type="text" id="lugarBautismoEspiritu" name="lugarBautismoEspiritu" />
       </section>
 
       <!-- Foto -->
       <section>
         <h2>Foto</h2>
-        <input type="file" id="foto" name="foto" accept="image/*" />
+        <input type="file" id="foto" name="foto" accept="image/*" required />
       </section>
 
-      <button id="btn-guardar" type="submit">Guardar</button>
+      <button type="submit" id="btn-guardar">Guardar Miembro</button>
+      <button type="button" id="btn-cancelar" style="margin-left: 1rem; background-color: #6a6a6a;">Cancelar</button>
     </form>
 
     <table>
@@ -216,268 +289,400 @@
       </thead>
       <tbody id="tabla-miembros"></tbody>
     </table>
+
+    <div class="paginacion">
+      <button id="btn-prev" disabled>Anterior</button>
+      <span id="pagina-actual">1</span>
+      <button id="btn-next" disabled>Siguiente</button>
+    </div>
   </main>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <!-- Supabase -->
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    // Configura tu Supabase aquí
-    const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co' // Cambia por tu URL real
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o' // Cambia por tu anon key real
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+<script>
+  // --- Configuraciones Firebase ---
+  const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_AUTH_DOMAIN",
+    projectId: "TU_PROJECT_ID",
+    storageBucket: "TU_STORAGE_BUCKET",
+    messagingSenderId: "TU_SENDER_ID",
+    appId: "TU_APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-    // Configura Firebase
-    const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
+  // --- Configuración Supabase ---
+  const supabaseUrl = "https://azywyqozwwbfctxeokug.supabase.co";
+  const supabaseKey = "TU_SUPABASE_ANON_KEY";
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  const bucketName = "miembros";  // bucket público
 
+  // Variables globales para familiares
+  let familiares = [];
 
-    firebase.initializeApp(firebaseConfig)
-    const db = firebase.firestore()
+  // Variables paginación y filtro
+  let paginaActual = 1;
+  const itemsPorPagina = 20;
+  let miembrosTotales = [];
+  let filtroActivo = true; // true = activos, false = de baja
+  let busquedaTexto = "";
 
-    // Elementos
-    const form = document.getElementById('form-miembro')
-    const inputFoto = document.getElementById('foto')
-    const tabla = document.getElementById('tabla-miembros')
-    const btnGuardar = document.getElementById('btn-guardar')
-    const inputBusqueda = document.getElementById('busqueda-miembros')
-    const btnAgregarMiembro = document.getElementById('btn-agregar-miembro')
+  // Elementos DOM
+  const tablaMiembros = document.getElementById("tabla-miembros");
+  const btnActivos = document.getElementById("btn-activos");
+  const btnBaja = document.getElementById("btn-baja");
+  const btnAgregarMiembro = document.getElementById("btn-agregar-miembro");
+  const formMiembro = document.getElementById("form-miembro");
+  const btnGuardar = document.getElementById("btn-guardar");
+  const btnCancelar = document.getElementById("btn-cancelar");
+  const inputBusqueda = document.getElementById("busqueda-miembros");
+  const btnPrev = document.getElementById("btn-prev");
+  const btnNext = document.getElementById("btn-next");
+  const paginaActualSpan = document.getElementById("pagina-actual");
 
-    const listaFamiliares = document.getElementById('lista-familiares')
-    const btnAgregarFamiliar = document.getElementById('btn-agregar-familiar')
-    const inputTipoFamiliar = document.getElementById('tipoFamiliar')
-    const inputNombreFamiliar = document.getElementById('nombreFamiliar')
-    let familiares = []
+  // Campos del formulario
+  const inputNombre = document.getElementById("nombre");
+  const inputCodigo = document.getElementById("codigo");
+  const inputEdad = document.getElementById("edad");
+  const inputTelefono = document.getElementById("telefono");
+  const inputDireccion = document.getElementById("direccion");
+  const inputFechaNacimiento = document.getElementById("fechaNacimiento");
+  const inputTipoFamiliar = document.getElementById("tipoFamiliar");
+  const inputNombreFamiliar = document.getElementById("nombreFamiliar");
+  const btnAgregarFamiliar = document.getElementById("btn-agregar-familiar");
+  const listaFamiliares = document.getElementById("lista-familiares");
+  const inputFechaConversion = document.getElementById("fechaConversion");
+  const inputLugarConversion = document.getElementById("lugarConversion");
+  const inputFechaBautismo = document.getElementById("fechaBautismo");
+  const inputLugarBautismo = document.getElementById("lugarBautismo");
+  const inputFoto = document.getElementById("foto");
 
-    let miembros = []
-    let editandoId = null
+  // Estado edición
+  let editandoId = null;
 
-    // Mostrar formulario al hacer click en Añadir Miembro
-    btnAgregarMiembro.addEventListener('click', () => {
-      form.style.display = 'block'
-      form.reset()
-      familiares = []
-      actualizarListaFamiliares()
-      editandoId = null
-    })
+  // -------- FUNCIONES --------
 
-    // Agregar familiar a la lista temporal
-    btnAgregarFamiliar.addEventListener('click', () => {
-      const tipo = inputTipoFamiliar.value.trim()
-      const nombre = inputNombreFamiliar.value.trim()
-      if (!tipo || !nombre) {
-        alert('Por favor selecciona tipo y nombre del familiar')
-        return
+  // Limpiar formulario y variables familiares
+  function limpiarFormulario() {
+    formMiembro.reset();
+    familiares = [];
+    listaFamiliares.innerHTML = "";
+    editandoId = null;
+    inputFoto.required = true;
+  }
+
+  // Mostrar formulario para nuevo miembro
+  btnAgregarMiembro.onclick = () => {
+    limpiarFormulario();
+    formMiembro.style.display = "block";
+  };
+
+  // Cancelar formulario
+  btnCancelar.onclick = () => {
+    formMiembro.style.display = "none";
+    limpiarFormulario();
+  };
+
+  // Agregar familiar a la lista temporal
+  btnAgregarFamiliar.onclick = () => {
+    const tipo = inputTipoFamiliar.value.trim();
+    const nombreFam = inputNombreFamiliar.value.trim();
+    if (tipo && nombreFam) {
+      familiares.push({ tipo, nombre: nombreFam });
+      mostrarFamiliares();
+      inputTipoFamiliar.value = "";
+      inputNombreFamiliar.value = "";
+    }
+  };
+
+  function mostrarFamiliares() {
+    listaFamiliares.innerHTML = "";
+    familiares.forEach((fam, i) => {
+      const li = document.createElement("li");
+      li.textContent = `${fam.tipo}: ${fam.nombre}`;
+      listaFamiliares.appendChild(li);
+    });
+  }
+
+  // Guardar o actualizar miembro
+  formMiembro.onsubmit = async (e) => {
+    e.preventDefault();
+
+    btnGuardar.disabled = true;
+
+    // Leer datos
+    const nombre = inputNombre.value.trim();
+    const codigo = inputCodigo.value.trim();
+    const edad = Number(inputEdad.value);
+    const telefono = inputTelefono.value.trim();
+    const direccion = inputDireccion.value.trim();
+    const fechaNacimiento = inputFechaNacimiento.value;
+    const fechaConversion = inputFechaConversion.value;
+    const lugarConversion = inputLugarConversion.value.trim();
+    const fechaBautismo = inputFechaBautismo.value;
+    const lugarBautismo = inputLugarBautismo.value.trim();
+
+    // Foto archivo
+    const fileFoto = inputFoto.files[0];
+
+    try {
+      let urlFoto = null;
+
+      if (fileFoto) {
+        // Subir foto a Supabase Storage
+        const nombreArchivo = `${codigo}_${Date.now()}`;
+        const { data, error } = await supabase.storage
+          .from(bucketName)
+          .upload(nombreArchivo, fileFoto, { upsert: true });
+
+        if (error) throw error;
+
+        // Obtener URL pública
+        const { data: urlData } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(nombreArchivo);
+
+        urlFoto = urlData.publicUrl;
+      } else if (editandoId) {
+        // Si estamos editando y no cambiamos foto, mantener la URL actual
+        const miembroDoc = await db.collection("miembros").doc(editandoId).get();
+        if (miembroDoc.exists) {
+          urlFoto = miembroDoc.data().fotoUrl || null;
+        }
       }
-      familiares.push({ tipo, nombre })
-      actualizarListaFamiliares()
-      inputTipoFamiliar.value = ''
-      inputNombreFamiliar.value = ''
-    })
 
-    // Actualizar lista visibles de familiares en el formulario
-    function actualizarListaFamiliares() {
-      listaFamiliares.innerHTML = ''
-      familiares.forEach((fam) => {
-        const li = document.createElement('li')
-        li.textContent = `${fam.tipo}: ${fam.nombre}`
-        listaFamiliares.appendChild(li)
-      })
-    }
+      // Datos para Firestore
+      const datosMiembro = {
+        nombre,
+        codigo,
+        edad,
+        telefono,
+        direccion,
+        fechaNacimiento,
+        familiares,
+        fechaConversion,
+        lugarConversion,
+        fechaBautismo,
+        lugarBautismo,
+        fotoUrl: urlFoto,
+        activo: true, // nuevo miembro activo por defecto
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      };
 
-    // Cargar miembros desde Firestore
-    async function cargarMiembros() {
-      const snapshot = await db.collection('miembros').orderBy('codigo').get()
-      miembros = snapshot.docs.map(doc => {
-        return { id: doc.id, ...doc.data() }
-      })
-      mostrarMiembros(miembros)
-    }
-
-    // Mostrar miembros en la tabla
-    function mostrarMiembros(datos) {
-      tabla.innerHTML = ''
-      for (const miembro of datos) {
-        const fotoUrl = miembro.fotoUrl || ''
-
-        tabla.innerHTML += `
-          <tr>
-            <td>${fotoUrl ? `<img src="${fotoUrl}" alt="Foto" class="foto-miembro">` : ''}</td>
-            <td>${miembro.nombre || ''}</td>
-            <td>${miembro.codigo || ''}</td>
-            <td>${miembro.edad || ''}</td>
-            <td>${miembro.telefono || ''}</td>
-            <td>${miembro.direccion || ''}</td>
-            <td>
-              <button class="btn-editar" data-id="${miembro.id}">Editar</button>
-              <button class="btn-eliminar" data-id="${miembro.id}">Eliminar</button>
-            </td>
-          </tr>
-        `
+      if (editandoId) {
+        // Actualizar
+        await db.collection("miembros").doc(editandoId).update(datosMiembro);
+      } else {
+        // Crear nuevo
+        await db.collection("miembros").add(datosMiembro);
       }
-      // Asociar eventos de editar y eliminar
-      document.querySelectorAll('.btn-editar').forEach(btn => {
-        btn.addEventListener('click', e => {
-          const id = e.target.dataset.id
-          editarMiembro(id)
-        })
-      })
-      document.querySelectorAll('.btn-eliminar').forEach(btn => {
-        btn.addEventListener('click', async e => {
-          const id = e.target.dataset.id
-          if (confirm('¿Seguro que quieres eliminar este miembro?')) {
-            await db.collection('miembros').doc(id).delete()
-            cargarMiembros()
-          }
-        })
-      })
+
+      alert("Miembro guardado correctamente");
+      formMiembro.style.display = "none";
+      limpiarFormulario();
+      cargarMiembros();
+    } catch (error) {
+      alert("Error al guardar el miembro: " + error.message);
     }
 
-    // Editar miembro
-    function editarMiembro(id) {
-      const miembro = miembros.find(m => m.id === id)
-      if (!miembro) return
+    btnGuardar.disabled = false;
+  };
 
-      form.style.display = 'block'
-      editandoId = id
+  // Cargar miembros desde Firestore con filtro, búsqueda, paginación y orden
+  async function cargarMiembros() {
+    // Traer TODOS y filtrar en cliente para simplificar paginación (mejorable)
+    const snapshot = await db.collection("miembros").orderBy("codigo").get();
 
-      form.nombre.value = miembro.nombre || ''
-      form.codigo.value = miembro.codigo || ''
-      form.edad.value = miembro.edad || ''
-      form.telefono.value = miembro.telefono || ''
-      form.direccion.value = miembro.direccion || ''
-      form.fechaNacimiento.value = miembro.fechaNacimiento || ''
+    miembrosTotales = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      miembrosTotales.push(data);
+    });
+
+    aplicarFiltroBusquedaPaginacion();
+  }
+
+  // Aplicar filtro activo/baja + búsqueda + paginación y mostrar tabla
+  function aplicarFiltroBusquedaPaginacion() {
+    let filtrados = miembrosTotales.filter(m => m.activo === filtroActivo);
+
+    if (busquedaTexto.trim() !== "") {
+      const txt = busquedaTexto.toLowerCase();
+      filtrados = filtrados.filter(m =>
+        m.nombre.toLowerCase().includes(txt) || m.codigo.toLowerCase().includes(txt)
+      );
+    }
+
+    // Orden alfabético por código ya garantizado por Firestore query
+
+    // Paginación
+    const totalPaginas = Math.ceil(filtrados.length / itemsPorPagina);
+    if (paginaActual > totalPaginas) paginaActual = totalPaginas || 1;
+
+    const inicio = (paginaActual - 1) * itemsPorPagina;
+    const fin = inicio + itemsPorPagina;
+    const paginaItems = filtrados.slice(inicio, fin);
+
+    mostrarMiembrosTabla(paginaItems);
+
+    // Actualizar botones paginación
+    btnPrev.disabled = paginaActual <= 1;
+    btnNext.disabled = paginaActual >= totalPaginas || totalPaginas === 0;
+
+    paginaActualSpan.textContent = paginaActual;
+  }
+
+  // Mostrar miembros en la tabla
+  function mostrarMiembrosTabla(miembros) {
+    tablaMiembros.innerHTML = "";
+
+    if (miembros.length === 0) {
+      tablaMiembros.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#fff;">No hay miembros para mostrar.</td></tr>`;
+      return;
+    }
+
+    miembros.forEach(m => {
+      const tr = document.createElement("tr");
+
+      const tdFoto = document.createElement("td");
+      const img = document.createElement("img");
+      img.src = m.fotoUrl || "";
+      img.alt = m.nombre;
+      img.className = "foto-miembro";
+      tdFoto.appendChild(img);
+      tr.appendChild(tdFoto);
+
+      tr.appendChild(crearTd(m.nombre));
+      tr.appendChild(crearTd(m.codigo));
+      tr.appendChild(crearTd(m.edad));
+      tr.appendChild(crearTd(m.telefono));
+      tr.appendChild(crearTd(m.direccion));
+
+      // Acciones: Editar, Dar de baja / Reactivar
+      const tdAcciones = document.createElement("td");
+
+      const btnEditar = document.createElement("button");
+      btnEditar.textContent = "Editar";
+      btnEditar.style.marginRight = "0.4rem";
+      btnEditar.onclick = () => editarMiembro(m.id);
+      tdAcciones.appendChild(btnEditar);
+
+      if (m.activo) {
+        const btnBaja = document.createElement("button");
+        btnBaja.textContent = "Dar de baja";
+        btnBaja.style.backgroundColor = "#a03a3a";
+        btnBaja.style.color = "#fff";
+        btnBaja.onclick = () => cambiarEstadoMiembro(m.id, false);
+        tdAcciones.appendChild(btnBaja);
+      } else {
+        const btnReactivar = document.createElement("button");
+        btnReactivar.textContent = "Reactivar";
+        btnReactivar.style.backgroundColor = "#3a7a3a";
+        btnReactivar.style.color = "#fff";
+        btnReactivar.onclick = () => cambiarEstadoMiembro(m.id, true);
+        tdAcciones.appendChild(btnReactivar);
+      }
+
+      tr.appendChild(tdAcciones);
+
+      tablaMiembros.appendChild(tr);
+    });
+  }
+
+  function crearTd(texto) {
+    const td = document.createElement("td");
+    td.textContent = texto || "";
+    return td;
+  }
+
+  // Cambiar estado activo/de baja
+  async function cambiarEstadoMiembro(id, nuevoEstado) {
+    try {
+      await db.collection("miembros").doc(id).update({ activo: nuevoEstado });
+      alert(nuevoEstado ? "Miembro reactivado" : "Miembro dado de baja");
+      cargarMiembros();
+    } catch (error) {
+      alert("Error al cambiar estado: " + error.message);
+    }
+  }
+
+  // Editar miembro
+  async function editarMiembro(id) {
+    try {
+      const doc = await db.collection("miembros").doc(id).get();
+      if (!doc.exists) throw new Error("Miembro no encontrado");
+
+      const data = doc.data();
+      editandoId = id;
+
+      inputNombre.value = data.nombre || "";
+      inputCodigo.value = data.codigo || "";
+      inputEdad.value = data.edad || "";
+      inputTelefono.value = data.telefono || "";
+      inputDireccion.value = data.direccion || "";
+      inputFechaNacimiento.value = data.fechaNacimiento || "";
+      inputFechaConversion.value = data.fechaConversion || "";
+      inputLugarConversion.value = data.lugarConversion || "";
+      inputFechaBautismo.value = data.fechaBautismo || "";
+      inputLugarBautismo.value = data.lugarBautismo || "";
 
       // Familiares
-      familiares = miembro.familiares || []
-      actualizarListaFamiliares()
+      familiares = data.familiares || [];
+      mostrarFamiliares();
 
-      // Datos espirituales
-      form.fechaConversion.value = miembro.fechaConversion || ''
-      form.lugarConversion.value = miembro.lugarConversion || ''
-      form.fechaBautismo.value = miembro.fechaBautismo || ''
-      form.lugarBautismo.value = miembro.lugarBautismo || ''
-      form.fechaBautismoEspiritu.value = miembro.fechaBautismoEspiritu || ''
-      form.lugarBautismoEspiritu.value = miembro.lugarBautismoEspiritu || ''
+      // No obligatorio cambiar foto al editar, desactivar required
+      inputFoto.required = false;
+
+      formMiembro.style.display = "block";
+      window.scrollTo(0, 0);
+    } catch (error) {
+      alert("Error al cargar datos del miembro: " + error.message);
     }
+  }
 
-    // Buscar miembros
-    inputBusqueda.addEventListener('input', () => {
-      const valor = inputBusqueda.value.toLowerCase()
-      const filtrados = miembros.filter(m =>
-        (m.nombre && m.nombre.toLowerCase().includes(valor)) ||
-        (m.codigo && m.codigo.toLowerCase().includes(valor))
-      )
-      mostrarMiembros(filtrados)
-    })
+  // Eventos pestañas filtro
+  btnActivos.onclick = () => {
+    filtroActivo = true;
+    paginaActual = 1;
+    btnActivos.classList.add("active");
+    btnBaja.classList.remove("active");
+    cargarMiembros();
+  };
+  btnBaja.onclick = () => {
+    filtroActivo = false;
+    paginaActual = 1;
+    btnBaja.classList.add("active");
+    btnActivos.classList.remove("active");
+    cargarMiembros();
+  };
 
-    // Subir foto a Supabase y obtener URL pública
-    async function subirFotoYObtenerURL(file, codigo) {
-      if (!file) return ''
-
-      // Renombrar archivo para evitar duplicados: ejemplo codigo + timestamp + extension
-      const extension = file.name.split('.').pop()
-      const nombreArchivo = `${codigo}_${Date.now()}.${extension}`
-
-    const { data, error } = await supabase.storage
-  .from('ftmember')
-  .upload(nombreArchivo, file, { upsert: true })
-
-      if (error) {
-        alert('Error subiendo la foto: ' + error.message)
-        return ''
-      }
-
-      // URL pública directa
-    const urlPublica = `${supabaseUrl}/storage/v1/object/public/ftmember/${nombreArchivo}`
-      return urlPublica
+  // Eventos paginación
+  btnPrev.onclick = () => {
+    if (paginaActual > 1) {
+      paginaActual--;
+      aplicarFiltroBusquedaPaginacion();
     }
+  };
+  btnNext.onclick = () => {
+    paginaActual++;
+    aplicarFiltroBusquedaPaginacion();
+  };
 
-    // Guardar formulario
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault()
-      btnGuardar.disabled = true
+  // Evento búsqueda
+  inputBusqueda.oninput = (e) => {
+    busquedaTexto = e.target.value;
+    paginaActual = 1;
+    aplicarFiltroBusquedaPaginacion();
+  };
 
-      const formData = new FormData(form)
-      const codigo = formData.get('codigo').trim()
+  // Carga inicial
+  cargarMiembros();
 
-      if (!codigo) {
-        alert('El código es obligatorio.')
-        btnGuardar.disabled = false
-        return
-      }
-
-      // Verificar si ya existe el código y no es edición
-      if (!editandoId && miembros.find(m => m.codigo === codigo)) {
-        alert('Ya existe un miembro con ese código.')
-        btnGuardar.disabled = false
-        return
-      }
-
-      // Subir foto si hay archivo
-      let fotoUrl = ''
-      const archivoFoto = inputFoto.files[0]
-      if (archivoFoto) {
-        fotoUrl = await subirFotoYObtenerURL(archivoFoto, codigo)
-      } else if (editandoId) {
-        // Si está editando y no cambia foto, mantener la existente
-        const miembroActual = miembros.find(m => m.id === editandoId)
-        fotoUrl = miembroActual ? miembroActual.fotoUrl : ''
-      }
-
-      // Preparar objeto a guardar
-      const miembroData = {
-        nombre: formData.get('nombre'),
-        codigo,
-        edad: Number(formData.get('edad')),
-        telefono: formData.get('telefono'),
-        direccion: formData.get('direccion'),
-        fechaNacimiento: formData.get('fechaNacimiento'),
-        familiares,
-        fechaConversion: formData.get('fechaConversion'),
-        lugarConversion: formData.get('lugarConversion'),
-        fechaBautismo: formData.get('fechaBautismo'),
-        lugarBautismo: formData.get('lugarBautismo'),
-        fechaBautismoEspiritu: formData.get('fechaBautismoEspiritu'),
-        lugarBautismoEspiritu: formData.get('lugarBautismoEspiritu'),
-        fotoUrl,
-      }
-
-      try {
-        if (editandoId) {
-          await db.collection('miembros').doc(editandoId).set(miembroData)
-          alert('Miembro actualizado correctamente.')
-        } else {
-          await db.collection('miembros').add(miembroData)
-          alert('Miembro agregado correctamente.')
-        }
-        form.reset()
-        familiares = []
-        actualizarListaFamiliares()
-        form.style.display = 'none'
-        editandoId = null
-        cargarMiembros()
-      } catch (error) {
-        alert('Error guardando el miembro: ' + error.message)
-      } finally {
-        btnGuardar.disabled = false
-      }
-    })
-
-    // Carga inicial
-    cargarMiembros()
-  </script>
+</script>
 </body>
 </html>
