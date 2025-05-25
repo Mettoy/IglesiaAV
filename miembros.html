@@ -1,539 +1,530 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gestión de Miembros - Elegante</title>
-<style>
-  /* Reset */
-  * {
-    box-sizing: border-box;
-  }
-  body, html {
-    margin: 0; padding: 0; height: 100%;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0b1a33; /* azul oscuro */
-    color: #d4af37; /* dorado */
-    display: flex;
-    overflow: hidden;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestión de Miembros</title>
+  <style>
+    /* Reset y base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0a1a2a; /* azul oscuro */
+      color: #f5d76e; /* dorado */
+      min-height: 100vh;
+      display: flex;
+      flex-direction: row;
+      overflow-x: hidden;
+    }
+    a {
+      color: #f5d76e;
+      text-decoration: none;
+    }
+    a:hover, button:hover {
+      color: #ffd966;
+      cursor: pointer;
+    }
+    /* Menú lateral */
+    nav#menuLateral {
+      width: 240px;
+      background-color: #071426;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 0;
+      border-right: 2px solid #f5d76e;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+    nav#menuLateral.hidden {
+      transform: translateX(-100%);
+    }
+    nav#menuLateral .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    nav#menuLateral .logo img {
+      max-width: 140px;
+      filter: drop-shadow(0 0 3px #f5d76e);
+      user-select: none;
+    }
+    nav#menuLateral a.menu-link {
+      display: flex;
+      align-items: center;
+      padding: 0.8rem 1.5rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+      border-left: 4px solid transparent;
+      transition: background-color 0.3s ease, border-left-color 0.3s ease;
+      user-select: none;
+    }
+    nav#menuLateral a.menu-link svg {
+      width: 22px;
+      height: 22px;
+      margin-right: 0.8rem;
+      fill: #f5d76e;
+      transition: fill 0.3s ease;
+    }
+    nav#menuLateral a.menu-link:hover,
+    nav#menuLateral a.menu-link.active {
+      background-color: #f5d76e;
+      color: #0a1a2a;
+      border-left-color: #ffd966;
+    }
+    nav#menuLateral a.menu-link:hover svg,
+    nav#menuLateral a.menu-link.active svg {
+      fill: #0a1a2a;
+    }
 
-  /* Menú lateral */
-  nav {
-    width: 240px;
-    background: #0a162b;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px 20px;
-    box-shadow: 2px 0 8px rgba(212,175,55,0.25);
-  }
+    /* Botón hamburguesa móvil */
+    #btnMenuMobile {
+      display: none;
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 1100;
+      background-color: #f5d76e;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      color: #0a1a2a;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: 0 0 8px #f5d76e88;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    #btnMenuMobile:hover {
+      background-color: #ffd966;
+    }
 
-  nav .logo {
-    width: 140px;
-    margin-bottom: 40px;
-    user-select: none;
-  }
+    /* Contenedor principal */
+    main {
+      flex-grow: 1;
+      margin-left: 240px;
+      padding: 1.5rem 2rem;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #071426 20%, #0a1a2a 100%);
+      overflow-x: auto;
+      transition: margin-left 0.3s ease;
+    }
+    main.fullWidth {
+      margin-left: 0;
+    }
 
-  nav a {
-    width: 100%;
-    color: #d4af37;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 18px;
-    padding: 14px 18px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-radius: 8px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  nav a svg {
-    fill: #d4af37;
-    width: 24px;
-    height: 24px;
-  }
-  nav a:hover, nav a.active {
-    background-color: #d4af37;
-    color: #0b1a33;
-  }
-  nav a:hover svg, nav a.active svg {
-    fill: #0b1a33;
-  }
+    /* Barra controles */
+    .top-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .top-controls input[type="search"] {
+      flex-grow: 1;
+      min-width: 200px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 2px solid #f5d76e;
+      background-color: #071426;
+      color: #f5d76e;
+      transition: border-color 0.3s ease;
+    }
+    .top-controls input[type="search"]:focus {
+      outline: none;
+      border-color: #ffd966;
+      box-shadow: 0 0 8px #ffd966aa;
+    }
+    .top-controls button#addMemberBtn {
+      background-color: #f5d76e;
+      color: #0a1a2a;
+      border: none;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #f5d76e99;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+    }
+    .top-controls button#addMemberBtn:hover {
+      background-color: #ffd966;
+      box-shadow: 0 0 15px #ffd966cc;
+    }
 
-  /* Contenido principal */
-  main {
-    flex-grow: 1;
-    padding: 30px 40px;
-    display: flex;
-    flex-direction: column;
-    background: linear-gradient(135deg, #0b1a33 0%, #061024 100%);
-    overflow-y: auto;
-  }
+    /* Pestañas */
+    .tabs {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+      user-select: none;
+    }
+    .tab {
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-bottom: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #f5d76eaa;
+      transition: color 0.3s ease, border-color 0.3s ease;
+      border-radius: 4px 4px 0 0;
+    }
+    .tab svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      transition: transform 0.3s ease;
+    }
+    .tab:hover {
+      color: #ffd966;
+    }
+    .tab.active {
+      color: #ffd966;
+      border-color: #ffd966;
+      background-color: #071426;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 6px #ffd96677;
+    }
 
-  /* Controles top: búsqueda + botón añadir */
-  .top-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 28px;
-  }
-  #searchInput {
-    flex-grow: 1;
-    font-size: 18px;
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 2px solid #d4af37;
-    background: transparent;
-    color: #d4af37;
-    transition: border-color 0.3s ease;
-  }
-  #searchInput::placeholder {
-    color: #e6d49e88;
-  }
-  #searchInput:focus {
-    border-color: #f7d953;
-    outline: none;
-  }
+    /* Tabla */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #071426;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 0 15px #f5d76e55;
+    }
+    thead tr {
+      background-color: #0f2a53;
+      color: #f5d76e;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 15px;
+      border-bottom: 1px solid #203856;
+      vertical-align: middle;
+      font-size: 0.95rem;
+    }
+    tbody tr:hover {
+      background-color: #152f5a;
+      transition: background-color 0.3s ease;
+    }
+    tbody td img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #f5d76e;
+      transition: transform 0.3s ease;
+    }
+    tbody td img:hover {
+      transform: scale(1.1);
+    }
+    .estado-activo {
+      color: #4CAF50; /* verde */
+      font-weight: 600;
+    }
+    .estado-baja {
+      color: #e74c3c; /* rojo */
+      font-weight: 600;
+    }
+    .reactivar-btn {
+      background-color: #f5d76e;
+      border: none;
+      color: #0a1a2a;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 6px;
+      box-shadow: 0 0 8px #f5d76eaa;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      cursor: pointer;
+    }
+    .reactivar-btn:hover {
+      background-color: #ffd966;
+      box-shadow: 0 0 12px #ffd966cc;
+    }
 
-  #addMemberBtn {
-    margin-left: 20px;
-    background-color: #d4af37;
-    color: #0b1a33;
-    border: none;
-    padding: 14px 28px;
-    font-weight: 700;
-    font-size: 18px;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 0 15px #f7d953aa;
-    transition: background-color 0.3s ease, box-shadow 0.4s ease;
-  }
-  #addMemberBtn:hover {
-    background-color: #f7d953;
-    box-shadow: 0 0 25px #f7d953ff;
-  }
+    /* Paginación */
+    nav.pagination {
+      margin-top: 1rem;
+      text-align: center;
+      user-select: none;
+    }
+    nav.pagination button {
+      background-color: transparent;
+      border: 2px solid #f5d76e;
+      color: #f5d76e;
+      margin: 0 4px;
+      padding: 6px 10px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    nav.pagination button.active,
+    nav.pagination button:hover {
+      background-color: #ffd966;
+      color: #0a1a2a;
+      border-color: #ffd966;
+    }
 
-  /* Pestañas */
-  .tabs {
-    display: flex;
-    gap: 28px;
-    margin-bottom: 24px;
-    user-select: none;
-  }
-  .tab {
-    padding-bottom: 6px;
-    font-weight: 700;
-    font-size: 20px;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #d4af37aa;
-    transition: color 0.3s ease, border-color 0.3s ease;
-  }
-  .tab.active {
-    color: #f7d953;
-    border-color: #f7d953;
-  }
-  .tab svg {
-    width: 22px;
-    height: 22px;
-    fill: currentColor;
-  }
+    /* Mensaje sin resultados */
+    tbody td[colspan="5"] {
+      font-style: italic;
+      color: #f5d76eaa;
+      padding: 3rem 0;
+      text-align: center;
+    }
 
-  /* Tabla */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #0a162b;
-    border-radius: 12px;
-    box-shadow: 0 0 30px #d4af3755 inset;
-    overflow: hidden;
-  }
-  thead tr {
-    background-color: #15274e;
-    color: #f7d953;
-    font-weight: 700;
-  }
-  th, td {
-    padding: 14px 18px;
-    text-align: left;
-    color: #d4af37;
-    vertical-align: middle;
-  }
-  tbody tr {
-    border-bottom: 1px solid #22408088;
-    transition: background-color 0.3s ease;
-  }
-  tbody tr:hover {
-    background-color: #22408044;
-  }
-  td img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 0 8px #f7d953cc;
-  }
-  td.estado-activo {
-    color: #7bc242;
-    font-weight: 600;
-  }
-  td.estado-baja {
-    color: #aaa;
-    font-style: italic;
-  }
-  button.reactivar-btn {
-    background-color: #7bc242;
-    border: none;
-    color: #0b1a33;
-    font-weight: 700;
-    padding: 8px 16px;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 0 12px #7bc242cc;
-    transition: background-color 0.3s ease, box-shadow 0.4s ease;
-  }
-  button.reactivar-btn:hover {
-    background-color: #a1d85c;
-    box-shadow: 0 0 20px #a1d85cff;
-  }
-
-  /* Paginación */
-  .pagination {
-    margin-top: 28px;
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-  }
-  .pagination button {
-    background: transparent;
-    border: 2px solid #d4af37;
-    color: #d4af37;
-    font-weight: 700;
-    font-size: 16px;
-    padding: 10px 18px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  .pagination button.active {
-    background-color: #f7d953;
-    color: #0b1a33;
-    box-shadow: 0 0 20px #f7d953cc;
-  }
-  .pagination button:hover:not(.active) {
-    background-color: #d4af3722;
-  }
-</style>
+    /* Responsive */
+    @media (max-width: 900px) {
+      nav#menuLateral {
+        transform: translateX(-100%);
+        position: fixed;
+        z-index: 1000;
+        width: 220px;
+      }
+      nav#menuLateral.show {
+        transform: translateX(0);
+      }
+      main {
+        margin-left: 0 !important;
+        padding: 1rem 1rem;
+      }
+      main.fullWidth {
+        margin-left: 0 !important;
+      }
+      #btnMenuMobile {
+        display: block;
+      }
+      .top-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .top-controls input[type="search"] {
+        width: 100%;
+      }
+      .top-controls button#addMemberBtn {
+        width: 100%;
+        margin-top: 0.7rem;
+      }
+      .tabs {
+        justify-content: center;
+      }
+      table {
+        font-size: 0.85rem;
+      }
+      tbody td img {
+        width: 32px;
+        height: 32px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<nav>
-  <!-- Logo: aquí puedes poner la imagen real que tengas -->
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Gold_Star.svg/120px-Gold_Star.svg.png" alt="Logo" class="logo" />
-  
-  <a href="inicio.html" id="menu-inicio" class="active" title="Inicio">
-    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-    Inicio
-  </a>
-  <a href="diezmo.html" id="menu-diezmo" title="Diezmo">
-    <svg viewBox="0 0 24 24"><path d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1zm.25 18.75v-2h-1.5v2h1.5zm1.5-7.5c0-1.035-.765-1.5-1.5-1.5s-1.5.465-1.5 1.5c0 .585.315 1.065.75 1.275v1.5h1.5v-1.5c.435-.21.75-.69.75-1.275z"/></svg>
-    Diezmo
-  </a>
-</nav>
+  <button id="btnMenuMobile" aria-label="Abrir menú">&#9776;</button>
 
-<main>
-  <div class="top-controls" role="search">
-    <input
-      type="search"
-      id="searchInput"
-      placeholder="Buscar por nombre o código..."
-      aria-label="Buscar miembros"
-      autocomplete="off"
-    />
-    <button id="addMemberBtn" aria-label="Añadir miembro">+ Añadir Miembro</button>
-  </div>
-
-  <div class="tabs" role="tablist" aria-label="Pestañas de miembros">
-    <div class="tab active" id="tab-activos" role="tab" tabindex="0" aria-selected="true" aria-controls="tablaMiembros" aria-label="Miembros activos">
-      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1010 10A10.011 10.011 0 0012 2zm1 14.5h-2v-2h2zm0-6h-2V7h2z"/></svg>
-      Miembros Activos
+  <nav id="menuLateral" aria-label="Menú principal">
+    <div class="logo" aria-label="Logo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Church_icon.svg" alt="Logo de la iglesia" />
     </div>
-    <div class="tab" id="tab-baja" role="tab" tabindex="-1" aria-selected="false" aria-controls="tablaMiembros" aria-label="Miembros de baja">
-      <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2zm0 12h-2v2h2z"/></svg>
-      Miembros de Baja
+    <a href="inicio.html" class="menu-link" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Inicio
+    </a>
+    <a href="diezmo.html" class="menu-link">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-2h2zm0-6h-2V7h2z"/></svg>
+      Diezmo
+    </a>
+  </nav>
+
+  <main role="main" tabindex="-1">
+    <div class="top-controls" role="search">
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="Buscar por nombre o código..."
+        aria-label="Buscar miembros"
+        autocomplete="off"
+      />
+      <button id="addMemberBtn" aria-label="Añadir miembro">+ Añadir Miembro</button>
     </div>
-  </div>
 
-  <table aria-label="Tabla de miembros" role="grid" id="tablaMiembros">
-    <thead>
-      <tr>
-        <th>Foto</th>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tablaCuerpo">
-      <!-- Filas generadas por JS -->
-    </tbody>
-  </table>
+    <div class="tabs" role="tablist" aria-label="Pestañas de miembros">
+      <div
+        class="tab active"
+        id="tab-activos"
+        role="tab"
+        tabindex="0"
+        aria-selected="true"
+        aria-controls="tablaMiembros"
+        aria-label="Miembros activos"
+      >
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1010 10A10.011 10.011 0 0012 2zm1 14.5h-2v-2h2zm0-6h-2V7h2z"/></svg>
+        Miembros Activos
+      </div>
+      <div
+        class="tab"
+        id="tab-baja"
+        role="tab"
+        tabindex="-1"
+        aria-selected="false"
+        aria-controls="tablaMiembros"
+        aria-label="Miembros de baja"
+      >
+        <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2zm0 12h-2v2h2z"/></svg>
+        Miembros de Baja
+      </div>
+    </div>
 
-  <nav class="pagination" aria-label="Paginación de miembros" id="paginacion"></nav>
-</main>
+    <table aria-label="Tabla de miembros" role="grid" id="tablaMiembros">
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaCuerpo">
+        <!-- Filas cargadas dinámicamente -->
+      </tbody>
+    </table>
 
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-  import { getFirestore, collection, query, where, orderBy, limit, startAfter, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-  import { getStorage, ref as storageRef, getDownloadURL, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js";
+    <nav class="pagination" aria-label="Paginación de miembros" id="paginacion"></nav>
+  </main>
 
-  // Supabase client import
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  <!-- Firebase y Supabase -->
+  <script type="module">
+    import { initializeApp } from "
 
-  // Tu configuración Firebase
-  const firebaseConfig = {
-    apiKey: "TU_API_KEY_FIREBASE",
-    authDomain: "TU_AUTH_DOMAIN.firebaseapp.com",
-    projectId: "TU_PROJECT_ID",
-    storageBucket: "TU_STORAGE_BUCKET.appspot.com",
-    messagingSenderId: "TU_MSG_SENDER_ID",
-    appId: "TU_APP_ID"
-  };
+https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, where, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  // Tu configuración Supabase
-  const supabaseUrl = "https://TU_SUPABASE_URL.supabase.co";
-  const supabaseKey = "TU_SUPABASE_ANON_KEY";
-  const supabase = createClient(supabaseUrl, supabaseKey);
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_AUTH_DOMAIN",
+  projectId: "TU_PROJECT_ID",
+  storageBucket: "TU_BUCKET.appspot.com",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID"
+};
 
-  // Inicializa Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
+const supabaseKey = 'TU_SUPABASE_PUBLIC_KEY';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // Configuración y variables
-  let estadoActivo = "activo"; // "activo" o "baja"
-  let paginaActual = 1;
-  const itemsPorPagina = 20;
-  let filtroBusqueda = "";
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  const tabActivosBtn = document.getElementById("tab-activos");
-  const tabBajaBtn = document.getElementById("tab-baja");
-  const tbody = document.getElementById("tablaCuerpo");
-  const paginacionDiv = document.getElementById("paginacion");
-  const searchInput = document.getElementById("searchInput");
-  const addMemberBtn = document.getElementById("addMemberBtn");
+const searchInput = document.getElementById("searchInput");
+const tbody = document.getElementById("tablaCuerpo");
+const tabActivos = document.getElementById("tab-activos");
+const tabBaja = document.getElementById("tab-baja");
+const btnMenuMobile = document.getElementById("btnMenuMobile");
+const menuLateral = document.getElementById("menuLateral");
+const main = document.querySelector("main");
 
-  // Cambiar pestaña
-  function cambiarPestana(nuevoEstado) {
-    if (estadoActivo === nuevoEstado) return;
-    estadoActivo = nuevoEstado;
-    paginaActual = 1;
-    // Actualizar clases pestañas
-    if (nuevoEstado === "activo") {
-      tabActivosBtn.classList.add("active");
-      tabActivosBtn.setAttribute("aria-selected", "true");
-      tabActivosBtn.setAttribute("tabindex", "0");
-      tabBajaBtn.classList.remove("active");
-      tabBajaBtn.setAttribute("aria-selected", "false");
-      tabBajaBtn.setAttribute("tabindex", "-1");
-    } else {
-      tabBajaBtn.classList.add("active");
-      tabBajaBtn.setAttribute("aria-selected", "true");
-      tabBajaBtn.setAttribute("tabindex", "0");
-      tabActivosBtn.classList.remove("active");
-      tabActivosBtn.setAttribute("aria-selected", "false");
-      tabActivosBtn.setAttribute("tabindex", "-1");
+let miembros = [];
+let estadoActual = "activo";
+
+async function cargarMiembros() {
+  const q = query(
+    collection(db, "miembros"),
+    where("estado", "==", estadoActual),
+    orderBy("nombre")
+  );
+  const querySnapshot = await getDocs(q);
+  miembros = [];
+
+  for (const docSnap of querySnapshot.docs) {
+    const data = docSnap.data();
+    let fotoUrl = "";
+    if (data.foto) {
+      const { data: urlData } = await supabase.storage.from("fotos").createSignedUrl(data.foto, 3600);
+      fotoUrl = urlData?.signedUrl || "";
     }
-    cargarMiembros();
-  }
-  tabActivosBtn.addEventListener("click", () => cambiarPestana("activo"));
-  tabBajaBtn.addEventListener("click", () => cambiarPestana("baja"));
 
-  // Buscar
-  searchInput.addEventListener("input", (e) => {
-    filtroBusqueda = e.target.value.trim().toLowerCase();
-    paginaActual = 1;
-    cargarMiembros();
-  });
-
-  // Añadir miembro (aquí deberías abrir un modal o formulario)
-  addMemberBtn.addEventListener("click", () => {
-    alert("Aquí abrirías tu formulario para añadir un miembro.");
-  });
-
-  // Función para obtener miembros paginados desde Firestore
-  async function obtenerMiembros(estado, pagina, filtro) {
-    const colRef = collection(db, "miembros");
-    let q;
-
-    if (filtro) {
-      // Filtrar por código o nombre que contengan el filtro
-      // Firestore no soporta 'or' directo, así que hacemos 2 queries (simplificado aquí con filtro en cliente)
-      q = query(colRef, where("estado", "==", estado), orderBy("codigo"), limit(itemsPorPagina * pagina));
-      const snapshot = await getDocs(q);
-      let docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      docs = docs.filter(m =>
-        m.codigo.toLowerCase().includes(filtro) || m.nombre.toLowerCase().includes(filtro)
-      );
-      // Paginar manualmente:
-      const start = (pagina - 1) * itemsPorPagina;
-      return docs.slice(start, start + itemsPorPagina);
-    } else {
-      q = query(colRef, where("estado", "==", estado), orderBy("codigo"), limit(itemsPorPagina), startAfter((pagina - 1) * itemsPorPagina));
-      // Firestore no soporta startAfter con offset así sin un documento, entonces hacemos paginación simple manual:
-      const snapshot = await getDocs(query(colRef, where("estado", "==", estado), orderBy("codigo")));
-      let docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Paginar manualmente:
-      const start = (pagina - 1) * itemsPorPagina;
-      return docs.slice(start, start + itemsPorPagina);
-    }
+    miembros.push({
+      id: docSnap.id,
+      codigo: data.codigo,
+      nombre: data.nombre,
+      estado: data.estado,
+      foto: fotoUrl,
+    });
   }
 
-  // Obtener cantidad total para paginación (simplificado)
-  async function obtenerTotal(estado, filtro) {
-    const colRef = collection(db, "miembros");
-    const snapshot = await getDocs(query(colRef, where("estado", "==", estado)));
-    if (filtro) {
-      let docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      docs = docs.filter(m =>
-        m.codigo.toLowerCase().includes(filtro) || m.nombre.toLowerCase().includes(filtro)
-      );
-      return docs.length;
-    } else {
-      return snapshot.size;
-    }
+  renderMiembros(miembros);
+}
+
+function renderMiembros(miembrosFiltrados) {
+  tbody.innerHTML = "";
+  if (miembrosFiltrados.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5">No se encontraron miembros.</td></tr>`;
+    return;
   }
 
-  // Descargar foto desde Supabase Storage (por URL)
-  async function obtenerUrlFoto(pathFoto) {
-    if (!pathFoto) return "";
-    try {
-      // Si la ruta ya es URL, devolverla (asumimos que sí)
-      if (pathFoto.startsWith("http")) return pathFoto;
+  for (const miembro of miembrosFiltrados) {
+    const tr = document.createElement("tr");
 
-      const { data, error } = await supabase.storage
-        .from("fotos")
-        .createSignedUrl(pathFoto, 60); // URL con expiración 60s
-      if (error) {
-        console.error("Error al obtener URL firma:", error);
-        return "";
-      }
-      return data.signedUrl;
-    } catch (e) {
-      console.error("Error obtenerUrlFoto:", e);
-      return "";
-    }
+    tr.innerHTML = `
+      <td><img src="${miembro.foto}" alt="Foto de ${miembro.nombre}" /></td>
+      <td>${miembro.codigo}</td>
+      <td>${miembro.nombre}</td>
+      <td class="estado-${miembro.estado}">${miembro.estado}</td>
+      <td>${miembro.estado === "baja" ? `<button class="reactivar-btn">Reactivar</button>` : "-"}</td>
+    `;
+
+    tbody.appendChild(tr);
   }
+}
 
-  // Renderizar tabla
-  async function cargarMiembros() {
-    tbody.innerHTML = "";
-    paginacionDiv.innerHTML = "";
-    const totalMiembros = await obtenerTotal(estadoActivo, filtroBusqueda);
-    const totalPaginas = Math.ceil(totalMiembros / itemsPorPagina);
+searchInput.addEventListener("input", () => {
+  const filtro = searchInput.value.toLowerCase();
+  const filtrados = miembros.filter(m =>
+    m.nombre.toLowerCase().includes(filtro) ||
+    m.codigo.toLowerCase().includes(filtro)
+  );
+  renderMiembros(filtrados);
+});
 
-    if (paginaActual > totalPaginas && totalPaginas > 0) paginaActual = totalPaginas;
-    if (paginaActual < 1) paginaActual = 1;
-
-    const miembrosData = await obtenerMiembros(estadoActivo, paginaActual, filtroBusqueda);
-
-    if (miembrosData.length === 0) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 5;
-      td.style.textAlign = "center";
-      td.style.padding = "40px 0";
-      td.textContent = "No se encontraron miembros.";
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-
-    // Cargar fotos y renderizar filas
-    for (const miembro of miembrosData) {
-      const tr = document.createElement("tr");
-
-      const tdFoto = document.createElement("td");
-      const img = document.createElement("img");
-      img.alt = `Foto de ${miembro.nombre}`;
-      // Obtener URL firma o directa
-      img.src = await obtenerUrlFoto(miembro.fotoURL || "");
-      tdFoto.appendChild(img);
-      tr.appendChild(tdFoto);
-
-      const tdCodigo = document.createElement("td");
-      tdCodigo.textContent = miembro.codigo;
-      tr.appendChild(tdCodigo);
-
-      const tdNombre = document.createElement("td");
-      tdNombre.textContent = miembro.nombre;
-      tr.appendChild(tdNombre);
-
-      const tdEstado = document.createElement("td");
-      tdEstado.textContent = miembro.estado === "activo" ? "Activo" : "De Baja";
-      tdEstado.className = miembro.estado === "activo" ? "estado-activo" : "estado-baja";
-      tr.appendChild(tdEstado);
-
-      const tdAcciones = document.createElement("td");
-      if (miembro.estado === "baja") {
-        const btnReactivar = document.createElement("button");
-        btnReactivar.textContent = "Reactivar";
-        btnReactivar.className = "reactivar-btn";
-        btnReactivar.addEventListener("click", () => reactivarMiembro(miembro.id));
-        tdAcciones.appendChild(btnReactivar);
-      } else {
-        tdAcciones.textContent = "-";
-      }
-      tr.appendChild(tdAcciones);
-
-      tbody.appendChild(tr);
-    }
-
-    // Render paginación
-    for (let i = 1; i <= totalPaginas; i++) {
-      const btn = document.createElement("button");
-      btn.textContent = i;
-      if (i === paginaActual) btn.classList.add("active");
-      btn.addEventListener("click", () => {
-        paginaActual = i;
-        cargarMiembros();
-      });
-      paginacionDiv.appendChild(btn);
-    }
-  }
-
-  // Reactivar miembro: actualiza Firestore
-  async function reactivarMiembro(idMiembro) {
-    try {
-      const docRef = doc(db, "miembros", idMiembro);
-      await updateDoc(docRef, { estado: "activo" });
-      alert("Miembro reactivado correctamente.");
-      cargarMiembros();
-    } catch (e) {
-      alert("Error reactivando miembro: " + e.message);
-      console.error(e);
-    }
-  }
-
-  // Inicializamos
+tabActivos.addEventListener("click", () => {
+  estadoActual = "activo";
+  tabActivos.classList.add("active");
+  tabBaja.classList.remove("active");
   cargarMiembros();
+});
 
-  // Accesibilidad: cambiar pestaña con teclado
-  tabActivosBtn.addEventListener("keydown", e => {
-    if (e.key === "ArrowRight") tabBajaBtn.focus();
-  });
-  tabBajaBtn.addEventListener("keydown", e => {
-    if (e.key === "ArrowLeft") tabActivosBtn.focus();
-  });
-</script>
+tabBaja.addEventListener("click", () => {
+  estadoActual = "baja";
+  tabBaja.classList.add("active");
+  tabActivos.classList.remove("active");
+  cargarMiembros();
+});
 
+btnMenuMobile.addEventListener("click", () => {
+  menuLateral.classList.toggle("show");
+  main.classList.toggle("fullWidth");
+});
+
+cargarMiembros();
+</script> 
 </body>
 </html>
-
-    
