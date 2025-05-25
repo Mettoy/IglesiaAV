@@ -5,331 +5,430 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Gestión de Miembros</title>
 <style>
+  /* Reset y base */
+  * {
+    box-sizing: border-box;
+  }
   body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f8;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f9fc;
     margin: 0;
-    padding: 0;
+    padding: 20px;
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
   }
-  header nav ul {
-    display: flex;
-    gap: 2rem;
-    padding: 1rem 2rem;
-    background-color: #3b83bd;
-    margin: 0;
-    list-style: none;
-  }
-  header nav ul li a {
+  a {
     color: white;
     text-decoration: none;
-    font-weight: 600;
-  }
-  header nav ul li a:hover {
-    text-decoration: underline;
-  }
-
-  main {
-    max-width: 960px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-  }
-
-  /* Barra búsqueda + botón */
-  .search-add-container {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 16px;
+    gap: 6px;
   }
-  #busqueda-miembros {
+  a:hover {
+    opacity: 0.7;
+  }
+  nav {
+    background-color: #3b83bd;
+    padding: 14px 20px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    display: flex;
+    gap: 30px;
+    box-shadow: 0 2px 8px rgba(59,131,189,0.4);
+  }
+
+  /* Iconos menú */
+  .icon {
+    width: 20px;
+    height: 20px;
+    fill: white;
+  }
+
+  /* Búsqueda y botón añadir */
+  .top-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 12px;
+  }
+  #searchInput {
     flex-grow: 1;
-    padding: 0.5rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+    padding: 10px 14px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1.5px solid #ccc;
+    transition: border-color 0.3s ease;
   }
-  #btn-agregar-miembro {
-    padding: 0.5rem 1rem;
+  #searchInput:focus {
+    border-color: #3b83bd;
+    outline: none;
+  }
+  #addMemberBtn {
     background-color: #3b83bd;
     color: white;
     border: none;
-    border-radius: 4px;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 6px;
     cursor: pointer;
+    box-shadow: 0 2px 6px rgba(59,131,189,0.5);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
   }
-  #btn-agregar-miembro:hover {
-    background-color: #2e65a2;
+  #addMemberBtn:hover {
+    background-color: #2e6692;
+    box-shadow: 0 4px 10px rgba(46,102,146,0.7);
   }
 
   /* Pestañas */
   .tabs {
-    margin-bottom: 1rem;
+    display: flex;
+    gap: 16px;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 18px;
+    user-select: none;
   }
-  .tabs button {
-    padding: 0.5rem 1rem;
+  .tab {
+    background: none;
     border: none;
-    border-bottom: 2px solid transparent;
-    background: transparent;
+    border-bottom: 3px solid transparent;
     color: #555;
+    font-weight: 500;
+    font-size: 17px;
     cursor: pointer;
-    font-weight: 600;
-    transition: color 0.3s ease, border-bottom-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding-bottom: 6px;
+    gap: 4px;
+    transition: border-color 0.3s ease, color 0.3s ease;
   }
-  .tabs button.active {
+  .tab.active {
     border-bottom-color: #3b83bd;
     color: #3b83bd;
+    font-weight: 700;
   }
-  .tabs button:hover {
+  .tab:hover:not(.active) {
     color: #3b83bd;
+  }
+  /* Íconos pestañas */
+  .tab svg {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+  }
+  .tab.active svg {
+    fill: #3b83bd;
+    stroke: #3b83bd;
+  }
+  .tab.inactive svg {
+    fill: #999;
+    stroke: #999;
   }
 
   /* Tabla */
   table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background-color: white;
     border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     overflow: hidden;
+    user-select: none;
   }
-  th, td {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-  }
-  th {
+  thead tr {
     background-color: #3b83bd;
     color: white;
   }
-  tr:hover {
-    background-color: #f1f9ff;
+  th, td {
+    padding: 12px 10px;
+    text-align: left;
   }
-
-  /* Botón reactivar */
-  .btn-reactivar {
-    padding: 0.25rem 0.5rem;
+  tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.3s ease;
+    cursor: default;
+  }
+  tbody tr:hover {
+    background-color: #f0f7ff;
+  }
+  td img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  td.estado-activo {
+    font-weight: 600;
+    color: #2e7d32;
+  }
+  td.estado-baja {
+    font-weight: 600;
+    color: #999;
+  }
+  button.reactivar-btn {
     background-color: #4caf50;
     color: white;
     border: none;
-    border-radius: 3px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(76,175,80,0.6);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
   }
-  .btn-reactivar:hover {
-    background-color: #3a8d3a;
+  button.reactivar-btn:hover {
+    background-color: #388e3c;
+    box-shadow: 0 4px 12px rgba(56,142,60,0.8);
   }
 
   /* Paginación */
-  .paginacion {
-    margin-top: 1rem;
+  .pagination {
+    margin-top: 20px;
     display: flex;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 8px;
+    user-select: none;
   }
-  .paginacion button {
-    padding: 0.4rem 0.8rem;
-    border: 1px solid #ccc;
-    background: white;
+  .pagination button {
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1.8px solid #3b83bd;
+    background-color: white;
+    color: #333;
+    font-weight: 600;
     cursor: pointer;
-    border-radius: 3px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    box-shadow: none;
   }
-  .paginacion button.active {
+  .pagination button.active {
     background-color: #3b83bd;
     color: white;
-    border-color: #3b83bd;
+    box-shadow: 0 4px 12px rgba(59,131,189,0.7);
   }
-  .paginacion button:hover:not(.active) {
-    background-color: #e6f0fa;
+  .pagination button:hover:not(.active) {
+    background-color: #dbeeff;
   }
 </style>
 </head>
 <body>
 
-<header>
-  <nav>
-    <ul>
-      <li><a href="inicio.html">Inicio</a></li>
-      <li><a href="diezmo.html">Diezmo</a></li>
-    </ul>
-  </nav>
-</header>
+<nav>
+  <a href="inicio.html" title="Inicio">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Inicio
+  </a>
+  <a href="diezmo.html" title="Diezmo">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1zm.25 18.75v-2h-1.5v2h1.5zm1.5-7.5c0-1.035-.765-1.5-1.5-1.5s-1.5.465-1.5 1.5h3zm-3 3v-1.5h3v1.5h-3z"/></svg>
+    Diezmo
+  </a>
+</nav>
 
-<main>
-  <div class="search-add-container">
-    <input type="text" id="busqueda-miembros" placeholder="Buscar por nombre o código" />
-    <button id="btn-agregar-miembro">Añadir Miembro</button>
-  </div>
+<div class="top-controls">
+  <input id="searchInput" type="text" placeholder="Buscar por nombre o código" />
+  <button id="addMemberBtn">+ Añadir Miembro</button>
+</div>
 
-  <div class="tabs">
-    <button id="btn-activos" class="active">Miembros Activos</button>
-    <button id="btn-baja">Miembros de Baja</button>
-  </div>
+<div class="tabs" role="tablist">
+  <button id="tab-activos" class="tab active" role="tab" aria-selected="true" aria-controls="tabpanel-activos" tabindex="0">
+    <svg viewBox="0 0 24 24" fill="#3b83bd" stroke="#3b83bd"><circle cx="12" cy="12" r="10" stroke-width="2" fill="none"/><path d="M9 12l2 2 4-4" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Miembros Activos
+  </button>
+  <button id="tab-baja" class="tab" role="tab" aria-selected="false" aria-controls="tabpanel-baja" tabindex="-1">
+    <svg viewBox="0 0 24 24" fill="#999" stroke="#999"><circle cx="12" cy="12" r="10" stroke-width="2" fill="none"/><line x1="8" y1="8" x2="16" y2="16" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="8" x2="8" y2="16" stroke-width="2" stroke-linecap="round"/></svg>
+    Miembros de Baja
+  </button>
+</div>
 
-  <table id="tabla-miembros">
-    <thead>
-      <tr>
-        <th>Foto</th>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Aquí se cargan los miembros -->
-    </tbody>
-  </table>
+<table aria-label="Tabla de miembros">
+  <thead>
+    <tr>
+      <th scope="col" style="width: 60px;">Foto</th>
+      <th scope="col" style="width: 100px;">Código</th>
+      <th scope="col">Nombre</th>
+      <th scope="col" style="width: 100px;">Estado</th>
+      <th scope="col" style="width: 140px;">Acciones</th>
+    </tr>
+  </thead>
+  <tbody id="tablaCuerpo">
+    <!-- Filas generadas por JS -->
+  </tbody>
+</table>
 
-  <div class="paginacion" id="paginacion">
-    <!-- Botones de paginación -->
-  </div>
-</main>
+<div class="pagination" id="paginacion">
+  <!-- Botones de paginación -->
+</div>
 
 <script>
-  // Datos simulados para ejemplo
+  // Datos de ejemplo
   const miembros = [
-    { id: 1, codigo: 'A001', nombre: 'Ana Pérez', estado: 'activo', foto: 'https://via.placeholder.com/40' },
-    { id: 2, codigo: 'B002', nombre: 'Luis Gómez', estado: 'activo', foto: 'https://via.placeholder.com/40' },
-    { id: 3, codigo: 'C003', nombre: 'María López', estado: 'baja', foto: 'https://via.placeholder.com/40' },
-    { id: 4, codigo: 'D004', nombre: 'Carlos Díaz', estado: 'activo', foto: 'https://via.placeholder.com/40' },
-    { id: 5, codigo: 'E005', nombre: 'Sofía Martínez', estado: 'baja', foto: 'https://via.placeholder.com/40' },
-    // Puedes agregar más miembros para pruebas
+    { id: 1, codigo: "A001", nombre: "Ana Pérez", estado: "activo", fotoURL: "https://i.pravatar.cc/40?img=1" },
+    { id: 2, codigo: "B002", nombre: "Luis Gómez", estado: "activo", fotoURL: "https://i.pravatar.cc/40?img=2" },
+    { id: 3, codigo: "C003", nombre: "María López", estado: "baja", fotoURL: "https://i.pravatar.cc/40?img=3" },
+    { id: 4, codigo: "D004", nombre: "Carlos Torres", estado: "activo", fotoURL: "https://i.pravatar.cc/40?img=4" },
+    { id: 5, codigo: "E005", nombre: "Sofía Díaz", estado: "baja", fotoURL: "https://i.pravatar.cc/40?img=5" },
+    { id: 6, codigo: "F006", nombre: "Javier Martínez", estado: "activo", fotoURL: "https://i.pravatar.cc/40?img=6" },
+    { id: 7, codigo: "G007", nombre: "Elena Fernández", estado: "activo", fotoURL: "https://i.pravatar.cc/40?img=7" },
+    { id: 8, codigo: "H008", nombre: "Miguel Ramírez", estado: "baja", fotoURL: "https://i.pravatar.cc/40?img=8" },
+    { id: 9, codigo: "I009", nombre: "Laura González", estado: "activo", fotoURL: "https://i.pravatar.cc/40?img=9" },
+    { id: 10, codigo: "J010", nombre: "Pedro Sánchez", estado: "activo", fotoURL: "https://i.pravatar.cc/40?img=10" },
+    { id: 11, codigo: "K011", nombre: "Verónica Morales", estado: "baja", fotoURL: "https://i.pravatar.cc/40?img=11" },
+    { id: 12, codigo: "L012", nombre: "Andrés Castro", estado: "activo", fotoURL: "https://i.pravatar.cc/40?img=12" }
   ];
 
-  const miembrosPorPagina = 20;
+  // Estado actual
+  let estadoActivo = 'activo'; // 'activo' o 'baja'
   let paginaActual = 1;
-  let estadoFiltro = 'activo'; // activo o baja
-  let textoBusqueda = '';
+  const itemsPorPagina = 5;
+  let filtroBusqueda = '';
 
-  const tbody = document.querySelector('#tabla-miembros tbody');
+  // Referencias DOM
+  const tabActivosBtn = document.getElementById('tab-activos');
+  const tabBajaBtn = document.getElementById('tab-baja');
+  const tbody = document.getElementById('tablaCuerpo');
   const paginacionDiv = document.getElementById('paginacion');
-  const inputBusqueda = document.getElementById('busqueda-miembros');
-  const btnActivos = document.getElementById('btn-activos');
-  const btnBaja = document.getElementById('btn-baja');
+  const searchInput = document.getElementById('searchInput');
+  const addMemberBtn = document.getElementById('addMemberBtn');
 
-  function filtrarYMostrar() {
-    // Filtrar por estado
-    let filtrados = miembros.filter(m => m.estado === estadoFiltro);
-
-    // Filtrar por texto de búsqueda en nombre o código
-    if (textoBusqueda.trim() !== '') {
-      const txt = textoBusqueda.toLowerCase();
-      filtrados = filtrados.filter(m =>
-        m.nombre.toLowerCase().includes(txt) || m.codigo.toLowerCase().includes(txt)
-      );
+  // Cambiar pestaña
+  function cambiarPestana(nuevoEstado) {
+    if (estadoActivo === nuevoEstado) return;
+    estadoActivo = nuevoEstado;
+    paginaActual = 1;
+    // Actualizar clases pestañas
+    if (nuevoEstado === 'activo') {
+      tabActivosBtn.classList.add('active');
+      tabActivosBtn.setAttribute('aria-selected', 'true');
+      tabActivosBtn.setAttribute('tabindex', '0');
+      tabBajaBtn.classList.remove('active');
+      tabBajaBtn.setAttribute('aria-selected', 'false');
+      tabBajaBtn.setAttribute('tabindex', '-1');
+    } else {
+      tabBajaBtn.classList.add('active');
+      tabBajaBtn.setAttribute('aria-selected', 'true');
+      tabBajaBtn.setAttribute('tabindex', '0');
+      tabActivosBtn.classList.remove('active');
+      tabActivosBtn.setAttribute('aria-selected', 'false');
+      tabActivosBtn.setAttribute('tabindex', '-1');
     }
-
-    // Ordenar alfabéticamente por código
-    filtrados.sort((a, b) => a.codigo.localeCompare(b.codigo));
-
-    // Paginación
-    const totalPaginas = Math.ceil(filtrados.length / miembrosPorPagina);
-    if (paginaActual > totalPaginas) paginaActual = totalPaginas || 1;
-
-    const inicio = (paginaActual - 1) * miembrosPorPagina;
-    const fin = inicio + miembrosPorPagina;
-    const paginaMiembros = filtrados.slice(inicio, fin);
-
-    // Renderizar tabla
-    tbody.innerHTML = '';
-    paginaMiembros.forEach(m => {
-      const tr = document.createElement('tr');
-
-      const tdFoto = document.createElement('td');
-      const img = document.createElement('img');
-      img.src = m.foto;
-      img.alt = m.nombre;
-      img.style.width = '40px';
-      img.style.height = '40px';
-      img.style.borderRadius = '50%';
-      tdFoto.appendChild(img);
-
-      const tdCodigo = document.createElement('td');
-      tdCodigo.textContent = m.codigo;
-
-      const tdNombre = document.createElement('td');
-      tdNombre.textContent = m.nombre;
-
-      const tdEstado = document.createElement('td');
-      tdEstado.textContent = m.estado === 'activo' ? 'Activo' : 'De Baja';
-
-      const tdAcciones = document.createElement('td');
-      if (m.estado === 'baja') {
-        const btnReactivar = document.createElement('button');
-        btnReactivar.textContent = 'Reactivar';
-        btnReactivar.classList.add('btn-reactivar');
-        btnReactivar.onclick = () => {
-          reactivarMiembro(m.id);
-        };
-        tdAcciones.appendChild(btnReactivar);
-      } else {
-        tdAcciones.textContent = '-';
-      }
-
-      tr.appendChild(tdFoto);
-      tr.appendChild(tdCodigo);
-      tr.appendChild(tdNombre);
-      tr.appendChild(tdEstado);
-      tr.appendChild(tdAcciones);
-
-      tbody.appendChild(tr);
-    });
-
-    // Renderizar paginación
-    renderizarPaginacion(totalPaginas);
+    actualizarTabla();
   }
 
-  function renderizarPaginacion(totalPaginas) {
+  tabActivosBtn.addEventListener('click', () => cambiarPestana('activo'));
+  tabBajaBtn.addEventListener('click', () => cambiarPestana('baja'));
+
+  // Buscar
+  searchInput.addEventListener('input', e => {
+    filtroBusqueda = e.target.value.trim().toLowerCase();
+    paginaActual = 1;
+    actualizarTabla();
+  });
+
+  // Añadir miembro (demo)
+  addMemberBtn.addEventListener('click', () => {
+    alert('Aquí puedes abrir tu formulario para añadir un miembro.');
+  });
+
+  // Renderizar tabla con paginación y filtro
+  function actualizarTabla() {
+    // Filtrar por estado
+    let filtrados = miembros.filter(m =>
+      m.estado === estadoActivo &&
+      (m.nombre.toLowerCase().includes(filtroBusqueda) ||
+       m.codigo.toLowerCase().includes(filtroBusqueda))
+    );
+
+    // Paginación
+    const totalPaginas = Math.ceil(filtrados.length / itemsPorPagina);
+    if (paginaActual > totalPaginas) paginaActual = totalPaginas || 1;
+    const inicio = (paginaActual - 1) * itemsPorPagina;
+    const fin = inicio + itemsPorPagina;
+    const paginado = filtrados.slice(inicio, fin);
+
+    // Construir filas
+    tbody.innerHTML = '';
+    if (paginado.length === 0) {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 5;
+      td.style.textAlign = 'center';
+      td.style.padding = '30px 0';
+      td.textContent = 'No se encontraron miembros.';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    } else {
+      paginado.forEach(m => {
+        const tr = document.createElement('tr');
+
+        const tdFoto = document.createElement('td');
+        const img = document.createElement('img');
+        img.src = m.fotoURL;
+        img.alt = `Foto de ${m.nombre}`;
+        tdFoto.appendChild(img);
+        tr.appendChild(tdFoto);
+
+        const tdCodigo = document.createElement('td');
+        tdCodigo.textContent = m.codigo;
+        tr.appendChild(tdCodigo);
+
+        const tdNombre = document.createElement('td');
+        tdNombre.textContent = m.nombre;
+        tr.appendChild(tdNombre);
+
+        const tdEstado = document.createElement('td');
+        tdEstado.textContent = (m.estado === 'activo') ? 'Activo' : 'De Baja';
+        tdEstado.className = m.estado === 'activo' ? 'estado-activo' : 'estado-baja';
+        tr.appendChild(tdEstado);
+
+        const tdAcciones = document.createElement('td');
+        if (m.estado === 'baja') {
+          const btnReactivar = document.createElement('button');
+          btnReactivar.className = 'reactivar-btn';
+          btnReactivar.textContent = 'Reactivar';
+          btnReactivar.addEventListener('click', () => {
+            alert(`Reactivando miembro: ${m.nombre} (id ${m.id})`);
+            // Aquí iría la llamada para actualizar estado en tu BD
+          });
+          tdAcciones.appendChild(btnReactivar);
+        } else {
+          tdAcciones.textContent = '-';
+        }
+        tr.appendChild(tdAcciones);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Renderizar paginación
+    renderPaginacion(totalPaginas);
+  }
+
+  // Crear botones paginación
+  function renderPaginacion(totalPaginas) {
     paginacionDiv.innerHTML = '';
+    if (totalPaginas <= 1) return;
+
     for (let i = 1; i <= totalPaginas; i++) {
       const btn = document.createElement('button');
       btn.textContent = i;
       if (i === paginaActual) {
         btn.classList.add('active');
+        btn.setAttribute('aria-current', 'page');
       }
-      btn.onclick = () => {
+      btn.addEventListener('click', () => {
         paginaActual = i;
-        filtrarYMostrar();
-      };
+        actualizarTabla();
+      });
       paginacionDiv.appendChild(btn);
     }
   }
 
-  function reactivarMiembro(id) {
-    const miembro = miembros.find(m => m.id === id);
-    if (miembro) {
-      miembro.estado = 'activo';
-      alert(`Miembro ${miembro.nombre} reactivado.`);
-      filtrarYMostrar();
-    }
-  }
+  // Inicializar tabla
+  actualizarTabla();
 
-  // Eventos pestañas
-  btnActivos.onclick = () => {
-    estadoFiltro = 'activo';
-    paginaActual = 1;
-    btnActivos.classList.add('active');
-    btnBaja.classList.remove('active');
-    filtrarYMostrar();
-  };
-  btnBaja.onclick = () => {
-    estadoFiltro = 'baja';
-    paginaActual = 1;
-    btnBaja.classList.add('active');
-    btnActivos.classList.remove('active');
-    filtrarYMostrar();
-  };
-
-  // Evento búsqueda
-  inputBusqueda.addEventListener('input', () => {
-    textoBusqueda = inputBusqueda.value;
-    paginaActual = 1;
-    filtrarYMostrar();
-  });
-
-  // Botón agregar miembro
-  document.getElementById('btn-agregar-miembro').onclick = () => {
-    alert('Aquí abrirías el formulario para añadir un nuevo miembro');
-  };
-
-  // Carga inicial
-  filtrarYMostrar();
 </script>
 
 </body>
