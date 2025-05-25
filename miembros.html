@@ -419,16 +419,18 @@ import { getFirestore, collection, getDocs, query, where, limit, orderBy } from 
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_BUCKET.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+  projectId: "iglesia-adoracion-viva",
+  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+  messagingSenderId: "815332010058",
+  appId: "1:815332010058:web:d2afff616469349d88deb3",
+  measurementId: "G-43MZP6V55D"
 };
 
-const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
-const supabaseKey = 'TU_SUPABASE_PUBLIC_KEY';
+const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.coo';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = initializeApp(firebaseConfig);
@@ -451,6 +453,26 @@ async function cargarMiembros() {
     where("estado", "==", estadoActual),
     orderBy("nombre")
   );
+  async function subirFotoYObtenerURL(file, codigo) {
+  if (!file) return ''
+
+  const extension = file.name.split('.').pop()
+  const nombreArchivo = `${codigo}_${Date.now()}.${extension}`
+
+  const { data, error } = await supabase.storage
+    .from('ftmember')  // CAMBIO aquí
+    .upload(nombreArchivo, file, { upsert: true })
+
+  if (error) {
+    alert('Error subiendo la foto: ' + error.message)
+    return ''
+  }
+
+  // URL pública directa
+  const urlPublica = `${supabaseUrl}/storage/v1/object/public/ftmember/${nombreArchivo}` // CAMBIO aquí
+  return urlPublica
+}
+
   const querySnapshot = await getDocs(q);
   miembros = [];
 
