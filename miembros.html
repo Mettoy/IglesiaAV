@@ -1,840 +1,372 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gestión de Miembros - Adoración Viva</title>
-<style>
-  /* Reset */
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
-    color: #ffd700;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-  }
-
-  header {
-    width: 100%;
-    max-width: 1200px;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  header h1 {
-    margin: 0;
-    font-weight: 900;
-    font-size: 2rem;
-  }
-
-  main {
-    width: 100%;
-    max-width: 1200px;
-    background: #112240;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 0 15px #ffd700aa;
-  }
-
-  /* Buscador */
-  #searchInput {
-    width: 100%;
-    padding: 10px;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: none;
-    margin-bottom: 15px;
-    outline: none;
-  }
-
-  /* Tabla */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 15px;
-    table-layout: fixed;
-  }
-
-  th, td {
-    padding: 8px 12px;
-    text-align: left;
-    border-bottom: 1px solid #444;
-    word-wrap: break-word;
-  }
-
-  th {
-    background-color: #003366;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  tr:hover {
-    background-color: #224488;
-  }
-
-  img.photo {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid #ffd700;
-  }
-
-  /* Botones */
-  button {
-    background-color: #ffd700;
-    border: none;
-    color: #003366;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 700;
-    transition: background-color 0.3s ease;
-  }
-
-  button:hover {
-    background-color: #ffea00;
-  }
-
-  /* Paginación */
-  .pagination {
-    text-align: center;
-    margin-bottom: 15px;
-  }
-
-  .pagination button {
-    margin: 0 3px;
-    min-width: 35px;
-  }
-
-  /* Modal */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-  }
-
-  .modal-overlay.active {
-    display: flex;
-  }
-
-  .modal {
-    background: #001f3f;
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 700px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 0 20px #ffd700;
-    color: #ffd700;
-  }
-
-  .modal h2 {
-    margin-top: 0;
-    font-weight: 900;
-  }
-
-  /* Formulario con pestañas */
-  .tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-  }
-
-  .tabs button {
-    flex: 1;
-    padding: 10px;
-    background: #003366;
-    color: #ffd700;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 700;
-  }
-
-  .tabs button.active {
-    background: #ffd700;
-    color: #003366;
-  }
-
-  .tab-content {
-    background: #112240;
-    padding: 15px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-  }
-
-  /* Inputs */
-  input[type="text"], input[type="email"], input[type="number"], select {
-    width: 100%;
-    padding: 8px;
-    margin-top: 6px;
-    margin-bottom: 15px;
-    border-radius: 6px;
-    border: none;
-    outline: none;
-  }
-
-  label {
-    font-weight: 700;
-  }
-
-  /* Mensajes */
-  .message {
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 6px;
-    font-weight: 700;
-    display: none;
-  }
-
-  .message.success {
-    background-color: #228B22;
-    color: white;
-  }
-
-  .message.error {
-    background-color: #b22222;
-    color: white;
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    table, thead, tbody, th, td, tr {
-      display: block;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión de Miembros</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <style>
+    body {
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
-
-    thead tr {
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
+    .sidebar {
+      width: 250px;
+      background-color: #343a40;
+      color: white;
+      flex-shrink: 0;
     }
-
-    tr {
-      margin-bottom: 1rem;
-      border: 1px solid #444;
-      border-radius: 6px;
-      padding: 10px;
+    .sidebar .nav-link {
+      color: white;
     }
-
-    td {
-      border: none;
-      position: relative;
-      padding-left: 50%;
-      white-space: normal;
-      text-align: right;
+    .sidebar .nav-link.active {
+      background-color: #495057;
     }
-
-    td::before {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      width: 45%;
-      white-space: nowrap;
-      font-weight: 700;
-      color: #ffd700;
-      content: attr(data-label);
-      text-align: left;
+    .content {
+      flex-grow: 1;
+      padding: 20px;
     }
-
-    img.photo {
-      width: 100%;
-      height: auto;
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .tabs {
       margin-bottom: 10px;
-      border-radius: 10px;
     }
-
-    .tabs button {
-      font-size: 0.9rem;
-      padding: 8px;
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        position: fixed;
+        height: auto;
+        z-index: 1000;
+      }
+      .content {
+        margin-top: 200px;
+      }
     }
-  }
-</style>
+  </style>
 </head>
 <body>
+  <!-- Sidebar -->
+  <nav class="sidebar d-flex flex-column p-3">
+    <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+      <img src="logo.png" alt="Logo" width="40" height="40" class="me-2">
+      <span class="fs-4">Miembros</span>
+    </a>
+    <hr>
+    <ul class="nav nav-pills flex-column mb-auto">
+      <li>
+        <a href="#" class="nav-link active">
+          <i class="fas fa-users me-2"></i>
+          Gestión de Miembros
+        </a>
+      </li>
+      <!-- Agrega más enlaces según sea necesario -->
+    </ul>
+  </nav>
 
-<header>
-  <h1 id="title">Gestión de Miembros</h1>
-</header>
-
-<main>
-  <input type="text" id="searchInput" placeholder="Buscar..." aria-label="Buscar miembros" />
-
-  <table aria-label="Lista de miembros" id="membersTable">
-    <thead>
-      <tr>
-        <th data-sort="codigo">Código</th>
-        <th data-sort="nombre">Nombre</th>
-        <th>Foto</th>
-        <th data-sort="estado">Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="membersTbody">
-      <!-- Miembros aquí -->
-    </tbody>
-  </table>
-
-  <div class="pagination" id="pagination">
-    <!-- Botones paginación -->
-  </div>
-
-  <button id="btnAddMember">Añadir Miembro</button>
-
-  <div class="message success" id="msgSuccess"></div>
-  <div class="message error" id="msgError"></div>
-</main>
-
-<!-- Modal Formulario -->
-<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-  <div class="modal">
-    <h2 id="modalTitle">Añadir Miembro</h2>
-    <div class="tabs" role="tablist">
-      <button type="button" class="tab-btn active" data-tab="personal" role="tab" aria-selected="true" aria-controls="tabPersonal" id="tabPersonalBtn">Datos Personales</button>
-      <button type="button" class="tab-btn" data-tab="familiar" role="tab" aria-selected="false" aria-controls="tabFamiliar" id="tabFamiliarBtn">Datos Familiares</button>
-      <button type="button" class="tab-btn" data-tab="espiritual" role="tab" aria-selected="false" aria-controls="tabEspiritual" id="tabEspiritualBtn">Datos Espirituales</button>
+  <!-- Main Content -->
+  <div class="content">
+    <div class="top-bar">
+      <div class="tabs btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary active" id="tab-activos">Activos</button>
+        <button type="button" class="btn btn-outline-secondary" id="tab-baja">De Baja</button>
+      </div>
+      <div>
+        <button class="btn btn-success" id="btn-add-member"><i class="fas fa-plus"></i> Añadir Miembro</button>
+      </div>
     </div>
-    <form id="memberForm">
-      <div id="tabPersonal" class="tab-content" role="tabpanel" aria-labelledby="tabPersonalBtn">
-        <label for="codigo">Código:</label>
-        <input type="text" id="codigo" name="codigo" required />
 
-        <label for="nombre">Nombre completo:</label>
-        <input type="text" id="nombre" name="nombre" required />
+    <div class="mb-3">
+      <input type="text" id="search-input" class="form-control" placeholder="Buscar miembros...">
+    </div>
 
-        <label for="email">Correo electrónico:</label>
-        <input type="email" id="email" name="email" />
+    <table class="table table-striped" id="members-table">
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="members-tbody">
+        <!-- Las filas se insertarán dinámicamente aquí -->
+      </tbody>
+    </table>
 
-        <label for="telefono">Teléfono:</label>
-        <input type="text" id="telefono" name="telefono" />
-      </div>
-      <div id="tabFamiliar" class="tab-content" role="tabpanel" aria-labelledby="tabFamiliarBtn" hidden>
-        <label for="conyuge">Cónyuge:</label>
-        <input type="text" id="conyuge" name="conyuge" />
-
-        <label for="hijos">Hijos:</label>
-        <input type="text" id="hijos" name="hijos" />
-
-        <label for="direccion">Dirección:</label>
-        <input type="text" id="direccion" name="direccion" />
-      </div>
-      <div id="tabEspiritual" class="tab-content" role="tabpanel" aria-labelledby="tabEspiritualBtn" hidden>
-        <label for="bautizo">Bautizo:</label>
-        <select id="bautizo" name="bautizo">
-          <option value="">--Seleccione--</option>
-          <option value="Sí">Sí</option>
-          <option value="No">No</option>
-        </select>
-
-        <label for="estado">Estado:</label>
-        <select id="estado" name="estado" required>
-          <option value="Activo">Activo</option>
-          <option value="Baja">Baja</option>
-        </select>
-      </div>
-
-      <label for="foto">Foto:</label>
-      <input type="file" id="foto" name="foto" accept="image/*" />
-
-      <div style="text-align: right; margin-top: 10px;">
-        <button type="submit" id="saveBtn">Guardar</button>
-        <button type="button" id="cancelBtn">Cancelar</button>
-      </div>
-    </form>
+    <nav>
+      <ul class="pagination" id="pagination">
+        <!-- La paginación se insertará dinámicamente aquí -->
+      </ul>
+    </nav>
   </div>
-</div>
 
-<script type="module">
-// Import Firebase and Supabase SDKs
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  updateDoc,
-  doc,
-  query,
-  orderBy,
-  limit,
-  startAfter,
-  where,
-  getDoc,
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+  <!-- Modal para Añadir/Editar Miembro -->
+  <div class="modal fade" id="memberModal" tabindex="-1" aria-labelledby="memberModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="member-form" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="memberModalLabel">Añadir Miembro</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="member-id">
+          <div class="mb-3">
+            <label for="member-name" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="member-name" required>
+          </div>
+          <div class="mb-3">
+            <label for="member-code" class="form-label">Código</label>
+            <input type="text" class="form-control" id="member-code" required>
+          </div>
+          <div class="mb-3">
+            <label for="member-photo" class="form-label">Foto</label>
+            <input type="file" class="form-control" id="member-photo" accept="image/*">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const supabaseUrl = "https://xyptydnouyddzvrffaby.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o"; // Pon tu anon key aquí (no secreta)
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-const membersPerPage = 30;
-let membersData = [];
-let currentPage = 1;
-let filteredMembers = [];
-
-const membersTbody = document.getElementById("membersTbody");
-const paginationDiv = document.getElementById("pagination");
-const searchInput = document.getElementById("searchInput");
-
-const modalOverlay = document.getElementById("modalOverlay");
-const memberForm = document.getElementById("memberForm");
-const btnAddMember = document.getElementById("btnAddMember");
-const msgSuccess = document.getElementById("msgSuccess");
-const msgError = document.getElementById("msgError");
-const saveBtn = document.getElementById("saveBtn");
-const cancelBtn = document.getElementById("cancelBtn");
-
-const tabButtons = document.querySelectorAll(".tab-btn");
-const tabContents = document.querySelectorAll(".tab-content");
-
-let editMemberId = null;
-let editMemberOldPhotoPath = null;
-
-// --- Función para cambiar pestañas ---
-tabButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    tabButtons.forEach(b => {
-      b.classList.remove("active");
-      b.setAttribute("aria-selected", "false");
-    });
-    tabContents.forEach(tc => tc.hidden = true);
-
-    btn.classList.add("active");
-    btn.setAttribute("aria-selected", "true");
-    const tab = btn.dataset.tab;
-    document.getElementById("tab" + capitalize(tab)).hidden = false;
-  });
-});
-
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-// --- Mostrar mensajes ---
-function showMessage(type, text) {
-  if(type === "success") {
-    msgSuccess.textContent = text;
-    msgSuccess.style.display = "block";
-    msgError.style.display = "none";
-  } else {
-    msgError.textContent = text;
-    msgError.style.display = "block";
-    msgSuccess.style.display = "none";
-  }
-  setTimeout(() => {
-    msgSuccess.style.display = "none";
-    msgError.style.display = "none";
-  }, 4000);
-}
-
-// --- Abrir modal ---
-btnAddMember.addEventListener("click", () => {
-  editMemberId = null;
-  editMemberOldPhotoPath = null;
-  memberForm.reset();
-  document.getElementById("modalTitle").textContent = i18n[currentLang].addMemberTitle;
-  tabButtons[0].click();
-  modalOverlay.classList.add("active");
-});
-
-// --- Cancelar modal ---
-cancelBtn.addEventListener("click", () => {
-  modalOverlay.classList.remove("active");
-});
-
-// --- Comprimir imagen ---
-async function compressImage(file, maxWidth = 800, quality = 0.7) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    const reader = new FileReader();
-
-    reader.readAsDataURL(file);
-    reader.onload = e => {
-      image.src = e.target.result;
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.6/dist/umd/supabase.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS -->
+  <script>
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_STORAGE_BUCKET",
+      messagingSenderId: "TU_MESSAGING_SENDER_ID",
+      appId: "TU_APP_ID"
     };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    image.onload = () => {
-      const canvas = document.createElement("canvas");
-      const scaleSize = maxWidth / image.width;
-      canvas.width = maxWidth;
-      canvas.height = image.height * scaleSize;
+    // Configuración de Supabase
+    const supabase = supabase.createClient('TU_SUPABASE_URL', 'TU_SUPABASE_ANON_KEY');
 
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    // Variables globales
+    let members = [];
+    let currentPage = 1;
+    const itemsPerPage = 30;
+    let currentTab = 'activos';
 
-      canvas.toBlob(
-        (blob) => {
-          resolve(new File([blob], file.name, { type: "image/jpeg" }));
-        },
-        "image/jpeg",
-        quality
-      );
-    };
-
-    image.onerror = reject;
-  });
-}
-
-// --- Subir foto a Supabase y eliminar anterior si existe ---
-async function uploadPhoto(file, oldPath = null, codigo) {
-  try {
-    console.log("📷 Comprimiendo imagen...");
-    const compressedFile = await compressImage(file);
-
-    if (oldPath) {
-      console.log("🗑 Eliminando foto anterior:", oldPath);
-      const { error: removeError } = await supabase.storage.from("ftmember").remove([oldPath]);
-      if (removeError) {
-        console.warn("⚠️ Error eliminando foto anterior:", removeError.message);
-      }
-    }
-
-    const timestamp = Date.now();
-    const fileExt = compressedFile.name.split(".").pop();
-    const fileName = `foto_${codigo}_${timestamp}.${fileExt}`;
-
-    console.log("⬆️ Subiendo archivo:", fileName);
-    const { data, error } = await supabase.storage
-      .from("ftmember")
-      .upload(fileName, compressedFile, { upsert: true });
-
-    if (error) {
-      console.error("❌ Error subiendo archivo:", error.message);
-      throw error;
-    }
-
-    console.log("🌐 Obteniendo URL pública...");
-    const { data: urlData, error: urlError } = supabase.storage.from("ftmember").getPublicUrl(fileName);
-    if (urlError) {
-      console.error("❌ Error al obtener URL pública:", urlError.message);
-      throw urlError;
-    }
-
-    console.log("✅ URL pública:", urlData.publicUrl);
-    return { url: urlData.publicUrl, path: fileName };
-  } catch (error) {
-    console.error("🔥 Error en uploadPhoto:", error.message);
-    throw new Error("Error al subir foto: " + error.message);
-  }
-}
-
-// --- Guardar o actualizar miembro ---
-memberForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  saveBtn.disabled = true;
-  saveBtn.textContent = i18n[currentLang].saving;
-
-  try {
-    const formData = new FormData(memberForm);
-    const codigo = formData.get("codigo").trim();
-    const nombre = formData.get("nombre").trim();
-    const email = formData.get("email").trim();
-    const telefono = formData.get("telefono").trim();
-    const conyuge = formData.get("conyuge").trim();
-    const hijos = formData.get("hijos").trim();
-    const direccion = formData.get("direccion").trim();
-    const bautizo = formData.get("bautizo");
-    const estado = formData.get("estado");
-    const fotoInput = document.getElementById("foto");
-    const file = fotoInput.files[0];
-
-    if (!codigo || !nombre) {
-      showMessage("error", i18n[currentLang].fillRequired);
-      saveBtn.disabled = false;
-      saveBtn.textContent = i18n[currentLang].save;
-      return;
-    }
-
-    let photoUrl = null;
-    let photoPath = null;
-
-    if (file) {
-      const uploaded = await uploadPhoto(file, editMemberOldPhotoPath, codigo);
-      photoUrl = uploaded.url;
-      photoPath = uploaded.path;
-    } else if (editMemberId) {
-      // Si no cambió foto, mantener la anterior
-      const member = membersData.find(m => m.id === editMemberId);
-      photoUrl = member.fotoUrl || null;
-      photoPath = member.fotoPath || null;
-    }
-
-    const memberData = {
-      codigo,
-      nombre,
-      email,
-      telefono,
-      conyuge,
-      hijos,
-      direccion,
-      bautizo,
-      estado,
-      fotoUrl: photoUrl,
-      fotoPath: photoPath,
-      updatedAt: new Date().toISOString()
-    };
-
-    if (editMemberId) {
-      // Actualizar
-      const memberRef = doc(db, "miembros", editMemberId);
-      await updateDoc(memberRef, memberData);
-      showMessage("success", i18n[currentLang].updateSuccess);
-    } else {
-      // Añadir nuevo
-      memberData.createdAt = new Date().toISOString();
-      await addDoc(collection(db, "miembros"), memberData);
-      showMessage("success", i18n[currentLang].addSuccess);
-    }
-
-    modalOverlay.classList.remove("active");
-    loadMembers();
-  } catch (error) {
-    showMessage("error", error.message);
-  } finally {
-    saveBtn.disabled = false;
-    saveBtn.textContent = i18n[currentLang].save;
-  }
-});
-
-// --- Cargar miembros desde Firestore ---
-async function loadMembers() {
-  membersData = [];
-  membersTbody.innerHTML = "Cargando...";
-  try {
-    const q = query(collection(db, "miembros"), orderBy("codigo"));
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach(doc => {
-      membersData.push({ id: doc.id, ...doc.data() });
-    });
-
-    filteredMembers = [...membersData];
-    currentPage = 1;
-    renderTablePage();
-    renderPagination();
-  } catch (error) {
-    membersTbody.innerHTML = "<tr><td colspan='5'>Error al cargar datos</td></tr>";
-  }
-}
-
-// --- Renderizar tabla según página y filtro ---
-function renderTablePage() {
-  membersTbody.innerHTML = "";
-
-  if(filteredMembers.length === 0) {
-    membersTbody.innerHTML = `<tr><td colspan="5">${i18n[currentLang].noData}</td></tr>`;
-    return;
-  }
-
-  const startIndex = (currentPage - 1) * membersPerPage;
-  const pageItems = filteredMembers.slice(startIndex, startIndex + membersPerPage);
-
-  pageItems.forEach(member => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td data-label="${i18n[currentLang].codigo}">${member.codigo}</td>
-      <td data-label="${i18n[currentLang].nombre}">${member.nombre}</td>
-      <td data-label="${i18n[currentLang].foto}">
-        ${member.fotoUrl ? `<img class="photo" src="${member.fotoUrl}" alt="${member.nombre}"/>` : "-"}
-      </td>
-      <td data-label="${i18n[currentLang].estado}">${member.estado}</td>
-      <td data-label="${i18n[currentLang].acciones}">
-        <button class="edit-btn" data-id="${member.id}">${i18n[currentLang].edit}</button>
-        <button class="toggle-state-btn" data-id="${member.id}">
-          ${member.estado === "Activo" ? i18n[currentLang].deactivate : i18n[currentLang].activate}
-        </button>
-      </td>
-    `;
-    membersTbody.appendChild(tr);
-  });
-
-  // Añadir listeners botones editar y cambiar estado
-  document.querySelectorAll(".edit-btn").forEach(btn => {
-    btn.onclick = async () => {
-      const memberId = btn.dataset.id;
-      const member = membersData.find(m => m.id === memberId);
-      if (!member) return;
-      editMemberId = memberId;
-      editMemberOldPhotoPath = member.fotoPath || null;
-
-      // Rellenar formulario
-      memberForm.codigo.value = member.codigo || "";
-      memberForm.nombre.value = member.nombre || "";
-      memberForm.email.value = member.email || "";
-      memberForm.telefono.value = member.telefono || "";
-      memberForm.conyuge.value = member.conyuge || "";
-      memberForm.hijos.value = member.hijos || "";
-      memberForm.direccion.value = member.direccion || "";
-      memberForm.bautizo.value = member.bautizo || "";
-      memberForm.estado.value = member.estado || "Activo";
-      document.getElementById("foto").value = "";
-
-      document.getElementById("modalTitle").textContent = i18n[currentLang].editMemberTitle;
-      tabButtons[0].click();
-      modalOverlay.classList.add("active");
-    };
-  });
-
-  document.querySelectorAll(".toggle-state-btn").forEach(btn => {
-    btn.onclick = async () => {
-      const memberId = btn.dataset.id;
-      const member = membersData.find(m => m.id === memberId);
-      if (!member) return;
-      const newEstado = member.estado === "Activo" ? "Baja" : "Activo";
+    // Función para cargar miembros desde Firestore
+    async function loadMembers() {
       try {
-        const memberRef = doc(db, "miembros", memberId);
-        await updateDoc(memberRef, { estado: newEstado, updatedAt: new Date().toISOString() });
-        showMessage("success", i18n[currentLang].stateChanged);
-        loadMembers();
-      } catch {
-        showMessage("error", i18n[currentLang].errorChangeState);
+        const snapshot = await db.collection("miembros").get();
+        members = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderMembers();
+      } catch (error) {
+        console.error("Error al cargar miembros:", error);
       }
-    };
-  });
-}
-
-// --- Renderizar paginación ---
-function renderPagination() {
-  paginationDiv.innerHTML = "";
-  const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
-  if(totalPages <= 1) return;
-
-  for(let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement("button");
-    btn.textContent = i;
-    if(i === currentPage) {
-      btn.disabled = true;
-      btn.style.backgroundColor = "#ffea00";
-      btn.style.color = "#003366";
     }
-    btn.onclick = () => {
-      currentPage = i;
-      renderTablePage();
-      renderPagination();
-    };
-    paginationDiv.appendChild(btn);
-  }
-}
 
-// --- Búsqueda en tiempo real ---
-searchInput.addEventListener("input", () => {
-  const term = searchInput.value.trim().toLowerCase();
-  if(term === "") {
-    filteredMembers = [...membersData];
-  } else {
-    filteredMembers = membersData.filter(m =>
-      m.nombre.toLowerCase().includes(term) ||
-      m.codigo.toLowerCase().includes(term) ||
-      (m.estado && m.estado.toLowerCase().includes(term))
-    );
-  }
-  currentPage = 1;
-  renderTablePage();
-  renderPagination();
-});
+    // Función para renderizar miembros en la tabla
+    function renderMembers() {
+      const tbody = document.getElementById("members-tbody");
+      tbody.innerHTML = "";
 
-// --- Internacionalización (i18n) ---
-let currentLang = "es";
-const i18n = {
-  es: {
-    addMemberTitle: "Añadir Miembro",
-    editMemberTitle: "Editar Miembro",
-    save: "Guardar",
-    saving: "Guardando...",
-    fillRequired: "Por favor, complete los campos requeridos.",
-    addSuccess: "Miembro agregado correctamente.",
-    updateSuccess: "Miembro actualizado correctamente.",
-    errorChangeState: "Error al cambiar el estado.",
-    stateChanged: "Estado cambiado correctamente.",
-    noData: "No hay datos para mostrar.",
-    codigo: "Código",
-    nombre: "Nombre",
-    foto: "Foto",
-    estado: "Estado",
-    acciones: "Acciones",
-    edit: "Editar",
-    deactivate: "Dar de baja",
-    activate: "Reactivar",
-    searchPlaceholder: "Buscar miembros...",
-  },
-  en: {
-    addMemberTitle: "Add Member",
-    editMemberTitle: "Edit Member",
-    save: "Save",
-    saving: "Saving...",
-    fillRequired: "Please fill required fields.",
-    addSuccess: "Member added successfully.",
-    updateSuccess: "Member updated successfully.",
-    errorChangeState: "Error changing state.",
-    stateChanged: "State changed successfully.",
-    noData: "No data to display.",
-    codigo: "Code",
-    nombre: "Name",
-    foto: "Photo",
-    estado: "Status",
-    acciones: "Actions",
-    edit: "Edit",
-    deactivate: "Deactivate",
-    activate: "Reactivate",
-    searchPlaceholder: "Search members...",
-  }
-};
+      const filteredMembers = members.filter(member => {
+        const matchesTab = currentTab === 'activos' ? member.estado !== 'baja' : member.estado === 'baja';
+        const searchTerm = document.getElementById("search-input").value.toLowerCase();
+        const matchesSearch = member.nombre.toLowerCase().includes(searchTerm) || member.codigo.toLowerCase().includes(searchTerm);
+        return matchesTab && matchesSearch;
+      });
 
-// Cambiar idioma (ejemplo botones o dropdown)
-document.getElementById("langSelect").addEventListener("change", (e) => {
-  currentLang = e.target.value;
-  updateTexts();
-  renderTablePage();
-  renderPagination();
-});
+      const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+      currentPage = Math.min(currentPage, totalPages) || 1;
+      const start = (currentPage - 1) * itemsPerPage;
+      const paginatedMembers = filteredMembers.slice(start, start + itemsPerPage);
 
-function updateTexts() {
-  document.getElementById("modalTitle").textContent = editMemberId ? i18n[currentLang].editMemberTitle : i18n[currentLang].addMemberTitle;
-  saveBtn.textContent = i18n[currentLang].save;
-  searchInput.placeholder = i18n[currentLang].searchPlaceholder;
-  // Actualizar encabezados tabla
-  document.querySelectorAll("th").forEach(th => {
-    const key = th.dataset.key;
-    if (key && i18n[currentLang][key]) {
-      th.textContent = i18n[currentLang][key];
+      for (const member of paginatedMembers) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><img src="${member.fotoUrl || 'default.jpg'}" alt="Foto" width="50" height="50"></td>
+          <td>${member.nombre}</td>
+          <td>${member.codigo}</td>
+          <td>${member.estado || 'activo'}</td>
+          <td>
+            <button class="btn btn-sm btn-primary me-1" onclick="editMember('${member.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="toggleMemberStatus('${member.id}')"><i class="fas fa-user-slash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      renderPagination(totalPages);
     }
-  });
-}
 
-// --- Inicializar ---
-loadMembers();
-updateTexts();
-renderPagination();
+    // Función para renderizar la paginación
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
 
-</script>
+      for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement("li");
+        li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+        li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+        li.addEventListener("click", (e) => {
+          e.preventDefault();
+          currentPage = i;
+          renderMembers();
+        });
+        pagination.appendChild(li);
+      }
+    }
+
+    // Función para añadir o editar un miembro
+    document.getElementById("member-form").addEventListener("submit", async (e) => {
+      e.preventDefault
+::contentReference[oaicite:0]{index=0}
+ 
+      ();
+
+      const id = document.getElementById("member-id").value;
+      const nombre = document.getElementById("member-name").value.trim();
+      const codigo = document.getElementById("member-code").value.trim();
+      const fotoFile = document.getElementById("member-photo").files[0];
+
+      try {
+        let fotoUrl = '';
+        let oldPhotoPath = '';
+
+        if (id) {
+          const memberDoc = await db.collection("miembros").doc(id).get();
+          oldPhotoPath = memberDoc.data().fotoPath || '';
+        }
+
+        if (fotoFile) {
+          // Comprimir imagen (opcional, básico)
+          const reader = new FileReader();
+          reader.readAsDataURL(fotoFile);
+          await new Promise(resolve => reader.onload = resolve);
+          const base64 = reader.result;
+
+          // Eliminar foto anterior si existe
+          if (oldPhotoPath) {
+            await supabase.storage.from('ftmember').remove([oldPhotoPath]);
+          }
+
+          // Subir nueva foto
+          const fileName = `${Date.now()}_${fotoFile.name}`;
+          const { error: uploadError } = await supabase
+            .storage
+            .from('ftmember')
+            .upload(fileName, fotoFile);
+
+          if (uploadError) throw new Error("Error al subir la foto");
+
+          const { publicURL } = supabase
+            .storage
+            .from('ftmember')
+            .getPublicUrl(fileName);
+
+          fotoUrl = publicURL;
+          oldPhotoPath = fileName;
+        }
+
+        const memberData = {
+          nombre,
+          codigo,
+          fotoUrl: fotoUrl || (id ? members.find(m => m.id === id)?.fotoUrl : ''),
+          fotoPath: oldPhotoPath,
+          estado: 'activo',
+        };
+
+        if (id) {
+          await db.collection("miembros").doc(id).update(memberData);
+        } else {
+          await db.collection("miembros").add(memberData);
+        }
+
+        document.getElementById("member-form").reset();
+        document.getElementById("member-id").value = '';
+        const modal = bootstrap.Modal.getInstance(document.getElementById("memberModal"));
+        modal.hide();
+        await loadMembers();
+      } catch (error) {
+        console.error("Error al guardar miembro:", error);
+        alert("Ocurrió un error al guardar el miembro.");
+      }
+    });
+
+    // Editar miembro
+    async function editMember(id) {
+      const member = members.find(m => m.id === id);
+      if (!member) return;
+
+      document.getElementById("member-id").value = member.id;
+      document.getElementById("member-name").value = member.nombre;
+      document.getElementById("member-code").value = member.codigo;
+      document.getElementById("member-photo").value = ''; // No se puede prellenar archivo
+
+      const modal = new bootstrap.Modal(document.getElementById("memberModal"));
+      modal.show();
+    }
+
+    // Cambiar estado (dar de baja o reactivar)
+    async function toggleMemberStatus(id) {
+      try {
+        const member = members.find(m => m.id === id);
+        const nuevoEstado = member.estado === 'baja' ? 'activo' : 'baja';
+        await db.collection("miembros").doc(id).update({ estado: nuevoEstado });
+        await loadMembers();
+      } catch (error) {
+        console.error("Error al cambiar estado:", error);
+        alert("No se pudo cambiar el estado del miembro.");
+      }
+    }
+
+    // Cambiar pestaña
+    document.getElementById("tab-activos").addEventListener("click", () => {
+      currentTab = 'activos';
+      document.getElementById("tab-activos").classList.add('active');
+      document.getElementById("tab-baja").classList.remove('active');
+      renderMembers();
+    });
+
+    document.getElementById("tab-baja").addEventListener("click", () => {
+      currentTab = 'baja';
+      document.getElementById("tab-activos").classList.remove('active');
+      document.getElementById("tab-baja").classList.add('active');
+      renderMembers();
+    });
+
+    // Búsqueda en tiempo real
+    document.getElementById("search-input").addEventListener("input", renderMembers);
+
+    // Mostrar modal de nuevo miembro
+    document.getElementById("btn-add-member").addEventListener("click", () => {
+      document.getElementById("member-form").reset();
+      document.getElementById("member-id").value = '';
+      const modal = new bootstrap.Modal(document.getElementById("memberModal"));
+      modal.show();
+    });
+
+    // Cargar datos al inicio
+    loadMembers();
+  </script>
 </body>
 </html>
