@@ -1,279 +1,447 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestión de Miembros</title>
-  <!-- Vuetify CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.3.10/dist/vuetify.min.css" rel="stylesheet">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
-  <!-- Material Design Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gestión de Miembros - Iglesia</title>
+<style>
+  /* Reset & básico */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; background: #0d1321; color: #f0e6d2;
+    display: flex; min-height: 100vh;
+  }
+  /* Menú lateral */
+  nav {
+    width: 280px;
+    background: #2e2a23;
+    display: flex; flex-direction: column;
+    padding: 1rem;
+  }
+  nav h1 {
+    font-weight: bold; color: #ffd369;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  nav .user-info {
+    background: #141414; padding: 10px;
+    border-radius: 8px; margin-bottom: 1rem;
+    text-align: center;
+  }
+  nav .user-info span {
+    display: block; margin-top: 4px; font-size: 0.9rem;
+  }
+  nav button {
+    background: #ffd369; border: none;
+    padding: 0.8rem 1rem; font-weight: bold;
+    color: #0d1321; border-radius: 6px;
+    cursor: pointer; margin-bottom: 0.5rem;
+    transition: background-color 0.3s ease;
+  }
+  nav button:hover {
+    background: #c7a239;
+  }
+  /* Contenedor principal */
+  main {
+    flex: 1; padding: 1rem 2rem;
+    overflow-y: auto;
+    background: #0d1321;
+    display: flex; flex-direction: column;
+  }
+  /* Encabezado */
+  main header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem;
+  }
+  main header h2 {
+    color: #ffd369;
+  }
+  main header input[type="search"] {
+    padding: 0.5rem 1rem;
+    border-radius: 6px; border: none;
+    font-size: 1rem;
+    width: 300px;
+  }
+  /* Tabla */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin-bottom: 1rem;
+  }
+  thead {
+    background: #1e1a11;
+  }
+  thead th {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 2px solid #ffd369;
+    cursor: pointer;
+  }
+  tbody tr {
+    background: #141414;
+    transition: background-color 0.3s ease;
+  }
+  tbody tr:nth-child(even) {
+    background: #1e1a11;
+  }
+  tbody tr:hover {
+    background: #303030;
+  }
+  tbody td {
+    padding: 10px;
+    vertical-align: middle;
+  }
+  tbody img {
+    width: 60px; height: 60px;
+    object-fit: cover; border-radius: 50%;
+  }
+  /* Botones de acción */
+  .btn {
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-right: 6px;
+    transition: background-color 0.3s ease;
+  }
+  .btn-edit {
+    background: #ffd369; color: #0d1321;
+  }
+  .btn-edit:hover {
+    background: #c7a239;
+  }
+  .btn-disable {
+    background: #d9534f;
+    color: #fff;
+  }
+  .btn-disable:hover {
+    background: #b5302c;
+  }
+  .btn-enable {
+    background: #5cb85c;
+    color: #fff;
+  }
+  .btn-enable:hover {
+    background: #3f7d3f;
+  }
+  .btn-add {
+    background: #44bba4;
+    color: #fff;
+  }
+  .btn-add:hover {
+    background: #37907f;
+  }
+  /* Paginación */
+  .pagination {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .pagination button {
+    background: #ffd369;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #0d1321;
+    transition: background-color 0.3s ease;
+  }
+  .pagination button:disabled {
+    background: #999;
+    cursor: not-allowed;
+  }
+  .pagination button:hover:not(:disabled) {
+    background: #c7a239;
+  }
+  /* Modal */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  .modal-bg.active {
+    display: flex;
+  }
+  .modal {
+    background: #141414;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 20px;
+    box-shadow: 0 0 15px #ffd369;
+    color: #f0e6d2;
+  }
+  .modal header {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #ffd369;
+  }
+  .modal .tabs {
+    display: flex;
+    margin-bottom: 1rem;
+    gap: 1rem;
+  }
+  .modal .tabs button {
+    flex: 1;
+    padding: 10px;
+    background: #2e2a23;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #f0e6d2;
+    cursor: pointer;
+    font-weight: bold;
+    transition: border-color 0.3s ease;
+  }
+  .modal .tabs button.active {
+    border-bottom: 2px solid #ffd369;
+    background: #141414;
+  }
+  .modal form > div {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .modal form > div.active {
+    display: flex;
+  }
+  .modal label {
+    font-weight: bold;
+  }
+  .modal input[type="text"],
+  .modal input[type="email"],
+  .modal input[type="tel"],
+  .modal select,
+  .modal textarea {
+    padding: 8px;
+    border-radius: 6px;
+    border: none;
+    font-size: 1rem;
+  }
+  .modal textarea {
+    resize: vertical;
+  }
+  .modal .modal-footer {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  .modal .modal-footer button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .modal .btn-cancel {
+    background: #d9534f;
+    color: white;
+  }
+  .modal .btn-save {
+    background: #44bba4;
+    color: white;
+  }
+  /* Mensajes */
+  .message {
+    position: fixed;
+    top: 1rem; right: 1rem;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    z-index: 10000;
+    display: none;
+  }
+  .message.success {
+    background-color: #5cb85c;
+    color: white;
+  }
+  .message.error {
+    background-color: #d9534f;
+    color: white;
+  }
+  /* Responsive */
+  @media (max-width: 768px) {
+    nav {
+      width: 100%;
+      flex-direction: row;
+      padding: 0.5rem;
+      overflow-x: auto;
+      gap: 1rem;
+    }
+    main header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    main header input[type="search"] {
+      width: 100%;
+      max-width: none;
+    }
+    table tbody img {
+      width: 40px; height: 40px;
+    }
+  }
+</style>
 </head>
 <body>
-  <div id="app"></div>
+<nav>
+  <h1 data-i18n="app_title">Iglesia - Gestión Miembros</h1>
+  <div class="user-info" id="userInfo">
+    <div><strong data-i18n="user">Usuario:</strong> <span id="userEmail">-</span></div>
+    <div><strong data-i18n="role">Rol:</strong> <span id="userRole">-</span></div>
+  </div>
+  <button id="btnLogout" data-i18n="logout">Cerrar Sesión</button>
+  <button id="btnAddMember" class="btn btn-add" style="display:none;" data-i18n="add_member">Añadir Miembro</button>
+  <select id="languageSwitcher" aria-label="Select language" style="margin-top: auto; padding:0.5rem; border-radius:5px;">
+    <option value="es">Español</option>
+    <option value="en">English</option>
+  </select>
+</nav>
+<main>
+  <header>
+    <h2 data-i18n="members_list">Lista de Miembros</h2>
+    <input type="search" id="searchInput" placeholder="Buscar..." aria-label="Buscar miembros" />
+  </header>
+  <table aria-label="Lista de miembros">
+    <thead>
+      <tr>
+        <th data-i18n="photo" scope="col">Foto</th>
+        <th data-i18n="code" scope="col" data-sort="codigo" style="user-select:none; cursor:pointer;">Código ▲▼</th>
+        <th data-i18n="name" scope="col">Nombre</th>
+        <th data-i18n="status" scope="col">Estado</th>
+        <th data-i18n="actions" scope="col">Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="membersTableBody">
+      <!-- Miembros cargados -->
+    </tbody>
+  </table>
+  <div class="pagination" role="navigation" aria-label="Paginación de miembros" id="pagination"></div>
+</main>
 
-  <!-- Vue.js -->
-  <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
-  <!-- Vuetify JS -->
-  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.3.10/dist/vuetify.min.js"></script>
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.min.js"></script>
+<!-- Modal para añadir/editar -->
+<div class="modal-bg" id="modalBg" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+  <div class="modal" role="document">
+    <header id="modalTitle" data-i18n="add_member">Añadir Miembro</header>
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab1" id="tabBtn1" data-tab="1" data-i18n="personal_data">Datos Personales</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab2" id="tabBtn2" data-tab="2" data-i18n="family_data">Datos Familiares</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab3" id="tabBtn3" data-tab="3" data-i18n="spiritual_data">Datos Espirituales</button>
+    </nav>
+    <form id="memberForm" novalidate>
+      <div id="tab1" class="tab-content active" role="tabpanel" aria-labelledby="tabBtn1">
+        <label for="codigoInput" data-i18n="code">Código</label>
+        <input type="text" id="codigoInput" name="codigo" required aria-required="true" />
+        <label for="nombreInput" data-i18n="name">Nombre Completo</label>
+        <input type="text" id="nombreInput" name="nombre" required aria-required="true" />
+        <label for="emailInput" data-i18n="email">Correo Electrónico</label>
+        <input type="email" id="emailInput" name="email" />
+        <label for="telefonoInput" data-i18n="phone">Teléfono</label>
+        <input type="tel" id="telefonoInput" name="telefono" />
+        <label for="fotoInput" data-i18n="photo">Foto</label>
+        <input type="file" id="fotoInput" name="foto" accept="image/*" aria-describedby="photoHelp" />
+        <small id="photoHelp" data-i18n="photo_help">Solo imagen, max 1MB. Se optimizará automáticamente.</small>
+        <img id="photoPreview" alt="Previsualización de foto" style="display:none; width:100px; margin-top:10px; border-radius:50%;" />
+      </div>
+      <div id="tab2" class="tab-content" role="tabpanel" aria-labelledby="tabBtn2">
+        <label for="conyugeInput" data-i18n="spouse">Cónyuge</label>
+        <input type="text" id="conyugeInput" name="conyuge" />
+        <label for="hijosInput" data-i18n="children">Hijos</label>
+        <textarea id="hijosInput" name="hijos" rows="3"></textarea>
+      </div>
+      <div id="tab3" class="tab-content" role="tabpanel" aria-labelledby="tabBtn3">
+        <label for="bautismoInput" data-i18n="baptism">Bautismo</label>
+        <input type="text" id="bautismoInput" name="bautismo" />
+        <label for="ministerioInput" data-i18n="ministry">Ministerio</label>
+        <input type="text" id="ministerioInput" name="ministerio" />
+        <label for="observacionesInput" data-i18n="observations">Observaciones</label>
+        <textarea id="observacionesInput" name="observaciones" rows="3"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" id="btnCancel" data-i18n="cancel">Cancelar</button>
+        <button type="submit" class="btn btn-save" id="btnSave" data-i18n="save">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-  <script>
-    const { createApp, ref, onMounted, computed } = Vue;
-    const { createVuetify } = Vuetify;
-    const vuetify = createVuetify();
+<div class="message" id="message"></div>
 
-    const firebaseConfig = {
-      // Tu configuración de Firebase
-      apiKey: "TU_API_KEY",
-      authDomain: "TU_AUTH_DOMAIN",
-      projectId: "TU_PROJECT_ID",
-      storageBucket: "TU_STORAGE_BUCKET",
-      messagingSenderId: "TU_MESSAGING_SENDER_ID",
-      appId: "TU_APP_ID"
-    };
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    // Inicializar Supabase
-    const supabase = supabase.createClient('https://TU_SUPABASE_URL.supabase.co', 'TU_SUPABASE_ANON_KEY');
+<script>
+  // ============ Configuración Firebase ============
+  const firebaseConfig = {
+    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+    projectId: "iglesia-adoracion-viva",
+    storageBucket: "iglesia-adoracion-viva.appspot.com",
+    messagingSenderId: "815332010058",
+    appId: "1:815332010058:web:d2afff616469349d88deb3",
+    measurementId: "G-43MZP6V55D"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-    createApp({
-      setup() {
-        const members = ref([]);
-        const search = ref('');
-        const dialog = ref(false);
-        const isEdit = ref(false);
-        const form = ref({
-          id: null,
-          name: '',
-          email: '',
-          status: 'Activo',
-          photo: null,
-          photoURL: ''
-        });
-        const snackbar = ref({
-          show: false,
-          text: '',
-          color: ''
-        });
+  // ============ Configuración Supabase ============
+  // Poner tus keys de Supabase aquí
+  const SUPABASE_URL = 'https://tu-instancia.supabase.co'; // Cambiar
+  const SUPABASE_ANON_KEY = 'tu-key-anon';               // Cambiar
+  const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const headers = [
-          { text: 'Foto', value: 'photo' },
-          { text: 'Nombre', value: 'name' },
-          { text: 'Correo Electrónico', value: 'email' },
-          { text: 'Estado', value: 'status' },
-          { text: 'Acciones', value: 'actions', sortable: false }
-        ];
+  // ============ Variables Globales ============
+  let members = [];
+  let filteredMembers = [];
+  let currentPage = 1;
+  const pageSize = 5;
+  let currentSortField = 'codigo';
+  let currentSortDirection = 'asc';
+  let currentUser = null;
+  let currentUserRole = 'user'; // default
 
-        const fetchMembers = async () => {
-          try {
-            const snapshot = await db.collection('members').get();
-            members.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          } catch (error) {
-            showSnackbar('Ocurrió un error al obtener los miembros', 'error');
-          }
-        };
-
-        const openDialog = () => {
-          resetForm();
-          dialog.value = true;
-        };
-
-        const closeDialog = () => {
-          dialog.value = false;
-        };
-
-        const resetForm = () => {
-          form.value = {
-            id: null,
-            name: '',
-            email: '',
-            status: 'Activo',
-            photo: null,
-            photoURL: ''
-          };
-          isEdit.value = false;
-        };
-
-        const saveMember = async () => {
-          try {
-            let photoURL = form.value.photoURL;
-            if (form.value.photo) {
-              // Eliminar imagen anterior si existe
-              if (photoURL) {
-                const filePath = photoURL.split('/').pop();
-                await supabase.storage.from('avatars').remove([filePath]);
-              }
-              // Subir nueva imagen
-              const file = form.value.photo;
-              const fileName = `${Date.now()}_${file.name}`;
-              const { data, error } = await supabase.storage.from('avatars').upload(fileName, file);
-              if (error) throw error;
-              const { publicURL } = supabase.storage.from('avatars').getPublicUrl(fileName);
-              photoURL = publicURL;
-            }
-
-            if (isEdit.value) {
-              await db.collection('members').doc(form.value.id).update({
-                name: form.value.name,
-                email: form.value.email,
-                status: form.value.status,
-                photoURL
-              });
-              showSnackbar('Miembro actualizado exitosamente', 'success');
-            } else {
-              await db.collection('members').add({
-                name: form.value.name,
-                email: form.value.email,
-                status: form.value.status,
-                photoURL
-              });
-              showSnackbar('Miembro agregado exitosamente', 'success');
-            }
-            fetchMembers();
-            closeDialog();
-          } catch (error) {
-            showSnackbar('Ocurrió un error al guardar el miembro', 'error');
-          }
-        };
-
-        const editMember = (member) => {
-          form.value = { ...member, photo: null };
-          isEdit.value = true;
-          dialog.value = true;
-        };
-
-        const deleteMember = async (member) => {
-          try {
-            await db.collection('members').doc(member.id).delete();
-            if (member.photoURL) {
-              const filePath = member.photoURL.split('/').pop();
-              await supabase.storage.from('avatars').remove([filePath]);
-            }
-            fetchMembers();
-            showSnackbar('Miembro eliminado exitosamente', 'success');
-          } catch (error) {
-            showSnackbar('Ocurrió un error al eliminar el miembro', 'error');
-          }
-        };
-
-        const showSnackbar = (text, color) => {
-          snackbar.value = { show: true, text, color };
-        };
-
-        const filteredMembers = computed(() => {
-          return members.value.filter(member =>
-            member.name.toLowerCase().includes(search.value.toLowerCase()) ||
-            member.email.toLowerCase().includes(search.value.toLowerCase())
-          );
-        });
-
-        onMounted(() => {
-          fetchMembers();
-        });
-
-        return {
-          members: filteredMembers,
-          headers,
-          search,
-          dialog,
-          form,
-          isEdit,
-          openDialog,
-          closeDialog,
-          saveMember,
-          editMember,
-          deleteMember,
-          snackbar
-        };
-      },
-      template: `
-        <v-app>
-          <v-container>
-            <v-row justify="space-between" align="center">
-              <v-col cols="12" sm="6">
-                <h1>Gestión de Miembros</h1>
-              </v-col>
-              <v-col cols="12" sm="6" class="text-right">
-                <v-btn color="primary" @click="openDialog">Agregar Miembro</v-btn>
-              </v-col>
-            </v-row>
-
-            <v-text-field
-              v-model="search"
-              label="Buscar"
-              clearable
-            ></v-text-field>
-
-            <v-data-table
-              :headers="headers"
-              :items="members"
-              :items-per-page="5"
-              class="elevation-1"
-            >
-              <template #item.photo="{ item }">
-                <v-avatar size="40">
-                  <img :src="item.photoURL" alt="Foto" />
-                </v-avatar>
-              </template>
-              <template #item.actions="{ item }">
-                <v-btn icon @click="editMember(item)">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn icon @click="deleteMember(item)">
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
-              </template>
-            </v-data-table>
-
-            <v-dialog v-model="dialog" max-width="600px">
-              <v-card>
-                <v-card-title>
-                  <span class="text-h5">{{ isEdit ? 'Editar Miembro' : 'Agregar Miembro' }}</span>
-                </v-card-title>
-                <v-card-text>
-                  <v-form ref="form">
-                    <v-text-field v-model="form.name" label="Nombre" required></v-text-field>
-                    <v-text-field v-model="form.email" label="Correo Electrónico" required></v-text-field>
-                    <v-select
-                      v-model="form.status"
-                      :items="['Activo', 'Inactivo']"
-                      label="Estado"
-                      required
-                    ></v-select>
-                    <v-file-input
-                      v-model="form.photo"
-                      label="Subir Foto"
-                      accept="image/*"
-                    ></v-file-input>
-                  </v-form>
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn text @click="closeDialog">Cancelar</v-btn>
-                  <v-btn color="primary" @click="saveMember">Guardar</v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-
-            <v-snackbar v-model="snackbar.show" :color="snackbar.color">
-              {{ snackbar.text }}
-              <v-btn text @click="snackbar.show = false">Cerrar</v-btn>
-            </v-snackbar>
-          </v-container>
-        </v-app>
-      `
-    }).use(vuetify).mount('#app');
-  </script>
-</body>
-</html>
+  // ============ i18n ============
+  const translations = {
+    es: {
+      app_title: "Iglesia - Gestión Miembros",
+      user: "Usuario:",
+      role: "Rol:",
+      logout: "Cerrar Sesión",
+      add_member: "Añadir Miembro",
+      members_list: "Lista de Miembros",
+      photo: "Foto",
+      code: "Código",
+      name: "Nombre",
+      status: "Estado",
+      actions: "Acciones",
+      personal_data: "Datos Personales",
+      family_data: "Datos Familiares",
+      spiritual_data: "Datos Espirituales",
+      email: "Correo Electrónico",
+      phone: "Teléfono",
+      photo_help: "Solo imagen, max 1MB. Se optimizará automáticamente.",
+      spouse: "Cónyuge",
+      children: "Hijos",
+      baptism: "Bautismo",
+      ministry: "Ministerio",
+      observations: "Observaciones",
+      cancel: "Cancelar",
+      save: "Guardar",
+      active: "Activo",
+      inactive: "De Baja
