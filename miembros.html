@@ -506,30 +506,42 @@ async function compressImage(file, maxWidth = 800, quality = 0.7) {
 // --- Subir foto a Supabase y eliminar anterior si existe ---
 async function uploadPhoto(file, oldPath = null, codigo) {
   try {
-    // Comprimir antes de subir
+    console.log("📷 Comprimiendo imagen...");
     const compressedFile = await compressImage(file);
 
-    // Eliminar foto anterior si la hay
     if (oldPath) {
-      await supabase.storage.from("ftmember").remove([oldPath]);
+      console.log("🗑 Eliminando foto anterior:", oldPath);
+      const { error: removeError } = await supabase.storage.from("ftmember").remove([oldPath]);
+      if (removeError) {
+        console.warn("⚠️ Error eliminando foto anterior:", removeError.message);
+      }
     }
 
-    // Generar nombre único para la foto
     const timestamp = Date.now();
     const fileExt = compressedFile.name.split(".").pop();
     const fileName = `foto_${codigo}_${timestamp}.${fileExt}`;
-    
-    // Subir comprimido
+
+    console.log("⬆️ Subiendo archivo:", fileName);
     const { data, error } = await supabase.storage
       .from("ftmember")
       .upload(fileName, compressedFile, { upsert: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ Error subiendo archivo:", error.message);
+      throw error;
+    }
 
-    // Obtener URL pública (puede que el bucket esté privado, entonces se usará getPublicUrl o signed URL)
-    const { data: urlData } = supabase.storage.from("ftmember").getPublicUrl(fileName);
+    console.log("🌐 Obteniendo URL pública...");
+    const { data: urlData, error: urlError } = supabase.storage.from("ftmember").getPublicUrl(fileName);
+    if (urlError) {
+      console.error("❌ Error al obtener URL pública:", urlError.message);
+      throw urlError;
+    }
+
+    console.log("✅ URL pública:", urlData.publicUrl);
     return { url: urlData.publicUrl, path: fileName };
   } catch (error) {
+    console.error("🔥 Error en uploadPhoto:", error.message);
     throw new Error("Error al subir foto: " + error.message);
   }
 }
