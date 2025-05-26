@@ -1,627 +1,279 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gestión de Miembros</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
-  <style>
-    /* Reset y base */
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #121c2c;
-      color: #f0c75e;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-    /* Menú lateral */
-    nav {
-      width: 220px;
-      background: #0d1520;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 0;
-      border-right: 2px solid #f0c75e;
-    }
-    nav .logo {
-      width: 140px;
-      margin-bottom: 30px;
-    }
-    nav .logo img {
-      width: 100%;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-    }
-    nav ul {
-      list-style: none;
-      padding: 0;
-      width: 100%;
-      text-align: center;
-    }
-    nav ul li {
-      margin: 15px 0;
-    }
-    nav ul li button {
-      background: transparent;
-      border: none;
-      color: #f0c75e;
-      font-size: 18px;
-      cursor: pointer;
-      width: 100%;
-      padding: 8px 0;
-      transition: background 0.3s ease;
-    }
-    nav ul li button:hover,
-    nav ul li button.active {
-      background: #f0c75e;
-      color: #121c2c;
-      font-weight: bold;
-    }
-
-    /* Contenedor principal */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* Header */
-    header {
-      background-color: #0d1520;
-      padding: 15px 20px;
-      font-size: 24px;
-      font-weight: bold;
-      border-bottom: 2px solid #f0c75e;
-    }
-
-    /* Contenido */
-    .container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      background-color: #1a2940;
-    }
-
-    /* Tabla */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: #1a2940;
-    }
-    th, td {
-      border: 1px solid #f0c75e;
-      padding: 10px;
-      text-align: left;
-      vertical-align: middle;
-    }
-    th {
-      background-color: #0d1520;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-    img.foto {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      border-radius: 4px;
-    }
-
-    /* Botones */
-    button {
-      background-color: #f0c75e;
-      color: #121c2c;
-      border: none;
-      padding: 6px 12px;
-      margin: 0 3px;
-      cursor: pointer;
-      border-radius: 3px;
-      font-weight: 600;
-      transition: background-color 0.2s ease;
-    }
-    button:hover {
-      background-color: #d9aa3f;
-    }
-
-    /* Paginación */
-    .paginacion {
-      margin-top: 15px;
-      text-align: center;
-    }
-    .paginacion button {
-      margin: 0 5px;
-      padding: 6px 12px;
-    }
-    .paginacion button:disabled {
-      background-color: #666;
-      cursor: default;
-    }
-
-    /* Modal fondo */
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right:0; bottom:0;
-      background-color: rgba(0,0,0,0.7);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      padding: 10px;
-    }
-    .modal.active {
-      display: flex;
-    }
-    /* Modal contenido */
-    .modal-content {
-      background-color: #0d1520;
-      padding: 20px 30px;
-      border-radius: 8px;
-      width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 0 15px #f0c75eaa;
-      color: #f0c75e;
-      position: relative;
-    }
-    .modal-header {
-      font-size: 22px;
-      margin-bottom: 15px;
-      font-weight: bold;
-      text-align: center;
-    }
-    .close-btn {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      background: transparent;
-      border: none;
-      font-size: 28px;
-      font-weight: bold;
-      color: #f0c75e;
-      cursor: pointer;
-    }
-    /* Tabs */
-    .tabs {
-      display: flex;
-      border-bottom: 2px solid #f0c75e;
-      margin-bottom: 15px;
-    }
-    .tabs button {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: #f0c75e;
-      font-weight: 600;
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: border-color 0.3s ease;
-    }
-    .tabs button.active {
-      border-bottom-color: #f0c75e;
-      font-weight: 700;
-    }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    /* Formulario */
-    form label {
-      display: block;
-      margin: 10px 0 5px;
-      font-weight: 600;
-    }
-    form input[type="text"],
-    form input[type="file"],
-    form select {
-      width: 100%;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #f0c75e;
-      background-color: #1a2940;
-      color: #f0c75e;
-      font-size: 14px;
-    }
-    form input[type="file"] {
-      padding: 4px;
-    }
-    form button.submit-btn {
-      margin-top: 20px;
-      width: 100%;
-      font-size: 18px;
-    }
-
-  </style>
+  <!-- Vuetify CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.3.10/dist/vuetify.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <!-- Material Design Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
 </head>
 <body>
-  <nav>
-    <div class="logo">
-      <img src="https://i.imgur.com/JUQd62L.png" alt="Logo Iglesia" />
-    </div>
-    <ul>
-      <li><button id="btn-activos" class="active">Miembros Activos</button></li>
-      <li><button id="btn-baja">Miembros de Baja</button></li>
-      <li><button id="btn-nuevo">Añadir Miembro</button></li>
-    </ul>
-  </nav>
-  <main>
-    <header>Gestión de Miembros</header>
-    <div class="container">
-      <table>
-        <thead>
-          <tr>
-            <th>Foto</th>
-            <th>Nombre</th>
-            <th>Código</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-miembros"></tbody>
-      </table>
-      <div class="paginacion" id="paginacion"></div>
-    </div>
-  </main>
+  <div id="app"></div>
 
-  <!-- Modal Formulario -->
-  <div class="modal" id="modal">
-    <div class="modal-content">
-      <button class="close-btn" id="cerrar-modal">&times;</button>
-      <div class="modal-header" id="modal-title">Añadir Miembro</div>
-      <div class="tabs">
-        <button class="active" data-tab="categoria1">Datos Personales</button>
-        <button data-tab="categoria2">Datos Familiares</button>
-        <button data-tab="categoria3">Datos Espirituales</button>
-      </div>
-      <form id="form-miembro">
-        <div class="tab-content active" id="categoria1">
-          <label for="nombre">Nombre completo</label>
-          <input type="text" id="nombre" name="nombre" required />
-          <label for="codigo">Código</label>
-          <input type="text" id="codigo" name="codigo" required />
-          <label for="foto">Foto</label>
-          <input type="file" id="foto" name="foto" accept="image/*" />
-        </div>
-        <div class="tab-content" id="categoria2">
-          <label for="conyuge">Cónyuge</label>
-          <input type="text" id="conyuge" name="conyuge" />
-          <label for="hijos">Hijos</label>
-          <input type="text" id="hijos" name="hijos" />
-        </div>
-        <div class="tab-content" id="categoria3">
-          <label for="bautizado">Bautizado</label>
-          <select id="bautizado" name="bautizado" required>
-            <option value="sí">Sí</option>
-            <option value="no">No</option>
-          </select>
-          <label for="ministerio">Ministerio</label>
-          <input type="text" id="ministerio" name="ministerio" />
-        </div>
-        <button type="submit" class="submit-btn">Guardar</button>
-      </form>
-    </div>
-  </div>
+  <!-- Vue.js -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
+  <!-- Vuetify JS -->
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.3.10/dist/vuetify.min.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.min.js"></script>
 
   <script>
-    // Config Supabase (ajusta con tus datos reales)
-    const supabaseUrl = 'https://YOUR-PROJECT.supabase.co';
-    const supabaseKey = 'YOUR-PUBLIC-ANON-KEY';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const { createApp, ref, onMounted, computed } = Vue;
+    const { createVuetify } = Vuetify;
+    const vuetify = createVuetify();
 
-    // Config Firebase (ajusta con tu configuración)
     const firebaseConfig = {
-      apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-      authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-      databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-      projectId: "iglesia-adoracion-viva",
-      storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-      messagingSenderId: "815332010058",
-      appId: "1:815332010058:web:d2afff616469349d88deb3",
-      measurementId: "G-43MZP6V55D"
+      // Tu configuración de Firebase
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_STORAGE_BUCKET",
+      messagingSenderId: "TU_MESSAGING_SENDER_ID",
+      appId: "TU_APP_ID"
     };
+
+    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Variables globales
-    let paginaActual = 1;
-    const ITEMS_POR_PAGINA = 20;
-    let miembrosActivos = true; // true = mostrar activos, false = baja
-    let editarId = null;
+    // Inicializar Supabase
+    const supabase = supabase.createClient('https://TU_SUPABASE_URL.supabase.co', 'TU_SUPABASE_ANON_KEY');
 
-    // Elementos DOM
-    const tabla = document.getElementById('tabla-miembros');
-    const paginacion = document.getElementById('paginacion');
-    const modal = document.getElementById('modal');
-    const cerrarModalBtn = document.getElementById('cerrar-modal');
-    const modalTitle = document.getElementById('modal-title');
-    const formMiembro = document.getElementById('form-miembro');
-    const tabs = document.querySelectorAll('.tabs button');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    // Mostrar modal y manejar tabs
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        const target = tab.getAttribute('data-tab');
-        tabContents.forEach(tc => {
-          tc.classList.toggle('active', tc.id === target);
+    createApp({
+      setup() {
+        const members = ref([]);
+        const search = ref('');
+        const dialog = ref(false);
+        const isEdit = ref(false);
+        const form = ref({
+          id: null,
+          name: '',
+          email: '',
+          status: 'Activo',
+          photo: null,
+          photoURL: ''
         });
-      });
-    });
-
-    cerrarModalBtn.addEventListener('click', () => {
-      modal.classList.remove('active');
-      formMiembro.reset();
-      editarId = null;
-    });
-
-    // Cambiar entre miembros activos y baja
-    document.getElementById('btn-activos').addEventListener('click', () => {
-      miembrosActivos = true;
-      paginaActual = 1;
-      cargarMiembros();
-      setActiveMenu('btn-activos');
-    });
-    document.getElementById('btn-baja').addEventListener('click', () => {
-      miembrosActivos = false;
-      paginaActual = 1;
-      cargarMiembros();
-      setActiveMenu('btn-baja');
-    });
-
-    // Abrir modal nuevo miembro
-    document.getElementById('btn-nuevo').addEventListener('click', () => {
-      modalTitle.textContent = "Añadir Miembro";
-      formMiembro.reset();
-      editarId = null;
-      // Reset tabs to first
-      tabs.forEach(t => t.classList.remove('active'));
-      tabContents.forEach(tc => tc.classList.remove('active'));
-      tabs[0].classList.add('active');
-      tabContents[0].classList.add('active');
-      modal.classList.add('active');
-      setActiveMenu(null);
-    });
-
-    function setActiveMenu(id) {
-      ['btn-activos', 'btn-baja', 'btn-nuevo'].forEach(btnId => {
-        const btn = document.getElementById(btnId);
-        if (btn) btn.classList.toggle('active', btnId === id);
-      });
-    }
-
-    // Cargar miembros paginados y ordenados
-    async function cargarMiembros() {
-      tabla.innerHTML = '';
-      paginacion.innerHTML = '';
-      try {
-        const querySnapshot = await db.collection("miembros")
-          .where('estado', '==', miembrosActivos ? 'activo' : 'baja')
-          .orderBy('codigo', 'asc')
-          .get();
-
-        const allMiembros = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const totalItems = allMiembros.length;
-        const totalPaginas = Math.ceil(totalItems / ITEMS_POR_PAGINA);
-        if(paginaActual > totalPaginas && totalPaginas > 0) paginaActual = totalPaginas;
-        if(totalPaginas === 0) paginaActual = 1;
-
-        const startIndex = (paginaActual -1) * ITEMS_POR_PAGINA;
-        const endIndex = startIndex + ITEMS_POR_PAGINA;
-        const miembrosPage = allMiembros.slice(startIndex, endIndex);
-
-        // Render filas
-        miembrosPage.forEach(miembro => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td><img class="foto" src="${miembro.fotoURL || 'https://via.placeholder.com/50x50?text=Sin+Foto'}" alt="foto" onerror="this.src='https://via.placeholder.com/50x50?text=Sin+Foto'"></td>
-            <td>${miembro.nombre}</td>
-            <td>${miembro.codigo}</td>
-            <td>${miembro.estado}</td>
-            <td>
-              ${miembrosActivos ? `
-                <button class="btn-editar" data-id="${miembro.id}">Editar</button>
-                <button class="btn-baja" data-id="${miembro.id}">Dar Baja</button>
-              ` : `
-                <button class="btn-reactivar" data-id="${miembro.id}">Reactivar</button>
-              `}
-            </td>
-          `;
-          tabla.appendChild(tr);
+        const snackbar = ref({
+          show: false,
+          text: '',
+          color: ''
         });
 
-        // Paginación
-        if(totalPaginas > 1){
-          // Botón anterior
-          const btnAnterior = document.createElement('button');
-          btnAnterior.textContent = 'Anterior';
-          btnAnterior.disabled = paginaActual === 1;
-          btnAnterior.addEventListener('click', () => {
-            if(paginaActual > 1) {
-              paginaActual--;
-              cargarMiembros();
-            }
-          });
-          paginacion.appendChild(btnAnterior);
+        const headers = [
+          { text: 'Foto', value: 'photo' },
+          { text: 'Nombre', value: 'name' },
+          { text: 'Correo Electrónico', value: 'email' },
+          { text: 'Estado', value: 'status' },
+          { text: 'Acciones', value: 'actions', sortable: false }
+        ];
 
-          // Páginas numéricas (opcional, puedes simplificar si quieres)
-          for(let i=1; i<=totalPaginas; i++){
-            const btnPagina = document.createElement('button');
-            btnPagina.textContent = i;
-            btnPagina.disabled = i === paginaActual;
-            btnPagina.addEventListener('click', () => {
-              paginaActual = i;
-              cargarMiembros();
-            });
-            paginacion.appendChild(btnPagina);
-          }
-
-          // Botón siguiente
-          const btnSiguiente = document.createElement('button');
-          btnSiguiente.textContent = 'Siguiente';
-          btnSiguiente.disabled = paginaActual === totalPaginas;
-          btnSiguiente.addEventListener('click', () => {
-            if(paginaActual < totalPaginas){
-              paginaActual++;
-              cargarMiembros();
-            }
-          });
-          paginacion.appendChild(btnSiguiente);
-        }
-
-        // Agregar eventos a botones de acciones
-        agregarEventosBotonesAccion();
-
-      } catch (error) {
-        console.error("Error cargando miembros:", error);
-      }
-    }
-
-    // Agrega eventos a botones Editar, Baja y Reactivar
-    function agregarEventosBotonesAccion(){
-      // Editar
-      document.querySelectorAll('.btn-editar').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
+        const fetchMembers = async () => {
           try {
-            const doc = await db.collection('miembros').doc(id).get();
-            if(!doc.exists) return alert('Miembro no encontrado');
-            const data = doc.data();
-            editarId = id;
-            modalTitle.textContent = 'Editar Miembro';
-            // Rellenar formulario
-            formMiembro.nombre.value = data.nombre || '';
-            formMiembro.codigo.value = data.codigo || '';
-            formMiembro.conyuge.value = data.conyuge || '';
-            formMiembro.hijos.value = data.hijos || '';
-            formMiembro.bautizado.value = data.bautizado || 'sí';
-            formMiembro.ministerio.value = data.ministerio || '';
-            // Abrir modal y reset tabs al primero
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(tc => tc.classList.remove('active'));
-            tabs[0].classList.add('active');
-            tabContents[0].classList.add('active');
-            modal.classList.add('active');
-          } catch(e) {
-            console.error(e);
-            alert('Error al cargar miembro para edición');
+            const snapshot = await db.collection('members').get();
+            members.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          } catch (error) {
+            showSnackbar('Ocurrió un error al obtener los miembros', 'error');
           }
-        });
-      });
-
-      // Dar baja
-      document.querySelectorAll('.btn-baja').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          if(confirm('¿Dar de baja este miembro?')){
-            try {
-              await db.collection('miembros').doc(id).update({estado: 'baja'});
-              cargarMiembros();
-            } catch(e) {
-              console.error(e);
-              alert('Error al dar de baja');
-            }
-          }
-        });
-      });
-
-      // Reactivar
-      document.querySelectorAll('.btn-reactivar').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          if(confirm('¿Reactivar este miembro?')){
-            try {
-              await db.collection('miembros').doc(id).update({estado: 'activo'});
-              cargarMiembros();
-            } catch(e) {
-              console.error(e);
-              alert('Error al reactivar');
-            }
-          }
-        });
-      });
-    }
-
-    // Guardar o actualizar miembro al enviar formulario
-    formMiembro.addEventListener('submit', async e => {
-      e.preventDefault();
-
-      // Leer datos del formulario
-      const nombre = formMiembro.nombre.value.trim();
-      const codigo = formMiembro.codigo.value.trim();
-      const conyuge = formMiembro.conyuge.value.trim();
-      const hijos = formMiembro.hijos.value.trim();
-      const bautizado = formMiembro.bautizado.value;
-      const ministerio = formMiembro.ministerio.value.trim();
-      const fileInput = formMiembro.foto;
-      let fotoURL = null;
-
-      try {
-        // Si hay archivo, subirlo a Supabase Storage
-        if(fileInput.files.length > 0){
-          const file = fileInput.files[0];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${codigo}_${Date.now()}.${fileExt}`;
-          const { data, error } = await supabase.storage
-            .from('ftmember')
-            .upload(fileName, file, { cacheControl: '3600', upsert: true });
-          if(error) throw error;
-
-          // Obtener URL pública
-          const { data: urlData } = supabase.storage.from('ftmember').getPublicUrl(fileName);
-          fotoURL = urlData.publicUrl;
-        }
-
-        // Construir objeto para Firestore
-        const miembroData = {
-          nombre,
-          codigo,
-          conyuge,
-          hijos,
-          bautizado,
-          ministerio,
-          estado: 'activo',
-          fechaRegistro: firebase.firestore.FieldValue.serverTimestamp(),
         };
-        if(fotoURL) miembroData.fotoURL = fotoURL;
 
-        if(editarId){
-          // Actualizar miembro
-          await db.collection('miembros').doc(editarId).update(miembroData);
-          alert('Miembro actualizado');
-        } else {
-          // Insertar nuevo
-          await db.collection('miembros').add(miembroData);
-          alert('Miembro añadido');
-        }
+        const openDialog = () => {
+          resetForm();
+          dialog.value = true;
+        };
 
-        modal.classList.remove('active');
-        formMiembro.reset();
-        editarId = null;
-        cargarMiembros();
+        const closeDialog = () => {
+          dialog.value = false;
+        };
 
-      } catch(error) {
-        console.error(error);
-        alert('Error guardando miembro. Revisa consola.');
-      }
-    });
+        const resetForm = () => {
+          form.value = {
+            id: null,
+            name: '',
+            email: '',
+            status: 'Activo',
+            photo: null,
+            photoURL: ''
+          };
+          isEdit.value = false;
+        };
 
-    // Inicializar
-    cargarMiembros();
+        const saveMember = async () => {
+          try {
+            let photoURL = form.value.photoURL;
+            if (form.value.photo) {
+              // Eliminar imagen anterior si existe
+              if (photoURL) {
+                const filePath = photoURL.split('/').pop();
+                await supabase.storage.from('avatars').remove([filePath]);
+              }
+              // Subir nueva imagen
+              const file = form.value.photo;
+              const fileName = `${Date.now()}_${file.name}`;
+              const { data, error } = await supabase.storage.from('avatars').upload(fileName, file);
+              if (error) throw error;
+              const { publicURL } = supabase.storage.from('avatars').getPublicUrl(fileName);
+              photoURL = publicURL;
+            }
 
+            if (isEdit.value) {
+              await db.collection('members').doc(form.value.id).update({
+                name: form.value.name,
+                email: form.value.email,
+                status: form.value.status,
+                photoURL
+              });
+              showSnackbar('Miembro actualizado exitosamente', 'success');
+            } else {
+              await db.collection('members').add({
+                name: form.value.name,
+                email: form.value.email,
+                status: form.value.status,
+                photoURL
+              });
+              showSnackbar('Miembro agregado exitosamente', 'success');
+            }
+            fetchMembers();
+            closeDialog();
+          } catch (error) {
+            showSnackbar('Ocurrió un error al guardar el miembro', 'error');
+          }
+        };
+
+        const editMember = (member) => {
+          form.value = { ...member, photo: null };
+          isEdit.value = true;
+          dialog.value = true;
+        };
+
+        const deleteMember = async (member) => {
+          try {
+            await db.collection('members').doc(member.id).delete();
+            if (member.photoURL) {
+              const filePath = member.photoURL.split('/').pop();
+              await supabase.storage.from('avatars').remove([filePath]);
+            }
+            fetchMembers();
+            showSnackbar('Miembro eliminado exitosamente', 'success');
+          } catch (error) {
+            showSnackbar('Ocurrió un error al eliminar el miembro', 'error');
+          }
+        };
+
+        const showSnackbar = (text, color) => {
+          snackbar.value = { show: true, text, color };
+        };
+
+        const filteredMembers = computed(() => {
+          return members.value.filter(member =>
+            member.name.toLowerCase().includes(search.value.toLowerCase()) ||
+            member.email.toLowerCase().includes(search.value.toLowerCase())
+          );
+        });
+
+        onMounted(() => {
+          fetchMembers();
+        });
+
+        return {
+          members: filteredMembers,
+          headers,
+          search,
+          dialog,
+          form,
+          isEdit,
+          openDialog,
+          closeDialog,
+          saveMember,
+          editMember,
+          deleteMember,
+          snackbar
+        };
+      },
+      template: `
+        <v-app>
+          <v-container>
+            <v-row justify="space-between" align="center">
+              <v-col cols="12" sm="6">
+                <h1>Gestión de Miembros</h1>
+              </v-col>
+              <v-col cols="12" sm="6" class="text-right">
+                <v-btn color="primary" @click="openDialog">Agregar Miembro</v-btn>
+              </v-col>
+            </v-row>
+
+            <v-text-field
+              v-model="search"
+              label="Buscar"
+              clearable
+            ></v-text-field>
+
+            <v-data-table
+              :headers="headers"
+              :items="members"
+              :items-per-page="5"
+              class="elevation-1"
+            >
+              <template #item.photo="{ item }">
+                <v-avatar size="40">
+                  <img :src="item.photoURL" alt="Foto" />
+                </v-avatar>
+              </template>
+              <template #item.actions="{ item }">
+                <v-btn icon @click="editMember(item)">
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+                <v-btn icon @click="deleteMember(item)">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </template>
+            </v-data-table>
+
+            <v-dialog v-model="dialog" max-width="600px">
+              <v-card>
+                <v-card-title>
+                  <span class="text-h5">{{ isEdit ? 'Editar Miembro' : 'Agregar Miembro' }}</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-form ref="form">
+                    <v-text-field v-model="form.name" label="Nombre" required></v-text-field>
+                    <v-text-field v-model="form.email" label="Correo Electrónico" required></v-text-field>
+                    <v-select
+                      v-model="form.status"
+                      :items="['Activo', 'Inactivo']"
+                      label="Estado"
+                      required
+                    ></v-select>
+                    <v-file-input
+                      v-model="form.photo"
+                      label="Subir Foto"
+                      accept="image/*"
+                    ></v-file-input>
+                  </v-form>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn text @click="closeDialog">Cancelar</v-btn>
+                  <v-btn color="primary" @click="saveMember">Guardar</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+
+            <v-snackbar v-model="snackbar.show" :color="snackbar.color">
+              {{ snackbar.text }}
+              <v-btn text @click="snackbar.show = false">Cerrar</v-btn>
+            </v-snackbar>
+          </v-container>
+        </v-app>
+      `
+    }).use(vuetify).mount('#app');
   </script>
 </body>
 </html>
