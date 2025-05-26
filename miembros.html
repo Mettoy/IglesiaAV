@@ -380,6 +380,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const firebaseConfig = {
   apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
   authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
   projectId: "iglesia-adoracion-viva",
   storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
   messagingSenderId: "815332010058",
@@ -390,8 +391,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const supabaseUrl = "https://azywyqozwwbfctxeokug.supabase.co";
-const supabaseKey = "TU_SUPABASE_ANON_KEY_AQUI"; // Pon tu anon key aquí (no secreta)
+const supabaseUrl = "https://xyptydnouyddzvrffaby.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o"; // Pon tu anon key aquí (no secreta)
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const membersPerPage = 30;
