@@ -1,404 +1,130 @@
-<!DOCTYPE html>
-<html lang="es">
+<!DOCTYPE html><html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión de Miembros</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
   <style>
-    .modal-overlay {
-      background-color: rgba(0, 0, 0, 0.7);
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121c2c;
+      color: #f0c75e;
     }
-    .modal-overlay.hidden {
-      display: none;
+    header {
+      background-color: #0d1520;
+      padding: 10px 20px;
+      text-align: center;
+      font-size: 24px;
     }
-    .tab-active {
-      background-color: #facc15; /* amarillo dorado Tailwind */
-      color: black;
+    .container {
+      padding: 20px;
     }
-    /* Scroll modal content */
-    #modal-content {
-      max-height: 80vh;
-      overflow-y: auto;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #1a2940;
     }
-    /* Scrollbar para modal */
-    #modal-content::-webkit-scrollbar {
-      width: 8px;
+    th, td {
+      border: 1px solid #f0c75e;
+      padding: 8px;
+      text-align: left;
     }
-    #modal-content::-webkit-scrollbar-thumb {
-      background-color: #fbbf24;
-      border-radius: 4px;
+    th {
+      background-color: #0d1520;
+    }
+    img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+    }
+    button {
+      background-color: #f0c75e;
+      color: #121c2c;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
     }
   </style>
 </head>
-<body class="bg-gray-900 text-white flex min-h-screen font-sans">
-
-  <!-- Sidebar -->
-  <aside class="w-64 bg-blue-900 min-h-screen p-6 flex flex-col">
-    <div class="text-yellow-400 font-bold text-3xl mb-10 text-center select-none">Mi Iglesia</div>
-    <nav class="flex-grow">
-      <ul>
-        <li class="mb-6">
-          <a href="#" class="text-white hover:text-yellow-400 transition-colors duration-200">Inicio</a>
-        </li>
-        <li class="mb-6">
-          <a href="#" class="text-white hover:text-yellow-400 transition-colors duration-200">Miembros</a>
-        </li>
-      </ul>
-    </nav>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="flex-1 p-6 flex flex-col">
-
-    <!-- Tabs y botón añadir -->
-    <div class="flex items-center space-x-4 mb-6">
-      <button id="tab-activos" class="px-5 py-2 rounded font-semibold tab-active">Activos</button>
-      <button id="tab-baja" class="px-5 py-2 rounded font-semibold bg-gray-700 text-white hover:bg-gray-600 transition">De Baja</button>
-      <button id="btn-add-member" class="ml-auto px-5 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold transition">Añadir miembro</button>
-    </div>
-
-    <!-- Panel Activos -->
-    <div id="panel-activos" class="flex-1 overflow-auto">
-      <table class="w-full bg-white text-black rounded shadow overflow-hidden">
-        <thead class="bg-blue-800 text-white">
-          <tr>
-            <th class="p-3">Foto</th>
-            <th class="p-3">Nombre</th>
-            <th class="p-3">Código</th>
-            <th class="p-3">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-activos"></tbody>
-      </table>
-    </div>
-
-    <!-- Panel De Baja -->
-    <div id="panel-baja" class="flex-1 overflow-auto hidden">
-      <table class="w-full bg-white text-black rounded shadow overflow-hidden">
-        <thead class="bg-gray-800 text-white">
-          <tr>
-            <th class="p-3">Foto</th>
-            <th class="p-3">Nombre</th>
-            <th class="p-3">Código</th>
-            <th class="p-3">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-baja"></tbody>
-      </table>
-    </div>
-
-  </main>
-
-  <!-- Modal Overlay -->
-  <div id="modal-overlay" class="modal-overlay fixed inset-0 flex justify-center items-center z-50 hidden">
-    <div id="modal-content" class="bg-white text-black rounded-lg w-full max-w-4xl p-8 relative shadow-lg">
-      <button id="modal-close-btn" class="absolute top-4 right-6 text-3xl font-bold text-red-600 hover:text-red-800 transition">&times;</button>
-      <h2 class="text-3xl font-bold mb-6 text-center">Añadir Miembro</h2>
-
-      <form id="form-member" class="space-y-8 text-black">
-        <!-- Categoría 1: Datos Personales -->
-        <fieldset class="border border-yellow-400 rounded p-4">
-          <legend class="text-yellow-500 font-bold text-lg px-2">Datos Personales</legend>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div>
-              <label for="nombre" class="block font-semibold mb-1">Nombre completo *</label>
-              <input type="text" id="nombre" name="nombre" required class="w-full border border-gray-300 rounded px-3 py-2"/>
-            </div>
-            <div>
-              <label for="codigo" class="block font-semibold mb-1">Código único *</label>
-              <input type="text" id="codigo" name="codigo" required class="w-full border border-gray-300 rounded px-3 py-2" maxlength="20" />
-            </div>
-            <div>
-              <label for="foto" class="block font-semibold mb-1">Foto *</label>
-              <input type="file" id="foto" name="foto" accept="image/*" required class="w-full"/>
-            </div>
-          </div>
-        </fieldset>
-
-        <!-- Categoría 2: Datos Familiares -->
-        <fieldset class="border border-yellow-400 rounded p-4">
-          <legend class="text-yellow-500 font-bold text-lg px-2">Datos Familiares</legend>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div>
-              <label for="conyuge" class="block font-semibold mb-1">Cónyuge</label>
-              <input type="text" id="conyuge" name="conyuge" class="w-full border border-gray-300 rounded px-3 py-2" />
-            </div>
-            <div>
-              <label for="hijos" class="block font-semibold mb-1">Número de hijos</label>
-              <input type="number" id="hijos" name="hijos" min="0" class="w-full border border-gray-300 rounded px-3 py-2" />
-            </div>
-            <div>
-              <label for="direccion" class="block font-semibold mb-1">Dirección</label>
-              <input type="text" id="direccion" name="direccion" class="w-full border border-gray-300 rounded px-3 py-2" />
-            </div>
-          </div>
-        </fieldset>
-
-        <!-- Categoría 3: Datos Espirituales -->
-        <fieldset class="border border-yellow-400 rounded p-4">
-          <legend class="text-yellow-500 font-bold text-lg px-2">Datos Espirituales</legend>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div>
-              <label for="bautismo" class="block font-semibold mb-1">Bautismo</label>
-              <select id="bautismo" name="bautismo" class="w-full border border-gray-300 rounded px-3 py-2">
-                <option value="">Seleccione</option>
-                <option value="Sí">Sí</option>
-                <option value="No">No</option>
-              </select>
-            </div>
-            <div>
-              <label for="ministerio" class="block font-semibold mb-1">Ministerio</label>
-              <input type="text" id="ministerio" name="ministerio" class="w-full border border-gray-300 rounded px-3 py-2" />
-            </div>
-            <div>
-              <label for="ministerio_direccion" class="block font-semibold mb-1">Dirección Ministerio</label>
-              <input type="text" id="ministerio_direccion" name="ministerio_direccion" class="w-full border border-gray-300 rounded px-3 py-2" />
-            </div>
-          </div>
-        </fieldset>
-
-        <div class="flex justify-end mt-6 space-x-4">
-          <button type="button" id="modal-cancel-btn" class="px-6 py-2 rounded border border-gray-400 hover:bg-gray-200 transition">Cancelar</button>
-          <button type="submit" id="modal-submit-btn" class="px-6 py-2 rounded bg-yellow-400 text-black font-bold hover:bg-yellow-500 transition">Guardar</button>
-        </div>
-      </form>
-    </div>
+<body>
+  <header>
+    Gestión de Miembros
+  </header>
+  <div class="container">
+    <table>
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-miembros"></tbody>
+    </table>
   </div>
 
-<script>
-  // CONFIGURA TUS CLAVES AQUÍ:
-  const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_STORAGE_BUCKET",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
-};
+  <script>
+    const supabase = supabase.createClient('https://XXXX.supabase.co', 'public-anon-key');
 
-const supabaseUrl = 'https://TU_SUPABASE_URL.supabase.co';
-const supabaseKey = 'TU_SUPABASE_ANON_KEY';
+    const firebaseConfig = {
+      apiKey: "AIzaSy...",
+      authDomain: "tu-app.firebaseapp.com",
+      projectId: "tu-app",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-  // Inicializar Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  // Inicializar Supabase
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-  // Referencias DOM
-  const modalOverlay = document.getElementById('modal-overlay');
-  const btnAddMember = document.getElementById('btn-add-member');
-  const modalCloseBtn = document.getElementById('modal-close-btn');
-  const modalCancelBtn = document.getElementById('modal-cancel-btn');
-  const formMember = document.getElementById('form-member');
-
-  const tablaActivos = document.getElementById('tabla-activos');
-  const tablaBaja = document.getElementById('tabla-baja');
-
-  const tabActivos = document.getElementById('tab-activos');
-  const tabBaja = document.getElementById('tab-baja');
-  const panelActivos = document.getElementById('panel-activos');
-  const panelBaja = document.getElementById('panel-baja');
-
-  // Abrir modal
-  btnAddMember.addEventListener('click', () => {
-    formMember.reset();
-    modalOverlay.classList.remove('hidden');
-  });
-
-  // Cerrar modal
-  modalCloseBtn.addEventListener('click', () => {
-    modalOverlay.classList.add('hidden');
-  });
-  modalCancelBtn.addEventListener('click', () => {
-    modalOverlay.classList.add('hidden');
-  });
-
-  // Cambiar pestañas
-  tabActivos.addEventListener('click', () => {
-    tabActivos.classList.add('tab-active');
-    tabBaja.classList.remove('tab-active');
-    panelActivos.classList.remove('hidden');
-    panelBaja.classList.add('hidden');
-  });
-
-  tabBaja.addEventListener('click', () => {
-    tabBaja.classList.add('tab-active');
-    tabActivos.classList.remove('tab-active');
-    panelBaja.classList.remove('hidden');
-    panelActivos.classList.add('hidden');
-  });
-
-  // Función para crear fila de tabla
-  function crearFila(member, tabla, esActivo) {
-    const tr = document.createElement('tr');
-    tr.classList.add('border-b');
-
-    // Foto
-    const tdFoto = document.createElement('td');
-    tdFoto.className = "p-2";
-    const img = document.createElement('img');
-    img.src = member.fotoURL || '';
-    img.alt = member.nombre || 'foto';
-    img.className = "w-16 h-16 object-cover rounded";
-    tdFoto.appendChild(img);
-    tr.appendChild(tdFoto);
-
-    // Nombre
-    const tdNombre = document.createElement('td');
-    tdNombre.className = "p-2";
-    tdNombre.textContent = member.nombre || '';
-    tr.appendChild(tdNombre);
-
-    // Código
-    const tdCodigo = document.createElement('td');
-    tdCodigo.className = "p-2";
-    tdCodigo.textContent = member.codigo || '';
-    tr.appendChild(tdCodigo);
-
-    // Acciones
-    const tdAcciones = document.createElement('td');
-    tdAcciones.className = "p-2 flex space-x-2";
-
-    // Botón Editar (solo alerta por ahora)
-    const btnEditar = document.createElement('button');
-    btnEditar.textContent = 'Editar';
-    btnEditar.className = 'px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm';
-    btnEditar.addEventListener('click', () => {
-      alert('Función editar no implementada aún.');
-    });
-    tdAcciones.appendChild(btnEditar);
-
-    // Botón Cambiar Estado
-    const btnEstado = document.createElement('button');
-    btnEstado.textContent = esActivo ? 'Dar de baja' : 'Reactivar';
-    btnEstado.className = esActivo
-      ? 'px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-white text-sm'
-      : 'px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-white text-sm';
-
-    btnEstado.addEventListener('click', async () => {
+    async function cargarMiembros() {
+      const tabla = document.getElementById('tabla-miembros');
+      tabla.innerHTML = '';
       try {
-        await db.collection('miembros').doc(member.id).update({
-          activo: !esActivo
+        const snapshot = await db.collection("miembros").get();
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const tr = document.createElement('tr');
+          const nuevoEstado = data.estado === 'activo' ? 'baja' : 'activo';
+          tr.innerHTML = `
+            <td><img src="${data.fotoURL}" alt="foto" onerror="this.src='default.png'"></td>
+            <td>${data.nombre}</td>
+            <td>${data.codigo}</td>
+            <td>${data.estado}</td>
+            <td><button class="cambiar-estado" data-id="${doc.id}" data-estado="${data.estado}">
+              ${data.estado === 'activo' ? 'Dar de baja' : 'Reactivar'}
+            </button></td>
+          `;
+          tabla.appendChild(tr);
         });
+
+        // Asignar eventos a los botones después de cargarlos
+        document.querySelectorAll('.cambiar-estado').forEach(button => {
+          button.addEventListener('click', () => {
+            const id = button.getAttribute('data-id');
+            const estado = button.getAttribute('data-estado');
+            cambiarEstado(id, estado);
+          });
+        });
+
+      } catch (error) {
+        console.error("Error al cargar miembros:", error);
+      }
+    }
+
+    async function cambiarEstado(id, estadoActual) {
+      const nuevoEstado = estadoActual === 'activo' ? 'baja' : 'activo';
+      try {
+        await db.collection("miembros").doc(id).update({ estado: nuevoEstado });
         cargarMiembros();
       } catch (error) {
-        alert('Error al actualizar estado: ' + error.message);
+        console.error("Error al cambiar estado:", error);
       }
-    });
-
-    tdAcciones.appendChild(btnEstado);
-    tr.appendChild(tdAcciones);
-
-    tabla.appendChild(tr);
-  }
-
-  // Cargar miembros desde Firestore
-  async function cargarMiembros() {
-    tablaActivos.innerHTML = '';
-    tablaBaja.innerHTML = '';
-
-    try {
-      const snapshot = await db.collection('miembros').get();
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        data.id = doc.id; // Guardar id para actualizaciones
-        if (data.activo) {
-          crearFila(data, tablaActivos, true);
-        } else {
-          crearFila(data, tablaBaja, false);
-        }
-      });
-    } catch (error) {
-      alert('Error al cargar miembros: ' + error.message);
-    }
-  }
-
-  // Subir foto a Supabase Storage
-  async function subirFoto(file, codigo) {
-    if (!file) return null;
-
-    // Usamos el código para crear un nombre único
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${codigo}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    const { data, error } = await supabase.storage
-      .from('ftmember')
-      .upload(filePath, file, { upsert: true });
-
-    if (error) {
-      throw error;
     }
 
-    // Obtener URL pública
-    const { publicURL, error: urlError } = supabase.storage
-      .from('ftmember')
-      .getPublicUrl(filePath);
-
-    if (urlError) {
-      throw urlError;
-    }
-
-    return publicURL;
-  }
-
-  // Manejar envío formulario
-  formMember.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const nombre = formMember.nombre.value.trim();
-    const codigo = formMember.codigo.value.trim();
-    const fotoFile = formMember.foto.files[0];
-    const conyuge = formMember.conyuge.value.trim();
-    const hijos = parseInt(formMember.hijos.value) || 0;
-    const direccion = formMember.direccion.value.trim();
-    const bautismo = formMember.bautismo.value;
-    const ministerio = formMember.ministerio.value.trim();
-    const ministerio_direccion = formMember.ministerio_direccion.value.trim();
-
-    if (!nombre || !codigo || !fotoFile) {
-      alert('Por favor complete los campos obligatorios y cargue una foto.');
-      return;
-    }
-
-    try {
-      // Subir foto y obtener URL
-      const fotoURL = await subirFoto(fotoFile, codigo);
-
-      // Guardar en Firestore
-      await db.collection('miembros').add({
-        nombre,
-        codigo,
-        fotoURL,
-        conyuge,
-        hijos,
-        direccion,
-        bautismo,
-        ministerio,
-        ministerio_direccion,
-        activo: true,
-        creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      alert('Miembro agregado correctamente.');
-      modalOverlay.classList.add('hidden');
-      cargarMiembros();
-
-    } catch (error) {
-      alert('Error al guardar miembro: ' + error.message);
-    }
-  });
-
-  // Cargar miembros al inicio
-  cargarMiembros();
-
-</script>
-
+    window.addEventListener('DOMContentLoaded', cargarMiembros);
+  </script>
 </body>
 </html>
