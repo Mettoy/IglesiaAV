@@ -8,23 +8,91 @@
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
   <style>
+    /* Reset y base */
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #121c2c;
       color: #f0c75e;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
     }
+    /* Menú lateral */
+    nav {
+      width: 220px;
+      background: #0d1520;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      border-right: 2px solid #f0c75e;
+    }
+    nav .logo {
+      width: 140px;
+      margin-bottom: 30px;
+    }
+    nav .logo img {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      width: 100%;
+      text-align: center;
+    }
+    nav ul li {
+      margin: 15px 0;
+    }
+    nav ul li button {
+      background: transparent;
+      border: none;
+      color: #f0c75e;
+      font-size: 18px;
+      cursor: pointer;
+      width: 100%;
+      padding: 8px 0;
+      transition: background 0.3s ease;
+    }
+    nav ul li button:hover,
+    nav ul li button.active {
+      background: #f0c75e;
+      color: #121c2c;
+      font-weight: bold;
+    }
+
+    /* Contenedor principal */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
     header {
       background-color: #0d1520;
-      padding: 10px 20px;
-      text-align: center;
+      padding: 15px 20px;
       font-size: 24px;
+      font-weight: bold;
+      border-bottom: 2px solid #f0c75e;
     }
+
+    /* Contenido */
     .container {
+      flex: 1;
+      overflow-y: auto;
       padding: 20px;
-      max-width: 900px;
-      margin: auto;
+      background-color: #1a2940;
     }
+
+    /* Tabla */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -32,73 +100,116 @@
     }
     th, td {
       border: 1px solid #f0c75e;
-      padding: 8px;
+      padding: 10px;
       text-align: left;
+      vertical-align: middle;
     }
     th {
       background-color: #0d1520;
+      position: sticky;
+      top: 0;
+      z-index: 1;
     }
-    img {
+    img.foto {
       width: 50px;
       height: 50px;
       object-fit: cover;
       border-radius: 4px;
     }
+
+    /* Botones */
     button {
       background-color: #f0c75e;
       color: #121c2c;
       border: none;
-      padding: 5px 10px;
+      padding: 6px 12px;
+      margin: 0 3px;
       cursor: pointer;
-      border-radius: 4px;
-      margin-right: 5px;
+      border-radius: 3px;
+      font-weight: 600;
+      transition: background-color 0.2s ease;
     }
     button:hover {
-      background-color: #d9ac3c;
+      background-color: #d9aa3f;
     }
-    /* Modal */
-    .modal-bg {
-      display: none;
+
+    /* Paginación */
+    .paginacion {
+      margin-top: 15px;
+      text-align: center;
+    }
+    .paginacion button {
+      margin: 0 5px;
+      padding: 6px 12px;
+    }
+    .paginacion button:disabled {
+      background-color: #666;
+      cursor: default;
+    }
+
+    /* Modal fondo */
+    .modal {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0; left: 0; right:0; bottom:0;
       background-color: rgba(0,0,0,0.7);
+      display: none;
       justify-content: center;
       align-items: center;
-      z-index: 10;
+      z-index: 100;
+      padding: 10px;
     }
-    .modal-bg.active {
+    .modal.active {
       display: flex;
     }
-    .modal {
-      background-color: #1a2940;
-      padding: 20px;
+    /* Modal contenido */
+    .modal-content {
+      background-color: #0d1520;
+      padding: 20px 30px;
       border-radius: 8px;
       width: 600px;
-      max-width: 95%;
       max-height: 90vh;
       overflow-y: auto;
+      box-shadow: 0 0 15px #f0c75eaa;
       color: #f0c75e;
+      position: relative;
     }
-    .modal h2 {
-      margin-top: 0;
+    .modal-header {
+      font-size: 22px;
       margin-bottom: 15px;
+      font-weight: bold;
       text-align: center;
     }
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: transparent;
+      border: none;
+      font-size: 28px;
+      font-weight: bold;
+      color: #f0c75e;
+      cursor: pointer;
+    }
+    /* Tabs */
     .tabs {
       display: flex;
-      margin-bottom: 15px;
       border-bottom: 2px solid #f0c75e;
+      margin-bottom: 15px;
     }
-    .tab {
+    .tabs button {
       flex: 1;
+      background: transparent;
+      border: none;
+      color: #f0c75e;
+      font-weight: 600;
       padding: 10px;
-      text-align: center;
       cursor: pointer;
       border-bottom: 3px solid transparent;
+      transition: border-color 0.3s ease;
     }
-    .tab.active {
-      border-color: #f0c75e;
-      font-weight: bold;
+    .tabs button.active {
+      border-bottom-color: #f0c75e;
+      font-weight: 700;
     }
     .tab-content {
       display: none;
@@ -106,122 +217,110 @@
     .tab-content.active {
       display: block;
     }
-    label {
+    /* Formulario */
+    form label {
       display: block;
-      margin: 8px 0 3px;
+      margin: 10px 0 5px;
+      font-weight: 600;
     }
-    input[type="text"],
-    input[type="file"],
-    select {
+    form input[type="text"],
+    form input[type="file"],
+    form select {
       width: 100%;
-      padding: 6px;
+      padding: 8px;
       border-radius: 4px;
       border: 1px solid #f0c75e;
-      background-color: #121c2c;
+      background-color: #1a2940;
       color: #f0c75e;
+      font-size: 14px;
     }
-    .modal-buttons {
-      text-align: center;
+    form input[type="file"] {
+      padding: 4px;
+    }
+    form button.submit-btn {
       margin-top: 20px;
+      width: 100%;
+      font-size: 18px;
     }
-    .modal-buttons button {
-      margin: 0 10px;
-      min-width: 100px;
-    }
-    /* Paginacion */
-    #paginacion {
-      margin-top: 15px;
-      text-align: center;
-    }
-    #paginacion button {
-      margin: 0 5px;
-      background-color: #444;
-      color: #f0c75e;
-      border-radius: 4px;
-    }
-    #paginacion button.active {
-      background-color: #f0c75e;
-      color: #121c2c;
-      font-weight: bold;
-    }
+
   </style>
 </head>
 <body>
-  <header>Gestión de Miembros</header>
-  <div class="container">
-    <button id="btn-abrir-form">Añadir Miembro</button>
-    <table>
-      <thead>
-        <tr>
-          <th>Foto</th>
-          <th>Nombre</th>
-          <th>Código</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tabla-miembros"></tbody>
-    </table>
-    <div id="paginacion"></div>
-  </div>
+  <nav>
+    <div class="logo">
+      <img src="https://i.imgur.com/JUQd62L.png" alt="Logo Iglesia" />
+    </div>
+    <ul>
+      <li><button id="btn-activos" class="active">Miembros Activos</button></li>
+      <li><button id="btn-baja">Miembros de Baja</button></li>
+      <li><button id="btn-nuevo">Añadir Miembro</button></li>
+    </ul>
+  </nav>
+  <main>
+    <header>Gestión de Miembros</header>
+    <div class="container">
+      <table>
+        <thead>
+          <tr>
+            <th>Foto</th>
+            <th>Nombre</th>
+            <th>Código</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-miembros"></tbody>
+      </table>
+      <div class="paginacion" id="paginacion"></div>
+    </div>
+  </main>
 
   <!-- Modal Formulario -->
-  <div class="modal-bg" id="modal-form">
-    <div class="modal">
-      <h2 id="titulo-modal">Añadir Miembro</h2>
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <button class="close-btn" id="cerrar-modal">&times;</button>
+      <div class="modal-header" id="modal-title">Añadir Miembro</div>
       <div class="tabs">
-        <div class="tab active" data-tab="categoria1">Datos Personales</div>
-        <div class="tab" data-tab="categoria2">Datos Familiares</div>
-        <div class="tab" data-tab="categoria3">Datos Espirituales</div>
+        <button class="active" data-tab="categoria1">Datos Personales</button>
+        <button data-tab="categoria2">Datos Familiares</button>
+        <button data-tab="categoria3">Datos Espirituales</button>
       </div>
-
-      <form id="form-miembro" enctype="multipart/form-data">
-        <!-- Categoria 1 -->
+      <form id="form-miembro">
         <div class="tab-content active" id="categoria1">
-          <label for="nombre">Nombre Completo</label>
+          <label for="nombre">Nombre completo</label>
           <input type="text" id="nombre" name="nombre" required />
-          
           <label for="codigo">Código</label>
           <input type="text" id="codigo" name="codigo" required />
-
           <label for="foto">Foto</label>
           <input type="file" id="foto" name="foto" accept="image/*" />
         </div>
-
-        <!-- Categoria 2 -->
         <div class="tab-content" id="categoria2">
           <label for="conyuge">Cónyuge</label>
           <input type="text" id="conyuge" name="conyuge" />
-
           <label for="hijos">Hijos</label>
           <input type="text" id="hijos" name="hijos" />
         </div>
-
-        <!-- Categoria 3 -->
         <div class="tab-content" id="categoria3">
           <label for="bautizado">Bautizado</label>
-          <select id="bautizado" name="bautizado">
-            <option value="">Seleccione</option>
+          <select id="bautizado" name="bautizado" required>
             <option value="sí">Sí</option>
             <option value="no">No</option>
           </select>
-
           <label for="ministerio">Ministerio</label>
           <input type="text" id="ministerio" name="ministerio" />
         </div>
-
-        <div class="modal-buttons">
-          <button type="submit" id="btn-guardar">Guardar</button>
-          <button type="button" id="btn-cancelar">Cancelar</button>
-        </div>
+        <button type="submit" class="submit-btn">Guardar</button>
       </form>
     </div>
   </div>
 
   <script>
-    // Configuraciones
-    const supabase = supabase.createClient('https://XXXX.supabase.co', 'public-anon-key');
+    // Config Supabase (ajusta con tus datos reales)
+    const supabaseUrl = 'https://YOUR-PROJECT.supabase.co';
+    const supabaseKey = 'YOUR-PUBLIC-ANON-KEY';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+    // Config Firebase (ajusta con tu configuración)
     const firebaseConfig = {
       apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
       authDomain: "iglesia-adoracion-viva.firebaseapp.com",
@@ -236,277 +335,293 @@
     const db = firebase.firestore();
 
     // Variables globales
-    const ITEMS_POR_PAGINA = 20;
     let paginaActual = 1;
-    let miembrosCache = [];
-    let editarId = null; // null para nuevo, o id para editar
+    const ITEMS_POR_PAGINA = 20;
+    let miembrosActivos = true; // true = mostrar activos, false = baja
+    let editarId = null;
 
-    // Cargar miembros con orden y paginación
-    async function cargarMiembros() {
-      const tabla = document.getElementById('tabla-miembros');
-      tabla.innerHTML = '';
-      try {
-        const snapshot = await db.collection("miembros").orderBy("codigo").get();
-        miembrosCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        paginaActual = 1;
-        mostrarPagina(paginaActual);
-        renderizarPaginacion();
-      } catch (error) {
-        console.error("Error al cargar miembros:", error);
-      }
-    }
-
-    // Mostrar miembros de la página indicada
-    function mostrarPagina(pagina) {
-      const tabla = document.getElementById('tabla-miembros');
-      tabla.innerHTML = '';
-      const inicio = (pagina - 1) * ITEMS_POR_PAGINA;
-      const fin = inicio + ITEMS_POR_PAGINA;
-      const miembrosPagina = miembrosCache.slice(inicio, fin);
-
-      miembrosPagina.forEach(data => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><img src="${data.fotoURL || 'https://via.placeholder.com/50'}" alt="foto" onerror="this.src='https://via.placeholder.com/50'"></td>
-          <td>${data.nombre || ''}</td>
-          <td>${data.codigo || ''}</td>
-          <td>${data.estado || 'activo'}</td>
-          <td>
-            <button class="btn-editar" data-id="${data.id}">Editar</button>
-            <button class="btn-cambiar-estado" data-id="${data.id}" data-estado="${data.estado}">
-              ${data.estado === 'activo' ? 'Dar de baja' : 'Reactivar'}
-            </button>
-          </td>
-        `;
-        tabla.appendChild(tr);
-      });
-
-      // Asignar eventos a botones
-      document.querySelectorAll('.btn-cambiar-estado').forEach(button => {
-        button.onclick = () => {
-          const id = button.getAttribute('data-id');
-          const estadoActual = button.getAttribute('data-estado');
-          cambiarEstado(id, estadoActual);
-        };
-      });
-      document.querySelectorAll('.btn-editar').forEach(button => {
-        button.onclick = () => {
-          const id = button.getAttribute('data-id');
-          cargarDatosEditar(id);
-        };
-      });
-    }
-
-    // Renderizar botones de paginación
-    function renderizarPaginacion() {
-      let paginacionDiv = document.getElementById('paginacion');
-      if (!paginacionDiv) {
-        paginacionDiv = document.createElement('div');
-        paginacionDiv.id = 'paginacion';
-        paginacionDiv.style.marginTop = '15px';
-        paginacionDiv.style.textAlign = 'center';
-        document.querySelector('.container').appendChild(paginacionDiv);
-      }
-
-      paginacionDiv.innerHTML = '';
-
-      const totalPaginas = Math.ceil(miembrosCache.length / ITEMS_POR_PAGINA);
-
-      for (let i = 1; i <= totalPaginas; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = i === paginaActual ? 'active' : '';
-        btn.onclick = () => {
-          paginaActual = i;
-          mostrarPagina(paginaActual);
-          renderizarPaginacion();
-        };
-        paginacionDiv.appendChild(btn);
-      }
-    }
-
-    // Cambiar estado activo/baja
-    async function cambiarEstado(id, estadoActual) {
-      const nuevoEstado = estadoActual === 'activo' ? 'baja' : 'activo';
-      try {
-        await db.collection("miembros").doc(id).update({ estado: nuevoEstado });
-        await cargarMiembros();
-      } catch (error) {
-        console.error("Error al cambiar estado:", error);
-      }
-    }
-
-    // Modal y formulario
-    const modal = document.getElementById('modal-form');
-    const btnAbrirForm = document.getElementById('btn-abrir-form');
-    const btnCancelar = document.getElementById('btn-cancelar');
+    // Elementos DOM
+    const tabla = document.getElementById('tabla-miembros');
+    const paginacion = document.getElementById('paginacion');
+    const modal = document.getElementById('modal');
+    const cerrarModalBtn = document.getElementById('cerrar-modal');
+    const modalTitle = document.getElementById('modal-title');
     const formMiembro = document.getElementById('form-miembro');
-    const tituloModal = document.getElementById('titulo-modal');
-
-    // Tabs
-    const tabs = document.querySelectorAll('.tab');
+    const tabs = document.querySelectorAll('.tabs button');
     const tabContents = document.querySelectorAll('.tab-content');
 
+    // Mostrar modal y manejar tabs
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         tabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        const target = tab.dataset.tab;
+        const target = tab.getAttribute('data-tab');
         tabContents.forEach(tc => {
           tc.classList.toggle('active', tc.id === target);
         });
       });
     });
 
-    // Abrir modal para nuevo miembro
-    btnAbrirForm.onclick = () => {
-      editarId = null;
-      tituloModal.textContent = "Añadir Miembro";
+    cerrarModalBtn.addEventListener('click', () => {
+      modal.classList.remove('active');
       formMiembro.reset();
-      modal.classList.add('active');
-      // Mostrar primera pestaña
+      editarId = null;
+    });
+
+    // Cambiar entre miembros activos y baja
+    document.getElementById('btn-activos').addEventListener('click', () => {
+      miembrosActivos = true;
+      paginaActual = 1;
+      cargarMiembros();
+      setActiveMenu('btn-activos');
+    });
+    document.getElementById('btn-baja').addEventListener('click', () => {
+      miembrosActivos = false;
+      paginaActual = 1;
+      cargarMiembros();
+      setActiveMenu('btn-baja');
+    });
+
+    // Abrir modal nuevo miembro
+    document.getElementById('btn-nuevo').addEventListener('click', () => {
+      modalTitle.textContent = "Añadir Miembro";
+      formMiembro.reset();
+      editarId = null;
+      // Reset tabs to first
       tabs.forEach(t => t.classList.remove('active'));
       tabContents.forEach(tc => tc.classList.remove('active'));
       tabs[0].classList.add('active');
       tabContents[0].classList.add('active');
-    };
+      modal.classList.add('active');
+      setActiveMenu(null);
+    });
 
-    // Cerrar modal
-    btnCancelar.onclick = () => {
-      modal.classList.remove('active');
-    };
+    function setActiveMenu(id) {
+      ['btn-activos', 'btn-baja', 'btn-nuevo'].forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) btn.classList.toggle('active', btnId === id);
+      });
+    }
 
-    // Cargar datos para editar
-    async function cargarDatosEditar(id) {
+    // Cargar miembros paginados y ordenados
+    async function cargarMiembros() {
+      tabla.innerHTML = '';
+      paginacion.innerHTML = '';
       try {
-        const doc = await db.collection("miembros").doc(id).get();
-        if (!doc.exists) {
-          alert("No se encontró el miembro");
-          return;
+        const querySnapshot = await db.collection("miembros")
+          .where('estado', '==', miembrosActivos ? 'activo' : 'baja')
+          .orderBy('codigo', 'asc')
+          .get();
+
+        const allMiembros = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const totalItems = allMiembros.length;
+        const totalPaginas = Math.ceil(totalItems / ITEMS_POR_PAGINA);
+        if(paginaActual > totalPaginas && totalPaginas > 0) paginaActual = totalPaginas;
+        if(totalPaginas === 0) paginaActual = 1;
+
+        const startIndex = (paginaActual -1) * ITEMS_POR_PAGINA;
+        const endIndex = startIndex + ITEMS_POR_PAGINA;
+        const miembrosPage = allMiembros.slice(startIndex, endIndex);
+
+        // Render filas
+        miembrosPage.forEach(miembro => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><img class="foto" src="${miembro.fotoURL || 'https://via.placeholder.com/50x50?text=Sin+Foto'}" alt="foto" onerror="this.src='https://via.placeholder.com/50x50?text=Sin+Foto'"></td>
+            <td>${miembro.nombre}</td>
+            <td>${miembro.codigo}</td>
+            <td>${miembro.estado}</td>
+            <td>
+              ${miembrosActivos ? `
+                <button class="btn-editar" data-id="${miembro.id}">Editar</button>
+                <button class="btn-baja" data-id="${miembro.id}">Dar Baja</button>
+              ` : `
+                <button class="btn-reactivar" data-id="${miembro.id}">Reactivar</button>
+              `}
+            </td>
+          `;
+          tabla.appendChild(tr);
+        });
+
+        // Paginación
+        if(totalPaginas > 1){
+          // Botón anterior
+          const btnAnterior = document.createElement('button');
+          btnAnterior.textContent = 'Anterior';
+          btnAnterior.disabled = paginaActual === 1;
+          btnAnterior.addEventListener('click', () => {
+            if(paginaActual > 1) {
+              paginaActual--;
+              cargarMiembros();
+            }
+          });
+          paginacion.appendChild(btnAnterior);
+
+          // Páginas numéricas (opcional, puedes simplificar si quieres)
+          for(let i=1; i<=totalPaginas; i++){
+            const btnPagina = document.createElement('button');
+            btnPagina.textContent = i;
+            btnPagina.disabled = i === paginaActual;
+            btnPagina.addEventListener('click', () => {
+              paginaActual = i;
+              cargarMiembros();
+            });
+            paginacion.appendChild(btnPagina);
+          }
+
+          // Botón siguiente
+          const btnSiguiente = document.createElement('button');
+          btnSiguiente.textContent = 'Siguiente';
+          btnSiguiente.disabled = paginaActual === totalPaginas;
+          btnSiguiente.addEventListener('click', () => {
+            if(paginaActual < totalPaginas){
+              paginaActual++;
+              cargarMiembros();
+            }
+          });
+          paginacion.appendChild(btnSiguiente);
         }
-        const data = doc.data();
-        editarId = id;
-        tituloModal.textContent = "Editar Miembro";
 
-        formMiembro.nombre.value = data.nombre || '';
-        formMiembro.codigo.value = data.codigo || '';
-        formMiembro.conyuge.value = data.conyuge || '';
-        formMiembro.hijos.value = data.hijos || '';
-        formMiembro.bautizado.value = data.bautizado || '';
-        formMiembro.ministerio.value = data.ministerio || '';
-        // Nota: Foto no se rellena por seguridad. Si quiere cambiar debe subir archivo nuevo.
-
-        modal.classList.add('active');
-        // Mostrar primera pestaña al abrir modal
-        tabs.forEach(t => t.classList.remove('active'));
-        tabContents.forEach(tc => tc.classList.remove('active'));
-        tabs[0].classList.add('active');
-        tabContents[0].classList.add('active');
+        // Agregar eventos a botones de acciones
+        agregarEventosBotonesAccion();
 
       } catch (error) {
-        console.error("Error al cargar datos para editar:", error);
+        console.error("Error cargando miembros:", error);
       }
     }
 
-    // Subir foto a Supabase Storage y devolver URL pública
-    async function subirFoto(file, codigo) {
-      if (!file) return null;
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${codigo}.${fileExt}`;
-      const filePath = `ftmember/${fileName}`;
+    // Agrega eventos a botones Editar, Baja y Reactivar
+    function agregarEventosBotonesAccion(){
+      // Editar
+      document.querySelectorAll('.btn-editar').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          try {
+            const doc = await db.collection('miembros').doc(id).get();
+            if(!doc.exists) return alert('Miembro no encontrado');
+            const data = doc.data();
+            editarId = id;
+            modalTitle.textContent = 'Editar Miembro';
+            // Rellenar formulario
+            formMiembro.nombre.value = data.nombre || '';
+            formMiembro.codigo.value = data.codigo || '';
+            formMiembro.conyuge.value = data.conyuge || '';
+            formMiembro.hijos.value = data.hijos || '';
+            formMiembro.bautizado.value = data.bautizado || 'sí';
+            formMiembro.ministerio.value = data.ministerio || '';
+            // Abrir modal y reset tabs al primero
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.remove('active'));
+            tabs[0].classList.add('active');
+            tabContents[0].classList.add('active');
+            modal.classList.add('active');
+          } catch(e) {
+            console.error(e);
+            alert('Error al cargar miembro para edición');
+          }
+        });
+      });
 
-      try {
-        // Borrar foto previa si existe (opcional)
-        await supabase.storage.from('ftmember').remove([filePath]);
+      // Dar baja
+      document.querySelectorAll('.btn-baja').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          if(confirm('¿Dar de baja este miembro?')){
+            try {
+              await db.collection('miembros').doc(id).update({estado: 'baja'});
+              cargarMiembros();
+            } catch(e) {
+              console.error(e);
+              alert('Error al dar de baja');
+            }
+          }
+        });
+      });
 
-        const { data, error } = await supabase.storage
-          .from('ftmember')
-          .upload(filePath, file, { upsert: true });
-
-        if (error) {
-          console.error('Error al subir foto:', error);
-          return null;
-        }
-
-        // Obtener URL pública
-        const { data: urlData } = supabase.storage.from('ftmember').getPublicUrl(filePath);
-        return urlData.publicUrl;
-
-      } catch (err) {
-        console.error('Error en subirFoto:', err);
-        return null;
-      }
+      // Reactivar
+      document.querySelectorAll('.btn-reactivar').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          if(confirm('¿Reactivar este miembro?')){
+            try {
+              await db.collection('miembros').doc(id).update({estado: 'activo'});
+              cargarMiembros();
+            } catch(e) {
+              console.error(e);
+              alert('Error al reactivar');
+            }
+          }
+        });
+      });
     }
 
-    // Guardar o actualizar miembro
-    formMiembro.onsubmit = async (e) => {
+    // Guardar o actualizar miembro al enviar formulario
+    formMiembro.addEventListener('submit', async e => {
       e.preventDefault();
 
+      // Leer datos del formulario
       const nombre = formMiembro.nombre.value.trim();
       const codigo = formMiembro.codigo.value.trim();
       const conyuge = formMiembro.conyuge.value.trim();
       const hijos = formMiembro.hijos.value.trim();
       const bautizado = formMiembro.bautizado.value;
       const ministerio = formMiembro.ministerio.value.trim();
-      const estado = 'activo'; // al crear siempre activo
-
-      // Validar campos obligatorios
-      if (!nombre || !codigo) {
-        alert("Debe completar nombre y código");
-        return;
-      }
-
+      const fileInput = formMiembro.foto;
       let fotoURL = null;
-      const archivoFoto = formMiembro.foto.files[0];
-
-      if (archivoFoto) {
-        fotoURL = await subirFoto(archivoFoto, codigo);
-        if (!fotoURL) {
-          alert("Error al subir la foto");
-          return;
-        }
-      } else if (editarId) {
-        // Si es edición y no cambia la foto, conservar URL anterior
-        const miembroEdit = miembrosCache.find(m => m.id === editarId);
-        fotoURL = miembroEdit ? miembroEdit.fotoURL || null : null;
-      }
-
-      const datosMiembro = {
-        nombre,
-        codigo,
-        conyuge,
-        hijos,
-        bautizado,
-        ministerio,
-        estado,
-        fotoURL
-      };
 
       try {
-        if (editarId) {
-          // Actualizar
-          await db.collection("miembros").doc(editarId).update(datosMiembro);
-        } else {
-          // Nuevo
-          // Verificar que no exista código duplicado
-          const q = await db.collection("miembros").where("codigo", "==", codigo).get();
-          if (!q.empty) {
-            alert("Ya existe un miembro con ese código.");
-            return;
-          }
-          await db.collection("miembros").add(datosMiembro);
+        // Si hay archivo, subirlo a Supabase Storage
+        if(fileInput.files.length > 0){
+          const file = fileInput.files[0];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${codigo}_${Date.now()}.${fileExt}`;
+          const { data, error } = await supabase.storage
+            .from('ftmember')
+            .upload(fileName, file, { cacheControl: '3600', upsert: true });
+          if(error) throw error;
+
+          // Obtener URL pública
+          const { data: urlData } = supabase.storage.from('ftmember').getPublicUrl(fileName);
+          fotoURL = urlData.publicUrl;
         }
+
+        // Construir objeto para Firestore
+        const miembroData = {
+          nombre,
+          codigo,
+          conyuge,
+          hijos,
+          bautizado,
+          ministerio,
+          estado: 'activo',
+          fechaRegistro: firebase.firestore.FieldValue.serverTimestamp(),
+        };
+        if(fotoURL) miembroData.fotoURL = fotoURL;
+
+        if(editarId){
+          // Actualizar miembro
+          await db.collection('miembros').doc(editarId).update(miembroData);
+          alert('Miembro actualizado');
+        } else {
+          // Insertar nuevo
+          await db.collection('miembros').add(miembroData);
+          alert('Miembro añadido');
+        }
+
         modal.classList.remove('active');
         formMiembro.reset();
-        await cargarMiembros();
-      } catch (error) {
-        console.error("Error al guardar miembro:", error);
-        alert("Error al guardar. Revisa consola.");
+        editarId = null;
+        cargarMiembros();
+
+      } catch(error) {
+        console.error(error);
+        alert('Error guardando miembro. Revisa consola.');
       }
-    };
+    });
 
     // Inicializar
     cargarMiembros();
+
   </script>
 </body>
 </html>
