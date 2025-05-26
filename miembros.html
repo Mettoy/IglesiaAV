@@ -3,946 +3,825 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gestión de Miembros - Iglesia</title>
+<title>Gestión de Miembros - Adoración Viva</title>
 <style>
-  /* Reset & básico */
+  /* Reset */
   * {
     box-sizing: border-box;
   }
+
   body {
+    margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0; background: #0d1321; color: #f0e6d2;
-    display: flex; min-height: 100vh;
+    background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
+    color: #ffd700;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
   }
-  /* Menú lateral */
-  nav {
-    width: 280px;
-    background: #2e2a23;
-    display: flex; flex-direction: column;
-    padding: 1rem;
-  }
-  nav h1 {
-    font-weight: bold; color: #ffd369;
-    margin-bottom: 1rem;
+
+  header {
+    width: 100%;
+    max-width: 1200px;
     text-align: center;
+    margin-bottom: 20px;
   }
-  nav .user-info {
-    background: #141414; padding: 10px;
-    border-radius: 8px; margin-bottom: 1rem;
-    text-align: center;
+
+  header h1 {
+    margin: 0;
+    font-weight: 900;
+    font-size: 2rem;
   }
-  nav .user-info span {
-    display: block; margin-top: 4px; font-size: 0.9rem;
-  }
-  nav button {
-    background: #ffd369; border: none;
-    padding: 0.8rem 1rem; font-weight: bold;
-    color: #0d1321; border-radius: 6px;
-    cursor: pointer; margin-bottom: 0.5rem;
-    transition: background-color 0.3s ease;
-  }
-  nav button:hover {
-    background: #c7a239;
-  }
-  /* Contenedor principal */
+
   main {
-    flex: 1; padding: 1rem 2rem;
-    overflow-y: auto;
-    background: #0d1321;
-    display: flex; flex-direction: column;
+    width: 100%;
+    max-width: 1200px;
+    background: #112240;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 0 15px #ffd700aa;
   }
-  /* Encabezado */
-  main header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 1rem;
-  }
-  main header h2 {
-    color: #ffd369;
-  }
-  main header input[type="search"] {
-    padding: 0.5rem 1rem;
-    border-radius: 6px; border: none;
+
+  /* Buscador */
+  #searchInput {
+    width: 100%;
+    padding: 10px;
     font-size: 1rem;
-    width: 300px;
+    border-radius: 8px;
+    border: none;
+    margin-bottom: 15px;
+    outline: none;
   }
+
   /* Tabla */
   table {
-    width: 100%; border-collapse: collapse;
-    margin-bottom: 1rem;
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    table-layout: fixed;
   }
-  thead {
-    background: #1e1a11;
-  }
-  thead th {
-    padding: 10px;
+
+  th, td {
+    padding: 8px 12px;
     text-align: left;
-    border-bottom: 2px solid #ffd369;
+    border-bottom: 1px solid #444;
+    word-wrap: break-word;
+  }
+
+  th {
+    background-color: #003366;
     cursor: pointer;
+    user-select: none;
   }
-  tbody tr {
-    background: #141414;
-    transition: background-color 0.3s ease;
+
+  tr:hover {
+    background-color: #224488;
   }
-  tbody tr:nth-child(even) {
-    background: #1e1a11;
+
+  img.photo {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ffd700;
   }
-  tbody tr:hover {
-    background: #303030;
-  }
-  tbody td {
-    padding: 10px;
-    vertical-align: middle;
-  }
-  tbody img {
-    width: 60px; height: 60px;
-    object-fit: cover; border-radius: 50%;
-  }
-  /* Botones de acción */
-  .btn {
-    padding: 6px 12px;
-    border-radius: 5px;
+
+  /* Botones */
+  button {
+    background-color: #ffd700;
     border: none;
+    color: #003366;
+    padding: 6px 12px;
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: bold;
-    font-size: 0.9rem;
-    margin-right: 6px;
+    font-weight: 700;
     transition: background-color 0.3s ease;
   }
-  .btn-edit {
-    background: #ffd369; color: #0d1321;
+
+  button:hover {
+    background-color: #ffea00;
   }
-  .btn-edit:hover {
-    background: #c7a239;
-  }
-  .btn-disable {
-    background: #d9534f;
-    color: #fff;
-  }
-  .btn-disable:hover {
-    background: #b5302c;
-  }
-  .btn-enable {
-    background: #5cb85c;
-    color: #fff;
-  }
-  .btn-enable:hover {
-    background: #3f7d3f;
-  }
-  .btn-add {
-    background: #44bba4;
-    color: #fff;
-  }
-  .btn-add:hover {
-    background: #37907f;
-  }
+
   /* Paginación */
   .pagination {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin-bottom: 1rem;
+    text-align: center;
+    margin-bottom: 15px;
   }
+
   .pagination button {
-    background: #ffd369;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    color: #0d1321;
-    transition: background-color 0.3s ease;
+    margin: 0 3px;
+    min-width: 35px;
   }
-  .pagination button:disabled {
-    background: #999;
-    cursor: not-allowed;
-  }
-  .pagination button:hover:not(:disabled) {
-    background: #c7a239;
-  }
+
   /* Modal */
-  .modal-bg {
+  .modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.7);
     display: none;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     z-index: 9999;
   }
-  .modal-bg.active {
+
+  .modal-overlay.active {
     display: flex;
   }
+
   .modal {
-    background: #141414;
-    border-radius: 12px;
-    max-width: 600px;
+    background: #001f3f;
+    padding: 20px;
+    border-radius: 10px;
     width: 90%;
+    max-width: 700px;
     max-height: 90vh;
     overflow-y: auto;
-    padding: 20px;
-    box-shadow: 0 0 15px #ffd369;
-    color: #f0e6d2;
+    box-shadow: 0 0 20px #ffd700;
+    color: #ffd700;
   }
-  .modal header {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: #ffd369;
+
+  .modal h2 {
+    margin-top: 0;
+    font-weight: 900;
   }
-  .modal .tabs {
+
+  /* Formulario con pestañas */
+  .tabs {
     display: flex;
-    margin-bottom: 1rem;
-    gap: 1rem;
+    gap: 10px;
+    margin-bottom: 15px;
   }
-  .modal .tabs button {
+
+  .tabs button {
     flex: 1;
     padding: 10px;
-    background: #2e2a23;
+    background: #003366;
+    color: #ffd700;
     border: none;
-    border-bottom: 2px solid transparent;
-    color: #f0e6d2;
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: bold;
-    transition: border-color 0.3s ease;
+    font-weight: 700;
   }
-  .modal .tabs button.active {
-    border-bottom: 2px solid #ffd369;
-    background: #141414;
+
+  .tabs button.active {
+    background: #ffd700;
+    color: #003366;
   }
-  .modal form > div {
-    display: none;
-    flex-direction: column;
-    gap: 10px;
+
+  .tab-content {
+    background: #112240;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
   }
-  .modal form > div.active {
-    display: flex;
-  }
-  .modal label {
-    font-weight: bold;
-  }
-  .modal input[type="text"],
-  .modal input[type="email"],
-  .modal input[type="tel"],
-  .modal select,
-  .modal textarea {
+
+  /* Inputs */
+  input[type="text"], input[type="email"], input[type="number"], select {
+    width: 100%;
     padding: 8px;
+    margin-top: 6px;
+    margin-bottom: 15px;
     border-radius: 6px;
     border: none;
-    font-size: 1rem;
+    outline: none;
   }
-  .modal textarea {
-    resize: vertical;
+
+  label {
+    font-weight: 700;
   }
-  .modal .modal-footer {
-    margin-top: 1rem;
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-  .modal .modal-footer button {
-    padding: 10px 20px;
-    border-radius: 6px;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  .modal .btn-cancel {
-    background: #d9534f;
-    color: white;
-  }
-  .modal .btn-save {
-    background: #44bba4;
-    color: white;
-  }
+
   /* Mensajes */
   .message {
-    position: fixed;
-    top: 1rem; right: 1rem;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    z-index: 10000;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    font-weight: 700;
     display: none;
   }
+
   .message.success {
-    background-color: #5cb85c;
+    background-color: #228B22;
     color: white;
   }
+
   .message.error {
-    background-color: #d9534f;
+    background-color: #b22222;
     color: white;
   }
+
   /* Responsive */
   @media (max-width: 768px) {
-    nav {
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+
+    thead tr {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+
+    tr {
+      margin-bottom: 1rem;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 10px;
+    }
+
+    td {
+      border: none;
+      position: relative;
+      padding-left: 50%;
+      white-space: normal;
+      text-align: right;
+    }
+
+    td::before {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 45%;
+      white-space: nowrap;
+      font-weight: 700;
+      color: #ffd700;
+      content: attr(data-label);
+      text-align: left;
+    }
+
+    img.photo {
       width: 100%;
-      flex-direction: row;
-      padding: 0.5rem;
-      overflow-x: auto;
-      gap: 1rem;
+      height: auto;
+      margin-bottom: 10px;
+      border-radius: 10px;
     }
-    main header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-    main header input[type="search"] {
-      width: 100%;
-      max-width: none;
-    }
-    table tbody img {
-      width: 40px; height: 40px;
+
+    .tabs button {
+      font-size: 0.9rem;
+      padding: 8px;
     }
   }
 </style>
 </head>
 <body>
-<nav>
-  <h1 data-i18n="app_title">Iglesia - Gestión Miembros</h1>
-  <div class="user-info" id="userInfo">
-    <div><strong data-i18n="user">Usuario:</strong> <span id="userEmail">-</span></div>
-    <div><strong data-i18n="role">Rol:</strong> <span id="userRole">-</span></div>
-  </div>
-  <button id="btnLogout" data-i18n="logout">Cerrar Sesión</button>
-  <button id="btnAddMember" class="btn btn-add" style="display:none;" data-i18n="add_member">Añadir Miembro</button>
-  <select id="languageSwitcher" aria-label="Select language" style="margin-top: auto; padding:0.5rem; border-radius:5px;">
-    <option value="es">Español</option>
-    <option value="en">English</option>
-  </select>
-</nav>
+
+<header>
+  <h1 id="title">Gestión de Miembros</h1>
+</header>
+
 <main>
-  <header>
-    <h2 data-i18n="members_list">Lista de Miembros</h2>
-    <input type="search" id="searchInput" placeholder="Buscar..." aria-label="Buscar miembros" />
-  </header>
-  <table aria-label="Lista de miembros">
+  <input type="text" id="searchInput" placeholder="Buscar..." aria-label="Buscar miembros" />
+
+  <table aria-label="Lista de miembros" id="membersTable">
     <thead>
       <tr>
-        <th data-i18n="photo" scope="col">Foto</th>
-        <th data-i18n="code" scope="col" data-sort="codigo" style="user-select:none; cursor:pointer;">Código ▲▼</th>
-        <th data-i18n="name" scope="col">Nombre</th>
-        <th data-i18n="status" scope="col">Estado</th>
-        <th data-i18n="actions" scope="col">Acciones</th>
+        <th data-sort="codigo">Código</th>
+        <th data-sort="nombre">Nombre</th>
+        <th>Foto</th>
+        <th data-sort="estado">Estado</th>
+        <th>Acciones</th>
       </tr>
     </thead>
-    <tbody id="membersTableBody">
-      <!-- Miembros cargados -->
+    <tbody id="membersTbody">
+      <!-- Miembros aquí -->
     </tbody>
   </table>
-  <div class="pagination" role="navigation" aria-label="Paginación de miembros" id="pagination"></div>
+
+  <div class="pagination" id="pagination">
+    <!-- Botones paginación -->
+  </div>
+
+  <button id="btnAddMember">Añadir Miembro</button>
+
+  <div class="message success" id="msgSuccess"></div>
+  <div class="message error" id="msgError"></div>
 </main>
 
-<!-- Modal para añadir/editar -->
-<div class="modal-bg" id="modalBg" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
-  <div class="modal" role="document">
-    <header id="modalTitle" data-i18n="add_member">Añadir Miembro</header>
-    <nav class="tabs" role="tablist">
-      <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab1" id="tabBtn1" data-tab="1" data-i18n="personal_data">Datos Personales</button>
-      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab2" id="tabBtn2" data-tab="2" data-i18n="family_data">Datos Familiares</button>
-      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab3" id="tabBtn3" data-tab="3" data-i18n="spiritual_data">Datos Espirituales</button>
-    </nav>
-    <form id="memberForm" novalidate>
-      <div id="tab1" class="tab-content active" role="tabpanel" aria-labelledby="tabBtn1">
-        <label for="codigoInput" data-i18n="code">Código</label>
-        <input type="text" id="codigoInput" name="codigo" required aria-required="true" />
-        <label for="nombreInput" data-i18n="name">Nombre Completo</label>
-        <input type="text" id="nombreInput" name="nombre" required aria-required="true" />
-        <label for="emailInput" data-i18n="email">Correo Electrónico</label>
-        <input type="email" id="emailInput" name="email" />
-        <label for="telefonoInput" data-i18n="phone">Teléfono</label>
-        <input type="tel" id="telefonoInput" name="telefono" />
-        <label for="fotoInput" data-i18n="photo">Foto</label>
-        <input type="file" id="fotoInput" name="foto" accept="image/*" aria-describedby="photoHelp" />
-        <small id="photoHelp" data-i18n="photo_help">Solo imagen, max 1MB. Se optimizará automáticamente.</small>
-        <img id="photoPreview" alt="Previsualización de foto" style="display:none; width:100px; margin-top:10px; border-radius:50%;" />
+<!-- Modal Formulario -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <h2 id="modalTitle">Añadir Miembro</h2>
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab-btn active" data-tab="personal" role="tab" aria-selected="true" aria-controls="tabPersonal" id="tabPersonalBtn">Datos Personales</button>
+      <button type="button" class="tab-btn" data-tab="familiar" role="tab" aria-selected="false" aria-controls="tabFamiliar" id="tabFamiliarBtn">Datos Familiares</button>
+      <button type="button" class="tab-btn" data-tab="espiritual" role="tab" aria-selected="false" aria-controls="tabEspiritual" id="tabEspiritualBtn">Datos Espirituales</button>
+    </div>
+    <form id="memberForm">
+      <div id="tabPersonal" class="tab-content" role="tabpanel" aria-labelledby="tabPersonalBtn">
+        <label for="codigo">Código:</label>
+        <input type="text" id="codigo" name="codigo" required />
+
+        <label for="nombre">Nombre completo:</label>
+        <input type="text" id="nombre" name="nombre" required />
+
+        <label for="email">Correo electrónico:</label>
+        <input type="email" id="email" name="email" />
+
+        <label for="telefono">Teléfono:</label>
+        <input type="text" id="telefono" name="telefono" />
       </div>
-      <div id="tab2" class="tab-content" role="tabpanel" aria-labelledby="tabBtn2">
-        <label for="conyugeInput" data-i18n="spouse">Cónyuge</label>
-        <input type="text" id="conyugeInput" name="conyuge" />
-        <label for="hijosInput" data-i18n="children">Hijos</label>
-        <textarea id="hijosInput" name="hijos" rows="3"></textarea>
+      <div id="tabFamiliar" class="tab-content" role="tabpanel" aria-labelledby="tabFamiliarBtn" hidden>
+        <label for="conyuge">Cónyuge:</label>
+        <input type="text" id="conyuge" name="conyuge" />
+
+        <label for="hijos">Hijos:</label>
+        <input type="text" id="hijos" name="hijos" />
+
+        <label for="direccion">Dirección:</label>
+        <input type="text" id="direccion" name="direccion" />
       </div>
-      <div id="tab3" class="tab-content" role="tabpanel" aria-labelledby="tabBtn3">
-        <label for="bautismoInput" data-i18n="baptism">Bautismo</label>
-        <input type="text" id="bautismoInput" name="bautismo" />
-        <label for="ministerioInput" data-i18n="ministry">Ministerio</label>
-        <input type="text" id="ministerioInput" name="ministerio" />
-        <label for="observacionesInput" data-i18n="observations">Observaciones</label>
-        <textarea id="observacionesInput" name="observaciones" rows="3"></textarea>
+      <div id="tabEspiritual" class="tab-content" role="tabpanel" aria-labelledby="tabEspiritualBtn" hidden>
+        <label for="bautizo">Bautizo:</label>
+        <select id="bautizo" name="bautizo">
+          <option value="">--Seleccione--</option>
+          <option value="Sí">Sí</option>
+          <option value="No">No</option>
+        </select>
+
+        <label for="estado">Estado:</label>
+        <select id="estado" name="estado" required>
+          <option value="Activo">Activo</option>
+          <option value="Baja">Baja</option>
+        </select>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-cancel" id="btnCancel" data-i18n="cancel">Cancelar</button>
-        <button type="submit" class="btn btn-save" id="btnSave" data-i18n="save">Guardar</button>
+
+      <label for="foto">Foto:</label>
+      <input type="file" id="foto" name="foto" accept="image/*" />
+
+      <div style="text-align: right; margin-top: 10px;">
+        <button type="submit" id="saveBtn">Guardar</button>
+        <button type="button" id="cancelBtn">Cancelar</button>
       </div>
     </form>
   </div>
 </div>
 
-<div class="message" id="message"></div>
+<script type="module">
+// Import Firebase and Supabase SDKs
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  doc,
+  query,
+  orderBy,
+  limit,
+  startAfter,
+  where,
+  getDoc,
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+  projectId: "iglesia-adoracion-viva",
+  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+  messagingSenderId: "815332010058",
+  appId: "1:815332010058:web:d2afff616469349d88deb3",
+  measurementId: "G-43MZP6V55D"
+};
 
-<script>
-  // ============ Configuración Firebase ============
-  const firebaseConfig = {
-    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-    projectId: "iglesia-adoracion-viva",
-    storageBucket: "iglesia-adoracion-viva.appspot.com",
-    messagingSenderId: "815332010058",
-    appId: "1:815332010058:web:d2afff616469349d88deb3",
-    measurementId: "G-43MZP6V55D"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  // ============ Configuración Supabase ============
-  // Poner tus keys de Supabase aquí
-  const SUPABASE_URL = 'https://tu-instancia.supabase.co'; // Cambiar
-  const SUPABASE_ANON_KEY = 'tu-key-anon';               // Cambiar
-  const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseUrl = "https://azywyqozwwbfctxeokug.supabase.co";
+const supabaseKey = "TU_SUPABASE_ANON_KEY_AQUI"; // Pon tu anon key aquí (no secreta)
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // ============ Variables Globales ============
-  let members = [];
-  let filteredMembers = [];
-  let currentPage = 1;
-  const pageSize = 5;
-  let currentSortField = 'codigo';
-  let currentSortDirection = 'asc';
-  let currentUser = null;
-  let currentUserRole = 'user'; // default
+const membersPerPage = 30;
+let membersData = [];
+let currentPage = 1;
+let filteredMembers = [];
 
-  // ============ i18n ============
-  const translations = {
-    es: {
-      app_title: "Iglesia - Gestión Miembros",
-      user: "Usuario:",
-      role: "Rol:",
-      logout: "Cerrar Sesión",
-      add_member: "Añadir Miembro",
-      members_list: "Lista de Miembros",
-      photo: "Foto",
-      code: "Código",
-      name: "Nombre",
-      status: "Estado",
-      actions: "Acciones",
-      personal_data: "Datos Personales",
-      family_data: "Datos Familiares",
-      spiritual_data: "Datos Espirituales",
-      email: "Correo Electrónico",
-      phone: "Teléfono",
-      photo_help: "Solo imagen, max 1MB. Se optimizará automáticamente.",
-      spouse: "Cónyuge",
-      children: "Hijos",
-      baptism: "Bautismo",
-      ministry: "Ministerio",
-      observations: "Observaciones",
-      cancel: "Cancelar",
-      save: "Guardar",
-      active: "Activo",
-      inactive: "De Baja
-<script>
-  // ============ Variables Globales ============
-  let currentUser = null;
-  let currentUserRole = 'user'; // default role
-  let members = [];
-  let filteredMembers = [];
-  let currentPage = 1;
-  const itemsPerPage = 8;
-  let sortDirection = 1; // 1 = asc, -1 = desc
+const membersTbody = document.getElementById("membersTbody");
+const paginationDiv = document.getElementById("pagination");
+const searchInput = document.getElementById("searchInput");
 
-  // Traducciones simples para i18n
-  const translations = {
-    es: {
-      app_title: "Iglesia - Gestión Miembros",
-      user: "Usuario:",
-      role: "Rol:",
-      logout: "Cerrar Sesión",
-      add_member: "Añadir Miembro",
-      members_list: "Lista de Miembros",
-      search_placeholder: "Buscar...",
-      photo: "Foto",
-      code: "Código",
-      name: "Nombre",
-      status: "Estado",
-      actions: "Acciones",
-      personal_data: "Datos Personales",
-      family_data: "Datos Familiares",
-      spiritual_data: "Datos Espirituales",
-      email: "Correo Electrónico",
-      phone: "Teléfono",
-      photo_help: "Solo imagen, max 1MB. Se optimizará automáticamente.",
-      spouse: "Cónyuge",
-      children: "Hijos",
-      baptism: "Bautismo",
-      ministry: "Ministerio",
-      observations: "Observaciones",
-      cancel: "Cancelar",
-      save: "Guardar",
-      active: "Activo",
-      disabled: "De Baja",
-      enable: "Reactivar",
-      disable: "Dar de Baja",
-      edit: "Editar",
-      no_members: "No se encontraron miembros."
-    },
-    en: {
-      app_title: "Church - Member Management",
-      user: "User:",
-      role: "Role:",
-      logout: "Log Out",
-      add_member: "Add Member",
-      members_list: "Members List",
-      search_placeholder: "Search...",
-      photo: "Photo",
-      code: "Code",
-      name: "Name",
-      status: "Status",
-      actions: "Actions",
-      personal_data: "Personal Data",
-      family_data: "Family Data",
-      spiritual_data: "Spiritual Data",
-      email: "Email",
-      phone: "Phone",
-      photo_help: "Image only, max 1MB. Will be optimized automatically.",
-      spouse: "Spouse",
-      children: "Children",
-      baptism: "Baptism",
-      ministry: "Ministry",
-      observations: "Observations",
-      cancel: "Cancel",
-      save: "Save",
-      active: "Active",
-      disabled: "Disabled",
-      enable: "Enable",
-      disable: "Disable",
-      edit: "Edit",
-      no_members: "No members found."
-    }
-  };
+const modalOverlay = document.getElementById("modalOverlay");
+const memberForm = document.getElementById("memberForm");
+const btnAddMember = document.getElementById("btnAddMember");
+const msgSuccess = document.getElementById("msgSuccess");
+const msgError = document.getElementById("msgError");
+const saveBtn = document.getElementById("saveBtn");
+const cancelBtn = document.getElementById("cancelBtn");
 
-  let currentLang = 'es';
+const tabButtons = document.querySelectorAll(".tab-btn");
+const tabContents = document.querySelectorAll(".tab-content");
 
-  // ============ Funciones i18n ============
-  function applyTranslations() {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-      const key = el.getAttribute('data-i18n');
-      if (translations[currentLang] && translations[currentLang][key]) {
-        if (el.tagName === 'INPUT' && el.type === 'search') {
-          el.placeholder = translations[currentLang][key];
-        } else {
-          el.textContent = translations[currentLang][key];
-        }
-      }
+let editMemberId = null;
+let editMemberOldPhotoPath = null;
+
+// --- Función para cambiar pestañas ---
+tabButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    tabButtons.forEach(b => {
+      b.classList.remove("active");
+      b.setAttribute("aria-selected", "false");
     });
-  }
+    tabContents.forEach(tc => tc.hidden = true);
 
-  document.getElementById('languageSwitcher').addEventListener('change', e => {
-    currentLang = e.target.value;
-    applyTranslations();
-    renderTable();
+    btn.classList.add("active");
+    btn.setAttribute("aria-selected", "true");
+    const tab = btn.dataset.tab;
+    document.getElementById("tab" + capitalize(tab)).hidden = false;
   });
+});
 
-  // ============ Autenticación ============
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
-  // Simulación de roles: en producción, asignar roles en Firebase Auth o Firestore.
-  async function getUserRole(uid) {
-    try {
-      const doc = await db.collection('roles').doc(uid).get();
-      if (doc.exists) return doc.data().role;
-      return 'user';
-    } catch {
-      return 'user';
-    }
+// --- Mostrar mensajes ---
+function showMessage(type, text) {
+  if(type === "success") {
+    msgSuccess.textContent = text;
+    msgSuccess.style.display = "block";
+    msgError.style.display = "none";
+  } else {
+    msgError.textContent = text;
+    msgError.style.display = "block";
+    msgSuccess.style.display = "none";
   }
+  setTimeout(() => {
+    msgSuccess.style.display = "none";
+    msgError.style.display = "none";
+  }, 4000);
+}
 
-  auth.onAuthStateChanged(async user => {
-    if (user) {
-      currentUser = user;
-      currentUserRole = await getUserRole(user.uid);
-      document.getElementById('userEmail').textContent = user.email || user.phoneNumber || 'Anon';
-      document.getElementById('userRole').textContent = currentUserRole;
-      // Mostrar botones según rol
-      document.getElementById('btnAddMember').style.display = (currentUserRole === 'admin') ? 'inline-block' : 'none';
-      loadMembers();
-    } else {
-      // No está logueado: redirigir a login o mostrar mensaje
-      alert('No estás autenticado. Redirigiendo al login.');
-      window.location.href = '/login.html'; // Cambiar por URL de login real
-    }
+// --- Abrir modal ---
+btnAddMember.addEventListener("click", () => {
+  editMemberId = null;
+  editMemberOldPhotoPath = null;
+  memberForm.reset();
+  document.getElementById("modalTitle").textContent = i18n[currentLang].addMemberTitle;
+  tabButtons[0].click();
+  modalOverlay.classList.add("active");
+});
+
+// --- Cancelar modal ---
+cancelBtn.addEventListener("click", () => {
+  modalOverlay.classList.remove("active");
+});
+
+// --- Comprimir imagen ---
+async function compressImage(file, maxWidth = 800, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+    reader.onload = e => {
+      image.src = e.target.result;
+    };
+
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      const scaleSize = maxWidth / image.width;
+      canvas.width = maxWidth;
+      canvas.height = image.height * scaleSize;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(
+        (blob) => {
+          resolve(new File([blob], file.name, { type: "image/jpeg" }));
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+
+    image.onerror = reject;
   });
+}
 
-  document.getElementById('btnLogout').addEventListener('click', () => {
-    auth.signOut();
-  });
+// --- Subir foto a Supabase y eliminar anterior si existe ---
+async function uploadPhoto(file, oldPath = null, codigo) {
+  try {
+    // Comprimir antes de subir
+    const compressedFile = await compressImage(file);
 
-  // ============ Carga y renderizado de miembros ============
-
-  async function loadMembers() {
-    try {
-      const snapshot = await db.collection('miembros').orderBy('codigo').get();
-      members = [];
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        data.id = doc.id;
-        members.push(data);
-      });
-      filteredMembers = [...members];
-      currentPage = 1;
-      renderTable();
-    } catch (error) {
-      showMessage('Error cargando miembros: ' + error.message, 'error');
-    }
-  }
-
-  // Filtrado búsqueda
-  document.getElementById('searchInput').addEventListener('input', e => {
-    const val = e.target.value.trim().toLowerCase();
-    filteredMembers = members.filter(m => 
-      m.nombre.toLowerCase().includes(val) ||
-      m.codigo.toLowerCase().includes(val)
-    );
-    currentPage = 1;
-    renderTable();
-  });
-
-  // Ordenar tabla por código
-  document.querySelector('th[data-sort="codigo"]').addEventListener('click', () => {
-    sortDirection = -sortDirection;
-    filteredMembers.sort((a,b) => (a.codigo.localeCompare(b.codigo)) * sortDirection);
-    renderTable();
-  });
-
-  // Render tabla y paginación
-  function renderTable() {
-    const tbody = document.getElementById('membersTableBody');
-    tbody.innerHTML = '';
-
-    if (filteredMembers.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.setAttribute('colspan', 5);
-      td.style.textAlign = 'center';
-      td.textContent = translations[currentLang].no_members;
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      renderPagination();
-      return;
+    // Eliminar foto anterior si la hay
+    if (oldPath) {
+      await supabase.storage.from("ftmember").remove([oldPath]);
     }
 
-    const startIdx = (currentPage - 1) * itemsPerPage;
-    const pageItems = filteredMembers.slice(startIdx, startIdx + itemsPerPage);
+    // Generar nombre único para la foto
+    const timestamp = Date.now();
+    const fileExt = compressedFile.name.split(".").pop();
+    const fileName = `foto_${codigo}_${timestamp}.${fileExt}`;
+    
+    // Subir comprimido
+    const { data, error } = await supabase.storage
+      .from("ftmember")
+      .upload(fileName, compressedFile, { upsert: true });
 
-    pageItems.forEach(member => {
-      const tr = document.createElement('tr');
+    if (error) throw error;
 
-      // Foto
-      const tdFoto = document.createElement('td');
-      const img = document.createElement('img');
-      img.alt = `Foto de ${member.nombre}`;
-      img.src = member.fotoUrl || 'https://via.placeholder.com/60?text=Sin+Foto';
-      tdFoto.appendChild(img);
-      tr.appendChild(tdFoto);
-
-      // Código
-      const tdCodigo = document.createElement('td');
-      tdCodigo.textContent = member.codigo || '';
-      tr.appendChild(tdCodigo);
-
-      // Nombre
-      const tdNombre = document.createElement('td');
-      tdNombre.textContent = member.nombre || '';
-      tr.appendChild(tdNombre);
-
-      // Estado
-      const tdEstado = document.createElement('td');
-      tdEstado.textContent = member.estado === 'baja' ? translations[currentLang].disabled : translations[currentLang].active;
-      tr.appendChild(tdEstado);
-
-      // Acciones
-      const tdAcciones = document.createElement('td');
-
-      // Solo admins pueden editar o cambiar estado
-      if (currentUserRole === 'admin') {
-        // Editar
-        const btnEdit = document.createElement('button');
-        btnEdit.className = 'btn btn-edit';
-        btnEdit.textContent = translations[currentLang].edit;
-        btnEdit.addEventListener('click', () => openEditModal(member));
-        tdAcciones.appendChild(btnEdit);
-
-        if (member.estado === 'baja') {
-          const btnEnable = document.createElement('button');
-          btnEnable.className = 'btn btn-enable';
-          btnEnable.textContent = translations[currentLang].enable;
-          btnEnable.addEventListener('click', () => changeMemberStatus(member.id, 'activo'));
-          tdAcciones.appendChild(btnEnable);
-        } else {
-          const btnDisable = document.createElement('button');
-          btnDisable.className = 'btn btn-disable';
-          btnDisable.textContent = translations[currentLang].disable;
-          btnDisable.addEventListener('click', () => changeMemberStatus(member.id, 'baja'));
-          tdAcciones.appendChild(btnDisable);
-        }
-      } else {
-        tdAcciones.textContent = '-';
-      }
-
-      tr.appendChild(tdAcciones);
-      tbody.appendChild(tr);
-    });
-
-    renderPagination();
+    // Obtener URL pública (puede que el bucket esté privado, entonces se usará getPublicUrl o signed URL)
+    const { data: urlData } = supabase.storage.from("ftmember").getPublicUrl(fileName);
+    return { url: urlData.publicUrl, path: fileName };
+  } catch (error) {
+    throw new Error("Error al subir foto: " + error.message);
   }
+}
 
-  function renderPagination() {
-    const pagination = document.getElementById('pagination');
-    pagination.innerHTML = '';
+// --- Guardar o actualizar miembro ---
+memberForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+  saveBtn.disabled = true;
+  saveBtn.textContent = i18n[currentLang].saving;
 
-    const prevBtn = document.createElement('button');
-    prevBtn.textContent = '←';
-    prevBtn.disabled = currentPage === 1;
-    prevBtn.addEventListener('click', () => {
-      if (currentPage > 1) {
-        currentPage--;
-        renderTable();
-      }
-    });
-    pagination.appendChild(prevBtn);
-
-    for (let i = 1; i <= totalPages; i++) {
-      const btn = document.createElement('button');
-      btn.textContent = i;
-      if (i === currentPage) btn.classList.add('active');
-      btn.addEventListener('click', () => {
-        currentPage = i;
-        renderTable();
-      });
-      pagination.appendChild(btn);
-    }
-
-    const nextBtn = document.createElement('button');
-    nextBtn.textContent = '→';
-    nextBtn.disabled = currentPage === totalPages || totalPages === 0;
-    nextBtn.addEventListener('click', () => {
-      if (currentPage < totalPages) {
-        currentPage++;
-        renderTable();
-      }
-    });
-    pagination.appendChild(nextBtn);
-  }
-
-  // ============ Cambiar estado miembro ============
-  async function changeMemberStatus(id, newStatus) {
-    try {
-      await db.collection('miembros').doc(id).update({ estado: newStatus });
-      showMessage(`Estado actualizado a ${newStatus}`, 'success');
-      loadMembers();
-    } catch (error) {
-      showMessage('Error actualizando estado: ' + error.message, 'error');
-    }
-  }
-
-  // ============ Modal Añadir/Editar Miembro ============
-  const modal = document.getElementById('modalMemberForm');
-  const form = document.getElementById('formMember');
-  let editingMemberId = null;
-  let editingMemberOldPhotoPath = null;
-
-  document.getElementById('btnAddMember').addEventListener('click', openAddModal);
-  document.getElementById('btnCancel').addEventListener('click', closeModal);
-
-  function openAddModal() {
-    editingMemberId = null;
-    editingMemberOldPhotoPath = null;
-    form.reset();
-    showTab('tab1');
-    modal.style.display = 'block';
-    modal.focus();
-  }
-
-  function openEditModal(member) {
-    editingMemberId = member.id;
-    editingMemberOldPhotoPath = member.photoPath || null;
-
-    // Personal Data
-    form.codigo.value = member.codigo || '';
-    form.nombre.value = member.nombre || '';
-    form.email.value = member.email || '';
-    form.telefono.value = member.telefono || '';
-    // Family Data
-    form.conyuge.value = member.conyuge || '';
-    form.hijos.value = member.hijos || '';
-    // Spiritual Data
-    form.bautismo.value = member.bautismo || '';
-    form.ministerio.value = member.ministerio || '';
-    form.observaciones.value = member.observaciones || '';
-
-    // Foto no se puede pre-llenar, solo info visual
-    // Podrías mostrar la foto actual en un img, pero para simplicidad no aquí.
-
-    showTab('tab1');
-    modal.style.display = 'block';
-    modal.focus();
-  }
-
-  // Control tabs
-  document.querySelectorAll('.tablinks').forEach(tabBtn => {
-    tabBtn.addEventListener('click', e => {
-      const tabName = e.target.getAttribute('data-tab');
-      showTab(tabName);
-    });
-  });
-
-  function showTab(tabName) {
-    document.querySelectorAll('.tabcontent').forEach(tab => {
-      tab.style.display = tab.id === tabName ? 'block' : 'none';
-    });
-    document.querySelectorAll('.tablinks').forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
-    });
-  }
-
-  // ============ Guardar miembro (añadir o editar) ============
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-
-    const codigo = form.codigo.value.trim();
-    const nombre = form.nombre.value.trim();
-    const email = form.email.value.trim();
-    const telefono = form.telefono.value.trim();
-    const conyuge = form.conyuge.value.trim();
-    const hijos = form.hijos.value.trim();
-    const bautismo = form.bautismo.value.trim();
-    const ministerio = form.ministerio.value.trim();
-    const observaciones = form.observaciones.value.trim();
-
-    const fileInput = form.foto;
-    const file = fileInput.files[0];
+  try {
+    const formData = new FormData(memberForm);
+    const codigo = formData.get("codigo").trim();
+    const nombre = formData.get("nombre").trim();
+    const email = formData.get("email").trim();
+    const telefono = formData.get("telefono").trim();
+    const conyuge = formData.get("conyuge").trim();
+    const hijos = formData.get("hijos").trim();
+    const direccion = formData.get("direccion").trim();
+    const bautizo = formData.get("bautizo");
+    const estado = formData.get("estado");
+    const fotoInput = document.getElementById("foto");
+    const file = fotoInput.files[0];
 
     if (!codigo || !nombre) {
-      showMessage('Código y Nombre son obligatorios', 'error');
+      showMessage("error", i18n[currentLang].fillRequired);
+      saveBtn.disabled = false;
+      saveBtn.textContent = i18n[currentLang].save;
       return;
     }
 
-    // Validar tamaño y tipo de foto si hay archivo
+    let photoUrl = null;
+    let photoPath = null;
+
     if (file) {
-      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        showMessage('Formato de imagen no válido (solo JPG, PNG, WEBP)', 'error');
-        return;
-      }
-      if (file.size > 1024 * 1024) { // 1MB
-        showMessage('La imagen no puede superar 1MB', 'error');
-        return;
-      }
+      const uploaded = await uploadPhoto(file, editMemberOldPhotoPath, codigo);
+      photoUrl = uploaded.url;
+      photoPath = uploaded.path;
+    } else if (editMemberId) {
+      // Si no cambió foto, mantener la anterior
+      const member = membersData.find(m => m.id === editMemberId);
+      photoUrl = member.fotoUrl || null;
+      photoPath = member.fotoPath || null;
     }
 
-    try {
-      let fotoUrl = null;
-      let photoPath = null;
+    const memberData = {
+      codigo,
+      nombre,
+      email,
+      telefono,
+      conyuge,
+      hijos,
+      direccion,
+      bautizo,
+      estado,
+      fotoUrl: photoUrl,
+      fotoPath: photoPath,
+      updatedAt: new Date().toISOString()
+    };
 
-      if (file) {
-        // Si estamos editando, borrar foto anterior
-        if (editingMemberOldPhotoPath) {
-          await supabase.storage.from('ftmember').remove([editingMemberOldPhotoPath]);
-        }
+    if (editMemberId) {
+      // Actualizar
+      const memberRef = doc(db, "miembros", editMemberId);
+      await updateDoc(memberRef, memberData);
+      showMessage("success", i18n[currentLang].updateSuccess);
+    } else {
+      // Añadir nuevo
+      memberData.createdAt = new Date().toISOString();
+      await addDoc(collection(db, "miembros"), memberData);
+      showMessage("success", i18n[currentLang].addSuccess);
+    }
 
-        // Subir nueva foto
-        const filename = `${codigo}_${Date.now()}_${file.name}`;
-        const { data, error } = await supabase.storage
-          .from('ftmember')
-          .upload(filename, file, { upsert: true });
+    modalOverlay.classList.remove("active");
+    loadMembers();
+  } catch (error) {
+    showMessage("error", error.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = i18n[currentLang].save;
+  }
+});
 
-        if (error) throw error;
+// --- Cargar miembros desde Firestore ---
+async function loadMembers() {
+  membersData = [];
+  membersTbody.innerHTML = "Cargando...";
+  try {
+    const q = query(collection(db, "miembros"), orderBy("codigo"));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(doc => {
+      membersData.push({ id: doc.id, ...doc.data() });
+    });
 
-        photoPath = filename;
-        // Obtener URL pública
-        const { data: urlData } = supabase.storage.from('ftmember').getPublicUrl(filename);
-        fotoUrl = urlData.publicUrl;
-      } else if (editingMemberId) {
-        // Si no cambia foto en edición, mantener la misma URL
-        const member = members.find(m => m.id === editingMemberId);
-        fotoUrl = member?.fotoUrl || null;
-        photoPath = editingMemberOldPhotoPath;
+    filteredMembers = [...membersData];
+    currentPage = 1;
+    renderTablePage();
+    renderPagination();
+  } catch (error) {
+    membersTbody.innerHTML = "<tr><td colspan='5'>Error al cargar datos</td></tr>";
+  }
+}
+
+// --- Renderizar tabla según página y filtro ---
+function renderTablePage() {
+  membersTbody.innerHTML = "";
+
+  if(filteredMembers.length === 0) {
+    membersTbody.innerHTML = `<tr><td colspan="5">${i18n[currentLang].noData}</td></tr>`;
+    return;
+  }
+
+  const startIndex = (currentPage - 1) * membersPerPage;
+  const pageItems = filteredMembers.slice(startIndex, startIndex + membersPerPage);
+
+  pageItems.forEach(member => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td data-label="${i18n[currentLang].codigo}">${member.codigo}</td>
+      <td data-label="${i18n[currentLang].nombre}">${member.nombre}</td>
+      <td data-label="${i18n[currentLang].foto}">
+        ${member.fotoUrl ? `<img class="photo" src="${member.fotoUrl}" alt="${member.nombre}"/>` : "-"}
+      </td>
+      <td data-label="${i18n[currentLang].estado}">${member.estado}</td>
+      <td data-label="${i18n[currentLang].acciones}">
+        <button class="edit-btn" data-id="${member.id}">${i18n[currentLang].edit}</button>
+        <button class="toggle-state-btn" data-id="${member.id}">
+          ${member.estado === "Activo" ? i18n[currentLang].deactivate : i18n[currentLang].activate}
+        </button>
+      </td>
+    `;
+    membersTbody.appendChild(tr);
+  });
+
+  // Añadir listeners botones editar y cambiar estado
+  document.querySelectorAll(".edit-btn").forEach(btn => {
+    btn.onclick = async () => {
+      const memberId = btn.dataset.id;
+      const member = membersData.find(m => m.id === memberId);
+      if (!member) return;
+      editMemberId = memberId;
+      editMemberOldPhotoPath = member.fotoPath || null;
+
+      // Rellenar formulario
+      memberForm.codigo.value = member.codigo || "";
+      memberForm.nombre.value = member.nombre || "";
+      memberForm.email.value = member.email || "";
+      memberForm.telefono.value = member.telefono || "";
+      memberForm.conyuge.value = member.conyuge || "";
+      memberForm.hijos.value = member.hijos || "";
+      memberForm.direccion.value = member.direccion || "";
+      memberForm.bautizo.value = member.bautizo || "";
+      memberForm.estado.value = member.estado || "Activo";
+      document.getElementById("foto").value = "";
+
+      document.getElementById("modalTitle").textContent = i18n[currentLang].editMemberTitle;
+      tabButtons[0].click();
+      modalOverlay.classList.add("active");
+    };
+  });
+
+  document.querySelectorAll(".toggle-state-btn").forEach(btn => {
+    btn.onclick = async () => {
+      const memberId = btn.dataset.id;
+      const member = membersData.find(m => m.id === memberId);
+      if (!member) return;
+      const newEstado = member.estado === "Activo" ? "Baja" : "Activo";
+      try {
+        const memberRef = doc(db, "miembros", memberId);
+        await updateDoc(memberRef, { estado: newEstado, updatedAt: new Date().toISOString() });
+        showMessage("success", i18n[currentLang].stateChanged);
+        loadMembers();
+      } catch {
+        showMessage("error", i18n[currentLang].errorChangeState);
       }
+    };
+  });
+}
 
-      const memberData = {
-        codigo,
-        nombre,
-        email,
-        telefono,
-        conyuge,
-        hijos,
-        bautismo,
-        ministerio,
-        observaciones,
-        fotoUrl: fotoUrl || null,
-        photoPath: photoPath || null,
-        estado: 'activo',
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
+// --- Renderizar paginación ---
+function renderPagination() {
+  paginationDiv.innerHTML = "";
+  const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
+  if(totalPages <= 1) return;
 
-      if (editingMemberId) {
-        // Actualizar
-        await db.collection('miembros').doc(editingMemberId).update(memberData);
-        showMessage('Miembro actualizado con éxito', 'success');
-      } else {
-        // Nuevo
-        memberData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        await db.collection('miembros').add(memberData);
-        showMessage('Miembro añadido con éxito', 'success');
-      }
+  for(let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    if(i === currentPage) {
+      btn.disabled = true;
+      btn.style.backgroundColor = "#ffea00";
+      btn.style.color = "#003366";
+    }
+    btn.onclick = () => {
+      currentPage = i;
+      renderTablePage();
+      renderPagination();
+    };
+    paginationDiv.appendChild(btn);
+  }
+}
 
-      closeModal();
-      loadMembers();
-    } catch (error) {
-      showMessage('Error guardando miembro: ' + error.message, 'error');
+// --- Búsqueda en tiempo real ---
+searchInput.addEventListener("input", () => {
+  const term = searchInput.value.trim().toLowerCase();
+  if(term === "") {
+    filteredMembers = [...membersData];
+  } else {
+    filteredMembers = membersData.filter(m =>
+      m.nombre.toLowerCase().includes(term) ||
+      m.codigo.toLowerCase().includes(term) ||
+      (m.estado && m.estado.toLowerCase().includes(term))
+    );
+  }
+  currentPage = 1;
+  renderTablePage();
+  renderPagination();
+});
+
+// --- Internacionalización (i18n) ---
+let currentLang = "es";
+const i18n = {
+  es: {
+    addMemberTitle: "Añadir Miembro",
+    editMemberTitle: "Editar Miembro",
+    save: "Guardar",
+    saving: "Guardando...",
+    fillRequired: "Por favor, complete los campos requeridos.",
+    addSuccess: "Miembro agregado correctamente.",
+    updateSuccess: "Miembro actualizado correctamente.",
+    errorChangeState: "Error al cambiar el estado.",
+    stateChanged: "Estado cambiado correctamente.",
+    noData: "No hay datos para mostrar.",
+    codigo: "Código",
+    nombre: "Nombre",
+    foto: "Foto",
+    estado: "Estado",
+    acciones: "Acciones",
+    edit: "Editar",
+    deactivate: "Dar de baja",
+    activate: "Reactivar",
+    searchPlaceholder: "Buscar miembros...",
+  },
+  en: {
+    addMemberTitle: "Add Member",
+    editMemberTitle: "Edit Member",
+    save: "Save",
+    saving: "Saving...",
+    fillRequired: "Please fill required fields.",
+    addSuccess: "Member added successfully.",
+    updateSuccess: "Member updated successfully.",
+    errorChangeState: "Error changing state.",
+    stateChanged: "State changed successfully.",
+    noData: "No data to display.",
+    codigo: "Code",
+    nombre: "Name",
+    foto: "Photo",
+    estado: "Status",
+    acciones: "Actions",
+    edit: "Edit",
+    deactivate: "Deactivate",
+    activate: "Reactivate",
+    searchPlaceholder: "Search members...",
+  }
+};
+
+// Cambiar idioma (ejemplo botones o dropdown)
+document.getElementById("langSelect").addEventListener("change", (e) => {
+  currentLang = e.target.value;
+  updateTexts();
+  renderTablePage();
+  renderPagination();
+});
+
+function updateTexts() {
+  document.getElementById("modalTitle").textContent = editMemberId ? i18n[currentLang].editMemberTitle : i18n[currentLang].addMemberTitle;
+  saveBtn.textContent = i18n[currentLang].save;
+  searchInput.placeholder = i18n[currentLang].searchPlaceholder;
+  // Actualizar encabezados tabla
+  document.querySelectorAll("th").forEach(th => {
+    const key = th.dataset.key;
+    if (key && i18n[currentLang][key]) {
+      th.textContent = i18n[currentLang][key];
     }
   });
+}
 
-  function closeModal() {
-    modal.style.display = 'none';
-    form.reset();
-    editingMemberId = null;
-    editingMemberOldPhotoPath = null;
-  }
+// --- Inicializar ---
+loadMembers();
+updateTexts();
+renderPagination();
 
-  // Cerrar modal clickeando fuera
-  window.addEventListener('click', e => {
-    if (e.target === modal) closeModal();
-  });
-
-  // ============ Mensajes visuales ============
-  function showMessage(msg, type = 'info') {
-    const container = document.createElement('div');
-    container.textContent = msg;
-    container.style.position = 'fixed';
-    container.style.top = '10px';
-    container.style.left = '50%';
-    container.style.transform = 'translateX(-50%)';
-    container.style.padding = '12px 20px';
-    container.style.borderRadius = '5px';
-    container.style.zIndex = 9999;
-    container.style.fontWeight = 'bold';
-    container.style.color = type === 'error' ? '#fff' : '#000';
-    container.style.backgroundColor =
-      type === 'error' ? '#e74c3c' :
-      type === 'success' ? '#2ecc71' : '#3498db';
-
-    document.body.appendChild(container);
-    setTimeout(() => container.remove(), 3500);
-  }
-
-  // ============ Inicialización ============
-  window.onload = () => {
-    applyTranslations();
-  };
 </script>
+</body>
+</html>
