@@ -166,20 +166,23 @@
 
 <script>
   // Inicializar Firebase (usa tus datos)
-  const firebaseConfig = {
-    apiKey: "TU_APIKEY",
-    authDomain: "TU_AUTHDOMAIN",
-    projectId: "TU_PROJECTID",
-    storageBucket: "TU_STORAGEBUCKET",
-    messagingSenderId: "TU_MESSAGINGSENDERID",
-    appId: "TU_APPID",
-  };
+  const  firebaseConfig = {
+  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+  projectId: "iglesia-adoracion-viva",
+  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+  messagingSenderId: "815332010058",
+  appId: "1:815332010058:web:d2afff616469349d88deb3",
+  measurementId: "G-43MZP6V55D"
+};
+
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
   // Inicializar Supabase (usa tus datos)
-  const supabaseUrl = 'https://tuinstancia.supabase.co';
-  const supabaseKey = 'tu_apikey_publica';
+  const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
   const bucketName = 'ftmember';
 
