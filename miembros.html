@@ -221,6 +221,7 @@
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+ 
 
   <!-- Supabase -->
 <script type="module">
@@ -312,12 +313,32 @@
   })
 
   // Cargar miembros en la tabla
-  async function cargarMiembros() {
-    tabla.innerHTML = ''
-    const snapshot = await db.collection('miembros')
-      .where('estado', '==', 'activo')
-      .orderBy('creado', 'desc')
-      .get()
+ async function cargarMiembros() {
+  const querySnapshot = await getDocs(collection(db, 'miembros'));
+  const miembros = [];
+  querySnapshot.forEach((doc) => {
+    miembros.push({ id: doc.id, ...doc.data() });
+  });
+  renderTabla(miembros); // Asegúrate de llamar a una función que dibuje la tabla
+}
+  function renderTabla(miembros) {
+  const tbody = document.querySelector('#tabla-miembros tbody');
+  tbody.innerHTML = ''; // Limpiar la tabla
+
+  miembros.forEach((miembro) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><img src="${miembro.fotoURL || 'default.jpg'}" width="50"></td>
+      <td>${miembro.nombre || ''}</td>
+      <td>${miembro.codigo || ''}</td>
+      <td>
+        <button onclick="editarMiembro('${miembro.id}')">Editar</button>
+        <button onclick="darDeBaja('${miembro.id}')">Baja</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
     snapshot.forEach(doc => {
       const m = doc.data()
