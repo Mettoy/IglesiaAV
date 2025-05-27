@@ -1,296 +1,750 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestión de Miembros</title>
-  <style>
-    body {
-      background-color: #0d1a33;
-      color: #d4af37;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0; padding: 0;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gestión de Miembros</title>
+<style>
+  /* Estilos principales */
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121822;
+    color: #D4AF37; /* dorado */
+  }
+  header, nav, main {
+    box-sizing: border-box;
+  }
+  /* Menú lateral */
+  nav {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 240px;
+    background: #0D1424;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 10px;
+    border-right: 2px solid #D4AF37;
+  }
+  nav img#logo {
+    max-width: 160px;
+    margin-bottom: 30px;
+  }
+  /* Contenido principal */
+  main {
+    margin-left: 240px;
+    padding: 20px 30px;
+  }
+  /* Botón Añadir Miembro */
+  #btnAñadir {
+    background-color: #D4AF37;
+    border: none;
+    color: #121822;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background-color 0.3s ease;
+  }
+  #btnAñadir:hover {
+    background-color: #b48a27;
+  }
+  /* Pestañas */
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  .tab {
+    padding: 8px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    user-select: none;
+  }
+  .tab.active {
+    border-bottom-color: #D4AF37;
+    font-weight: 700;
+  }
+  /* Tabla */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #D4AF37;
+    background-color: #1B2233;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #D4AF37;
+    vertical-align: middle;
+  }
+  th {
+    background-color: #121822;
+  }
+  tbody tr:hover {
+    background-color: #2A3145;
+  }
+  /* Foto en tabla */
+  td img.foto {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+  /* Búsqueda */
+  #inputBuscar {
+    padding: 8px;
+    width: 300px;
+    max-width: 100%;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #D4AF37;
+    background-color: #121822;
+    color: #D4AF37;
+  }
+  /* Paginación */
+  .paginacion {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+  }
+  .pagina-btn {
+    background-color: #D4AF37;
+    border: none;
+    color: #121822;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .pagina-btn.disabled {
+    background-color: #6f6f6f;
+    cursor: default;
+  }
+  /* Modal */
+  .modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 1000;
+  }
+  .modal.active {
+    display: flex;
+  }
+  .modal-content {
+    background: #121822;
+    border: 2px solid #D4AF37;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 20px;
+    color: #D4AF37;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h2 {
+    margin: 0;
+  }
+  .btnCerrar {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #D4AF37;
+  }
+  /* Formulario */
+  form {
+    margin-top: 15px;
+  }
+  form fieldset {
+    border: 1px solid #D4AF37;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 6px;
+  }
+  form legend {
+    font-weight: 700;
+    padding: 0 8px;
+  }
+  form label {
+    display: block;
+    margin-bottom: 6px;
+  }
+  form input[type="text"],
+  form input[type="date"],
+  form input[type="email"],
+  form select,
+  form textarea,
+  form input[type="file"] {
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: 5px;
+    border: 1px solid #D4AF37;
+    background-color: #121822;
+    color: #D4AF37;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+  }
+  form button[type="submit"] {
+    background-color: #D4AF37;
+    border: none;
+    padding: 10px 20px;
+    font-weight: 700;
+    color: #121822;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  form button[type="submit"]:hover {
+    background-color: #b48a27;
+  }
+  /* Acciones tabla */
+  .acciones-btn {
+    background: #D4AF37;
+    border: none;
+    padding: 6px 12px;
+    margin-right: 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #121822;
+    transition: background-color 0.3s ease;
+  }
+  .acciones-btn:hover {
+    background-color: #b48a27;
+  }
+  /* Responsive */
+  @media (max-width: 800px) {
+    nav {
+      position: relative;
+      width: 100%;
+      height: auto;
+      flex-direction: row;
+      padding: 10px 20px;
+      border-right: none;
+      border-bottom: 2px solid #D4AF37;
+      justify-content: space-between;
     }
-    header {
-      background-color: #09214d;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: bold;
+    nav img#logo {
+      max-width: 120px;
+      margin-bottom: 0;
     }
     main {
-      max-width: 1100px;
-      margin: 2rem auto;
-      padding: 1rem;
+      margin-left: 0;
+      padding: 15px 20px;
     }
-    form {
-      background-color: #14325c;
-      padding: 1rem 2rem;
-      border-radius: 8px;
-      margin-bottom: 2rem;
-    }
-    form h2 {
-      border-bottom: 1px solid #d4af37;
-      padding-bottom: 0.5rem;
-      margin-bottom: 1rem;
-    }
-    form section {
-      margin-bottom: 1.5rem;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.25rem;
-      font-weight: 600;
-    }
-    input, select {
+    #inputBuscar {
       width: 100%;
-      padding: 0.5rem;
-      border-radius: 4px;
-      border: none;
-      margin-bottom: 0.8rem;
-      font-size: 1rem;
+      margin-bottom: 10px;
     }
-    button {
-      background-color: #d4af37;
-      color: #0d1a33;
-      font-weight: 700;
-      border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 6px;
-      cursor: pointer;
+    .tabs {
+      flex-wrap: wrap;
     }
-    button:hover {
-      background-color: #b79023;
+    table, th, td {
+      font-size: 14px;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: #14325c;
-      border-radius: 8px;
+    td img.foto {
+      width: 40px;
+      height: 40px;
     }
-    thead {
-      background-color: #0a1b3a;
-    }
-    th, td {
-      padding: 0.75rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid #d4af37;
-    }
-    img.foto-miembro {
-      width: 50px; height: 50px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 2px solid #d4af37;
-    }
-    .busqueda-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    #busqueda-miembros {
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: none;
-      width: 300px;
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
-  <header>Gestión de Miembros</header>
-  <main>
-    <div class="busqueda-container">
-      <button id="btn-agregar-miembro">Añadir Miembro</button>
-      <input type="text" id="busqueda-miembros" placeholder="Buscar por nombre o código..." />
+
+<nav>
+  <img id="logo" src="https://i.postimg.cc/fLnWNmYX/logo-Dorado.png" alt="Logo" />
+</nav>
+
+<main>
+  <button id="btnAñadir">Añadir Miembro</button>
+
+  <input type="text" id="inputBuscar" placeholder="Buscar por nombre, código, o estado..." />
+
+  <div class="tabs">
+    <div class="tab active" data-estado="activo">Miembros Activos</div>
+    <div class="tab" data-estado="baja">Miembros de Baja</div>
+  </div>
+
+  <table id="tablaMiembros" aria-label="Lista de Miembros">
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Edad</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Miembros cargados aquí -->
+    </tbody>
+  </table>
+
+  <div class="paginacion" id="paginacion"></div>
+</main>
+
+<!-- Modal Añadir/Editar -->
+<div class="modal" id="modalMiembro" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modalTitulo">Añadir Miembro</h2>
+      <button class="btnCerrar" id="btnCerrarModal" aria-label="Cerrar modal">&times;</button>
     </div>
+    <form id="formMiembro">
+      <fieldset>
+        <legend>Datos Personales</legend>
+        <label for="codigo">Código</label>
+        <input type="text" id="codigo" name="codigo" required />
 
-    <form id="form-miembro" style="display:none;">
-      <section>
-        <h2>Datos Personales</h2>
-        <label>Nombre Completo</label><input type="text" id="nombre" required>
-        <label>Código</label><input type="text" id="codigo" required>
-        <label>Edad</label><input type="number" id="edad" min="0" required>
-        <label>Teléfono</label><input type="tel" id="telefono" required>
-        <label>Dirección</label><input type="text" id="direccion" required>
-        <label>Fecha de Nacimiento</label><input type="date" id="fechaNacimiento" required>
-      </section>
-      <section>
-        <h2>Datos Familiares</h2>
-        <label>Tipo de Familiar</label>
-        <select id="tipoFamiliar">
-          <option value="">Seleccione...</option>
-          <option>Padre</option><option>Madre</option><option>Hermano</option><option>Hermana</option>
-          <option>Hijo</option><option>Hija</option><option>Otro</option>
+        <label for="nombre">Nombre Completo</label>
+        <input type="text" id="nombre" name="nombre" required />
+
+        <label for="fechaNacimiento">Fecha de Nacimiento</label>
+        <input type="date" id="fechaNacimiento" name="fechaNacimiento" required />
+
+        <label for="foto">Foto</label>
+        <input type="file" id="foto" name="foto" accept="image/*" />
+      </fieldset>
+
+      <fieldset>
+        <legend>Datos Familiares</legend>
+        <label for="estadoCivil">Estado Civil</label>
+        <select id="estadoCivil" name="estadoCivil">
+          <option value="">Seleccione</option>
+          <option value="Soltero/a">Soltero/a</option>
+          <option value="Casado/a">Casado/a</option>
+          <option value="Divorciado/a">Divorciado/a</option>
+          <option value="Viudo/a">Viudo/a</option>
         </select>
-        <label>Nombre del Familiar</label><input type="text" id="nombreFamiliar">
-        <button type="button" id="btn-agregar-familiar">Agregar Familiar</button>
-        <ul id="lista-familiares" style="color:white;"></ul>
-      </section>
-      <section>
-        <h2>Datos Espirituales</h2>
-        <label>Fecha de Conversión</label><input type="date" id="fechaConversion">
-        <label>Lugar de Conversión</label><input type="text" id="lugarConversion">
-        <label>Fecha de Bautismo</label><input type="date" id="fechaBautismo">
-        <label>Lugar de Bautismo</label><input type="text" id="lugarBautismo">
-        <label>Fecha de Bautismo en el Espíritu</label><input type="date" id="fechaBautismoEspiritu">
-        <label>Lugar de Bautismo en el Espíritu</label><input type="text" id="lugarBautismoEspiritu">
-      </section>
-      <section>
-        <h2>Foto</h2>
-        <input type="file" id="foto" accept="image/*">
-      </section>
-      <button type="submit">Guardar</button>
+
+        <label for="hijos">Número de Hijos</label>
+        <input type="number" id="hijos" name="hijos" min="0" />
+      </fieldset>
+
+      <fieldset>
+        <legend>Datos Espirituales</legend>
+        <label for="bautizado">Bautizado</label>
+        <select id="bautizado" name="bautizado">
+          <option value="">Seleccione</option>
+          <option value="Sí">Sí</option>
+          <option value="No">No</option>
+        </select>
+
+        <label for="ministerio">Ministerio</label>
+        <input type="text" id="ministerio" name="ministerio" />
+      </fieldset>
+
+      <button type="submit" id="btnGuardar">Guardar</button>
     </form>
+  </div>
+</div>
 
-    <table>
-      <thead>
-        <tr><th>Foto</th><th>Nombre</th><th>Código</th><th>Edad</th><th>Teléfono</th><th>Dirección</th><th>Acciones</th></tr>
-      </thead>
-      <tbody id="tabla-miembros"></tbody>
-    </table>
-  </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
-  <!-- Firebase & Supabase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+<script>
+(() => {
+  // Config Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+    projectId: "iglesia-adoracion-viva",
+    storageBucket: "iglesia-adoracion-viva.appspot.com",
+    messagingSenderId: "815332010058",
+    appId: "1:815332010058:web:d2afff616469349d88deb3",
+    measurementId: "G-43MZP6V55D"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-    const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
+  // Config Supabase
+  const SUPABASE_URL = 'https://tu-proyecto.supabase.co'; // Cambia aquí por tu URL de Supabase
+  const SUPABASE_ANON_KEY = 'tu-anon-key'; // Cambia aquí por tu anon key de Supabase
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const bucketName = 'ftmember';
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+  // Elementos DOM
+  const btnAñadir = document.getElementById('btnAñadir');
+  const modalMiembro = document.getElementById('modalMiembro');
+  const btnCerrarModal = document.getElementById('btnCerrarModal');
+  const formMiembro = document.getElementById('formMiembro');
+  const inputBuscar = document.getElementById('inputBuscar');
+  const tablaBody = document.querySelector('#tablaMiembros tbody');
+  const paginacionDiv = document.getElementById('paginacion');
+  const tabs = document.querySelectorAll('.tab');
+  const modalTitulo = document.getElementById('modalTitulo');
+  const btnGuardar = document.getElementById('btnGuardar');
 
-    const supabase = createClient(
-      'https://xyptydnouyddzvrffaby.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o'
-    );
+  // Variables de control
+  let miembros = [];
+  let paginaActual = 1;
+  const miembrosPorPagina = 30;
+  let estadoFiltro = 'activo';
+  let editandoMiembroId = null;
+  let fotoAnterior = null;
 
-    firebase.initializeApp({
-      apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-      authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-      projectId: "iglesia-adoracion-viva"
+  // Abrir modal
+  btnAñadir.addEventListener('click', () => {
+    editandoMiembroId = null;
+    fotoAnterior = null;
+    modalTitulo.textContent = 'Añadir Miembro';
+    formMiembro.reset();
+    modalMiembro.classList.add('active');
+  });
+
+  btnCerrarModal.addEventListener('click', () => {
+    modalMiembro.classList.remove('active');
+  });
+
+  window.addEventListener('click', e => {
+    if(e.target === modalMiembro) modalMiembro.classList.remove('active');
+  });
+
+  // Pestañas estado
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      estadoFiltro = tab.dataset.estado;
+      paginaActual = 1;
+      mostrarMiembros();
     });
-    const db = firebase.firestore();
+  });
 
-    const form = document.getElementById('form-miembro');
-    const tabla = document.getElementById('tabla-miembros');
-    const btnAgregar = document.getElementById('btn-agregar-miembro');
-    const buscador = document.getElementById('busqueda-miembros');
+  // Función para calcular edad a partir de fecha de nacimiento
+  function calcularEdad(fechaNacimiento) {
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const m = hoy.getMonth() - nacimiento.getMonth();
+    if(m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    return edad;
+  }
 
-    let familiares = [];
-
-    document.getElementById('btn-agregar-familiar').onclick = () => {
-      const tipo = document.getElementById('tipoFamiliar').value;
-      const nombre = document.getElementById('nombreFamiliar').value;
-      if (tipo && nombre) {
-        familiares.push({ tipo, nombre });
-        const li = document.createElement('li');
-        li.textContent = `${tipo}: ${nombre}`;
-        document.getElementById('lista-familiares').appendChild(li);
-        document.getElementById('nombreFamiliar').value = '';
-      }
-    };
-
-    document.getElementById('fechaNacimiento').addEventListener('change', e => {
-      const nacimiento = new Date(e.target.value);
-      const hoy = new Date();
-      let edad = hoy.getFullYear() - nacimiento.getFullYear();
-      if (hoy < new Date(hoy.getFullYear(), nacimiento.getMonth(), nacimiento.getDate())) edad--;
-      document.getElementById('edad').value = edad;
-    });
-
-    btnAgregar.onclick = () => {
-      form.style.display = 'block';
-    };
-
-    form.onsubmit = async e => {
-      e.preventDefault();
-      const file = document.getElementById('foto').files[0];
-      let fotoUrl = '';
-
-      if (file) {
-        const { data, error } = await supabase.storage.from('ftmember').upload(`fotos/${Date.now()}_${file.name}`, file);
-        if (error) return alert('Error subiendo imagen');
-        const { data: publicUrlData } = supabase.storage.from('ftmember').getPublicUrl(data.path);
-        fotoUrl = publicUrlData.publicUrl;
-      }
-
-      const miembro = {
-        nombre: document.getElementById('nombre').value,
-        codigo: document.getElementById('codigo').value,
-        edad: parseInt(document.getElementById('edad').value),
-        telefono: document.getElementById('telefono').value,
-        direccion: document.getElementById('direccion').value,
-        fechaNacimiento: document.getElementById('fechaNacimiento').value,
-        familiares,
-        fechaConversion: document.getElementById('fechaConversion').value,
-        lugarConversion: document.getElementById('lugarConversion').value,
-        fechaBautismo: document.getElementById('fechaBautismo').value,
-        lugarBautismo: document.getElementById('lugarBautismo').value,
-        fechaBautismoEspiritu: document.getElementById('fechaBautismoEspiritu').value,
-        lugarBautismoEspiritu: document.getElementById('lugarBautismoEspiritu').value,
-        foto: fotoUrl,
-        estado: 'activo',
-        creado: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      await db.collection('miembros').add(miembro);
-      alert('Miembro guardado correctamente');
-      form.reset();
-      form.style.display = 'none';
-      familiares = [];
-      document.getElementById('lista-familiares').innerHTML = '';
-      cargarMiembros();
-    };
-
-    buscador.addEventListener('input', () => {
-      cargarMiembros(buscador.value.toLowerCase());
-    });
-
-    async function cargarMiembros(filtro = '') {
-      const snap = await db.collection('miembros').orderBy('codigo').get();
-      tabla.innerHTML = '';
-      snap.forEach(doc => {
-        const m = doc.data();
-        if (!m.estado || m.estado !== 'activo') return;
-        if (
-          m.nombre.toLowerCase().includes(filtro) ||
-          m.codigo.toLowerCase().includes(filtro)
-        ) {
-          tabla.innerHTML += `
-            <tr>
-              <td><img src="${m.foto}" class="foto-miembro"></td>
-              <td>${m.nombre}</td>
-              <td>${m.codigo}</td>
-              <td>${m.edad}</td>
-              <td>${m.telefono}</td>
-              <td>${m.direccion}</td>
-              <td><button onclick="darDeBaja('${doc.id}')">Baja</button></td>
-            </tr>`;
+  // Función para cargar miembros desde Firestore
+  async function cargarMiembros() {
+    try {
+      const snapshot = await db.collection('miembros').get();
+      miembros = snapshot.docs.map(doc => {
+        const data = doc.data();
+        data.id = doc.id;
+        // Actualizar edad automáticamente:
+        if(data.fechaNacimiento) {
+          data.edad = calcularEdad(data.fechaNacimiento);
+        } else {
+          data.edad = '';
         }
+        return data;
+      });
+      mostrarMiembros();
+    } catch (error) {
+      alert('Error al cargar miembros: ' + error.message);
+    }
+  }
+
+  // Función para mostrar miembros en tabla con paginación y filtro estado y búsqueda
+  function mostrarMiembros() {
+    let filtrados = miembros.filter(m => m.estado === estadoFiltro);
+
+    const textoBusqueda = inputBuscar.value.toLowerCase();
+    if(textoBusqueda) {
+      filtrados = filtrados.filter(m => {
+        return (
+          (m.nombre && m.nombre.toLowerCase().includes(textoBusqueda)) ||
+          (m.codigo && m.codigo.toLowerCase().includes(textoBusqueda)) ||
+          (m.estado && m.estado.toLowerCase().includes(textoBusqueda))
+        );
       });
     }
 
-    window.darDeBaja = async id => {
-      if (confirm('¿Dar de baja este miembro?')) {
-        await db.collection('miembros').doc(id).update({ estado: 'baja' });
-        cargarMiembros();
-      }
-    };
+    const totalPaginas = Math.ceil(filtrados.length / miembrosPorPagina);
+    if(paginaActual > totalPaginas) paginaActual = totalPaginas || 1;
 
-    cargarMiembros();
-  </script>
+    const inicio = (paginaActual -1) * miembrosPorPagina;
+    const fin = inicio + miembrosPorPagina;
+    const paginaMiembros = filtrados.slice(inicio, fin);
+
+    tablaBody.innerHTML = '';
+
+    paginaMiembros.forEach(m => {
+      const tr = document.createElement('tr');
+
+      // Foto
+      const tdFoto = document.createElement('td');
+      const img = document.createElement('img');
+      img.classList.add('foto');
+      img.alt = `Foto de ${m.nombre || ''}`;
+      img.src = m.fotoURL || 'https://via.placeholder.com/50?text=Foto';
+      tdFoto.appendChild(img);
+      tr.appendChild(tdFoto);
+
+      // Nombre
+      const tdNombre = document.createElement('td');
+      tdNombre.textContent = m.nombre || '';
+      tr.appendChild(tdNombre);
+
+      // Código
+      const tdCodigo = document.createElement('td');
+      tdCodigo.textContent = m.codigo || '';
+      tr.appendChild(tdCodigo);
+
+      // Edad
+      const tdEdad = document.createElement('td');
+      tdEdad.textContent = m.edad || '';
+      tr.appendChild(tdEdad);
+
+      // Estado
+      const tdEstado = document.createElement('td');
+      tdEstado.textContent = m.estado === 'activo' ? 'Activo' : 'De Baja';
+      tr.appendChild(tdEstado);
+
+      // Acciones
+      const tdAcciones = document.createElement('td');
+
+      // Editar botón
+           btnEditar.textContent = 'Editar';
+      btnEditar.classList.add('acciones-btn');
+      btnEditar.addEventListener('click', () => abrirModalEdicion(m));
+      tdAcciones.appendChild(btnEditar);
+      // Dar baja/reactivar
+      const btnEstado = document.createElement('button');
+      btnEstado.textContent = m.estado === 'activo' ? 'Dar de Baja' : 'Reactivar';
+      btnEstado.classList.add('acciones-btn');
+      btnEstado.addEventListener('click', () => cambiarEstado(m));
+      tdAcciones.appendChild(btnEstado);
+
+      tr.appendChild(tdFoto);
+      tr.appendChild(tdNombre);
+      tr.appendChild(tdCodigo);
+      tr.appendChild(tdEdad);
+      tr.appendChild(tdEstado);
+      tr.appendChild(tdAcciones);
+
+      tablaCuerpo.appendChild(tr);
+    }
+
+    // Paginación
+    crearPaginacion();
+  }
+
+  // Crear botones paginación
+  function crearPaginacion() {
+    const totalPaginas = Math.ceil(miembrosFiltrados.length / itemsPorPagina);
+    paginacionDiv.innerHTML = '';
+
+    // Botón anterior
+    const btnAnterior = document.createElement('button');
+    btnAnterior.textContent = '«';
+    btnAnterior.disabled = paginaActual === 1;
+    btnAnterior.classList.add('pagina-btn');
+    if (btnAnterior.disabled) btnAnterior.classList.add('disabled');
+    btnAnterior.addEventListener('click', () => mostrarPagina(paginaActual - 1));
+    paginacionDiv.appendChild(btnAnterior);
+
+    // Botones páginas
+    for (let i = 1; i <= totalPaginas; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      btn.classList.add('pagina-btn');
+      if (i === paginaActual) {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+      }
+      btn.addEventListener('click', () => mostrarPagina(i));
+      paginacionDiv.appendChild(btn);
+    }
+
+    // Botón siguiente
+    const btnSiguiente = document.createElement('button');
+    btnSiguiente.textContent = '»';
+    btnSiguiente.disabled = paginaActual === totalPaginas || totalPaginas === 0;
+    btnSiguiente.classList.add('pagina-btn');
+    if (btnSiguiente.disabled) btnSiguiente.classList.add('disabled');
+    btnSiguiente.addEventListener('click', () => mostrarPagina(paginaActual + 1));
+    paginacionDiv.appendChild(btnSiguiente);
+  }
+
+  // Calcular edad a partir de fecha yyyy-mm-dd
+  function calcularEdad(fechaStr) {
+    if (!fechaStr) return '';
+    const hoy = new Date();
+    const nacimiento = new Date(fechaStr);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const m = hoy.getMonth() - nacimiento.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    return edad;
+  }
+
+  // Abrir modal para edición de miembro
+  function abrirModalEdicion(miembro) {
+    modoEdicion = true;
+    miembroEditandoId = miembro.id;
+    urlFotoAnterior = miembro.fotoURL || null;
+    modalTitulo.textContent = 'Editar Miembro';
+
+    // Rellenar formulario
+    formMiembro.codigo.value = miembro.codigo || '';
+    formMiembro.nombre.value = miembro.nombre || '';
+    formMiembro.fechaNacimiento.value = miembro.fechaNacimiento || '';
+    formMiembro.estadoCivil.value = miembro.estadoCivil || '';
+    formMiembro.hijos.value = miembro.hijos != null ? miembro.hijos : '';
+    formMiembro.bautizado.value = miembro.bautizado || '';
+    formMiembro.ministerio.value = miembro.ministerio || '';
+
+    modal.classList.add('active');
+  }
+
+  // Cambiar estado (activo <-> baja)
+  async function cambiarEstado(miembro) {
+    const nuevoEstado = miembro.estado === 'activo' ? 'baja' : 'activo';
+    try {
+      await db.collection('miembros').doc(miembro.id).update({ estado: nuevoEstado });
+      // Actualizar array local
+      miembros = miembros.map(m => m.id === miembro.id ? {...m, estado: nuevoEstado} : m);
+      filtrarYMostrar();
+    } catch (e) {
+      alert('Error al cambiar estado: ' + e.message);
+    }
+  }
+
+  // Subir foto a Supabase
+  async function subirFoto(file, nombreArchivo) {
+    const { data, error } = await supabase.storage
+      .from(bucketName)
+      .upload(nombreArchivo, file, { upsert: true });
+    if (error) throw error;
+    const { publicURL, error: urlError } = supabase.storage.from(bucketName).getPublicUrl(nombreArchivo);
+    if (urlError) throw urlError;
+    return publicURL;
+  }
+
+  // Borrar foto antigua en Supabase
+  async function borrarFoto(rutaArchivo) {
+    if (!rutaArchivo) return;
+    // Obtener nombre archivo relativo al bucket
+    const url = new URL(rutaArchivo);
+    const nombreArchivo = url.pathname.split('/').slice(2).join('/'); // /storage/v1/object/public/bucket/archivo
+    await supabase.storage.from(bucketName).remove([nombreArchivo]);
+  }
+
+  // Guardar o editar miembro al enviar formulario
+  formMiembro.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    btnGuardar.disabled = true;
+    btnGuardar.textContent = modoEdicion ? 'Guardando...' : 'Añadiendo...';
+
+    try {
+      const formData = new FormData(formMiembro);
+      // Datos del formulario
+      const datosMiembro = {
+        codigo: formData.get('codigo').trim(),
+        nombre: formData.get('nombre').trim(),
+        fechaNacimiento: formData.get('fechaNacimiento'),
+        estadoCivil: formData.get('estadoCivil'),
+        hijos: Number(formData.get('hijos')) || 0,
+        bautizado: formData.get('bautizado'),
+        ministerio: formData.get('ministerio'),
+        estado: 'activo', // por defecto activo al crear
+        fotoURL: ''
+      };
+
+      // Validar campos mínimos
+      if (!datosMiembro.codigo || !datosMiembro.nombre) {
+        alert('Código y Nombre son obligatorios');
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = modoEdicion ? 'Guardar Cambios' : 'Añadir Miembro';
+        return;
+      }
+
+      // Foto seleccionada
+      const inputFoto = formMiembro.foto;
+      let fotoURL = urlFotoAnterior || '';
+
+      if (inputFoto.files.length > 0) {
+        const archivo = inputFoto.files[0];
+        // Nombre archivo para subir: codigo + extensión
+        const extension = archivo.name.split('.').pop();
+        const nombreArchivo = `${datosMiembro.codigo}.${extension}`;
+
+        // Borrar foto antigua si está en modo edición
+        if (modoEdicion && urlFotoAnterior) {
+          await borrarFoto(urlFotoAnterior);
+        }
+
+        // Subir nueva foto
+        fotoURL = await subirFoto(archivo, nombreArchivo);
+      }
+
+      datosMiembro.fotoURL = fotoURL;
+
+      if (modoEdicion) {
+        // Actualizar documento Firestore
+        await db.collection('miembros').doc(miembroEditandoId).update(datosMiembro);
+        // Actualizar array local
+        miembros = miembros.map(m => m.id === miembroEditandoId ? { ...m, ...datosMiembro } : m);
+      } else {
+        // Añadir nuevo documento Firestore
+        const docRef = await db.collection('miembros').add(datosMiembro);
+        datosMiembro.id = docRef.id;
+        miembros.push(datosMiembro);
+      }
+
+      filtrarYMostrar();
+      modal.classList.remove('active');
+      formMiembro.reset();
+      alert(modoEdicion ? 'Miembro actualizado correctamente' : 'Miembro añadido correctamente');
+    } catch (error) {
+      alert('Error guardando miembro: ' + error.message);
+    } finally {
+      btnGuardar.disabled = false;
+      btnGuardar.textContent = modoEdicion ? 'Guardar Cambios' : 'Añadir Miembro';
+    }
+  });
+
+  // Cargar miembros desde Firestore
+  function cargarMiembros() {
+    db.collection('miembros').orderBy('codigo', 'asc').onSnapshot(snapshot => {
+      miembros = [];
+      snapshot.forEach(doc => {
+        miembros.push({ id: doc.id, ...doc.data() });
+      });
+      filtrarYMostrar();
+    }, error => {
+      alert('Error al cargar miembros: ' + error.message);
+    });
+  }
+
+  // Actualizar edad automáticamente al cumplir años (cada día)
+  setInterval(() => {
+    filtrarYMostrar();
+  }, 24 * 60 * 60 * 1000); // cada 24 horas
+
+  // Inicializar
+  cargarMiembros();
+
+</script>
+
 </body>
 </html>
