@@ -159,184 +159,206 @@
     color: #eee;
   }
 </style>
-<!-- Suponiendo que tienes ya la estructura HTML con menú, tabla, y formulario modal -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<nav>
+  <img src="logo.png" alt="Logo" />
+  <button id="btnAddMember">Añadir Miembro</button>
+</nav>
+
+<main>
+  <input type="search" id="searchBar" placeholder="Buscar por código o nombre..." />
+
+  <div id="tabs">
+    <button class="tab-btn active" data-status="activo">Miembros Activos</button>
+    <button class="tab-btn" data-status="baja">Miembros de Baja</button>
+  </div>
+
+  <table id="membersTable" border="0" cellspacing="0" cellpadding="0">
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Fecha de Nac.</th>
+        <th>Cónyuge</th>
+        <th>Hijos</th>
+        <th>Ministerio</th>
+        <th>Dirección</th>
+        <th>Teléfono</th>
+        <th>Correo</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</main>
+
+<!-- Modal formulario -->
+<div id="modalContainer">
+  <form id="modalForm">
+    <h2>Formulario de Miembro</h2>
+
+    <div class="form-section">
+      <label for="codigo">Código *</label>
+      <input type="text" id="codigo" name="codigo" required />
+      <label for="nombre">Nombre *</label>
+      <input type="text" id="nombre" name="nombre" required />
+      <label for="fechaNacimiento">Fecha de Nacimiento *</label>
+      <input type="date" id="fechaNacimiento" name="fechaNacimiento" required />
+      <label for="conyuge">Cónyuge</label>
+      <input type="text" id="conyuge" name="conyuge" />
+      <label for="hijos">Hijos</label>
+      <input type="text" id="hijos" name="hijos" />
+    </div>
+
+    <div class="form-section">
+      <label for="ministerio">Ministerio</label>
+      <input type="text" id="ministerio" name="ministerio" />
+      <label for="direccion">Dirección</label>
+      <input type="text" id="direccion" name="direccion" />
+      <label for="telefono">Teléfono</label>
+      <input type="tel" id="telefono" name="telefono" />
+      <label for="correo">Correo</label>
+      <input type="email" id="correo" name="correo" />
+      <label for="estado">Estado</label>
+      <select id="estado" name="estado">
+        <option value="activo">Activo</option>
+        <option value="baja">Baja</option>
+      </select>
+    </div>
+
+    <div class="form-section">
+      <label for="foto">Foto</label>
+      <input type="file" id="foto" name="foto" accept="image/*" />
+      <img id="fotoPreview" class="foto" alt="Vista previa" />
+    </div>
+
+    <div class="btn-group">
+      <button type="button" id="btnClose">Cerrar</button>
+      <button type="submit">Guardar</button>
+    </div>
+  </form>
+</div>
 
 <script>
-  // Inicializar Firebase (usa tus datos)
-  const  firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
-
+  // --- Configuraciones iniciales ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+    databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+    projectId: "iglesia-adoracion-viva",
+    storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+    messagingSenderId: "815332010058",
+    appId: "1:815332010058:web:d2afff616469349d88deb3",
+    measurementId: "G-43MZP6V55D"
+  };
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  const firestore = firebase.firestore();
 
-  // Inicializar Supabase (usa tus datos)
-  const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';
+  // Supabase
+  const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co'; // Cambia aquí
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o'; // Cambia aquí
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
   const bucketName = 'ftmember';
 
+  // Elementos del DOM
   const membersTableBody = document.querySelector('#membersTable tbody');
   const btnAddMember = document.getElementById('btnAddMember');
   const modalContainer = document.getElementById('modalContainer');
   const modalForm = document.getElementById('modalForm');
   const btnClose = document.getElementById('btnClose');
+  const searchBar = document.getElementById('searchBar');
+  const tabButtons = document.querySelectorAll('#tabs button');
   const fotoInput = document.getElementById('foto');
   const fotoPreview = document.getElementById('fotoPreview');
-  const searchBar = document.getElementById('searchBar');
-  const tabs = document.querySelectorAll('#tabs .tab-btn');
 
-  let currentStatus = 'activo';
-  let members = [];
-  let editingMemberId = null;
+  let editingMemberId = null;  // Para saber si estamos editando
+  let currentStatusFilter = 'activo';
+  let membersData = [];
 
-  // Abrir modal para añadir o editar
-  btnAddMember.addEventListener('click', () => openModal());
-  btnClose.addEventListener('click', () => closeModal());
-
-  function openModal(member = null) {
-    modalContainer.classList.add('show');
-    if(member) {
-      editingMemberId = member.id;
-      modalForm.codigo.value = member.codigo || '';
-      modalForm.nombre.value = member.nombre || '';
-      modalForm.fechaNacimiento.value = member.fechaNacimiento || '';
-      modalForm.conyuge.value = member.conyuge || '';
-      modalForm.hijos.value = member.hijos || '';
-      modalForm.ministerio.value = member.ministerio || '';
-      modalForm.direccion.value = member.direccion || '';
-      modalForm.telefono.value = member.telefono || '';
-      modalForm.correo.value = member.correo || '';
-      modalForm.estado.value = member.estado || 'activo';
-
-      if(member.fotoUrl){
-        fotoPreview.src = member.fotoUrl;
-        fotoPreview.style.display = 'block';
-      } else {
-        fotoPreview.style.display = 'none';
-      }
-    } else {
-      editingMemberId = null;
-      modalForm.reset();
-      fotoPreview.style.display = 'none';
-    }
-  }
-
-  function closeModal() {
-    modalContainer.classList.remove('show');
+  // Mostrar modal formulario
+  btnAddMember.addEventListener('click', () => {
     editingMemberId = null;
     modalForm.reset();
     fotoPreview.style.display = 'none';
-  }
+    fotoPreview.src = '';
+    modalContainer.classList.add('show');
+  });
 
+  // Cerrar modal
+  btnClose.addEventListener('click', () => {
+    modalContainer.classList.remove('show');
+  });
+
+  // Vista previa de la foto seleccionada
   fotoInput.addEventListener('change', () => {
     const file = fotoInput.files[0];
-    if(file){
-      const reader = new FileReader();
-      reader.onload = e => {
-        fotoPreview.src = e.target.result;
-        fotoPreview.style.display = 'block';
-      }
-      reader.readAsDataURL(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      fotoPreview.src = url;
+      fotoPreview.style.display = 'block';
     } else {
       fotoPreview.style.display = 'none';
+      fotoPreview.src = '';
     }
   });
 
-  modalForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(modalForm);
-    const data = Object.fromEntries(formData.entries());
-    data.estado = data.estado || 'activo';
-
-    try {
-      let fotoUrl = null;
-      if(fotoInput.files.length > 0){
-        const file = fotoInput.files[0];
-        const fileName = `${data.codigo}_${Date.now()}.${file.name.split('.').pop()}`;
-
-        // Si es edición, eliminar foto anterior
-        if(editingMemberId){
-          const prevMember = members.find(m => m.id === editingMemberId);
-          if(prevMember && prevMember.fotoUrl){
-            const prevFileName = prevMember.fotoUrl.split('/').pop();
-            await supabase.storage.from(bucketName).remove([prevFileName]);
-          }
-        }
-
-        const { error: uploadError } = await supabase.storage.from(bucketName).upload(fileName, file);
-
-        if(uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(fileName);
-        fotoUrl = urlData.publicUrl;
-      } else if(editingMemberId) {
-        const prevMember = members.find(m => m.id === editingMemberId);
-        fotoUrl = prevMember ? prevMember.fotoUrl : null;
-      }
-
-      data.fotoUrl = fotoUrl || null;
-
-      if(editingMemberId){
-        await db.collection('miembros').doc(editingMemberId).update(data);
-      } else {
-        await db.collection('miembros').add(data);
-      }
-
-      closeModal();
-      await loadMembers();
-
-    } catch(err){
-      alert('Error al guardar: ' + err.message);
-      console.error(err);
-    }
+  // Cambiar pestaña de activos / baja
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentStatusFilter = btn.getAttribute('data-status');
+      renderTable();
+    });
   });
 
-  // Cargar miembros
+  // Escuchar búsqueda
+  searchBar.addEventListener('input', () => {
+    renderTable();
+  });
+
+  // Función para cargar miembros desde Firestore
   async function loadMembers() {
     try {
-      const snapshot = await db.collection('miembros').where('estado', '==', currentStatus).orderBy('codigo').get();
-      members = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderTable(members);
-    } catch(err){
-      alert('Error al cargar miembros: ' + err.message);
-      console.error(err);
+      const snapshot = await firestore.collection('miembros').orderBy('codigo').get();
+      membersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderTable();
+    } catch (error) {
+      alert('Error cargando miembros: ' + error.message);
     }
   }
 
-  // Renderizar tabla (sin agrandar, con diseño original)
-  function renderTable(data) {
-    const filter = searchBar.value.trim().toLowerCase();
+  // Renderizar tabla con filtro y búsqueda
+  function renderTable() {
+    const searchTerm = searchBar.value.toLowerCase();
+    const filtered = membersData.filter(member => 
+      member.estado === currentStatusFilter &&
+      (member.codigo?.toLowerCase().includes(searchTerm) ||
+       member.nombre?.toLowerCase().includes(searchTerm))
+    );
+
     membersTableBody.innerHTML = '';
-
-    const filtered = data.filter(m => {
-      return (m.nombre?.toLowerCase().includes(filter) || m.codigo?.toLowerCase().includes(filter));
-    });
-
+    if (filtered.length === 0) {
+      membersTableBody.innerHTML = '<tr><td colspan="12" style="text-align:center;">No hay miembros</td></tr>';
+      return;
+    }
     filtered.forEach(member => {
       const tr = document.createElement('tr');
 
       // Foto
       const tdFoto = document.createElement('td');
-      if(member.fotoUrl){
-        const img = document.createElement('img');
-        img.src = member.fotoUrl;
-        img.alt = 'Foto';
-        img.style.width = '40px';  // Tamaño original
-        img.style.height = '40px';
-        img.style.borderRadius = '50%';
-        tdFoto.appendChild(img);
-      }
+      const img = document.createElement('img');
+      img.className = 'foto';
+      img.src = member.fotoUrl || 'https://via.placeholder.com/40?text=Sin+Foto';
+      img.alt = 'Foto';
+      tdFoto.appendChild(img);
       tr.appendChild(tdFoto);
 
       // Código
@@ -349,7 +371,7 @@
       tdNombre.textContent = member.nombre || '';
       tr.appendChild(tdNombre);
 
-      // Fecha Nac.
+      // Fecha de Nac
       const tdFecha = document.createElement('td');
       tdFecha.textContent = member.fechaNacimiento || '';
       tr.appendChild(tdFecha);
@@ -391,25 +413,18 @@
 
       // Acciones
       const tdAcciones = document.createElement('td');
-
+      // Botón editar
       const btnEdit = document.createElement('button');
       btnEdit.textContent = 'Editar';
-      btnEdit.classList.add('action-btn');
-      btnEdit.addEventListener('click', () => openModal(member));
+      btnEdit.className = 'action-btn';
+      btnEdit.addEventListener('click', () => openEditMember(member.id));
       tdAcciones.appendChild(btnEdit);
 
+      // Botón cambiar estado
       const btnToggle = document.createElement('button');
-      btnToggle.textContent = member.estado === 'activo' ? 'Dar de Baja' : 'Reactivar';
-      btnToggle.classList.add('action-btn');
-      btnToggle.addEventListener('click', async () => {
-        try {
-          await db.collection('miembros').doc(member.id).update({ estado: member.estado === 'activo' ? 'baja' : 'activo' });
-          await loadMembers();
-        } catch(err) {
-          alert('Error al cambiar estado: ' + err.message);
-          console.error(err);
-        }
-      });
+      btnToggle.textContent = member.estado === 'activo' ? 'Dar de baja' : 'Reactivar';
+      btnToggle.className = 'action-btn';
+      btnToggle.addEventListener('click', () => toggleMemberStatus(member));
       tdAcciones.appendChild(btnToggle);
 
       tr.appendChild(tdAcciones);
@@ -418,21 +433,168 @@
     });
   }
 
-  // Búsqueda en tiempo real
-  searchBar.addEventListener('input', () => {
-    renderTable(members);
+  // Abrir modal para editar miembro
+  async function openEditMember(id) {
+    const member = membersData.find(m => m.id === id);
+    if (!member) {
+      alert('Miembro no encontrado');
+      return;
+    }
+    editingMemberId = id;
+
+    modalForm.codigo.value = member.codigo || '';
+    modalForm.nombre.value = member.nombre || '';
+    modalForm.fechaNacimiento.value = member.fechaNacimiento || '';
+    modalForm.conyuge.value = member.conyuge || '';
+    modalForm.hijos.value = member.hijos || '';
+    modalForm.ministerio.value = member.ministerio || '';
+    modalForm.direccion.value = member.direccion || '';
+    modalForm.telefono.value = member.telefono || '';
+    modalForm.correo.value = member.correo || '';
+    modalForm.estado.value = member.estado || 'activo';
+
+    if (member.fotoUrl) {
+      fotoPreview.src = member.fotoUrl;
+      fotoPreview.style.display = 'block';
+    } else {
+      fotoPreview.style.display = 'none';
+      fotoPreview.src = '';
+    }
+
+    modalContainer.classList.add('show');
+  }
+
+  // Cambiar estado activo/baja
+  async function toggleMemberStatus(member) {
+    const nuevoEstado = member.estado === 'activo' ? 'baja' : 'activo';
+    try {
+      await firestore.collection('miembros').doc(member.id).update({ estado: nuevoEstado });
+      // Actualizar local
+      member.estado = nuevoEstado;
+      renderTable();
+      alert(`Estado cambiado a ${nuevoEstado}`);
+    } catch (error) {
+      alert('Error cambiando estado: ' + error.message);
+    }
+  }
+
+  // Guardar miembro (nuevo o editar)
+  modalForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Validaciones básicas
+    const codigo = modalForm.codigo.value.trim();
+    const nombre = modalForm.nombre.value.trim();
+    const fechaNacimiento = modalForm.fechaNacimiento.value;
+    const estado = modalForm.estado.value;
+
+    if (!codigo || !nombre || !fechaNacimiento) {
+      alert('Por favor complete los campos obligatorios');
+      return;
+    }
+
+    try {
+      let fotoUrl = null;
+      // Si se seleccionó foto, subirla
+      if (fotoInput.files.length > 0) {
+        const file = fotoInput.files[0];
+        // Si editando, eliminar la foto anterior primero
+        if (editingMemberId) {
+          const miembroPrev = membersData.find(m => m.id === editingMemberId);
+          if (miembroPrev && miembroPrev.fotoUrl) {
+            await deletePhotoByUrl(miembroPrev.fotoUrl);
+          }
+        }
+        fotoUrl = await uploadPhoto(file, codigo);
+      } else if (editingMemberId) {
+        // Mantener la foto anterior si no se cambió
+        const miembroPrev = membersData.find(m => m.id === editingMemberId);
+        fotoUrl = miembroPrev?.fotoUrl || null;
+      }
+
+      const memberData = {
+        codigo,
+        nombre,
+        fechaNacimiento,
+        conyuge: modalForm.conyuge.value.trim(),
+        hijos: modalForm.hijos.value.trim(),
+        ministerio: modalForm.ministerio.value.trim(),
+        direccion: modalForm.direccion.value.trim(),
+        telefono: modalForm.telefono.value.trim(),
+        correo: modalForm.correo.value.trim(),
+        estado,
+        fotoUrl,
+        updatedAt: new Date().toISOString()
+      };
+
+      if (editingMemberId) {
+        // Actualizar
+        await firestore.collection('miembros').doc(editingMemberId).update(memberData);
+        const idx = membersData.findIndex(m => m.id === editingMemberId);
+        if (idx >= 0) membersData[idx] = { id: editingMemberId, ...memberData };
+        alert('Miembro actualizado');
+      } else {
+        // Nuevo miembro
+        memberData.createdAt = new Date().toISOString();
+        const docRef = await firestore.collection('miembros').add(memberData);
+        membersData.push({ id: docRef.id, ...memberData });
+        alert('Miembro agregado');
+      }
+
+      modalContainer.classList.remove('show');
+      modalForm.reset();
+      fotoPreview.style.display = 'none';
+      fotoPreview.src = '';
+      renderTable();
+
+    } catch (error) {
+      alert('Error guardando miembro: ' + error.message);
+    }
   });
 
-  // Cambio pestañas
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentStatus = tab.dataset.status;
-      searchBar.value = '';
-      loadMembers();
-    });
-  });
+  // Subir foto a Supabase Storage y devolver URL pública
+  async function uploadPhoto(file, codigo) {
+    const ext = file.name.split('.').pop();
+    const fileName = `${codigo}_${Date.now()}.${ext}`;
+    try {
+      // Subir archivo
+      const { data, error } = await supabase.storage
+        .from(bucketName)
+        .upload(fileName, file, { cacheControl: '3600', upsert: true });
+      if (error) throw error;
+
+      // Obtener URL pública
+      const { data: urlData, error: urlError } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(fileName);
+      if (urlError) throw urlError;
+
+      return urlData.publicUrl;
+    } catch (error) {
+      alert('Error subiendo foto: ' + error.message);
+      throw error;
+    }
+  }
+
+  // Eliminar foto en Supabase dado su URL pública
+  async function deletePhotoByUrl(url) {
+    try {
+      // Extraer nombre del archivo desde URL pública
+      // URL pública suele ser: https://xyz.supabase.co/storage/v1/object/public/ftmember/filename
+      // Obtenemos todo después de bucketName + '/'
+      const urlObj = new URL(url);
+      const pathIndex = urlObj.pathname.indexOf(bucketName + '/');
+      if (pathIndex === -1) return; // No encontrado
+
+      const path = urlObj.pathname.substring(pathIndex + bucketName.length + 1); // nombre archivo
+      if (!path) return;
+
+      const { error } = await supabase.storage.from(bucketName).remove([path]);
+      if (error) console.warn('No se pudo eliminar foto antigua:', error.message);
+    } catch (error) {
+      console.warn('Error eliminando foto:', error.message);
+    }
+  }
 
   // Carga inicial
   loadMembers();
