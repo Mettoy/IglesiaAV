@@ -159,133 +159,51 @@
     color: #eee;
   }
 </style>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<!-- Suponiendo que tienes ya la estructura HTML con menú, tabla, y formulario modal -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-
-<nav>
-  <img src="logo.png" alt="Logo" />
-  <button id="btnAddMember">Añadir Miembro</button>
-</nav>
-
-<main>
-  <input type="search" id="searchBar" placeholder="Buscar por código o nombre..." />
-
-  <div id="tabs">
-    <button class="tab-btn active" data-status="activo">Miembros Activos</button>
-    <button class="tab-btn" data-status="baja">Miembros de Baja</button>
-  </div>
-
-  <table id="membersTable" border="0" cellspacing="0" cellpadding="0">
-    <thead>
-      <tr>
-        <th>Foto</th>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th>Fecha de Nac.</th>
-        <th>Cónyuge</th>
-        <th>Hijos</th>
-        <th>Ministerio</th>
-        <th>Dirección</th>
-        <th>Teléfono</th>
-        <th>Correo</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</main>
-
-<!-- Modal formulario -->
-<div id="modalContainer">
-  <form id="modalForm">
-    <h2>Formulario de Miembro</h2>
-
-    <div class="form-section">
-      <label for="codigo">Código *</label>
-      <input type="text" id="codigo" name="codigo" required />
-      <label for="nombre">Nombre *</label>
-      <input type="text" id="nombre" name="nombre" required />
-      <label for="fechaNacimiento">Fecha de Nacimiento *</label>
-      <input type="date" id="fechaNacimiento" name="fechaNacimiento" required />
-      <label for="conyuge">Cónyuge</label>
-      <input type="text" id="conyuge" name="conyuge" />
-      <label for="hijos">Hijos</label>
-      <input type="text" id="hijos" name="hijos" />
-    </div>
-
-    <div class="form-section">
-      <label for="ministerio">Ministerio</label>
-      <input type="text" id="ministerio" name="ministerio" />
-      <label for="direccion">Dirección</label>
-      <input type="text" id="direccion" name="direccion" />
-      <label for="telefono">Teléfono</label>
-      <input type="tel" id="telefono" name="telefono" />
-      <label for="correo">Correo</label>
-      <input type="email" id="correo" name="correo" />
-      <label for="estado">Estado</label>
-      <select id="estado" name="estado">
-        <option value="activo">Activo</option>
-        <option value="baja">Baja</option>
-      </select>
-    </div>
-
-    <div class="form-section">
-      <label for="foto">Foto</label>
-      <input type="file" id="foto" name="foto" accept="image/*" />
-      <img id="fotoPreview" class="foto" alt="Vista previa" />
-    </div>
-
-    <div class="btn-group">
-      <button type="button" id="btnClose">Cerrar</button>
-      <button type="submit">Guardar</button>
-    </div>
-  </form>
-</div>
 
 <script>
-  // --- Configuraciones iniciales ---
+  // Inicializar Firebase (usa tus datos)
   const firebaseConfig = {
-    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-    databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-    projectId: "iglesia-adoracion-viva",
-    storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-    messagingSenderId: "815332010058",
-    appId: "1:815332010058:web:d2afff616469349d88deb3",
-    measurementId: "G-43MZP6V55D"
+    apiKey: "TU_APIKEY",
+    authDomain: "TU_AUTHDOMAIN",
+    projectId: "TU_PROJECTID",
+    storageBucket: "TU_STORAGEBUCKET",
+    messagingSenderId: "TU_MESSAGINGSENDERID",
+    appId: "TU_APPID",
   };
-
-  // Inicializar Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Inicializar Supabase
-  const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';
+  // Inicializar Supabase (usa tus datos)
+  const supabaseUrl = 'https://tuinstancia.supabase.co';
+  const supabaseKey = 'tu_apikey_publica';
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
   const bucketName = 'ftmember';
 
-  // Elementos DOM
+  const membersTableBody = document.querySelector('#membersTable tbody');
+  const btnAddMember = document.getElementById('btnAddMember');
   const modalContainer = document.getElementById('modalContainer');
   const modalForm = document.getElementById('modalForm');
-  const btnAddMember = document.getElementById('btnAddMember');
   const btnClose = document.getElementById('btnClose');
-  const membersTableBody = document.querySelector('#membersTable tbody');
+  const fotoInput = document.getElementById('foto');
+  const fotoPreview = document.getElementById('fotoPreview');
   const searchBar = document.getElementById('searchBar');
   const tabs = document.querySelectorAll('#tabs .tab-btn');
 
   let currentStatus = 'activo';
   let members = [];
-  let editingMemberId = null; // null cuando se añade nuevo
+  let editingMemberId = null;
 
-  // Mostrar modal
+  // Abrir modal para añadir o editar
+  btnAddMember.addEventListener('click', () => openModal());
+  btnClose.addEventListener('click', () => closeModal());
+
   function openModal(member = null) {
     modalContainer.classList.add('show');
-    if (member) {
+    if(member) {
       editingMemberId = member.id;
       modalForm.codigo.value = member.codigo || '';
       modalForm.nombre.value = member.nombre || '';
@@ -298,9 +216,9 @@
       modalForm.correo.value = member.correo || '';
       modalForm.estado.value = member.estado || 'activo';
 
-      if(member.fotoUrl) {
+      if(member.fotoUrl){
         fotoPreview.src = member.fotoUrl;
-        fotoPreview.style.display = 'inline-block';
+        fotoPreview.style.display = 'block';
       } else {
         fotoPreview.style.display = 'none';
       }
@@ -311,7 +229,6 @@
     }
   }
 
-  // Cerrar modal
   function closeModal() {
     modalContainer.classList.remove('show');
     editingMemberId = null;
@@ -319,44 +236,33 @@
     fotoPreview.style.display = 'none';
   }
 
-  btnAddMember.addEventListener('click', () => openModal());
-  btnClose.addEventListener('click', closeModal);
-
-  // Vista previa foto
-  const fotoInput = document.getElementById('foto');
-  const fotoPreview = document.getElementById('fotoPreview');
-
   fotoInput.addEventListener('change', () => {
     const file = fotoInput.files[0];
-    if (file) {
+    if(file){
       const reader = new FileReader();
       reader.onload = e => {
         fotoPreview.src = e.target.result;
-        fotoPreview.style.display = 'inline-block';
-      };
+        fotoPreview.style.display = 'block';
+      }
       reader.readAsDataURL(file);
     } else {
       fotoPreview.style.display = 'none';
     }
   });
 
-  // Guardar o actualizar miembro
   modalForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const formData = new FormData(modalForm);
     const data = Object.fromEntries(formData.entries());
     data.estado = data.estado || 'activo';
 
     try {
       let fotoUrl = null;
-
-      // Si hay nueva foto, subir a Supabase
       if(fotoInput.files.length > 0){
         const file = fotoInput.files[0];
         const fileName = `${data.codigo}_${Date.now()}.${file.name.split('.').pop()}`;
 
-        // Eliminar foto previa si existe (solo en edición)
+        // Si es edición, eliminar foto anterior
         if(editingMemberId){
           const prevMember = members.find(m => m.id === editingMemberId);
           if(prevMember && prevMember.fotoUrl){
@@ -365,23 +271,13 @@
           }
         }
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from(bucketName)
-          .upload(fileName, file);
+        const { error: uploadError } = await supabase.storage.from(bucketName).upload(fileName, file);
 
         if(uploadError) throw uploadError;
 
-        // Obtener URL pública de la foto subida
-        const { data: urlData, error: urlError } = supabase
-          .storage
-          .from(bucketName)
-          .getPublicUrl(fileName);
-
-        if(urlError) throw urlError;
-
+        const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(fileName);
         fotoUrl = urlData.publicUrl;
       } else if(editingMemberId) {
-        // Mantener foto previa si no se cambió
         const prevMember = members.find(m => m.id === editingMemberId);
         fotoUrl = prevMember ? prevMember.fotoUrl : null;
       }
@@ -389,23 +285,21 @@
       data.fotoUrl = fotoUrl || null;
 
       if(editingMemberId){
-        // Actualizar documento Firestore
         await db.collection('miembros').doc(editingMemberId).update(data);
       } else {
-        // Agregar nuevo documento Firestore
         await db.collection('miembros').add(data);
       }
 
       closeModal();
-      loadMembers(); // recargar tabla
+      await loadMembers();
 
     } catch(err){
-      alert('Error al guardar el miembro: ' + err.message);
+      alert('Error al guardar: ' + err.message);
       console.error(err);
     }
   });
 
-  // Cargar miembros de Firestore filtrando por estado
+  // Cargar miembros
   async function loadMembers() {
     try {
       const snapshot = await db.collection('miembros').where('estado', '==', currentStatus).orderBy('codigo').get();
@@ -417,16 +311,13 @@
     }
   }
 
-  // Renderizar tabla con filtro por búsqueda
+  // Renderizar tabla (sin agrandar, con diseño original)
   function renderTable(data) {
     const filter = searchBar.value.trim().toLowerCase();
     membersTableBody.innerHTML = '';
 
-    const filtered = data.filter(member => {
-      return (
-        member.nombre.toLowerCase().includes(filter) ||
-        (member.codigo && member.codigo.toLowerCase().includes(filter))
-      );
+    const filtered = data.filter(m => {
+      return (m.nombre?.toLowerCase().includes(filter) || m.codigo?.toLowerCase().includes(filter));
     });
 
     filtered.forEach(member => {
@@ -438,7 +329,9 @@
         const img = document.createElement('img');
         img.src = member.fotoUrl;
         img.alt = 'Foto';
-        img.classList.add('foto');
+        img.style.width = '40px';  // Tamaño original
+        img.style.height = '40px';
+        img.style.borderRadius = '50%';
         tdFoto.appendChild(img);
       }
       tr.appendChild(tdFoto);
@@ -453,7 +346,7 @@
       tdNombre.textContent = member.nombre || '';
       tr.appendChild(tdNombre);
 
-      // Fecha de Nac.
+      // Fecha Nac.
       const tdFecha = document.createElement('td');
       tdFecha.textContent = member.fechaNacimiento || '';
       tr.appendChild(tdFecha);
@@ -493,7 +386,7 @@
       tdEstado.textContent = member.estado || '';
       tr.appendChild(tdEstado);
 
-      // Acciones: Editar + Cambiar estado (Activo/Baja)
+      // Acciones
       const tdAcciones = document.createElement('td');
 
       const btnEdit = document.createElement('button');
@@ -508,7 +401,7 @@
       btnToggle.addEventListener('click', async () => {
         try {
           await db.collection('miembros').doc(member.id).update({ estado: member.estado === 'activo' ? 'baja' : 'activo' });
-          loadMembers();
+          await loadMembers();
         } catch(err) {
           alert('Error al cambiar estado: ' + err.message);
           console.error(err);
@@ -522,12 +415,12 @@
     });
   }
 
-  // Filtro búsqueda en tiempo real
+  // Búsqueda en tiempo real
   searchBar.addEventListener('input', () => {
     renderTable(members);
   });
 
-  // Cambio de pestañas (Activo / Baja)
+  // Cambio pestañas
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       tabs.forEach(t => t.classList.remove('active'));
@@ -538,7 +431,7 @@
     });
   });
 
-  // Inicializar
+  // Carga inicial
   loadMembers();
 
 </script>
