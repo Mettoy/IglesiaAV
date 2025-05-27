@@ -225,159 +225,108 @@
 
   <!-- Supabase -->
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-  // Supabase config
-  const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co'
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o'
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    doc,
+    updateDoc
+  } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
   // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
     authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-    databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
     projectId: "iglesia-adoracion-viva",
-    storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+    storageBucket: "iglesia-adoracion-viva.appspot.com",
     messagingSenderId: "815332010058",
     appId: "1:815332010058:web:d2afff616469349d88deb3",
     measurementId: "G-43MZP6V55D"
+  };
+
+  // Supabase config
+  const supabaseUrl = 'https://xomqaflhrtwbqghiwlnj.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o'; // reemplaza con tu clave real
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Función para renderizar miembros en la tabla
+  function renderTabla(miembros) {
+    const tbody = document.querySelector('#tabla-miembros tbody');
+    tbody.innerHTML = ''; // Limpiar contenido anterior
+
+    miembros.forEach((miembro) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><img src="${miembro.fotoURL || 'https://via.placeholder.com/50'}" width="50" height="50" style="border-radius: 5px;"></td>
+        <td>${miembro.nombre || ''}</td>
+        <td>${miembro.codigo || ''}</td>
+        <td>
+          <button onclick="editarMiembro('${miembro.id}')">Editar</button>
+          <button onclick="darDeBaja('${miembro.id}')">Baja</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
 
-  firebase.initializeApp(firebaseConfig)
-  const db = firebase.firestore()
-
-  // Referencias DOM
-  const form = document.getElementById('form-miembro')
-  const btnAgregar = document.getElementById('btn-agregar-miembro')
-  const btnGuardar = document.getElementById('btn-guardar')
-  const tabla = document.getElementById('tabla-miembros')
-
-  // Mostrar el formulario
-  btnAgregar.addEventListener('click', () => {
-    form.style.display = 'block'
-  })
-
-  // Guardar datos del miembro
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault()
-    btnGuardar.disabled = true
-
-    const nombre = document.getElementById('nombre').value
-    const codigo = document.getElementById('codigo').value
-    const edad = parseInt(document.getElementById('edad').value)
-    const telefono = document.getElementById('telefono').value
-    const direccion = document.getElementById('direccion').value
-    const fechaNacimiento = document.getElementById('fechaNacimiento').value
-
-    const file = document.getElementById('foto').files[0]
-    let fotoURL = ''
-
+  // Función para cargar miembros desde Firestore
+  async function cargarMiembros() {
     try {
-      if (file) {
-        const { data, error } = await supabase.storage
-          .from('ftmember')
-          .upload(`fotos/${Date.now()}_${file.name}`, file)
+      const querySnapshot = await getDocs(collection(db, 'miembros'));
+      const miembros = [];
 
-        if (error) throw error
+      for (const docSnap of querySnapshot.docs) {
+        const data = docSnap.data();
+        let fotoURL = data.fotoURL || '';
 
-        const { data: publicData } = supabase
-          .storage
-          .from('ftmember')
-          .getPublicUrl(data.path)
+        // Si es solo nombre de archivo, construir URL pública desde Supabase
+        if (fotoURL && !fotoURL.startsWith('http')) {
+          const { data: publicUrlData } = supabase
+            .storage
+            .from('ftmember')
+            .getPublicUrl(fotoURL);
+          fotoURL = publicUrlData.publicUrl;
+        }
 
-        fotoURL = publicData.publicUrl
+        miembros.push({
+          id: docSnap.id,
+          ...data,
+          fotoURL
+        });
       }
 
-      await db.collection('miembros').add({
-        nombre,
-        codigo,
-        edad,
-        telefono,
-        direccion,
-        fechaNacimiento,
-        foto: fotoURL,
-        estado: 'activo',
-        creado: firebase.firestore.FieldValue.serverTimestamp()
-      })
-
-      form.reset()
-      form.style.display = 'none'
-      cargarMiembros()
-
+      renderTabla(miembros);
     } catch (error) {
-      alert('Error al guardar: ' + error.message)
-    } finally {
-      btnGuardar.disabled = false
+      console.error('Error al cargar miembros:', error);
     }
-  })
-
-  // Cargar miembros en la tabla
- async function cargarMiembros() {
-  const querySnapshot = await getDocs(collection(db, 'miembros'));
-  const miembros = [];
-  querySnapshot.forEach((doc) => {
-    miembros.push({ id: doc.id, ...doc.data() });
-  });
-  renderTabla(miembros); // Asegúrate de llamar a una función que dibuje la tabla
-}
-  function renderTabla(miembros) {
-  const tbody = document.querySelector('#tabla-miembros tbody');
-  tbody.innerHTML = ''; // Limpiar la tabla
-
-  miembros.forEach((miembro) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><img src="${miembro.fotoURL || 'default.jpg'}" width="50"></td>
-      <td>${miembro.nombre || ''}</td>
-      <td>${miembro.codigo || ''}</td>
-      <td>
-        <button onclick="editarMiembro('${miembro.id}')">Editar</button>
-        <button onclick="darDeBaja('${miembro.id}')">Baja</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-    snapshot.forEach(doc => {
-      const m = doc.data()
-      const fila = document.createElement('tr')
-      fila.innerHTML = `
-        <td><img src="${m.foto || ''}" alt="Foto" class="foto-miembro" style="width:40px;height:40px;border-radius:50%;object-fit:cover;"></td>
-        <td>${m.nombre}</td>
-        <td>${m.codigo}</td>
-        <td>${m.edad || ''}</td>
-        <td>${m.telefono || ''}</td>
-        <td>${m.direccion || ''}</td>
-        <td>
-          <button class="btn-editar" data-id="${doc.id}">Editar</button>
-          <button class="btn-baja" data-id="${doc.id}">Dar de baja</button>
-        </td>
-      `
-      tabla.appendChild(fila)
-    })
-
-    // Eventos para botones Editar y Dar de baja
-    document.querySelectorAll('.btn-baja').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-id')
-        if (confirm('¿Dar de baja este miembro?')) {
-          await db.collection('miembros').doc(id).update({ estado: 'baja' })
-          cargarMiembros()
-        }
-      })
-    })
-
-    document.querySelectorAll('.btn-editar').forEach(btn => {
-      btn.addEventListener('click', () => {
-        alert('Función de editar aún no implementada.')
-      })
-    })
   }
 
+  // Funciones básicas para los botones
+  window.editarMiembro = (id) => {
+    alert(`Editar miembro con ID: ${id}`);
+    // Aquí puedes abrir el modal con los datos cargados
+  };
+
+  window.darDeBaja = async (id) => {
+    try {
+      await updateDoc(doc(db, 'miembros', id), {
+        estado: 'baja'
+      });
+      alert('Miembro dado de baja');
+      cargarMiembros();
+    } catch (error) {
+      console.error('Error al dar de baja:', error);
+    }
+  };
+
   // Cargar al iniciar
-  cargarMiembros()
+  cargarMiembros();
 </script>
 
 </body>
