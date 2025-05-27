@@ -4,329 +4,308 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Gestión de Miembros</title>
-
 <style>
-  /* (mismo CSS que me diste, lo dejo para no repetirlo aquí) */
   body {
-    background-color: #0d1a33; /* azul oscuro */
-    color: #d4af37; /* dorado */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0; padding: 0;
+    background-color: #0f172a; 
+    color: #fbbf24; /* dorado */
+    font-family: Arial, sans-serif;
   }
-  header {
-    background-color: #09214d;
-    padding: 1rem;
-    text-align: center;
-    font-size: 1.8rem;
+  #btn-add-miembro {
+    background-color: #fbbf24;
+    color: #0f172a;
+    border: none;
+    padding: 10px 15px;
     font-weight: bold;
-    color: #d4af37;
-  }
-  main {
-    max-width: 1100px;
-    margin: 2rem auto;
-    padding: 1rem;
-  }
-  form {
-    background-color: #14325c;
-    padding: 1rem 2rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-  }
-  form h2 {
-    border-bottom: 1px solid #d4af37;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  form section {
-    margin-bottom: 1.5rem;
-  }
-  label {
-    display: block;
-    margin-bottom: 0.25rem;
-    font-weight: 600;
-  }
-  input[type="text"],
-  input[type="number"],
-  input[type="tel"],
-  input[type="date"],
-  select {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 4px;
-    border: none;
-    margin-bottom: 0.8rem;
-    font-size: 1rem;
-  }
-  input[type="file"] {
-    margin-top: 0.4rem;
-    margin-bottom: 1rem;
-  }
-  button {
-    background-color: #d4af37;
-    color: #0d1a33;
-    font-weight: 700;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  button:disabled {
-    background-color: #999;
-    cursor: not-allowed;
-  }
-  button:hover:not(:disabled) {
-    background-color: #b79023;
+    margin: 15px 0;
+    border-radius: 4px;
   }
   table {
     width: 100%;
     border-collapse: collapse;
-    background-color: #14325c;
-    border-radius: 8px;
-    overflow: hidden;
+    margin-bottom: 30px;
   }
-  thead {
-    background-color: #0a1b3a;
+  table, th, td {
+    border: 1px solid #fbbf24;
   }
   th, td {
-    padding: 0.75rem 1rem;
+    padding: 10px;
     text-align: left;
-    border-bottom: 1px solid #d4af37;
-    vertical-align: middle;
   }
-  img.foto-miembro {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 2px solid #d4af37;
+  /* Modal */
+  #modal-add-miembro {
+    display: none; 
+    position: fixed; 
+    z-index: 10; 
+    left: 0; top: 0; 
+    width: 100%; height: 100%; 
+    background-color: rgba(0,0,0,0.7);
   }
-  .busqueda-container {
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  #modal-content {
+    background-color: #1e293b;
+    margin: 5% auto; 
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%; 
+    max-width: 700px;
+    color: #fbbf24;
   }
-  #busqueda-miembros {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    border-radius: 6px;
+  #modal-content h2 {
+    margin-top: 0;
+  }
+  #btn-close-modal {
+    background-color: #ef4444;
     border: none;
-    width: 300px;
+    color: white;
+    padding: 8px 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    float: right;
+  }
+  /* Tabs */
+  .tab {
+    overflow: hidden;
+    border-bottom: 1px solid #fbbf24;
+    margin-bottom: 15px;
+  }
+  .tab button {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 10px 20px;
+    color: #fbbf24;
+    font-weight: bold;
+  }
+  .tab button.active {
+    border-bottom: 3px solid #fbbf24;
+  }
+  .tabcontent {
+    display: none;
+  }
+  .tabcontent.active {
+    display: block;
   }
 </style>
 </head>
 <body>
-  <header>Gestión de Miembros</header>
-  <main>
-    <div class="busqueda-container">
-      <button id="btn-agregar-miembro">Añadir Miembro</button>
-      <input type="text" id="busqueda-miembros" placeholder="Buscar por nombre o código..." />
+
+<header>
+  <h1>Gestión de Miembros</h1>
+  <button id="btn-add-miembro">Añadir miembro</button>
+</header>
+
+<table id="tabla-miembros">
+  <thead>
+    <tr>
+      <th>Foto</th>
+      <th>Nombre</th>
+      <th>Código</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Miembros cargados aquí -->
+  </tbody>
+</table>
+
+<!-- Modal Añadir Miembro -->
+<div id="modal-add-miembro">
+  <div id="modal-content">
+    <button id="btn-close-modal">Cerrar</button>
+    <h2>Añadir Miembro</h2>
+
+    <div class="tab">
+      <button class="tablinks active" data-tab="datos-personales">Datos Personales</button>
+      <button class="tablinks" data-tab="datos-familiares">Datos Familiares</button>
+      <button class="tablinks" data-tab="datos-espirituales">Datos Espirituales</button>
     </div>
 
-    <form id="form-miembro" style="display:none;">
-      <!-- Datos Personales -->
-      <section>
-        <h2>Datos Personales</h2>
-        <label for="nombre">Nombre Completo</label>
-        <input type="text" id="nombre" name="nombre" required />
+    <form id="form-miembro">
+      <div id="datos-personales" class="tabcontent active">
+        <label>Nombre completo: <br /><input type="text" name="nombre" required /></label><br /><br />
+        <label>Código: <br /><input type="text" name="codigo" required /></label><br /><br />
+        <label>Foto: <br /><input type="file" name="foto" accept="image/*" /></label><br /><br />
+      </div>
 
-        <label for="codigo">Código</label>
-        <input type="text" id="codigo" name="codigo" required />
+      <div id="datos-familiares" class="tabcontent">
+        <label>Nombre del cónyuge: <br /><input type="text" name="conyuge" /></label><br /><br />
+        <label>Número de hijos: <br /><input type="number" name="hijos" min="0" /></label><br /><br />
+      </div>
 
-        <label for="edad">Edad</label>
-        <input type="number" id="edad" name="edad" required min="0" />
+      <div id="datos-espirituales" class="tabcontent">
+        <label>Ministerio: <br /><input type="text" name="ministerio" /></label><br /><br />
+        <label>Fecha de conversión: <br /><input type="date" name="fechaConversion" /></label><br /><br />
+      </div>
 
-        <label for="telefono">Teléfono</label>
-        <input type="tel" id="telefono" name="telefono" required />
-
-        <label for="direccion">Dirección</label>
-        <input type="text" id="direccion" name="direccion" required />
-
-        <label for="fechaNacimiento">Fecha de Nacimiento</label>
-        <input type="date" id="fechaNacimiento" name="fechaNacimiento" required />
-      </section>
-
-      <!-- Datos Familiares -->
-      <section>
-        <h2>Datos Familiares</h2>
-        <label for="tipoFamiliar">Tipo de Familiar</label>
-        <select id="tipoFamiliar" name="tipoFamiliar">
-          <option value="">Seleccione...</option>
-          <option value="Padre">Padre</option>
-          <option value="Madre">Madre</option>
-          <option value="Hermano">Hermano</option>
-          <option value="Hermana">Hermana</option>
-          <option value="Hijo">Hijo</option>
-          <option value="Hija">Hija</option>
-          <option value="Otro">Otro</option>
-        </select>
-
-        <label for="nombreFamiliar">Nombre del Familiar</label>
-        <input type="text" id="nombreFamiliar" name="nombreFamiliar" />
-
-        <button type="button" id="btn-agregar-familiar">Agregar Familiar</button>
-
-        <ul id="lista-familiares" style="margin-top: 1rem; color: #fff;"></ul>
-      </section>
-
-      <!-- Datos Espirituales -->
-      <section>
-        <h2>Datos Espirituales</h2>
-
-        <label for="fechaConversion">Fecha de Conversión</label>
-        <input type="date" id="fechaConversion" name="fechaConversion" />
-
-        <label for="lugarConversion">Lugar de Conversión</label>
-        <input type="text" id="lugarConversion" name="lugarConversion" />
-
-        <label for="fechaBautismo">Fecha de Bautismo</label>
-        <input type="date" id="fechaBautismo" name="fechaBautismo" />
-
-        <label for="lugarBautismo">Lugar de Bautismo</label>
-        <input type="text" id="lugarBautismo" name="lugarBautismo" />
-
-        <label for="fechaBautismoEspiritu">Fecha de Bautismo en el Espíritu</label>
-        <input type="date" id="fechaBautismoEspiritu" name="fechaBautismoEspiritu" />
-
-        <label for="lugarBautismoEspiritu">Lugar de Bautismo en el Espíritu</label>
-        <input type="text" id="lugarBautismoEspiritu" name="lugarBautismoEspiritu" />
-      </section>
-
-      <!-- Foto -->
-      <section>
-        <h2>Foto</h2>
-        <input type="file" id="foto" name="foto" accept="image/*" />
-      </section>
-
-      <button id="btn-guardar" type="submit">Guardar</button>
+      <button type="submit" style="background:#fbbf24; border:none; padding:10px 20px; cursor:pointer; border-radius:4px; font-weight:bold;">Guardar</button>
     </form>
+  </div>
+</div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Foto</th>
-          <th>Nombre</th>
-          <th>Código</th>
-          <th>Edad</th>
-          <th>Teléfono</th>
-          <th>Dirección</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tabla-miembros"></tbody>
-    </table>
-  </main>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
- 
-
-  <!-- Supabase -->
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-  import {
-    getFirestore,
-    collection,
-    getDocs,
-    doc,
-    updateDoc
-  } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
-  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-  // Firebase config
+<script>
+  // --- Config Firebase ---
   const firebaseConfig = {
     apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
     authDomain: "iglesia-adoracion-viva.firebaseapp.com",
     projectId: "iglesia-adoracion-viva",
     storageBucket: "iglesia-adoracion-viva.appspot.com",
     messagingSenderId: "815332010058",
-    appId: "1:815332010058:web:d2afff616469349d88deb3",
-    measurementId: "G-43MZP6V55D"
+    appId: "1:815332010058:web:d2afff616469349d88deb3"
   };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  // Supabase config
-  const supabaseUrl = 'https://xomqaflhrtwbqghiwlnj.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o'; // reemplaza con tu clave real
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  // --- Config Supabase ---
+  const SUPABASE_URL = 'https://xyptydnouyddzvrffaby.supabase.co';  // Reemplaza con tu URL Supabase
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';            // Reemplaza con tu Key anónima
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Inicializar Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  // --- Elementos ---
+  const btnAddMiembro = document.getElementById('btn-add-miembro');
+  const modalAddMiembro = document.getElementById('modal-add-miembro');
+  const btnCloseModal = document.getElementById('btn-close-modal');
+  const formMiembro = document.getElementById('form-miembro');
+  const tablaMiembrosBody = document.querySelector('#tabla-miembros tbody');
 
-  // Función para renderizar miembros en la tabla
-  function renderTabla(miembros) {
-    const tbody = document.querySelector('#tabla-miembros tbody');
-    tbody.innerHTML = ''; // Limpiar contenido anterior
+  // --- Abrir modal ---
+  btnAddMiembro.addEventListener('click', () => {
+    modalAddMiembro.style.display = 'block';
+  });
 
-    miembros.forEach((miembro) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><img src="${miembro.fotoURL || 'https://via.placeholder.com/50'}" width="50" height="50" style="border-radius: 5px;"></td>
-        <td>${miembro.nombre || ''}</td>
-        <td>${miembro.codigo || ''}</td>
-        <td>
-          <button onclick="editarMiembro('${miembro.id}')">Editar</button>
-          <button onclick="darDeBaja('${miembro.id}')">Baja</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
+  // --- Cerrar modal ---
+  btnCloseModal.addEventListener('click', () => {
+    modalAddMiembro.style.display = 'none';
+    formMiembro.reset();
+  });
+
+  // --- Cambio de pestañas ---
+  document.querySelectorAll('.tablinks').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tablinks').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tabToShow = btn.getAttribute('data-tab');
+      document.querySelectorAll('.tabcontent').forEach(tab => {
+        tab.classList.toggle('active', tab.id === tabToShow);
+      });
     });
+  });
+
+  // --- Cargar miembros desde Firestore ---
+  async function cargarMiembros() {
+    tablaMiembrosBody.innerHTML = '';
+    try {
+      const snapshot = await db.collection('miembros').get();
+      if (snapshot.empty) {
+        tablaMiembrosBody.innerHTML = '<tr><td colspan="5" style="color:#fbbf24;">No hay miembros registrados.</td></tr>';
+        return;
+      }
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><img src="${data.fotoUrl || 'https://via.placeholder.com/50'}" alt="Foto" width="50" height="50" style="border-radius:50%; object-fit:cover;" /></td>
+          <td>${data.nombre || ''}</td>
+          <td>${data.codigo || ''}</td>
+          <td>${data.estado || 'activo'}</td>
+          <td>
+            <button data-id="${doc.id}" class="btn-editar" style="background:#2563eb; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Editar</button>
+            <button data-id="${doc.id}" class="btn-baja" style="background:#ef4444; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Dar de baja</button>
+          </td>
+        `;
+        tablaMiembrosBody.appendChild(tr);
+      });
+
+      // Agregar listeners a botones dentro de la tabla
+      document.querySelectorAll('.btn-editar').forEach(boton => {
+        boton.addEventListener('click', (e) => {
+          const id = e.target.dataset.id;
+          alert('Editar miembro con ID: ' + id);
+          // Aquí iría la función para editar el miembro
+        });
+      });
+      document.querySelectorAll('.btn-baja').forEach(boton => {
+        boton.addEventListener('click', async (e) => {
+          const id = e.target.dataset.id;
+          if(confirm('¿Deseas dar de baja este miembro?')) {
+            await db.collection('miembros').doc(id).update({ estado: 'baja' });
+            alert('Miembro dado de baja.');
+            cargarMiembros();
+          }
+        });
+      });
+
+    } catch (error) {
+      console.error('Error cargando miembros:', error);
+    }
   }
 
-  // Función para cargar miembros desde Firestore
-  async function cargarMiembros() {
+  cargarMiembros();
+
+  // --- Guardar miembro ---
+  formMiembro.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(formMiembro);
+    const nombre = formData.get('nombre').trim();
+    const codigo = formData.get('codigo').trim();
+    const conyuge = formData.get('conyuge').trim();
+    const hijos = formData.get('hijos').trim();
+    const ministerio = formData.get('ministerio').trim();
+    const fechaConversion = formData.get('fechaConversion');
+    const fotoFile = formData.get('foto');
+
+    if (!nombre || !codigo) {
+      alert('Nombre y Código son obligatorios');
+      return;
+    }
+
     try {
-      const querySnapshot = await getDocs(collection(db, 'miembros'));
-      const miembros = [];
+      let fotoUrl = '';
 
-      for (const docSnap of querySnapshot.docs) {
-        const data = docSnap.data();
-        let fotoURL = data.fotoURL || '';
-
-        // Si es solo nombre de archivo, construir URL pública desde Supabase
-        if (fotoURL && !fotoURL.startsWith('http')) {
-          const { data: publicUrlData } = supabase
-            .storage
-            .from('ftmember')
-            .getPublicUrl(fotoURL);
-          fotoURL = publicUrlData.publicUrl;
-        }
-
-        miembros.push({
-          id: docSnap.id,
-          ...data,
-          fotoURL
+      if (fotoFile && fotoFile.size > 0) {
+        // Subir foto a Supabase
+        const fileExt = fotoFile.name.split('.').pop();
+        const fileName = `ftmember/${codigo}-${Date.now()}.${fileExt}`;
+        const { data, error } = await supabase.storage.from('ftmember').upload(fileName, fotoFile, {
+          cacheControl: '3600',
+          upsert: true
         });
+        if (error) throw error;
+        // Obtener URL pública
+        const { publicURL, error: urlError } = supabase.storage.from('ftmember').getPublicUrl(fileName);
+        if (urlError) throw urlError;
+        fotoUrl = publicURL;
       }
 
-      renderTabla(miembros);
-    } catch (error) {
-      console.error('Error al cargar miembros:', error);
-    }
-  }
-
-  // Funciones básicas para los botones
-  window.editarMiembro = (id) => {
-    alert(`Editar miembro con ID: ${id}`);
-    // Aquí puedes abrir el modal con los datos cargados
-  };
-
-  window.darDeBaja = async (id) => {
-    try {
-      await updateDoc(doc(db, 'miembros', id), {
-        estado: 'baja'
+      // Guardar en Firestore
+      await db.collection('miembros').add({
+        nombre,
+        codigo,
+        conyuge,
+        hijos: hijos ? parseInt(hijos) : 0,
+        ministerio,
+        fechaConversion,
+        fotoUrl,
+        estado: 'activo',
+        creado: new Date()
       });
-      alert('Miembro dado de baja');
-      cargarMiembros();
-    } catch (error) {
-      console.error('Error al dar de baja:', error);
-    }
-  };
 
-  // Cargar al iniciar
-  cargarMiembros();
+      alert('Miembro guardado correctamente');
+      formMiembro.reset();
+      modalAddMiembro.style.display = 'none';
+      cargarMiembros();
+
+    } catch (err) {
+      console.error(err);
+      alert('Error al guardar el miembro. Revisa consola.');
+    }
+  });
 </script>
 
 </body>
