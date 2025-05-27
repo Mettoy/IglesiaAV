@@ -1,312 +1,269 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gestión de Miembros</title>
-<style>
-  body {
-    background-color: #0f172a; 
-    color: #fbbf24; /* dorado */
-    font-family: Arial, sans-serif;
-  }
-  #btn-add-miembro {
-    background-color: #fbbf24;
-    color: #0f172a;
-    border: none;
-    padding: 10px 15px;
-    font-weight: bold;
-    cursor: pointer;
-    margin: 15px 0;
-    border-radius: 4px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-  }
-  table, th, td {
-    border: 1px solid #fbbf24;
-  }
-  th, td {
-    padding: 10px;
-    text-align: left;
-  }
-  /* Modal */
-  #modal-add-miembro {
-    display: none; 
-    position: fixed; 
-    z-index: 10; 
-    left: 0; top: 0; 
-    width: 100%; height: 100%; 
-    background-color: rgba(0,0,0,0.7);
-  }
-  #modal-content {
-    background-color: #1e293b;
-    margin: 5% auto; 
-    padding: 20px;
-    border-radius: 8px;
-    width: 90%; 
-    max-width: 700px;
-    color: #fbbf24;
-  }
-  #modal-content h2 {
-    margin-top: 0;
-  }
-  #btn-close-modal {
-    background-color: #ef4444;
-    border: none;
-    color: white;
-    padding: 8px 15px;
-    cursor: pointer;
-    border-radius: 4px;
-    float: right;
-  }
-  /* Tabs */
-  .tab {
-    overflow: hidden;
-    border-bottom: 1px solid #fbbf24;
-    margin-bottom: 15px;
-  }
-  .tab button {
-    background-color: transparent;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    padding: 10px 20px;
-    color: #fbbf24;
-    font-weight: bold;
-  }
-  .tab button.active {
-    border-bottom: 3px solid #fbbf24;
-  }
-  .tabcontent {
-    display: none;
-  }
-  .tabcontent.active {
-    display: block;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Gestión de Miembros</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: #001f3f;
+      height: 100vh;
+      position: fixed;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .sidebar h2 {
+      color: gold;
+      margin-bottom: 30px;
+    }
+
+    .main {
+      margin-left: 250px;
+      padding: 20px;
+    }
+
+    .btn {
+      background-color: gold;
+      border: none;
+      padding: 10px 20px;
+      color: #001f3f;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 8px;
+    }
+
+    .close {
+      float: right;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .tab {
+      display: none;
+    }
+
+    .tab.active {
+      display: block;
+    }
+
+    .tab-buttons button {
+      margin-right: 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 15px;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <h1>Gestión de Miembros</h1>
-  <button id="btn-add-miembro">Añadir miembro</button>
-</header>
-
-<table id="tabla-miembros">
-  <thead>
-    <tr>
-      <th>Foto</th>
-      <th>Nombre</th>
-      <th>Código</th>
-      <th>Estado</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- Miembros cargados aquí -->
-  </tbody>
-</table>
-
-<!-- Modal Añadir Miembro -->
-<div id="modal-add-miembro">
-  <div id="modal-content">
-    <button id="btn-close-modal">Cerrar</button>
-    <h2>Añadir Miembro</h2>
-
-    <div class="tab">
-      <button class="tablinks active" data-tab="datos-personales">Datos Personales</button>
-      <button class="tablinks" data-tab="datos-familiares">Datos Familiares</button>
-      <button class="tablinks" data-tab="datos-espirituales">Datos Espirituales</button>
-    </div>
-
-    <form id="form-miembro">
-      <div id="datos-personales" class="tabcontent active">
-        <label>Nombre completo: <br /><input type="text" name="nombre" required /></label><br /><br />
-        <label>Código: <br /><input type="text" name="codigo" required /></label><br /><br />
-        <label>Foto: <br /><input type="file" name="foto" accept="image/*" /></label><br /><br />
-      </div>
-
-      <div id="datos-familiares" class="tabcontent">
-        <label>Nombre del cónyuge: <br /><input type="text" name="conyuge" /></label><br /><br />
-        <label>Número de hijos: <br /><input type="number" name="hijos" min="0" /></label><br /><br />
-      </div>
-
-      <div id="datos-espirituales" class="tabcontent">
-        <label>Ministerio: <br /><input type="text" name="ministerio" /></label><br /><br />
-        <label>Fecha de conversión: <br /><input type="date" name="fechaConversion" /></label><br /><br />
-      </div>
-
-      <button type="submit" style="background:#fbbf24; border:none; padding:10px 20px; cursor:pointer; border-radius:4px; font-weight:bold;">Guardar</button>
-    </form>
+  <!-- Menú lateral -->
+  <div class="sidebar">
+    <h2>Miembros</h2>
+    <!-- Puedes agregar más elementos al menú aquí -->
   </div>
-</div>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Contenido principal -->
+  <div class="main">
+    <button id="btnAdd" class="btn">Añadir miembro</button>
 
-<script>
-  // --- Config Firebase ---
-  const firebaseConfig = {
-    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-    projectId: "iglesia-adoracion-viva",
-    storageBucket: "iglesia-adoracion-viva.appspot.com",
-    messagingSenderId: "815332010058",
-    appId: "1:815332010058:web:d2afff616469349d88deb3"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+    <table id="tablaMiembros">
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-  // --- Config Supabase ---
-  const SUPABASE_URL = 'https://xyptydnouyddzvrffaby.supabase.co';  // Reemplaza con tu URL Supabase
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';            // Reemplaza con tu Key anónima
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <!-- Modal para añadir miembro -->
+  <div class="modal" id="modalMiembro">
+    <div class="modal-content">
+      <span class="close" id="cerrarModal">&times;</span>
+      <h3>Nuevo Miembro</h3>
+      <div class="tab-buttons">
+        <button type="button" onclick="mostrarTab('datos')">Datos</button>
+        <button type="button" onclick="mostrarTab('familia')">Familia</button>
+        <button type="button" onclick="mostrarTab('espiritual')">Espiritual</button>
+      </div>
+      <form id="formMiembro">
+        <div id="tab-datos" class="tab active">
+          <label>Nombre:</label><input name="nombre" required />
+          <label>Código:</label><input name="codigo" required />
+          <label>Foto:</label><input type="file" name="foto" />
+        </div>
 
-  // --- Elementos ---
-  const btnAddMiembro = document.getElementById('btn-add-miembro');
-  const modalAddMiembro = document.getElementById('modal-add-miembro');
-  const btnCloseModal = document.getElementById('btn-close-modal');
-  const formMiembro = document.getElementById('form-miembro');
-  const tablaMiembrosBody = document.querySelector('#tabla-miembros tbody');
+        <div id="tab-familia" class="tab">
+          <label>Padres:</label><input name="padres" />
+        </div>
 
-  // --- Abrir modal ---
-  btnAddMiembro.addEventListener('click', () => {
-    modalAddMiembro.style.display = 'block';
-  });
+        <div id="tab-espiritual" class="tab">
+          <label>Ministerio:</label><input name="ministerio" />
+        </div>
 
-  // --- Cerrar modal ---
-  btnCloseModal.addEventListener('click', () => {
-    modalAddMiembro.style.display = 'none';
-    formMiembro.reset();
-  });
+        <button type="submit" class="btn">Guardar</button>
+      </form>
+    </div>
+  </div>
 
-  // --- Cambio de pestañas ---
-  document.querySelectorAll('.tablinks').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tablinks').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const tabToShow = btn.getAttribute('data-tab');
-      document.querySelectorAll('.tabcontent').forEach(tab => {
-        tab.classList.toggle('active', tab.id === tabToShow);
-      });
-    });
-  });
+  <script>
+    // Firebase
+    const  firebaseConfig = {
+  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+  projectId: "iglesia-adoracion-viva",
+  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+  messagingSenderId: "815332010058",
+  appId: "1:815332010058:web:d2afff616469349d88deb3",
+  measurementId: "G-43MZP6V55D"
+};
 
-  // --- Cargar miembros desde Firestore ---
-  async function cargarMiembros() {
-    tablaMiembrosBody.innerHTML = '';
-    try {
-      const snapshot = await db.collection('miembros').get();
-      if (snapshot.empty) {
-        tablaMiembrosBody.innerHTML = '<tr><td colspan="5" style="color:#fbbf24;">No hay miembros registrados.</td></tr>';
-        return;
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Supabase
+    const supabase = supabase.createClient(
+      "https://https://xyptydnouyddzvrffaby.supabase.co", // REEMPLAZAR
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o" // REEMPLAZAR
+    );
+
+    // Mostrar y cerrar modal
+    document.getElementById('btnAdd').onclick = () => {
+      document.getElementById('modalMiembro').style.display = 'block';
+    };
+    document.getElementById('cerrarModal').onclick = () => {
+      document.getElementById('modalMiembro').style.display = 'none';
+    };
+
+    function mostrarTab(id) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.getElementById('tab-' + id).classList.add('active');
+    }
+
+    document.getElementById('formMiembro').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        nombre: form.nombre.value,
+        codigo: form.codigo.value,
+        padres: form.padres?.value || '',
+        ministerio: form.ministerio?.value || '',
+        estado: 'activo',
+        fotoUrl: ''
+      };
+
+      const archivo = form.foto.files[0];
+      if (archivo) {
+        const nombreArchivo = Date.now() + '-' + archivo.name;
+        const { data: uploadData, error } = await supabase.storage.from('ftmember').upload(nombreArchivo, archivo);
+        if (!error) {
+          const { data: urlData } = supabase.storage.from('ftmember').getPublicUrl(nombreArchivo);
+          data.fotoUrl = urlData.publicUrl;
+        }
       }
+
+      await db.collection('miembros').add(data);
+      form.reset();
+      document.getElementById('modalMiembro').style.display = 'none';
+      cargarMiembros();
+    });
+
+    async function cargarMiembros() {
+      const tbody = document.querySelector('#tablaMiembros tbody');
+      tbody.innerHTML = '';
+      const snapshot = await db.collection('miembros').orderBy('codigo').get();
       snapshot.forEach(doc => {
-        const data = doc.data();
+        const m = doc.data();
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><img src="${data.fotoUrl || 'https://via.placeholder.com/50'}" alt="Foto" width="50" height="50" style="border-radius:50%; object-fit:cover;" /></td>
-          <td>${data.nombre || ''}</td>
-          <td>${data.codigo || ''}</td>
-          <td>${data.estado || 'activo'}</td>
+          <td><img src="${m.fotoUrl || ''}"></td>
+          <td>${m.nombre}</td>
+          <td>${m.codigo}</td>
+          <td>${m.estado}</td>
           <td>
-            <button data-id="${doc.id}" class="btn-editar" style="background:#2563eb; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Editar</button>
-            <button data-id="${doc.id}" class="btn-baja" style="background:#ef4444; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Dar de baja</button>
+            <button onclick="editarMiembro('${doc.id}')">Editar</button>
+            <button onclick="cambiarEstado('${doc.id}', '${m.estado}')">
+              ${m.estado === 'activo' ? 'Dar de baja' : 'Reactivar'}
+            </button>
           </td>
         `;
-        tablaMiembrosBody.appendChild(tr);
+        tbody.appendChild(tr);
       });
-
-      // Agregar listeners a botones dentro de la tabla
-      document.querySelectorAll('.btn-editar').forEach(boton => {
-        boton.addEventListener('click', (e) => {
-          const id = e.target.dataset.id;
-          alert('Editar miembro con ID: ' + id);
-          // Aquí iría la función para editar el miembro
-        });
-      });
-      document.querySelectorAll('.btn-baja').forEach(boton => {
-        boton.addEventListener('click', async (e) => {
-          const id = e.target.dataset.id;
-          if(confirm('¿Deseas dar de baja este miembro?')) {
-            await db.collection('miembros').doc(id).update({ estado: 'baja' });
-            alert('Miembro dado de baja.');
-            cargarMiembros();
-          }
-        });
-      });
-
-    } catch (error) {
-      console.error('Error cargando miembros:', error);
-    }
-  }
-
-  cargarMiembros();
-
-  // --- Guardar miembro ---
-  formMiembro.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData(formMiembro);
-    const nombre = formData.get('nombre').trim();
-    const codigo = formData.get('codigo').trim();
-    const conyuge = formData.get('conyuge').trim();
-    const hijos = formData.get('hijos').trim();
-    const ministerio = formData.get('ministerio').trim();
-    const fechaConversion = formData.get('fechaConversion');
-    const fotoFile = formData.get('foto');
-
-    if (!nombre || !codigo) {
-      alert('Nombre y Código son obligatorios');
-      return;
     }
 
-    try {
-      let fotoUrl = '';
-
-      if (fotoFile && fotoFile.size > 0) {
-        // Subir foto a Supabase
-        const fileExt = fotoFile.name.split('.').pop();
-        const fileName = `ftmember/${codigo}-${Date.now()}.${fileExt}`;
-        const { data, error } = await supabase.storage.from('ftmember').upload(fileName, fotoFile, {
-          cacheControl: '3600',
-          upsert: true
-        });
-        if (error) throw error;
-        // Obtener URL pública
-        const { publicURL, error: urlError } = supabase.storage.from('ftmember').getPublicUrl(fileName);
-        if (urlError) throw urlError;
-        fotoUrl = publicURL;
-      }
-
-      // Guardar en Firestore
-      await db.collection('miembros').add({
-        nombre,
-        codigo,
-        conyuge,
-        hijos: hijos ? parseInt(hijos) : 0,
-        ministerio,
-        fechaConversion,
-        fotoUrl,
-        estado: 'activo',
-        creado: new Date()
-      });
-
-      alert('Miembro guardado correctamente');
-      formMiembro.reset();
-      modalAddMiembro.style.display = 'none';
+    async function cambiarEstado(id, actual) {
+      const nuevo = actual === 'activo' ? 'baja' : 'activo';
+      await db.collection('miembros').doc(id).update({ estado: nuevo });
       cargarMiembros();
-
-    } catch (err) {
-      console.error(err);
-      alert('Error al guardar el miembro. Revisa consola.');
     }
-  });
-</script>
+
+    function editarMiembro(id) {
+      alert('Función de edición aún no implementada');
+    }
+
+    cargarMiembros();
+  </script>
 
 </body>
 </html>
