@@ -223,12 +223,12 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
   <!-- Supabase -->
- <script type="module">
+<script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
   // Supabase config
   const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co'
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o'
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
   // Firebase config
@@ -246,18 +246,18 @@
   firebase.initializeApp(firebaseConfig)
   const db = firebase.firestore()
 
-  // DOM Elements
+  // Referencias DOM
   const form = document.getElementById('form-miembro')
-  const btnAgregarMiembro = document.getElementById('btn-agregar-miembro')
+  const btnAgregar = document.getElementById('btn-agregar-miembro')
   const btnGuardar = document.getElementById('btn-guardar')
   const tabla = document.getElementById('tabla-miembros')
 
   // Mostrar el formulario
-  btnAgregarMiembro.addEventListener('click', () => {
+  btnAgregar.addEventListener('click', () => {
     form.style.display = 'block'
   })
 
-  // Guardar miembro
+  // Guardar datos del miembro
   form.addEventListener('submit', async (e) => {
     e.preventDefault()
     btnGuardar.disabled = true
@@ -272,69 +272,90 @@
     const file = document.getElementById('foto').files[0]
     let fotoURL = ''
 
-    if (file) {
-      const { data, error } = await supabase.storage
-        .from('ftmember')
-        .upload(`fotos/${Date.now()}_${file.name}`, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
+    try {
+      if (file) {
+        const { data, error } = await supabase.storage
+          .from('ftmember')
+          .upload(`fotos/${Date.now()}_${file.name}`, file)
 
-      if (error) {
-        alert('Error al subir foto: ' + error.message)
-        btnGuardar.disabled = false
-        return
+        if (error) throw error
+
+        const { data: publicData } = supabase
+          .storage
+          .from('ftmember')
+          .getPublicUrl(data.path)
+
+        fotoURL = publicData.publicUrl
       }
 
-      const { data: publicURL } = supabase
-        .storage
-        .from('ftmember')
-        .getPublicUrl(data.path)
+      await db.collection('miembros').add({
+        nombre,
+        codigo,
+        edad,
+        telefono,
+        direccion,
+        fechaNacimiento,
+        foto: fotoURL,
+        estado: 'activo',
+        creado: firebase.firestore.FieldValue.serverTimestamp()
+      })
 
-      fotoURL = publicURL.publicUrl
+      form.reset()
+      form.style.display = 'none'
+      cargarMiembros()
+
+    } catch (error) {
+      alert('Error al guardar: ' + error.message)
+    } finally {
+      btnGuardar.disabled = false
     }
-
-    await db.collection('miembros').add({
-      nombre,
-      codigo,
-      edad,
-      telefono,
-      direccion,
-      fechaNacimiento,
-      foto: fotoURL,
-      estado: 'activo',
-      creado: firebase.firestore.FieldValue.serverTimestamp()
-    })
-
-    form.reset()
-    form.style.display = 'none'
-    btnGuardar.disabled = false
-    cargarMiembros()
   })
 
-  // Mostrar miembros en la tabla
+  // Cargar miembros en la tabla
   async function cargarMiembros() {
     tabla.innerHTML = ''
-    const snapshot = await db.collection('miembros').where('estado', '==', 'activo').orderBy('creado', 'desc').get()
+    const snapshot = await db.collection('miembros')
+      .where('estado', '==', 'activo')
+      .orderBy('creado', 'desc')
+      .get()
 
     snapshot.forEach(doc => {
       const m = doc.data()
-      const tr = document.createElement('tr')
-
-      tr.innerHTML = `
-        <td><img src="${m.foto || ''}" alt="Foto" class="foto-miembro"></td>
+      const fila = document.createElement('tr')
+      fila.innerHTML = `
+        <td><img src="${m.foto || ''}" alt="Foto" class="foto-miembro" style="width:40px;height:40px;border-radius:50%;object-fit:cover;"></td>
         <td>${m.nombre}</td>
         <td>${m.codigo}</td>
-        <td>${m.edad}</td>
-        <td>${m.telefono}</td>
-        <td>${m.direccion}</td>
-        <td><button onclick="alert('Función editar aún no implementada')">Editar</button></td>
+        <td>${m.edad || ''}</td>
+        <td>${m.telefono || ''}</td>
+        <td>${m.direccion || ''}</td>
+        <td>
+          <button class="btn-editar" data-id="${doc.id}">Editar</button>
+          <button class="btn-baja" data-id="${doc.id}">Dar de baja</button>
+        </td>
       `
-      tabla.appendChild(tr)
+      tabla.appendChild(fila)
+    })
+
+    // Eventos para botones Editar y Dar de baja
+    document.querySelectorAll('.btn-baja').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id')
+        if (confirm('¿Dar de baja este miembro?')) {
+          await db.collection('miembros').doc(id).update({ estado: 'baja' })
+          cargarMiembros()
+        }
+      })
+    })
+
+    document.querySelectorAll('.btn-editar').forEach(btn => {
+      btn.addEventListener('click', () => {
+        alert('Función de editar aún no implementada.')
+      })
     })
   }
 
-  // Cargar miembros al iniciar
+  // Cargar al iniciar
   cargarMiembros()
 </script>
 
