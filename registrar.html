@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Registrar Usuarios</title>
+  <meta charset="UTF-8" />
+  <title>Registrar Usuarios - Miembros</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background-color: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
     }
-
     .sidebar {
       width: 220px;
       background-color: #1b263b;
@@ -20,106 +22,316 @@
       top: 0;
       padding: 15px;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-
     .sidebar img {
-      width: 100%;
+      width: 150px;
       margin-bottom: 20px;
       border-radius: 10px;
+      object-fit: contain;
+    }
+    .sidebar h3 {
+      margin-bottom: 10px;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      width: 100%;
+    }
+    .sidebar ul li {
+      margin-bottom: 15px;
+    }
+    .sidebar ul li a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      display: block;
+      padding: 8px 12px;
+      border-radius: 5px;
+      transition: background-color 0.2s;
+    }
+    .sidebar ul li a:hover {
+      background-color: #0d1a2b;
     }
 
     .content {
       margin-left: 240px;
       padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
-
     .box {
       background: white;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 400px;
+      max-width: 800px;
       margin-bottom: 30px;
     }
+    h2 {
+      margin-top: 0;
+    }
 
-    input, select {
+    /* Tabs para formulario */
+    .form-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .form-tab {
+      padding: 10px 20px;
+      background: #003566;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px 5px 0 0;
+      user-select: none;
+      font-weight: 600;
+    }
+    .form-tab.active {
+      background: #0d1a2b;
+    }
+    .form-section {
+      display: none;
+      background: white;
+      padding: 20px;
+      border: 1px solid #003566;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      max-width: 800px;
+    }
+    .form-section.active {
+      display: block;
+    }
+
+    /* Inputs */
+    input, select, textarea {
       width: 100%;
-      padding: 10px;
+      padding: 8px 10px;
       margin: 10px 0;
       border-radius: 5px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 1rem;
+      resize: vertical;
+    }
+    textarea {
+      min-height: 60px;
+    }
+    label {
+      font-weight: 600;
+      margin-top: 10px;
+      display: block;
     }
 
     button {
-      padding: 10px 20px;
+      padding: 10px 25px;
       background-color: #003566;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
+      margin-top: 15px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #00224c;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
+    /* Tabs arriba de tabla */
+    .table-tabs {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 15px;
+      max-width: 1000px;
+    }
+    .table-tab {
+      padding: 8px 20px;
+      background: #003566;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+      user-select: none;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      transition: border-color 0.3s;
+    }
+    .table-tab.active {
+      border-bottom: 3px solid #ffd700; /* dorado */
+      background: #0d1a2b;
     }
 
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: left;
+    /* Tabla */
+    table.dataTable thead th {
+      background-color: #003566 !important;
+      color: white !important;
     }
-
+    table.dataTable tbody tr:hover {
+      background-color: #f1f1f1;
+    }
     .btn-toggle {
       padding: 5px 10px;
       border: none;
       border-radius: 5px;
       color: white;
       cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      user-select: none;
     }
-
     .btn-on {
       background-color: green;
     }
-
     .btn-off {
       background-color: red;
+    }
+    .btn-delete {
+      background-color: #cc0000;
+      border: none;
+      color: white;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      padding: 5px 10px;
+      user-select: none;
+    }
+    .btn-delete:hover {
+      background-color: #990000;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .content {
+        margin-left: 0;
+        padding: 10px;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 10px;
+      }
+      .sidebar img {
+        width: 100px;
+        margin-bottom: 0;
+      }
+      .sidebar ul {
+        display: flex;
+        gap: 20px;
+      }
+      .sidebar ul li {
+        margin-bottom: 0;
+      }
+      .box, .form-section {
+        max-width: 100%;
+      }
+      .table-tabs {
+        flex-wrap: wrap;
+      }
     }
   </style>
 </head>
 <body>
 
 <div class="sidebar">
-  <img id="logo" src="" alt="Logo">
+  <img id="logo" src="" alt="Logo" />
   <h3>Menú</h3>
   <ul>
     <li><a href="inicio.html" style="color:white;">Inicio</a></li>
-    <li><a href="registrar.html" style="color:white;">Registrar</a></li>
+    <li><a href="accesos.html" style="color:white;">Registrar</a></li>
   </ul>
 </div>
 
 <div class="content">
   <div class="box">
     <h2>Registrar Usuario</h2>
-    <input type="email" id="correo" placeholder="Correo electrónico" required>
-    <input type="password" id="contraseña" placeholder="Contraseña" required>
-    <select id="rol">
-      <option value="Administrador">Administrador</option>
-      <option value="Tesorero">Tesorero</option>
-      <option value="Discipulador">Discipulador</option>
-    </select>
-    <button onclick="registrarUsuario()">Guardar</button>
+
+    <div class="form-tabs" id="formTabs">
+      <div class="form-tab active" data-section="personal">Datos Personales</div>
+      <div class="form-tab" data-section="familiares">Datos Familiares</div>
+      <div class="form-tab" data-section="espirituales">Datos Espirituales</div>
+    </div>
+
+    <form id="formUsuario" autocomplete="off">
+      <!-- Sección Personal -->
+      <div class="form-section active" id="personal">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" placeholder="Nombre(s)" required />
+
+        <label for="apellidos">Apellidos</label>
+        <input type="text" id="apellidos" placeholder="Apellidos" required />
+
+        <label for="correo">Correo electrónico</label>
+        <input type="email" id="correo" placeholder="correo@ejemplo.com" required />
+
+        <label for="telefono">Teléfono</label>
+        <input type="tel" id="telefono" placeholder="(Opcional)" />
+
+        <label for="fechaNacimiento">Fecha de nacimiento</label>
+        <input type="date" id="fechaNacimiento" required />
+      </div>
+
+      <!-- Sección Familiares -->
+      <div class="form-section" id="familiares">
+        <label for="conyuge">Cónyuge</label>
+        <input type="text" id="conyuge" placeholder="Nombre del cónyuge (Opcional)" />
+
+        <label for="hijos">Hijos</label>
+        <input type="text" id="hijos" placeholder="Nombres de los hijos (Opcional)" />
+
+        <label for="direccion">Dirección</label>
+        <textarea id="direccion" placeholder="Dirección completa"></textarea>
+      </div>
+
+      <!-- Sección Espirituales -->
+      <div class="form-section" id="espirituales">
+        <label for="rol">Rol en la iglesia</label>
+        <select id="rol" required>
+          <option value="">-- Selecciona un rol --</option>
+          <option value="Administrador">Administrador</option>
+          <option value="Tesorero">Tesorero</option>
+          <option value="Discipulador">Discipulador</option>
+          <option value="Miembro">Miembro</option>
+        </select>
+
+        <label for="estado">Estado</label>
+        <select id="estado" required>
+          <option value="Activo" selected>Activo</option>
+          <option value="Baja">Baja</option>
+        </select>
+
+        <label for="acceso">Acceso</label>
+        <select id="acceso" required>
+          <option value="true" selected>ON</option>
+          <option value="false">OFF</option>
+        </select>
+      </div>
+
+      <button type="submit">Guardar</button>
+    </form>
   </div>
 
   <h2>Usuarios Registrados</h2>
-  <table id="tablaUsuarios">
+  <div class="table-tabs">
+    <div class="table-tab active" data-filter="Activo">Activos</div>
+    <div class="table-tab" data-filter="Baja">De Baja</div>
+  </div>
+
+  <table id="tablaUsuarios" class="display" style="width:100%">
     <thead>
       <tr>
         <th>#</th>
+        <th>Nombre Completo</th>
         <th>Correo</th>
         <th>Rol</th>
+        <th>Estado</th>
         <th>Acceso</th>
         <th>Eliminar</th>
       </tr>
@@ -128,104 +340,209 @@
   </table>
 </div>
 
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-<script>
-  const firebaseConfig = {
-  apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
-  authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
-  projectId: "iglesia-adoracion-viva-182e6",
-  storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
-  messagingSenderId: "152824399391",
-  appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
-  measurementId: "G-GXV53CPPBT"
-};
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+<!-- jQuery + DataTables -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
-    function toggleForm() {
+<script>
+  // Config Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
+    authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
+    projectId: "iglesia-adoracion-viva-182e6",
+    storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
+    messagingSenderId: "152824399391",
+    appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
+    measurementId: "G-GXV53CPPBT"
+  };
 
   firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.database();
+  const db =firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  // Cargar logo desde Firebase
-  firebase.database().ref("config/logo").on("value", (snapshot) => {
-    const logoUrl = snapshot.val();
-    if (logoUrl) {
-      document.getElementById("logo").src = logoUrl;
-    }
-  });
+  // Variables globales
+  let dataTable;
+  let usuarios = [];
+  let filtroEstado = "Activo";
 
-  function registrarUsuario() {
-    const email = document.getElementById("correo").value.trim();
-    const password = document.getElementById("contraseña").value;
-    const rol = document.getElementById("rol").value;
-
-    if (!email || !password) {
-      alert("Completa todos los campos.");
-      return;
-    }
-
-    auth.createUserWithEmailAndPassword(email, password)
-      .then(userCredential => {
-        const uid = userCredential.user.uid;
-
-        db.ref("usuarios/" + uid).set({
-          correo: email,
-          rol: rol,
-          acceso: true
-        });
-
-        document.getElementById("correo").value = "";
-        document.getElementById("contraseña").value = "";
-        cargarUsuarios();
-      })
-      .catch(error => {
-        alert("Error al registrar: " + error.message);
-      });
+  // Cargar logo desde Firestore (puedes cambiar si quieres un URL fija)
+  function cargarLogo() {
+    // Ejemplo: carga un logo fijo
+    document.getElementById("logo").src = "https://i.imgur.com/ZsQeVZg.png";
   }
 
-  function cargarUsuarios() {
-    const tbody = document.querySelector("#tablaUsuarios tbody");
-    tbody.innerHTML = "";
+  // Manejo de pestañas del formulario
+  const formTabs = document.querySelectorAll(".form-tab");
+  const formSections = document.querySelectorAll(".form-section");
+  formTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      formTabs.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      const section = tab.dataset.section;
+      formSections.forEach(s => s.classList.remove("active"));
+      document.getElementById(section).classList.add("active");
+    });
+  });
 
-    db.ref("usuarios").once("value", snapshot => {
-      let index = 1;
-      snapshot.forEach(child => {
-        const data = child.val();
-        const uid = child.key;
+  // Manejo de pestañas arriba de la tabla
+  const tableTabs = document.querySelectorAll(".table-tab");
+  tableTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tableTabs.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      filtroEstado = tab.dataset.filter;
+      cargarTabla();
+    });
+  });
 
-        const fila = document.createElement("tr");
-        fila.innerHTML = `
-          <td>${index++}</td>
-          <td>${data.correo}</td>
-          <td>${data.rol}</td>
-          <td><button class="btn-toggle ${data.acceso ? 'btn-on' : 'btn-off'}" onclick="toggleAcceso('${uid}', ${!data.acceso})">${data.acceso ? 'ON' : 'OFF'}</button></td>
-          <td><button onclick="eliminarUsuario('${uid}')">🗑️</button></td>
-        `;
-        tbody.appendChild(fila);
-      });
+  // Inicializar DataTable
+  function inicializarDataTable() {
+    if ($.fn.dataTable.isDataTable("#tablaUsuarios")) {
+      $("#tablaUsuarios").DataTable().destroy();
+    }
+    dataTable = $("#tablaUsuarios").DataTable({
+      language: {
+        url: "//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
+      },
+      pageLength: 30,
+      order: [[1, "asc"]],
+      columnDefs: [
+        { orderable: false, targets: [0, 6, 5] }
+      ]
     });
   }
 
-  function toggleAcceso(uid, estado) {
-    db.ref("usuarios/" + uid).update({ acceso: estado });
-    setTimeout(cargarUsuarios, 500);
-  }
-
-  function eliminarUsuario(uid) {
-    if (confirm("¿Eliminar este usuario?")) {
-      db.ref("usuarios/" + uid).remove();
-      setTimeout(cargarUsuarios, 500);
+  // Cargar usuarios de Firestore
+  async function cargarUsuarios() {
+    try {
+      const snapshot = await db.collection("usuarios").orderBy("apellidos").get();
+      usuarios = [];
+      snapshot.forEach(doc => {
+        usuarios.push({ id: doc.id, ...doc.data() });
+      });
+      cargarTabla();
+    } catch (error) {
+      alert("Error cargando usuarios: " + error.message);
     }
   }
 
-  // Cargar usuarios al abrir
-  window.onload = cargarUsuarios;
-</script>
+  // Renderizar tabla con filtro por estado
+  function cargarTabla() {
+    inicializarDataTable();
+    dataTable.clear();
 
+    const filtrados = usuarios.filter(u => u.estado === filtroEstado);
+
+    filtrados.forEach((user, index) => {
+      const nombreCompleto = `${user.nombre} ${user.apellidos}`;
+      const accesoTexto = user.acceso === true || user.acceso === "true" ? "ON" : "OFF";
+      const accesoClass = accesoTexto === "ON" ? "btn-on" : "btn-off";
+
+      const btnAcceso = `<button class="btn-toggle ${accesoClass}" data-id="${user.id}">${accesoTexto}</button>`;
+      const btnEliminar = `<button class="btn-delete" data-id="${user.id}">Eliminar</button>`;
+
+      dataTable.row.add([
+        index + 1,
+        nombreCompleto,
+        user.correo,
+        user.rol,
+        user.estado,
+        btnAcceso,
+        btnEliminar
+      ]);
+    });
+
+    dataTable.draw();
+
+    // Eventos para botones de acceso y eliminar
+    $("#tablaUsuarios tbody").off("click");
+    $("#tablaUsuarios tbody").on("click", "button.btn-toggle", async function() {
+      const id = $(this).data("id");
+      const user = usuarios.find(u => u.id === id);
+      if (!user) return;
+      const nuevoAcceso = !(user.acceso === true || user.acceso === "true");
+      try {
+        await db.collection("usuarios").doc(id).update({ acceso: nuevoAcceso });
+        user.acceso = nuevoAcceso;
+        cargarTabla();
+      } catch (error) {
+        alert("Error actualizando acceso: " + error.message);
+      }
+    });
+    $("#tablaUsuarios tbody").on("click", "button.btn-delete", async function() {
+      if (!confirm("¿Eliminar usuario? Esta acción no se puede deshacer.")) return;
+      const id = $(this).data("id");
+      try {
+        await db.collection("usuarios").doc(id).delete();
+        usuarios = usuarios.filter(u => u.id !== id);
+        cargarTabla();
+      } catch (error) {
+        alert("Error eliminando usuario: " + error.message);
+      }
+    });
+  }
+
+  // Guardar usuario (nuevo o editar)
+  document.getElementById("formUsuario").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const nombre = document.getElementById("nombre").value.trim();
+    const apellidos = document.getElementById("apellidos").value.trim();
+    const correo = document.getElementById("correo").value.trim();
+    const telefono = document.getElementById("telefono").value.trim();
+    const fechaNacimiento = document.getElementById("fechaNacimiento").value;
+    const conyuge = document.getElementById("conyuge").value.trim();
+    const hijos = document.getElementById("hijos").value.trim();
+    const direccion = document.getElementById("direccion").value.trim();
+    const rol = document.getElementById("rol").value;
+    const estado = document.getElementById("estado").value;
+    const accesoStr = document.getElementById("acceso").value;
+    const acceso = accesoStr === "true";
+
+    if (!nombre || !apellidos || !correo || !fechaNacimiento || !rol || !estado) {
+      alert("Completa todos los campos obligatorios.");
+      return;
+    }
+
+    const nuevoUsuario = {
+      nombre,
+      apellidos,
+      correo,
+      telefono,
+      fechaNacimiento,
+      conyuge,
+      hijos,
+      direccion,
+      rol,
+      estado,
+      acceso
+    };
+
+    try {
+      await db.collection("usuarios").add(nuevoUsuario);
+      alert("Usuario registrado correctamente.");
+      document.getElementById("formUsuario").reset();
+      // Volver a pestaña 1 del formulario
+      formTabs.forEach(t => t.classList.remove("active"));
+      formSections.forEach(s => s.classList.remove("active"));
+      formTabs[0].classList.add("active");
+      formSections[0].classList.add("active");
+      cargarUsuarios();
+    } catch (error) {
+      alert("Error al guardar usuario: " + error.message);
+    }
+  });
+
+  // Inicializar todo al cargar
+  window.onload = () => {
+    cargarLogo();
+    cargarUsuarios();
+  };
+</script>
 </body>
 </html>
