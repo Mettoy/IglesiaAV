@@ -325,9 +325,9 @@
 </div>
 
 <script>
-    // Firebase config
+    // Firebase config (MANTÉN ESTAS CLAVES CORRECTAS DE TU PROYECTO)
     const firebaseConfig = {
-        apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k", // Asegúrate de que esta clave sea correcta
+        apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k", 
         authDomain: "iglesia-adoracion-viva.firebaseapp.com",
         databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
         projectId: "iglesia-adoracion-viva",
@@ -348,18 +348,27 @@
         alert("Error al inicializar Firebase. Revisa la consola para más detalles.");
     }
 
-    // Inicializar Supabase
-    const SUPABASE_URL = "https://xyptydnouyddzvrffaby.supabase.co"; // Asegúrate de que esta URL sea correcta
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o"; // Asegúrate de que esta clave sea correcta
+    // Inicializar Supabase (MANTÉN ESTAS CLAVES CORRECTAS DE TU PROYECTO)
+    const SUPABASE_URL = "https://xyptydnouyddzvrffaby.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o";
     let supabase;
     try {
-        supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Aseguramos que Supabase se inicialice correctamente.
+        // La variable 'supabase' se declara con 'let' arriba.
+        // Aquí le asignamos la instancia creada.
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log("Supabase inicializado correctamente.");
     } catch (error) {
         console.error("Error al inicializar Supabase:", error);
+        // Detalles específicos del error para depuración
+        if (error.name === "ReferenceError") {
+            console.error("Posible causa: La librería Supabase no se ha cargado correctamente. Verifica el script CDN.");
+        } else if (error.message.includes("supabase URL and API key are required")) {
+            console.error("Posible causa: Las variables SUPABASE_URL o SUPABASE_ANON_KEY están vacías o incorrectas.");
+        }
         alert("Error al inicializar Supabase. Revisa la consola para más detalles.");
     }
-    const SUPABASE_BUCKET = "ftmember"; // Nombre del bucket en Supabase Storage
+    const SUPABASE_BUCKET = "ftmember";
 
     // Variables globales
     let members = [];
@@ -375,7 +384,7 @@
         famList, fechaConversionInput, lugarConversionInput, fechaBautizoInput, lugarBautizoInput,
         fechaBautizoEspInput, lugarBautizoEspInput, cursosBiblicosInput, lugarCursosBiblicosInput,
         searchInput, membersTableBody, paginationDiv, addMemberBtnMain, modalClose, cancelBtn, tabButtons,
-        tabActivos, tabDeBaja, btnInicio; // Añadido btnInicio
+        tabActivos, tabDeBaja, btnInicio;
 
     // Estado del formulario
     let familiares = [];
@@ -626,27 +635,42 @@
     }
 
     async function uploadPhoto(file, oldPath = null) {
-        if (!file) return { url: null, path: null };
+        if (!file) {
+            console.log("No se seleccionó ningún archivo para subir.");
+            return { url: null, path: null };
+        }
         if (!supabase) {
             console.error("Supabase no está inicializado. No se puede subir la foto.");
             return { url: null, path: null };
         }
         try {
-            if(oldPath) {
+            // Eliminar foto anterior si existe y se ha proporcionado una nueva
+            if (oldPath) {
                 console.log("Intentando eliminar foto antigua:", oldPath);
                 const { error: removeError } = await supabase.storage.from(SUPABASE_BUCKET).remove([oldPath]);
-                if(removeError) console.warn('Error al eliminar foto antigua:', removeError.message);
+                if (removeError) {
+                    console.warn('Error al eliminar foto antigua:', removeError.message);
+                    // No abortar la subida si la eliminación falló
+                }
             }
+
             const fileExt = file.name.split('.').pop();
             const fileName = `foto_${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
             console.log("Subiendo nueva foto:", fileName);
+            
             const { data, error } = await supabase.storage.from(SUPABASE_BUCKET).upload(fileName, file, {
                 cacheControl: '3600',
-                upsert: false
+                upsert: false // No sobrescribir, ya manejamos la eliminación explícitamente
             });
-            if(error) throw error;
+
+            if (error) {
+                throw error;
+            }
+
             const { data: publicData, error: urlError } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(fileName);
-            if(urlError) throw urlError;
+            if (urlError) {
+                throw urlError;
+            }
             console.log("Foto subida. URL:", publicData.publicUrl, "Path:", fileName);
             return { url: publicData.publicUrl, path: fileName };
         } catch (err) {
@@ -686,7 +710,7 @@
         let fotoURL = '';
         let fotoPath = '';
         let oldFotoPath = null;
-        let currentFotoURL = ''; // Para mantener la URL si no se cambia la foto
+        let currentFotoURL = ''; 
 
         if(editingMemberId) {
             const member = members.find(m => m.id === editingMemberId);
@@ -696,26 +720,26 @@
             }
         }
 
-        if(fotoInput.files.length > 0) {
-            // Se seleccionó una nueva foto, subirla
+        // Determinar qué hacer con la foto:
+        // 1. Si se seleccionó un nuevo archivo: Subir el nuevo archivo
+        // 2. Si no se seleccionó nuevo archivo y la foto previa fue eliminada: Eliminar de Supabase y limpiar URL/Path
+        // 3. Si no se seleccionó nuevo archivo y la foto previa se mantiene: Mantener la URL/Path existente
+        
+        if (fotoInput.files.length > 0) { // Caso 1: Nuevo archivo seleccionado
+            console.log("Se seleccionó un nuevo archivo de foto.");
             const result = await uploadPhoto(fotoInput.files[0], oldFotoPath);
-            if(result.url) {
-                fotoURL = result.url;
-                fotoPath = result.path;
-            } else {
-                // Si la subida falló, mantener la foto existente si la hay
-                fotoURL = currentFotoURL;
-                fotoPath = oldFotoPath;
+            fotoURL = result.url || '';
+            fotoPath = result.path || '';
+        } else if (editingMemberId && fotoPreview.src === '' && oldFotoPath) { // Caso 2: Editando, no hay foto en preview, y había una antigua
+            console.log("Editando: Foto eliminada del formulario.");
+            if (supabase) {
+                const { error: removeError } = await supabase.storage.from(SUPABASE_BUCKET).remove([oldFotoPath]);
+                if (removeError) console.warn('Error al eliminar foto antigua (al borrar del formulario):', removeError.message);
             }
-        } else if (editingMemberId && !fotoInput.files.length && fotoPreview.src === '') {
-             // Si estamos editando, no se seleccionó nueva foto y la previa está vacía, significa que se eliminó
-             if (oldFotoPath) {
-                 await supabase.storage.from(SUPABASE_BUCKET).remove([oldFotoPath]);
-             }
-             fotoURL = ''; // Eliminar la URL
-             fotoPath = ''; // Eliminar la ruta
-        } else if (editingMemberId && !fotoInput.files.length && fotoPreview.src !== '') {
-            // Estamos editando, no se seleccionó nueva foto, y la previa NO está vacía (se mantiene la existente)
+            fotoURL = '';
+            fotoPath = '';
+        } else { // Caso 3: No se seleccionó nuevo archivo, y se mantiene la foto existente o no había antes
+            console.log("No se seleccionó nueva foto. Manteniendo la existente o ninguna.");
             fotoURL = currentFotoURL;
             fotoPath = oldFotoPath;
         }
@@ -738,8 +762,8 @@
             lugarBautizoEsp,
             cursosBiblicos,
             lugarCursosBiblicos,
-            fotoURL: fotoURL, // Usar la URL resultante
-            fotoPath: fotoPath, // Usar la ruta resultante
+            fotoURL: fotoURL,
+            fotoPath: fotoPath,
             estado: currentMemberStatusFilter,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
@@ -853,7 +877,7 @@
         tabButtons = document.querySelectorAll('.section-tabs .tab-btn');
         tabActivos = document.getElementById('tabActivos');
         tabDeBaja = document.getElementById('tabDeBaja');
-        btnInicio = document.getElementById('btnInicio'); // Obtener el botón de Inicio
+        btnInicio = document.getElementById('btnInicio');
 
         // Adjuntar Event Listeners
         if (addMemberBtnMain) {
@@ -863,8 +887,8 @@
                 memberForm.reset();
                 familiares = [];
                 renderFamiliares();
-                fotoPreview.style.display = 'none';
-                fotoPreview.src = '';
+                fotoPreview.style.display = 'none'; // Asegurarse de que la previsualización se oculte
+                fotoPreview.src = ''; // Limpiar la fuente de la imagen
                 showModal(false);
                 setActiveSection('personales');
             });
@@ -975,14 +999,14 @@
             console.warn("Elementos de foto no encontrados.");
         }
 
-        // Si tienes una función para el botón de inicio, actívala aquí
         if (btnInicio) {
             btnInicio.addEventListener('click', () => {
-                // Por ejemplo, para recargar los miembros activos y limpiar la búsqueda
                 searchInput.value = '';
                 currentMemberStatusFilter = 'activo';
-                tabActivos.classList.add('active');
-                tabDeBaja.classList.remove('active');
+                if (tabActivos) {
+                    tabActivos.classList.add('active');
+                    tabDeBaja.classList.remove('active');
+                }
                 loadMembers();
             });
         } else {
