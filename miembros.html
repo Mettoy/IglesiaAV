@@ -5,143 +5,262 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Gestión de Miembros</title>
 <style>
+  /* Estilo azul oscuro + dorado */
   body {
-    margin: 0; font-family: Arial, sans-serif;
-    background: #0d1b2a; color: #f5f5f5;
+    background: #121823;
+    color: #d4af37;
+    font-family: Arial, sans-serif;
+    margin: 0;
   }
-  .sidebar {
-    width: 220px; background: #1b263b;
-    position: fixed; top: 0; left: 0; height: 100%;
-    padding: 20px;
+  .container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 10px 20px;
   }
-  .sidebar h2 {
-    color: #ffd700; text-align: center; margin-bottom: 40px;
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
   }
-  .sidebar a {
-    display: block; padding: 10px 15px; margin-bottom: 10px;
-    color: #f5f5f5; text-decoration: none;
-    background: #415a77; border-radius: 8px;
-    transition: background-color 0.3s ease;
-  }
-  .sidebar a:hover {
-    background: #778da9;
-  }
-  .main {
-    margin-left: 240px; padding: 20px;
-  }
-  .gold { color: #ffd700; }
   button {
-    background: #ffd700; color: #0d1b2a;
-    padding: 10px 15px; border: none; border-radius: 8px;
+    background-color: #d4af37;
+    border: none;
+    color: #121823;
+    padding: 8px 16px;
     cursor: pointer;
-  }
-  .tab-btn {
+    border-radius: 5px;
+    font-weight: bold;
     margin-right: 10px;
   }
-  .hidden { display: none; }
-  input, select {
-    padding: 6px; margin-bottom: 10px;
-    border-radius: 5px; border: none; width: 100%;
+  button:hover {
+    background-color: #b78a1e;
   }
-  .form-section { margin-bottom: 20px; }
+  /* Tabla */
   table {
-    width: 100%; border-collapse: collapse; margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+    background: #1e2633;
+    margin-top: 10px;
+    color: #d4af37;
   }
   th, td {
-    padding: 10px; border: 1px solid #415a77;
+    padding: 12px;
+    border-bottom: 1px solid #444;
     text-align: left;
   }
-  tr:hover { background-color: #223554; }
+  th {
+    background-color: #2c3444;
+  }
   img.foto {
-    width: 50px; height: 50px; object-fit: cover;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
+    object-fit: cover;
   }
-  #pagination {
-    margin-top: 10px;
+  /* Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background-color: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
   }
-  #pagination button {
-    margin-right: 5px;
+  .modal.active {
+    display: flex;
+  }
+  .modal-content {
+    background-color: #1e2633;
+    border-radius: 12px;
+    width: 95%;
+    max-width: 650px;
+    padding: 25px;
+    color: #d4af37;
+    position: relative;
+  }
+  .close-btn {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    font-size: 28px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  /* Tabs */
+  .tabs {
+    display: flex;
+    margin-bottom: 18px;
+    border-bottom: 2px solid #d4af37;
+  }
+  .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    color: #d4af37;
+    font-weight: bold;
+  }
+  .tab.active {
+    background-color: #d4af37;
+    color: #121823;
+    border-radius: 12px 12px 0 0;
+    border: 1px solid #d4af37;
+    border-bottom: none;
+  }
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  /* Form Inputs */
+  label {
+    display: block;
+    margin: 12px 0 5px 0;
+  }
+  input, select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    font-size: 1em;
+  }
+  /* Acciones tabla */
+  .actions-btns button {
+    margin-right: 6px;
+    background-color: #b78a1e;
+    color: #121823;
+    padding: 6px 10px;
+    font-size: 0.9em;
+  }
+  .actions-btns button:hover {
+    background-color: #d4af37;
+  }
+  /* Paginación */
+  .pagination {
+    margin-top: 20px;
+    text-align: center;
+  }
+  .pagination button {
+    margin: 0 3px;
+  }
+  /* Tabs activos / baja */
+  .status-tabs {
+    margin-bottom: 15px;
+  }
+  .status-tab {
+    padding: 10px 22px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    color: #d4af37;
+    font-weight: bold;
+    margin-right: 8px;
+    display: inline-block;
+  }
+  .status-tab.active {
+    background-color: #d4af37;
+    color: #121823;
+    border-radius: 12px 12px 0 0;
+    border: 1px solid #d4af37;
+    border-bottom: none;
   }
 </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <h2>Miembros</h2>
-  <a href="inicio.html">Inicio</a>
-  <a href="#">Miembros</a>
-  <a href="#">Reportes</a>
+<div class="container">
+  <h1>Gestión de Miembros</h1>
+
+  <div class="status-tabs">
+    <span class="status-tab active" data-status="activo">Activos</span>
+    <span class="status-tab" data-status="baja">De Baja</span>
+  </div>
+
+  <button id="btnAddMember">Añadir Miembro</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Edad</th>
+        <th>Dirección</th>
+        <th>Sociedad</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="membersTableBody">
+      <!-- Miembros aquí -->
+    </tbody>
+  </table>
+
+  <div class="pagination" id="pagination"></div>
 </div>
 
-<div class="main">
-  <h1><span class="gold">Gestión</span> de Miembros</h1>
-  <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-    <button id="addMemberBtn">Añadir Miembro</button>
-    <input type="text" id="searchInput" placeholder="Buscar por nombre o código" style="flex:1;">
-  </div>
-
-  <div style="margin-bottom:10px;">
-    <button class="tab-btn" id="tabActivos">Activos</button>
-    <button class="tab-btn" id="tabBaja">De Baja</button>
-  </div>
-
-  <div id="miembrosContainer"></div>
-
-  <div id="pagination"></div>
-
-  <!-- Modal -->
-  <div id="modalForm" class="hidden" style="position:fixed; top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:1000;">
-    <div style="background:#1b263b; padding:20px; border-radius:10px; width: 400px; max-height: 90vh; overflow-y: auto;">
-      <h2 id="formTitle">Nuevo Miembro</h2>
-      <form id="memberForm">
-        <!-- Datos Personales -->
-        <div class="form-section">
-          <label for="nombre">Nombre *</label>
-          <input type="text" id="nombre" required />
-          <label for="codigo">Código *</label>
-          <input type="text" id="codigo" required />
-          <label for="fechaNacimiento">Fecha de Nacimiento *</label>
-          <input type="date" id="fechaNacimiento" required />
-          <label for="edad">Edad</label>
-          <input type="number" id="edad" readonly />
-          <label for="foto">Foto (jpg/png)</label>
-          <input type="file" id="foto" accept="image/png, image/jpeg" />
-        </div>
-        <!-- Datos Familiares -->
-        <div class="form-section">
-          <label for="estadoCivil">Estado Civil</label>
-          <input type="text" id="estadoCivil" />
-        </div>
-        <!-- Datos Espirituales -->
-        <div class="form-section">
-          <label for="ministerio">Ministerio</label>
-          <input type="text" id="ministerio" />
-        </div>
-
-        <input type="hidden" id="memberId" />
-
-        <div style="display:flex; justify-content:flex-end; gap:10px;">
-          <button type="submit">Guardar</button>
-          <button type="button" id="btnCancel">Cancelar</button>
-        </div>
-      </form>
+<!-- Modal Formulario -->
+<div class="modal" id="modalMemberForm" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <span class="close-btn" id="closeModal" aria-label="Cerrar formulario">&times;</span>
+    <h2 id="modalTitle">Agregar / Editar Miembro</h2>
+    
+    <div class="tabs">
+      <div class="tab active" data-tab="personal">Datos Personales</div>
+      <div class="tab" data-tab="familiares">Datos Familiares</div>
+      <div class="tab" data-tab="espirituales">Datos Espirituales</div>
     </div>
-  </div>
+    
+    <form id="memberForm" autocomplete="off">
+      <!-- PERSONAL -->
+      <div class="tab-content active" id="personal">
+        <label for="fotoInput">Foto (jpg/png):</label>
+        <input type="file" id="fotoInput" name="foto" accept="image/png, image/jpeg" />
 
+        <label for="nombreInput">Nombre completo:</label>
+        <input type="text" id="nombreInput" name="nombre" required />
+
+        <label for="codigoInput">Código:</label>
+        <input type="text" id="codigoInput" name="codigo" required />
+
+        <label for="edadInput">Edad:</label>
+        <input type="number" id="edadInput" name="edad" min="0" />
+      </div>
+      <!-- FAMILIARES -->
+      <div class="tab-content" id="familiares">
+        <label for="direccionInput">Dirección:</label>
+        <input type="text" id="direccionInput" name="direccion" />
+
+        <label for="sociedadInput">Sociedad:</label>
+        <input type="text" id="sociedadInput" name="sociedad" />
+      </div>
+      <!-- ESPIRITUALES -->
+      <div class="tab-content" id="espirituales">
+        <label for="ministerioInput">Ministerio:</label>
+        <input type="text" id="ministerioInput" name="ministerio" />
+
+        <label for="estatusInput">Estatus espiritual:</label>
+        <select id="estatusInput" name="estatus">
+          <option value="">Seleccionar</option>
+          <option value="activo">Activo</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </div>
+      <br />
+      <button type="submit" id="submitBtn">Guardar Miembro</button>
+    </form>
+  </div>
 </div>
 
+<!-- Firebase y Supabase SDK -->
 <script type="module">
-// Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, where, orderBy, limit, startAfter
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// IMPORTA Y CONFIGURA FIREBASE Y SUPABASE
 
-// Supabase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, orderBy, limit, startAfter, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
   authDomain: "iglesia-adoracion-viva.firebaseapp.com",
@@ -150,291 +269,323 @@ const firebaseConfig = {
   messagingSenderId: "815332010058",
   appId: "1:815332010058:web:d2afff616469349d88deb3"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Config Supabase (usa tus datos reales aquí)
-const supabaseUrl = 'https://YOUR_SUPABASE_PROJECT.supabase.co';
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = "https://xxxxxxxx.supabase.co"; // REEMPLAZAR con URL Supabase real
+const supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY"; // REEMPLAZAR con clave anónima Supabase
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const ftmemberBucket = 'ftmember';
+const bucketName = "ftmember";
 
-// Variables y estado
-let miembrosData = []; // datos cargados
-let currentTab = 'activos'; // activos / baja
+const membersPerPage = 30;
 let currentPage = 1;
-const itemsPerPage = 30;
-let lastVisible = null;
-let searchTerm = '';
+let lastVisibleDoc = null;
+let currentStatus = "activo"; // "activo" o "baja"
+let membersCache = []; // para paginación local
 
-// Elementos DOM
-const modal = document.getElementById('modalForm');
-const addMemberBtn = document.getElementById('addMemberBtn');
-const btnCancel = document.getElementById('btnCancel');
-const memberForm = document.getElementById('memberForm');
-const miembrosContainer = document.getElementById('miembrosContainer');
-const paginationContainer = document.getElementById('pagination');
-const searchInput = document.getElementById('searchInput');
-const tabActivosBtn = document.getElementById('tabActivos');
-const tabBajaBtn = document.getElementById('tabBaja');
+// ELEMENTOS DOM
+const btnAddMember = document.getElementById("btnAddMember");
+const modal = document.getElementById("modalMemberForm");
+const closeModalBtn = document.getElementById("closeModal");
+const tabs = document.querySelectorAll(".tabs .tab");
+const tabContents = document.querySelectorAll(".tab-content");
+const memberForm = document.getElementById("memberForm");
+const membersTableBody = document.getElementById("membersTableBody");
+const paginationDiv = document.getElementById("pagination");
+const statusTabs = document.querySelectorAll(".status-tab");
 
-// Mostrar modal
-addMemberBtn.onclick = () => {
-  resetForm();
-  modal.classList.remove('hidden');
-  document.getElementById('formTitle').textContent = 'Nuevo Miembro';
-};
+// Estado edición
+let editingMemberId = null;
+let editingMemberPhotoPath = null;
 
-// Cerrar modal
-btnCancel.onclick = () => {
-  modal.classList.add('hidden');
-};
+// FUNCIONES AUXILIARES
 
-// Calcular edad
-document.getElementById('fechaNacimiento').addEventListener('change', e => {
-  const fecha = new Date(e.target.value);
-  const hoy = new Date();
-  let edad = hoy.getFullYear() - fecha.getFullYear();
-  const m = hoy.getMonth() - fecha.getMonth();
-  if (m < 0 || (m === 0 && hoy.getDate() < fecha.getDate())) edad--;
-  document.getElementById('edad').value = edad >= 0 ? edad : '';
-});
-
-// Cargar miembros
-async function cargarMiembros() {
-  // Reset
-  miembrosContainer.innerHTML = 'Cargando...';
-  paginationContainer.innerHTML = '';
-
-  let q = query(collection(db, 'miembros'), orderBy('codigo'));
-
-  if(currentTab === 'activos') {
-    q = query(collection(db, 'miembros'), where('estado', '==', 'activo'), orderBy('codigo'));
-  } else if(currentTab === 'baja') {
-    q = query(collection(db, 'miembros'), where('estado', '==', 'baja'), orderBy('codigo'));
-  }
-
-  const snapshot = await getDocs(q);
-  miembrosData = [];
-
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    miembrosData.push({ id: docSnap.id, ...data });
-  });
-
-  // Filtro búsqueda simple
-  if(searchTerm.trim() !== '') {
-    miembrosData = miembrosData.filter(m => 
-      m.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.codigo.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
-
-  renderTabla();
+function openModal() {
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
 }
 
-// Render tabla con paginación
-function renderTabla() {
-  if(miembrosData.length === 0) {
-    miembrosContainer.innerHTML = `<p>No hay miembros en la categoría <strong>${currentTab}</strong>.</p>`;
-    paginationContainer.innerHTML = '';
+function closeModal() {
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  memberForm.reset();
+  editingMemberId = null;
+  editingMemberPhotoPath = null;
+  // volver a primera pestaña
+  setActiveTab("personal");
+}
+
+function setActiveTab(tabName) {
+  tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === tabName));
+  tabContents.forEach(tc => tc.classList.toggle("active", tc.id === tabName));
+}
+
+// Calcular edad a partir de fecha de nacimiento (opcional)
+// Ahora solo usa la edad numérica, si quieres, podemos mejorar
+
+function renderMembersTable(members) {
+  membersTableBody.innerHTML = "";
+  if (members.length === 0) {
+    membersTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#aaa;">No hay miembros</td></tr>`;
     return;
   }
+  for (const member of members) {
+    const tr = document.createElement("tr");
 
-  const start = (currentPage -1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  const pageItems = miembrosData.slice(start, end);
+    const tdFoto = document.createElement("td");
+    const img = document.createElement("img");
+    img.classList.add("foto");
+    img.alt = `Foto de ${member.nombre}`;
+    img.src = member.fotoURL || "https://via.placeholder.com/50?text=No+Foto";
+    tdFoto.appendChild(img);
 
-  let html = `<table>
-    <thead>
-      <tr>
-        <th>Foto</th><th>Nombre</th><th>Código</th><th>Edad</th><th>Estado</th><th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>`;
+    const tdNombre = document.createElement("td");
+    tdNombre.textContent = member.nombre || "";
 
-  pageItems.forEach(m => {
-    html += `<tr>
-      <td><img src="${m.fotoURL || ''}" alt="Foto" class="foto"/></td>
-      <td>${m.nombre}</td>
-      <td>${m.codigo}</td>
-      <td>${m.edad || ''}</td>
-      <td>${m.estado}</td>
-      <td>
-        <button onclick="editarMiembro('${m.id}')">Editar</button>
-        <button onclick="toggleEstadoMiembro('${m.id}', '${m.estado}')">${m.estado === 'activo' ? 'Dar de Baja' : 'Reactivar'}</button>
-      </td>
-    </tr>`;
+    const tdCodigo = document.createElement("td");
+    tdCodigo.textContent = member.codigo || "";
+
+    const tdEdad = document.createElement("td");
+    tdEdad.textContent = member.edad !== undefined ? member.edad : "";
+
+    const tdDireccion = document.createElement("td");
+    tdDireccion.textContent = member.direccion || "";
+
+    const tdSociedad = document.createElement("td");
+    tdSociedad.textContent = member.sociedad || "";
+
+    const tdAcciones = document.createElement("td");
+    tdAcciones.classList.add("actions-btns");
+
+    const btnEdit = document.createElement("button");
+    btnEdit.textContent = "Editar";
+    btnEdit.addEventListener("click", () => editMember(member));
+    tdAcciones.appendChild(btnEdit);
+
+    const btnToggleStatus = document.createElement("button");
+    if (member.estado === "activo") {
+      btnToggleStatus.textContent = "Dar de Baja";
+    } else {
+      btnToggleStatus.textContent = "Reactivar";
+    }
+    btnToggleStatus.addEventListener("click", () => toggleMemberStatus(member));
+    tdAcciones.appendChild(btnToggleStatus);
+
+    tr.append(tdFoto, tdNombre, tdCodigo, tdEdad, tdDireccion, tdSociedad, tdAcciones);
+    membersTableBody.appendChild(tr);
+  }
+}
+
+async function toggleMemberStatus(member) {
+  const newEstado = member.estado === "activo" ? "baja" : "activo";
+  const docRef = doc(db, "miembros", member.id);
+  try {
+    await updateDoc(docRef, { estado: newEstado });
+    alert(`Miembro ${newEstado === "activo" ? "reactivado" : "dado de baja"} correctamente`);
+    loadMembers();
+  } catch (err) {
+    alert("Error al cambiar estado: " + err.message);
+  }
+}
+
+function fillForm(member) {
+  document.getElementById("nombreInput").value = member.nombre || "";
+  document.getElementById("codigoInput").value = member.codigo || "";
+  document.getElementById("edadInput").value = member.edad || "";
+  document.getElementById("direccionInput").value = member.direccion || "";
+  document.getElementById("sociedadInput").value = member.sociedad || "";
+  document.getElementById("ministerioInput").value = member.ministerio || "";
+  document.getElementById("estatusInput").value = member.estatus || "";
+  editingMemberPhotoPath = member.fotoPath || null;
+}
+
+// Subir foto a Supabase y devolver path y URL
+async function uploadPhoto(file, oldPath = null) {
+  if (!file) return { path: oldPath, url: null };
+  // Eliminar foto antigua si existe
+  if (oldPath) {
+    await supabase.storage.from(bucketName).remove([oldPath]);
+  }
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${Date.now()}.${fileExt}`;
+  const filePath = `${fileName}`;
+  const { data, error } = await supabase.storage.from(bucketName).upload(filePath, file, {
+    cacheControl: "3600",
+    upsert: true,
   });
+  if (error) throw error;
+  // Obtener URL pública
+  const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+  return { path: filePath, url: urlData.publicUrl };
+}
 
-  html += "</tbody></table>";
+// Crear miembro en Firestore
+async function createMember(data) {
+  const docRef = await addDoc(collection(db, "miembros"), data);
+  return docRef.id;
+}
 
-  miembrosContainer.innerHTML = html;
+// Actualizar miembro
+async function updateMember(id, data) {
+  const docRef = doc(db, "miembros", id);
+  await updateDoc(docRef, data);
+}
 
+// Cargar miembros filtrando por estado y paginando
+async function loadMembers() {
+  // Consulta ordenada por codigo y estado
+  const q = query(
+    collection(db, "miembros"),
+    where("estado", "==", currentStatus),
+    orderBy("codigo"),
+    limit(membersPerPage)
+  );
+  const querySnapshot = await getDocs(q);
+  const members = [];
+  querySnapshot.forEach(docSnap => {
+    members.push({ id: docSnap.id, ...docSnap.data() });
+  });
+  membersCache = members;
+  renderMembersTable(members);
   renderPagination();
 }
 
-// Render paginación simple
+// Renderiza paginación (solo simple, se puede mejorar)
 function renderPagination() {
-  paginationContainer.innerHTML = '';
-
-  const totalPages = Math.ceil(miembrosData.length / itemsPerPage);
-  if(totalPages <= 1) return;
-
-  for(let i=1; i<=totalPages; i++) {
-    const btn = document.createElement('button');
-    btn.textContent = i;
-    if(i === currentPage) btn.disabled = true;
-    btn.onclick = () => {
-      currentPage = i;
-      renderTabla();
-    };
-    paginationContainer.appendChild(btn);
-  }
-}
-
-// Editar miembro (abrir modal con datos)
-window.editarMiembro = async (id) => {
-  const docRef = doc(db, 'miembros', id);
-  const docSnap = await getDocs(query(collection(db, 'miembros'), where('__name__', '==', id)));
-  if (!docSnap.empty) {
-    const data = docSnap.docs[0].data();
-    document.getElementById('formTitle').textContent = 'Editar Miembro';
-    document.getElementById('nombre').value = data.nombre || '';
-    document.getElementById('codigo').value = data.codigo || '';
-    document.getElementById('fechaNacimiento').value = data.fechaNacimiento || '';
-    document.getElementById('edad').value = data.edad || '';
-    document.getElementById('estadoCivil').value = data.estadoCivil || '';
-    document.getElementById('ministerio').value = data.ministerio || '';
-    document.getElementById('memberId').value = id;
-    modal.classList.remove('hidden');
-  }
-};
-
-// Cambiar estado
-window.toggleEstadoMiembro = async (id, estadoActual) => {
-  const nuevoEstado = estadoActual === 'activo' ? 'baja' : 'activo';
-  const docRef = doc(db, 'miembros', id);
-  await updateDoc(docRef, { estado: nuevoEstado });
-  alert(`Miembro ${nuevoEstado === 'activo' ? 'reactivado' : 'dado de baja'}.`);
-  cargarMiembros();
-};
-
-// Guardar miembro nuevo o editado
-memberForm.addEventListener('submit', async e => {
-  e.preventDefault();
-
-  const id = document.getElementById('memberId').value;
-  const nombre = document.getElementById('nombre').value.trim();
-  const codigo = document.getElementById('codigo').value.trim();
-  const fechaNacimiento = document.getElementById('fechaNacimiento').value;
-  const edad = document.getElementById('edad').value;
-  const estadoCivil = document.getElementById('estadoCivil').value.trim();
-  const ministerio = document.getElementById('ministerio').value.trim();
-  const fotoInput = document.getElementById('foto');
-
-  if(!nombre || !codigo || !fechaNacimiento) {
-    alert('Nombre, código y fecha de nacimiento son obligatorios.');
-    return;
-  }
-
-  modal.classList.add('hidden');
-
-  // Subir foto si hay
-  let fotoURL = null;
-
-  if(fotoInput.files.length > 0) {
-    const file = fotoInput.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `miembros/${codigo}-${Date.now()}.${fileExt}`;
-
-    // Subir a Supabase
-    const { data, error } = await supabase.storage
-      .from(ftmemberBucket)
-      .upload(fileName, file, { upsert: true });
-
-    if(error) {
-      alert('Error al subir la foto: ' + error.message);
-      return;
+  paginationDiv.innerHTML = "";
+  // Solo prev y next simples para ejemplo
+  const prevBtn = document.createElement("button");
+  prevBtn.textContent = "Anterior";
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.onclick = () => {
+    if (currentPage > 1) {
+      currentPage--;
+      loadMembers();
     }
-
-    // Obtener URL pública de la foto (con signed URL para privado)
-    const { data: urlData, error: urlError } = await supabase.storage
-      .from(ftmemberBucket)
-      .createSignedUrl(fileName, 60 * 60 * 24); // URL válida 24h
-
-    if(urlError) {
-      alert('Error al obtener URL de la foto: ' + urlError.message);
-      return;
-    }
-
-    fotoURL = urlData.signedUrl;
-  }
-
-  const dataToSave = {
-    nombre,
-    codigo,
-    fechaNacimiento,
-    edad: Number(edad),
-    estadoCivil,
-    ministerio,
-    estado: 'activo',
-    fotoURL: fotoURL || null,
   };
 
-  try {
-    if(id) {
-      // Editar - actualizar
-      const docRef = doc(db, 'miembros', id);
-      // Si se subió foto nueva, actualizar fotoURL, sino mantener existente
-      if(fotoURL) dataToSave.fotoURL = fotoURL;
-      else delete dataToSave.fotoURL; // para no borrar
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "Siguiente";
+  // Deshabilitar si menos de membersPerPage
+  nextBtn.disabled = membersCache.length < membersPerPage;
+  nextBtn.onclick = () => {
+    currentPage++;
+    loadMembers();
+  };
 
-      await updateDoc(docRef, dataToSave);
-      alert('Miembro actualizado.');
-    } else {
-      // Nuevo miembro
-      await addDoc(collection(db, 'miembros'), dataToSave);
-      alert('Miembro añadido.');
-    }
-  } catch (error) {
-    alert('Error guardando miembro: ' + error.message);
-  }
-
-  resetForm();
-  cargarMiembros();
-});
-
-function resetForm() {
-  memberForm.reset();
-  document.getElementById('memberId').value = '';
-  document.getElementById('edad').value = '';
-  document.getElementById('foto').value = '';
+  paginationDiv.appendChild(prevBtn);
+  paginationDiv.appendChild(nextBtn);
 }
 
-// Buscar miembros en tiempo real
-searchInput.addEventListener('input', e => {
-  searchTerm = e.target.value;
-  currentPage = 1;
-  cargarMiembros();
+// Edición miembro
+async function editMember(member) {
+  editingMemberId = member.id;
+  fillForm(member);
+  openModal();
+}
+
+// Form submit
+memberForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const nombre = document.getElementById("nombreInput").value.trim();
+  const codigo = document.getElementById("codigoInput").value.trim();
+  const edad = Number(document.getElementById("edadInput").value) || null;
+  const direccion = document.getElementById("direccionInput").value.trim();
+  const sociedad = document.getElementById("sociedadInput").value.trim();
+  const ministerio = document.getElementById("ministerioInput").value.trim();
+  const estatus = document.getElementById("estatusInput").value;
+
+  const fotoFile = document.getElementById("fotoInput").files[0];
+
+  try {
+    let fotoPath = editingMemberPhotoPath;
+    let fotoURL = null;
+    if (fotoFile) {
+      // Subir nueva foto y eliminar anterior si hay
+      const uploadResult = await uploadPhoto(fotoFile, editingMemberPhotoPath);
+      fotoPath = uploadResult.path;
+      fotoURL = uploadResult.url;
+    }
+    // Si no cambio la foto y es edición, mantener la URL previa
+    if (!fotoFile && editingMemberId) {
+      const memberData = membersCache.find(m => m.id === editingMemberId);
+      fotoURL = memberData ? memberData.fotoURL : null;
+    } else if (fotoFile && !fotoURL) {
+      // En caso que no obtuvimos URL tras subida
+      fotoURL = "";
+    }
+
+    const memberDataToSave = {
+      nombre,
+      codigo,
+      edad,
+      direccion,
+      sociedad,
+      ministerio,
+      estatus,
+      estado: "activo",
+      fotoPath,
+      fotoURL
+    };
+
+    if (editingMemberId) {
+      await updateMember(editingMemberId, memberDataToSave);
+      alert("Miembro actualizado correctamente");
+    } else {
+      await createMember(memberDataToSave);
+      alert("Miembro creado correctamente");
+    }
+
+    closeModal();
+    loadMembers();
+  } catch (error) {
+    alert("Error al guardar el miembro: " + error.message);
+  }
 });
 
-// Cambiar pestañas
-tabActivosBtn.addEventListener('click', () => {
-  currentTab = 'activos';
-  currentPage = 1;
-  cargarMiembros();
-});
-tabBajaBtn.addEventListener('click', () => {
-  currentTab = 'baja';
-  currentPage = 1;
-  cargarMiembros();
+// Eventos UI
+
+btnAddMember.addEventListener("click", () => {
+  editingMemberId = null;
+  editingMemberPhotoPath = null;
+  memberForm.reset();
+  setActiveTab("personal");
+  openModal();
 });
 
-// Inicial
-cargarMiembros();
+closeModalBtn.addEventListener("click", closeModal);
 
+window.addEventListener("click", (e) => {
+  if (e.target === modal) {
+    closeModal();
+  }
+});
+
+// Tabs cambio
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    setActiveTab(tab.dataset.tab);
+  });
+});
+
+// Tabs estado miembros
+statusTabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    statusTabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    currentStatus = tab.dataset.status;
+    currentPage = 1;
+    loadMembers();
+  });
+});
+
+// Al cargar la página
+window.addEventListener("DOMContentLoaded", () => {
+  loadMembers();
+});
 </script>
+
 </body>
 </html>
