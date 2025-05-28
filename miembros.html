@@ -38,19 +38,18 @@
     }
     #search-container {
         margin-bottom: 1rem;
-        display: flex; /* CAMBIO AQUÍ: Usar flexbox para alinear elementos */
-        justify-content: space-between; /* CAMBIO AQUÍ: Distribuir espacio */
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 10px; /* CAMBIO AQUÍ: Espacio entre elementos */
+        gap: 10px;
     }
     #search {
         padding: 0.4rem 0.6rem; font-size: 1rem; border-radius: 5px; border: none;
-        flex-grow: 1; /* CAMBIO AQUÍ: Permite que la barra de búsqueda ocupe el espacio disponible */
-        max-width: 300px; /* CAMBIO AQUÍ: Establece un ancho máximo para la barra de búsqueda */
-        color: #0A1424; /* Color de texto para el input de búsqueda */
+        flex-grow: 1;
+        max-width: 300px;
+        color: #0A1424;
     }
-    /* CAMBIO AQUÍ: #addMemberBtn ahora se define en el main, no en el menu */
-    #addMemberBtnMain { /* Nuevo ID para el botón en el main */
+    #addMemberBtnMain {
         background: #E6C68D; color: #0A1424; border: none; padding: 0.5rem 1rem;
         font-weight: bold; border-radius: 5px; cursor: pointer;
     }
@@ -115,7 +114,7 @@
     }
     input[type=text], input[type=date], input[type=number], select {
         width: 100%; padding: 6px; border-radius: 5px; border: none;
-        font-size: 1rem; color: #0A1424; /* CAMBIO AQUÍ: Color de texto para inputs */
+        font-size: 1rem; color: #0A1424;
     }
     #fam-list {
         margin-top: 10px; max-height: 100px; overflow-y: auto;
@@ -156,7 +155,7 @@
     #pagination button:disabled {
         background: #999; cursor: not-allowed;
     }
-    /* CAMBIO AQUÍ: Estilos para las pestañas de estado de miembros */
+    /* Estilos para las pestañas de estado de miembros */
     #member-status-tabs {
         margin-top: 1rem;
         display: flex;
@@ -191,7 +190,7 @@
             margin: 0 5px;
             flex: 1;
         }
-        #search-container { /* CAMBIO AQUÍ: Ajuste para el search-container en móviles */
+        #search-container {
             flex-direction: column;
             align-items: stretch;
         }
@@ -218,7 +217,8 @@
     <h2>Miembros</h2>
     <div id="search-container">
         <input type="text" id="search" placeholder="Buscar por nombre, código, dirección..." />
-        <button id="addMemberBtnMain">Añadir Miembro</button> </div>
+        <button id="addMemberBtnMain">Añadir Miembro</button>
+    </div>
 
     <div id="member-status-tabs">
         <button id="tabActivos" class="active" data-status="activo">Miembros Activos</button>
@@ -327,7 +327,7 @@
 <script>
     // Firebase config
     const firebaseConfig = {
-        apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+        apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k", // Asegúrate de que esta clave sea correcta
         authDomain: "iglesia-adoracion-viva.firebaseapp.com",
         databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
         projectId: "iglesia-adoracion-viva",
@@ -338,107 +338,101 @@
     };
 
     // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    let db;
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        console.log("Firebase inicializado correctamente.");
+    } catch (error) {
+        console.error("Error al inicializar Firebase:", error);
+        alert("Error al inicializar Firebase. Revisa la consola para más detalles.");
+    }
 
     // Inicializar Supabase
-    const SUPABASE_URL = "https://xyptydnouyddzvrffaby.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_URL = "https://xyptydnouyddzvrffaby.supabase.co"; // Asegúrate de que esta URL sea correcta
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o"; // Asegúrate de que esta clave sea correcta
+    let supabase;
+    try {
+        supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("Supabase inicializado correctamente.");
+    } catch (error) {
+        console.error("Error al inicializar Supabase:", error);
+        alert("Error al inicializar Supabase. Revisa la consola para más detalles.");
+    }
     const SUPABASE_BUCKET = "ftmember"; // Nombre del bucket en Supabase Storage
 
-    // Variables
-    let members = []; // Almacena todos los miembros cargados de Firestore
-    let filteredMembers = []; // Miembros después de aplicar filtros de búsqueda y estado
+    // Variables globales
+    let members = [];
+    let filteredMembers = [];
     let currentPage = 1;
     const pageSize = 30;
-    let editingMemberId = null; // id del miembro que se está editando
-    let currentMemberStatusFilter = 'activo'; // CAMBIO AQUÍ: Estado inicial del filtro
+    let editingMemberId = null;
+    let currentMemberStatusFilter = 'activo';
 
-    // Elementos DOM
-    const modalOverlay = document.getElementById('modalOverlay');
-    const modal = document.getElementById('modal');
-    const memberForm = document.getElementById('memberForm');
-    const fotoInput = document.getElementById('fotoInput');
-    const fotoPreview = document.getElementById('fotoPreview');
-    const nombreInput = document.getElementById('nombreInput');
-    const fechaNacimientoInput = document.getElementById('fechaNacimientoInput');
-    const edadInput = document.getElementById('edadInput');
-    const codigoInput = document.getElementById('codigoInput');
-    const telefonoInput = document.getElementById('telefonoInput');
-    const direccionInput = document.getElementById('direccionInput');
-    const asociacionSelect = document.getElementById('asociacionSelect');
-    const nombreFamiliarInput = document.getElementById('nombreFamiliarInput');
-    const addFamiliarBtn = document.getElementById('addFamiliarBtn');
-    const famList = document.getElementById('fam-list');
-    const fechaConversionInput = document.getElementById('fechaConversionInput');
-    const lugarConversionInput = document.getElementById('lugarConversionInput');
-    // CAMBIO AQUÍ: Nuevos campos para espirituales
-    const fechaBautizoInput = document.getElementById('fechaBautizoInput');
-    const lugarBautizoInput = document.getElementById('lugarBautizoInput');
-    const fechaBautizoEspInput = document.getElementById('fechaBautizoEspInput');
-    const lugarBautizoEspInput = document.getElementById('lugarBautizoEspInput');
-    const cursosBiblicosInput = document.getElementById('cursosBiblicosInput');
-    const lugarCursosBiblicosInput = document.getElementById('lugarCursosBiblicosInput');
+    // Elementos DOM (se obtienen dentro de DOMContentLoaded para asegurar que existen)
+    let modalOverlay, modal, memberForm, fotoInput, fotoPreview, nombreInput, fechaNacimientoInput, edadInput,
+        codigoInput, telefonoInput, direccionInput, asociacionSelect, nombreFamiliarInput, addFamiliarBtn,
+        famList, fechaConversionInput, lugarConversionInput, fechaBautizoInput, lugarBautizoInput,
+        fechaBautizoEspInput, lugarBautizoEspInput, cursosBiblicosInput, lugarCursosBiblicosInput,
+        searchInput, membersTableBody, paginationDiv, addMemberBtnMain, modalClose, cancelBtn, tabButtons,
+        tabActivos, tabDeBaja, btnInicio; // Añadido btnInicio
 
-
-    const searchInput = document.getElementById('search');
-    const membersTableBody = document.querySelector('#membersTable tbody');
-    const paginationDiv = document.getElementById('pagination');
-    const addMemberBtnMain = document.getElementById('addMemberBtnMain'); // CAMBIO AQUÍ: Nuevo ID
-    const modalClose = document.getElementById('modalClose');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const tabButtons = document.querySelectorAll('.section-tabs .tab-btn'); // CAMBIO AQUÍ: Selector más específico
-
-    // CAMBIO AQUÍ: Botones para filtrar por estado
-    const tabActivos = document.getElementById('tabActivos');
-    const tabDeBaja = document.getElementById('tabDeBaja');
-
-
-    // Estado formulario
+    // Estado del formulario
     let familiares = [];
 
     // Funciones
     function showModal(edit = false) {
-        modalOverlay.style.display = 'flex';
-        if(edit) {
-            document.getElementById('modalTitle').textContent = 'Editar Miembro';
+        if (modalOverlay) {
+            modalOverlay.style.display = 'flex';
+            document.getElementById('modalTitle').textContent = edit ? 'Editar Miembro' : 'Añadir Miembro';
         } else {
-            document.getElementById('modalTitle').textContent = 'Añadir Miembro';
+            console.error("Error: modalOverlay no encontrado.");
         }
     }
+
     function closeModal() {
-        modalOverlay.style.display = 'none';
-        memberForm.reset();
-        fotoPreview.style.display = 'none';
-        fotoPreview.src = ''; // Limpiar la URL de la foto previa
-        familiares = [];
-        renderFamiliares();
-        editingMemberId = null;
-        setActiveSection('personales');
+        if (modalOverlay && memberForm && fotoPreview && famList) {
+            modalOverlay.style.display = 'none';
+            memberForm.reset();
+            fotoPreview.style.display = 'none';
+            fotoPreview.src = '';
+            familiares = [];
+            renderFamiliares();
+            editingMemberId = null;
+            setActiveSection('personales');
+        } else {
+            console.error("Error: Elementos del modal no encontrados para cerrar.");
+        }
     }
+
     function setActiveSection(section) {
-        tabButtons.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.section === section);
-            btn.setAttribute('aria-selected', btn.dataset.section === section);
-            const sectionElement = document.getElementById(btn.dataset.section + '-section');
-            if (sectionElement) { // CAMBIO AQUÍ: Asegurar que el elemento existe antes de acceder a style
-                sectionElement.style.display = btn.dataset.section === section ? 'block' : 'none';
-            }
-        });
+        if (tabButtons) {
+            tabButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.section === section);
+                btn.setAttribute('aria-selected', btn.dataset.section === section);
+                const sectionElement = document.getElementById(btn.dataset.section + '-section');
+                if (sectionElement) {
+                    sectionElement.style.display = btn.dataset.section === section ? 'block' : 'none';
+                }
+            });
+        }
     }
-    // Calcular edad en base a fecha nacimiento
+
     function calcularEdad(fecha) {
         if (!fecha) return '';
         const hoy = new Date();
-        const nac = new Date(fecha + 'T00:00:00'); // CAMBIO AQUÍ: Asegurar que se interpreta como fecha local para evitar problemas de zona horaria
+        const nac = new Date(fecha + 'T00:00:00');
         let edad = hoy.getFullYear() - nac.getFullYear();
         const m = hoy.getMonth() - nac.getMonth();
         if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
         return edad >= 0 ? edad : '';
     }
-    // Renderizar lista familiares
+
     function renderFamiliares() {
+        if (!famList) {
+            console.error("Error: famList no encontrado.");
+            return;
+        }
         famList.innerHTML = '';
         if (familiares.length === 0) {
             famList.innerHTML = '<div style="color: #ccc; text-align: center; padding: 10px;">No hay familiares añadidos.</div>';
@@ -460,8 +454,12 @@
             famList.appendChild(div);
         });
     }
-    // Mostrar lista en tabla (paginación y filtrado)
+
     function renderTable() {
+        if (!membersTableBody) {
+            console.error("Error: membersTableBody no encontrado.");
+            return;
+        }
         membersTableBody.innerHTML = '';
         const start = (currentPage - 1) * pageSize;
         const pageItems = filteredMembers.slice(start, start + pageSize);
@@ -469,13 +467,13 @@
         if (pageItems.length === 0) {
             const tr = document.createElement('tr');
             const td = document.createElement('td');
-            td.colSpan = 7; // Ajusta el colspan según el número de columnas
+            td.colSpan = 7;
             td.textContent = 'No se encontraron miembros para mostrar.';
             td.style.textAlign = 'center';
             td.style.padding = '20px';
             tr.appendChild(td);
             membersTableBody.appendChild(tr);
-            paginationDiv.innerHTML = ''; // Limpiar paginación si no hay elementos
+            if (paginationDiv) paginationDiv.innerHTML = '';
             return;
         }
 
@@ -486,7 +484,7 @@
             const img = document.createElement('img');
             img.className = 'photo-cell';
             img.alt = 'Foto de ' + member.nombreCompleto;
-            img.src = member.fotoURL || 'https://via.placeholder.com/50?text=No+Foto'; // CAMBIO AQUÍ: Placeholder si no hay foto
+            img.src = member.fotoURL || 'https://via.placeholder.com/50?text=No+Foto';
             tdFoto.appendChild(img);
 
             const tdNombre = document.createElement('td');
@@ -513,7 +511,6 @@
             const bajaBtn = document.createElement('button');
             bajaBtn.textContent = member.estado === 'activo' ? 'Dar de Baja' : 'Reactivar';
             bajaBtn.className = 'action-btn';
-            // CAMBIO AQUÍ: Color diferente para el botón de baja/activar
             bajaBtn.style.backgroundColor = member.estado === 'activo' ? '#E64E4E' : '#4CAF50';
             bajaBtn.style.color = 'white';
             bajaBtn.addEventListener('click', () => toggleEstado(member));
@@ -533,8 +530,12 @@
         });
         renderPagination();
     }
-    // Render paginación
+
     function renderPagination() {
+        if (!paginationDiv) {
+            console.error("Error: paginationDiv no encontrado.");
+            return;
+        }
         paginationDiv.innerHTML = '';
         const totalPages = Math.ceil(filteredMembers.length / pageSize);
         if(totalPages <= 1) return;
@@ -562,30 +563,33 @@
         paginationDiv.appendChild(prevBtn);
         const pageInfo = document.createElement('span');
         pageInfo.textContent = ` Página ${currentPage} de ${totalPages} `;
-        pageInfo.style.color = '#E6C68D'; // Asegurar que el texto de paginación se vea
+        pageInfo.style.color = '#E6C68D';
         paginationDiv.appendChild(pageInfo);
         paginationDiv.appendChild(nextBtn);
     }
 
-    // Filtrar miembros por búsqueda y pestaña (estado)
     function filterMembers() {
-        const query = searchInput.value.toLowerCase();
+        const query = searchInput ? searchInput.value.toLowerCase() : '';
         filteredMembers = members.filter(m => {
             const matchesSearch =
                 (m.nombreCompleto && m.nombreCompleto.toLowerCase().includes(query)) ||
                 (m.codigo && m.codigo.toLowerCase().includes(query)) ||
                 (m.direccion && m.direccion.toLowerCase().includes(query)) ||
-                (m.asociacion && m.asociacion.toLowerCase().includes(query)); // CAMBIO AQUÍ: Añadir búsqueda por asociación
-            const matchesEstado = m.estado === currentMemberStatusFilter; // CAMBIO AQUÍ: Usar la variable de filtro
+                (m.asociacion && m.asociacion.toLowerCase().includes(query));
+            const matchesEstado = m.estado === currentMemberStatusFilter;
             return matchesSearch && matchesEstado;
         });
-        currentPage = 1; // Resetear a la primera página al aplicar filtro
+        currentPage = 1;
     }
 
-    // Cargar miembros desde Firestore
     async function loadMembers() {
+        if (!db) {
+            console.error("Firestore no está inicializado. No se pueden cargar los miembros.");
+            return;
+        }
         try {
-            const snapshot = await db.collection('miembros').orderBy('timestamp', 'desc').get(); // CAMBIO AQUÍ: Ordenar por timestamp
+            console.log("Cargando miembros de Firestore...");
+            const snapshot = await db.collection('miembros').orderBy('timestamp', 'desc').get();
             members = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
@@ -595,7 +599,7 @@
                     codigo: data.codigo || '',
                     fechaNacimiento: data.fechaNacimiento || '',
                     edad: calcularEdad(data.fechaNacimiento),
-                    telefono: data.telefono || '', // Asegúrate de cargar el teléfono
+                    telefono: data.telefono || '',
                     direccion: data.direccion || '',
                     asociacion: data.asociacion || '',
                     familiares: data.familiares || [],
@@ -608,38 +612,43 @@
                     cursosBiblicos: data.cursosBiblicos || '',
                     lugarCursosBiblicos: data.lugarCursosBiblicos || '',
                     fotoURL: data.fotoURL || '',
-                    fotoPath: data.fotoPath || '', // CAMBIO AQUÍ: Necesario para eliminar fotos antiguas
-                    estado: data.estado || 'activo' // Por defecto 'activo'
+                    fotoPath: data.fotoPath || '',
+                    estado: data.estado || 'activo'
                 });
             });
+            console.log("Miembros cargados:", members);
             filterMembers();
             renderTable();
         } catch (error) {
-            console.error('Error al cargar miembros: ', error); // console.error es mejor para errores
+            console.error('Error al cargar miembros: ', error);
             alert('Error al cargar miembros: ' + error.message);
         }
     }
 
-    // Subir foto a Supabase y obtener URL pública
     async function uploadPhoto(file, oldPath = null) {
-        if(!file) return { url: null, path: null }; // CAMBIO AQUÍ: Asegurar retorno consistente
+        if (!file) return { url: null, path: null };
+        if (!supabase) {
+            console.error("Supabase no está inicializado. No se puede subir la foto.");
+            return { url: null, path: null };
+        }
         try {
-            // Eliminar foto anterior si existe
             if(oldPath) {
+                console.log("Intentando eliminar foto antigua:", oldPath);
                 const { error: removeError } = await supabase.storage.from(SUPABASE_BUCKET).remove([oldPath]);
-                if(removeError) console.warn('Error al eliminar foto antigua:', removeError.message); // No es crítico, solo advertir
+                if(removeError) console.warn('Error al eliminar foto antigua:', removeError.message);
             }
             const fileExt = file.name.split('.').pop();
-            const fileName = `foto_${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`; // CAMBIO AQUÍ: Nombre más único
+            const fileName = `foto_${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+            console.log("Subiendo nueva foto:", fileName);
             const { data, error } = await supabase.storage.from(SUPABASE_BUCKET).upload(fileName, file, {
                 cacheControl: '3600',
-                upsert: false // No sobrescribir, ya lo manejamos con remove
+                upsert: false
             });
             if(error) throw error;
-            // Obtener URL pública (bucket configurado como público)
             const { data: publicData, error: urlError } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(fileName);
             if(urlError) throw urlError;
-            return { url: publicData.publicUrl, path: fileName }; // CAMBIO AQUÍ: Acceder a .publicUrl
+            console.log("Foto subida. URL:", publicData.publicUrl, "Path:", fileName);
+            return { url: publicData.publicUrl, path: fileName };
         } catch (err) {
             console.error('Error al subir la foto: ', err);
             alert('Error al subir la foto: ' + err.message);
@@ -647,9 +656,13 @@
         }
     }
 
-    // Guardar miembro (nuevo o edición)
     async function saveMember(e) {
         e.preventDefault();
+        if (!db) {
+            alert("La base de datos no está inicializada. No se puede guardar el miembro.");
+            return;
+        }
+
         const nombreCompleto = nombreInput.value.trim();
         const codigo = codigoInput.value.trim();
         if(!nombreCompleto || !codigo) {
@@ -670,30 +683,41 @@
         const cursosBiblicos = cursosBiblicosInput.value.trim();
         const lugarCursosBiblicos = lugarCursosBiblicosInput.value.trim();
 
-        // Subir foto si hay
-        let fotoURL = null;
-        let fotoPath = null;
+        let fotoURL = '';
+        let fotoPath = '';
         let oldFotoPath = null;
+        let currentFotoURL = ''; // Para mantener la URL si no se cambia la foto
+
         if(editingMemberId) {
             const member = members.find(m => m.id === editingMemberId);
-            oldFotoPath = member && member.fotoPath ? member.fotoPath : null;
-            fotoURL = member.fotoURL; // Mantener la URL existente por defecto
-            fotoPath = member.fotoPath; // Mantener la ruta existente por defecto
+            if (member) {
+                oldFotoPath = member.fotoPath || null;
+                currentFotoURL = member.fotoURL || '';
+            }
         }
 
         if(fotoInput.files.length > 0) {
+            // Se seleccionó una nueva foto, subirla
             const result = await uploadPhoto(fotoInput.files[0], oldFotoPath);
-            if(result.url) { // Solo actualizar si la subida fue exitosa
+            if(result.url) {
                 fotoURL = result.url;
                 fotoPath = result.path;
+            } else {
+                // Si la subida falló, mantener la foto existente si la hay
+                fotoURL = currentFotoURL;
+                fotoPath = oldFotoPath;
             }
-        } else if (editingMemberId && !fotoInput.files.length && fotoPreview.src.includes('blob:')) {
-            // Si no se seleccionó una nueva foto y la previa es un blob (cargada por el usuario, no de DB), significa que se quitó la foto
-            if (oldFotoPath) {
-                await supabase.storage.from(SUPABASE_BUCKET).remove([oldFotoPath]);
-            }
-            fotoURL = '';
-            fotoPath = '';
+        } else if (editingMemberId && !fotoInput.files.length && fotoPreview.src === '') {
+             // Si estamos editando, no se seleccionó nueva foto y la previa está vacía, significa que se eliminó
+             if (oldFotoPath) {
+                 await supabase.storage.from(SUPABASE_BUCKET).remove([oldFotoPath]);
+             }
+             fotoURL = ''; // Eliminar la URL
+             fotoPath = ''; // Eliminar la ruta
+        } else if (editingMemberId && !fotoInput.files.length && fotoPreview.src !== '') {
+            // Estamos editando, no se seleccionó nueva foto, y la previa NO está vacía (se mantiene la existente)
+            fotoURL = currentFotoURL;
+            fotoPath = oldFotoPath;
         }
 
 
@@ -713,20 +737,21 @@
             fechaBautizoEsp,
             lugarBautizoEsp,
             cursosBiblicos,
-            cursosBiblicos,
             lugarCursosBiblicos,
-            fotoURL: fotoURL || '',
-            fotoPath: fotoPath || '', // Guarda la ruta para poder eliminarla si es necesario
-            estado: currentMemberStatusFilter, // CAMBIO AQUÍ: El estado del miembro se guarda según la pestaña activa
+            fotoURL: fotoURL, // Usar la URL resultante
+            fotoPath: fotoPath, // Usar la ruta resultante
+            estado: currentMemberStatusFilter,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         try {
             if(editingMemberId) {
                 await db.collection('miembros').doc(editingMemberId).update(dataToSave);
+                console.log('Miembro actualizado correctamente.');
                 alert('Miembro actualizado correctamente.');
             } else {
                 await db.collection('miembros').add(dataToSave);
+                console.log('Miembro añadido correctamente.');
                 alert('Miembro añadido correctamente.');
             }
             await loadMembers();
@@ -737,43 +762,47 @@
         }
     }
 
-    // Abrir modal para editar
     function openEditMember(member) {
         editingMemberId = member.id;
-        nombreInput.value = member.nombreCompleto || '';
-        codigoInput.value = member.codigo || '';
-        fechaNacimientoInput.value = member.fechaNacimiento || '';
-        edadInput.value = calcularEdad(member.fechaNacimiento);
-        telefonoInput.value = member.telefono || ''; // Cargar teléfono
-        direccionInput.value = member.direccion || '';
-        asociacionSelect.value = member.asociacion || '';
+        if (nombreInput) nombreInput.value = member.nombreCompleto || '';
+        if (codigoInput) codigoInput.value = member.codigo || '';
+        if (fechaNacimientoInput) fechaNacimientoInput.value = member.fechaNacimiento || '';
+        if (edadInput) edadInput.value = calcularEdad(member.fechaNacimiento);
+        if (telefonoInput) telefonoInput.value = member.telefono || '';
+        if (direccionInput) direccionInput.value = member.direccion || '';
+        if (asociacionSelect) asociacionSelect.value = member.asociacion || '';
         familiares = member.familiares || [];
         renderFamiliares();
-        fechaConversionInput.value = member.fechaConversion || '';
-        lugarConversionInput.value = member.lugarConversion || '';
-        fechaBautizoInput.value = member.fechaBautizo || '';
-        lugarBautizoInput.value = member.lugarBautizo || '';
-        fechaBautizoEspInput.value = member.fechaBautizoEsp || '';
-        lugarBautizoEspInput.value = member.lugarBautizoEsp || '';
-        cursosBiblicosInput.value = member.cursosBiblicos || '';
-        lugarCursosBiblicosInput.value = member.lugarCursosBiblicos || '';
+        if (fechaConversionInput) fechaConversionInput.value = member.fechaConversion || '';
+        if (lugarConversionInput) lugarConversionInput.value = member.lugarConversion || '';
+        if (fechaBautizoInput) fechaBautizoInput.value = member.fechaBautizo || '';
+        if (lugarBautizoInput) lugarBautizoInput.value = member.lugarBautizo || '';
+        if (fechaBautizoEspInput) fechaBautizoEspInput.value = member.fechaBautizoEsp || '';
+        if (lugarBautizoEspInput) lugarBautizoEspInput.value = member.lugarBautizoEsp || '';
+        if (cursosBiblicosInput) cursosBiblicosInput.value = member.cursosBiblicos || '';
+        if (lugarCursosBiblicosInput) lugarCursosBiblicosInput.value = member.lugarCursosBiblicos || '';
         
-        if(member.fotoURL){
-            fotoPreview.src = member.fotoURL;
-            fotoPreview.style.display = 'block';
-        } else {
-            fotoPreview.style.display = 'none';
-            fotoPreview.src = ''; // Limpiar si no hay foto
+        if (fotoPreview) {
+            if(member.fotoURL){
+                fotoPreview.src = member.fotoURL;
+                fotoPreview.style.display = 'block';
+            } else {
+                fotoPreview.style.display = 'none';
+                fotoPreview.src = '';
+            }
         }
         showModal(true);
         setActiveSection('personales');
     }
 
-    // Cambiar estado de miembro (activo/baja)
     async function toggleEstado(member) {
+        if (!db) {
+            alert("La base de datos no está inicializada. No se puede cambiar el estado.");
+            return;
+        }
         const nuevoEstado = member.estado === 'activo' ? 'baja' : 'activo';
         const confirmMsg = `¿Estás seguro de que quieres ${nuevoEstado === 'baja' ? 'dar de baja' : 'reactivar'} a ${member.nombreCompleto}?`;
-        if (!confirm(confirmMsg)) { // CAMBIO AQUÍ: Confirmación para baja/activación
+        if (!confirm(confirmMsg)) {
             return;
         }
 
@@ -787,89 +816,183 @@
         }
     }
 
-    // Eventos
-    addMemberBtnMain.addEventListener('click', () => { // CAMBIO AQUÍ: ID del botón de añadir
-        editingMemberId = null;
-        memberForm.reset();
-        familiares = [];
-        renderFamiliares();
-        fotoPreview.style.display = 'none';
-        fotoPreview.src = '';
-        showModal(false);
-        setActiveSection('personales');
-    });
-    modalClose.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
-    memberForm.addEventListener('submit', saveMember);
-    fechaNacimientoInput.addEventListener('change', () => {
-        edadInput.value = calcularEdad(fechaNacimientoInput.value);
-    });
-    addFamiliarBtn.addEventListener('click', () => {
-        const nombreFam = nombreFamiliarInput.value.trim();
-        if(nombreFam && !familiares.includes(nombreFam)) {
-            familiares.push(nombreFam);
-            renderFamiliares();
-            nombreFamiliarInput.value = '';
-        } else if (nombreFam) {
-            alert('El familiar ya existe en la lista.');
-        }
-    });
-    searchInput.addEventListener('input', () => {
-        filterMembers();
-        renderTable();
-    });
+    // Eventos (adjuntar después de que el DOM esté cargado)
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOM completamente cargado. Inicializando elementos y adjuntando eventos.");
 
-    // Eventos para las pestañas de las secciones del formulario (Personales, Familiares, Espirituales)
-    document.querySelectorAll('.section-tabs .tab-btn').forEach(btn => { // CAMBIO AQUÍ: Selector actualizado
-        btn.addEventListener('click', () => {
-            setActiveSection(btn.dataset.section);
-        });
-    });
+        // Asignar elementos DOM después de que el DOM esté listo
+        modalOverlay = document.getElementById('modalOverlay');
+        modal = document.getElementById('modal');
+        memberForm = document.getElementById('memberForm');
+        fotoInput = document.getElementById('fotoInput');
+        fotoPreview = document.getElementById('fotoPreview');
+        nombreInput = document.getElementById('nombreInput');
+        fechaNacimientoInput = document.getElementById('fechaNacimientoInput');
+        edadInput = document.getElementById('edadInput');
+        codigoInput = document.getElementById('codigoInput');
+        telefonoInput = document.getElementById('telefonoInput');
+        direccionInput = document.getElementById('direccionInput');
+        asociacionSelect = document.getElementById('asociacionSelect');
+        nombreFamiliarInput = document.getElementById('nombreFamiliarInput');
+        addFamiliarBtn = document.getElementById('addFamiliarBtn');
+        famList = document.getElementById('fam-list');
+        fechaConversionInput = document.getElementById('fechaConversionInput');
+        lugarConversionInput = document.getElementById('lugarConversionInput');
+        fechaBautizoInput = document.getElementById('fechaBautizoInput');
+        lugarBautizoInput = document.getElementById('lugarBautizoInput');
+        fechaBautizoEspInput = document.getElementById('fechaBautizoEspInput');
+        lugarBautizoEspInput = document.getElementById('lugarBautizoEspInput');
+        cursosBiblicosInput = document.getElementById('cursosBiblicosInput');
+        lugarCursosBiblicosInput = document.getElementById('lugarCursosBiblicosInput');
+        searchInput = document.getElementById('search');
+        membersTableBody = document.querySelector('#membersTable tbody');
+        paginationDiv = document.getElementById('pagination');
+        addMemberBtnMain = document.getElementById('addMemberBtnMain');
+        modalClose = document.getElementById('modalClose');
+        cancelBtn = document.getElementById('cancelBtn');
+        tabButtons = document.querySelectorAll('.section-tabs .tab-btn');
+        tabActivos = document.getElementById('tabActivos');
+        tabDeBaja = document.getElementById('tabDeBaja');
+        btnInicio = document.getElementById('btnInicio'); // Obtener el botón de Inicio
 
-    // CAMBIO AQUÍ: Eventos para las pestañas de estado de miembros (Activos/De Baja)
-    tabActivos.addEventListener('click', () => {
-        currentMemberStatusFilter = 'activo';
-        tabActivos.classList.add('active');
-        tabDeBaja.classList.remove('active');
-        filterMembers();
-        renderTable();
-    });
-
-    tabDeBaja.addEventListener('click', () => {
-        currentMemberStatusFilter = 'baja';
-        tabDeBaja.classList.add('active');
-        tabActivos.classList.remove('active');
-        filterMembers();
-        renderTable();
-    });
-
-    // CAMBIO AQUÍ: Evento para previsualizar la foto seleccionada
-    fotoInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                fotoPreview.src = e.target.result;
-                fotoPreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+        // Adjuntar Event Listeners
+        if (addMemberBtnMain) {
+            addMemberBtnMain.addEventListener('click', () => {
+                console.log("Botón 'Añadir Miembro' clickeado.");
+                editingMemberId = null;
+                memberForm.reset();
+                familiares = [];
+                renderFamiliares();
+                fotoPreview.style.display = 'none';
+                fotoPreview.src = '';
+                showModal(false);
+                setActiveSection('personales');
+            });
         } else {
-            fotoPreview.src = '';
-            fotoPreview.style.display = 'none';
+            console.warn("Elemento #addMemberBtnMain no encontrado.");
         }
-    });
 
-    // Inicialización
-    window.onload = async () => {
-        // Asegurarse de que Supabase esté inicializado antes de intentar usarlo
-        if (!supabase) {
-            console.error("Supabase no se ha inicializado correctamente. Revisa la configuración.");
-            alert("Error: Supabase no está configurado. La carga de fotos no funcionará.");
+        if (modalClose) {
+            modalClose.addEventListener('click', closeModal);
+        } else {
+            console.warn("Elemento #modalClose no encontrado.");
         }
-        await loadMembers();
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeModal);
+        } else {
+            console.warn("Elemento #cancelBtn no encontrado.");
+        }
+
+        if (memberForm) {
+            memberForm.addEventListener('submit', saveMember);
+        } else {
+            console.warn("Elemento #memberForm no encontrado.");
+        }
+
+        if (fechaNacimientoInput && edadInput) {
+            fechaNacimientoInput.addEventListener('change', () => {
+                edadInput.value = calcularEdad(fechaNacimientoInput.value);
+            });
+        } else {
+            console.warn("Elementos de fecha de nacimiento/edad no encontrados.");
+        }
+
+        if (addFamiliarBtn && nombreFamiliarInput && famList) {
+            addFamiliarBtn.addEventListener('click', () => {
+                const nombreFam = nombreFamiliarInput.value.trim();
+                if(nombreFam && !familiares.includes(nombreFam)) {
+                    familiares.push(nombreFam);
+                    renderFamiliares();
+                    nombreFamiliarInput.value = '';
+                } else if (nombreFam) {
+                    alert('El familiar ya existe en la lista.');
+                }
+            });
+        } else {
+            console.warn("Elementos de familiares no encontrados.");
+        }
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                filterMembers();
+                renderTable();
+            });
+        } else {
+            console.warn("Elemento #search no encontrado.");
+        }
+
+        if (tabButtons.length > 0) {
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    setActiveSection(btn.dataset.section);
+                });
+            });
+        } else {
+            console.warn("Elementos de pestañas de sección no encontrados.");
+        }
+
+        if (tabActivos) {
+            tabActivos.addEventListener('click', () => {
+                currentMemberStatusFilter = 'activo';
+                tabActivos.classList.add('active');
+                tabDeBaja.classList.remove('active');
+                filterMembers();
+                renderTable();
+            });
+        } else {
+            console.warn("Elemento #tabActivos no encontrado.");
+        }
+
+        if (tabDeBaja) {
+            tabDeBaja.addEventListener('click', () => {
+                currentMemberStatusFilter = 'baja';
+                tabDeBaja.classList.add('active');
+                tabActivos.classList.remove('active');
+                filterMembers();
+                renderTable();
+            });
+        } else {
+            console.warn("Elemento #tabDeBaja no encontrado.");
+        }
+        
+        if (fotoInput && fotoPreview) {
+            fotoInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        fotoPreview.src = e.target.result;
+                        fotoPreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    fotoPreview.src = '';
+                    fotoPreview.style.display = 'none';
+                }
+            });
+        } else {
+            console.warn("Elementos de foto no encontrados.");
+        }
+
+        // Si tienes una función para el botón de inicio, actívala aquí
+        if (btnInicio) {
+            btnInicio.addEventListener('click', () => {
+                // Por ejemplo, para recargar los miembros activos y limpiar la búsqueda
+                searchInput.value = '';
+                currentMemberStatusFilter = 'activo';
+                tabActivos.classList.add('active');
+                tabDeBaja.classList.remove('active');
+                loadMembers();
+            });
+        } else {
+            console.warn("Elemento #btnInicio no encontrado.");
+        }
+
+        // Cargar miembros al cargar el DOM
+        loadMembers();
         setActiveSection('personales');
-    };
-
+    });
 </script>
 
 </body>
