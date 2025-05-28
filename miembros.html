@@ -261,20 +261,22 @@ import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where
 
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-const firebaseConfig = {
+constfirebaseConfig = {
   apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
   authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
   projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.appspot.com",
+  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
   messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3"
+  appId: "1:815332010058:web:d2afff616469349d88deb3",
+  measurementId: "G-43MZP6V55D"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const supabaseUrl = "https://xxxxxxxx.supabase.co"; // REEMPLAZAR con URL Supabase real
-const supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY"; // REEMPLAZAR con clave anónima Supabase
+const supabaseUrl = "https://xyptydnouyddzvrffaby.supabase.co"; // REEMPLAZAR con URL Supabase real
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o"; // REEMPLAZAR con clave anónima Supabase
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const bucketName = "ftmember";
