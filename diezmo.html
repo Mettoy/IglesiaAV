@@ -6,16 +6,17 @@
     <title>Diezmos y Ofrendas</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Definición de colores principales */
+        /* Definición de colores principales: Azul Muy Oscuro y Dorado */
         :root {
-            --dark-blue: #00004d; /* Azul muy oscuro para fondos */
-            --dark-blue-light: #000066; /* Un poco más claro para hover/fondo secundario */
-            --gold: #FFD700; /* Dorado para texto y acentos */
-            --gold-dark: #ccad00; /* Dorado más oscuro para hover */
-            --white-text: #f0f0f0; /* Blanco roto para texto en fondos oscuros */
-            --border-color: #0a0a70; /* Borde sutil para elementos */
-            --input-bg: #000033; /* Fondo de inputs oscuro */
-            --input-border: #1a1a80; /* Borde de inputs */
+            --deep-blue: #00002A; /* Azul muy muy oscuro, casi negro */
+            --dark-blue: #00004D; /* Azul oscuro para fondos principales */
+            --medium-blue: #000066; /* Un azul un poco más claro para elementos secundarios/hover */
+            --gold: #FFD700; /* Dorado brillante para texto y acentos */
+            --gold-dark: #CCAD00; /* Dorado más oscuro para hover */
+            --light-gold-text: #FFEB3B; /* Dorado un poco más claro para texto en general */
+            --white-off: #F0F0F0; /* Blanco roto para contraste */
+            --border-subtle: #00003D; /* Borde muy oscuro, apenas visible */
+            --red-alert: #B71C1C; /* Rojo oscuro para alertas/logout */
         }
 
         body {
@@ -23,24 +24,24 @@
             margin: 0;
             padding: 0;
             display: flex;
-            background-color: var(--dark-blue); /* Fondo principal azul oscuro */
-            color: var(--white-text); /* Texto general blanco roto */
+            background-color: var(--deep-blue); /* Fondo principal azul muy oscuro */
+            color: var(--light-gold-text); /* Texto general dorado claro */
         }
 
         /* --- Sidebar Styles --- */
         .sidebar {
             width: 250px;
-            background-color: var(--dark-blue-light); /* Azul oscuro para la barra lateral */
-            color: var(--gold); /* Texto de la barra lateral en dorado */
+            background-color: var(--dark-blue); /* Azul oscuro para la barra lateral */
+            color: var(--light-gold-text); /* Texto de la barra lateral en dorado claro */
             padding: 20px 0;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5); /* Sombra más pronunciada */
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.7); /* Sombra más pronunciada para profundidad */
             height: 100vh;
             display: flex;
             flex-direction: column;
             position: fixed;
             top: 0;
             left: 0;
-            z-index: 900; /* Para asegurar que esté sobre el contenido principal */
+            z-index: 900;
         }
 
         .sidebar-header {
@@ -48,35 +49,35 @@
             margin-bottom: 30px;
             font-size: 1.8em;
             font-weight: 700;
-            color: var(--gold); /* Título en dorado */
-            text-shadow: 0 0 5px rgba(255, 215, 0, 0.4); /* Sombra dorada */
+            color: var(--gold); /* Título en dorado brillante */
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); /* Sombra dorada más intensa */
         }
 
         .sidebar-link {
             display: block;
             padding: 15px 25px;
-            color: var(--gold); /* Enlaces en dorado */
+            color: var(--light-gold-text); /* Enlaces en dorado claro */
             text-decoration: none;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .sidebar-link:hover, .sidebar-link.active {
-            background-color: var(--dark-blue); /* Fondo más oscuro al pasar el mouse/activo */
-            color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse/activo */
+            background-color: var(--deep-blue); /* Fondo aún más oscuro al pasar el mouse/activo */
+            color: var(--gold); /* Dorado brillante al pasar el mouse/activo */
         }
 
         .logout {
             margin-top: auto;
             padding: 15px 25px;
-            background-color: #8B0000; /* Rojo oscuro para cerrar sesión */
-            color: var(--white-text); /* Texto blanco para contraste */
+            background-color: var(--red-alert); /* Rojo oscuro para cerrar sesión */
+            color: var(--white-off); /* Texto blanco roto para contraste */
             cursor: pointer;
             text-align: center;
             transition: background-color 0.3s ease;
         }
 
         .logout:hover {
-            background-color: #a00000; /* Rojo un poco más claro al pasar el mouse */
+            background-color: #D32F2F; /* Rojo un poco más claro al pasar el mouse */
         }
 
         /* --- Main Content Styles --- */
@@ -84,7 +85,7 @@
             margin-left: 250px;
             flex-grow: 1;
             padding: 30px;
-            background-color: var(--dark-blue); /* Fondo del contenido principal */
+            background-color: var(--deep-blue); /* Fondo del contenido principal muy oscuro */
         }
 
         .header-controls {
@@ -102,46 +103,48 @@
         .search-bar input {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid var(--input-border);
+            border: 1px solid var(--border-subtle);
             border-radius: 8px;
             font-size: 1em;
             box-sizing: border-box;
-            background-color: var(--input-bg); /* Fondo oscuro para la barra de búsqueda */
+            background-color: var(--dark-blue); /* Fondo de inputs oscuro */
             color: var(--gold); /* Texto de la búsqueda en dorado */
             transition: border-color 0.3s ease;
         }
         .search-bar input::placeholder {
-            color: rgba(255, 215, 0, 0.6); /* Placeholder en dorado más suave */
+            color: rgba(255, 215, 0, 0.5); /* Placeholder en dorado más suave */
         }
         .search-bar input:focus {
             border-color: var(--gold); /* Borde dorado al enfocar */
             outline: none;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
         }
 
         .add-button {
-            background-color: var(--gold); /* Botón en dorado */
-            color: var(--dark-blue); /* Texto del botón en azul oscuro */
+            background-color: var(--gold); /* Botón en dorado brillante */
+            color: var(--deep-blue); /* Texto del botón en azul muy oscuro */
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 1em;
             font-weight: 700;
-            transition: background-color 0.3s ease, transform 0.2s ease; /* Animación al pasar el mouse */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
         }
 
         .add-button:hover {
             background-color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse */
-            transform: translateY(-2px); /* Pequeño levantamiento */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
         }
 
         /* --- Table Styles --- */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            background-color: var(--dark-blue-light); /* Fondo de la tabla azul oscuro */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            background-color: var(--dark-blue); /* Fondo de la tabla azul oscuro */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
             border-radius: 8px;
             overflow: hidden;
         }
@@ -149,23 +152,23 @@
         .data-table th, .data-table td {
             padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid var(--border-color); /* Borde de tabla en azul oscuro */
+            border-bottom: 1px solid var(--border-subtle); /* Borde de tabla en azul muy oscuro */
         }
 
         .data-table th {
-            background-color: var(--dark-blue); /* Encabezado de tabla más oscuro */
-            color: var(--gold); /* Texto del encabezado en dorado */
+            background-color: var(--deep-blue); /* Encabezado de tabla aún más oscuro */
+            color: var(--gold); /* Texto del encabezado en dorado brillante */
             font-weight: 700;
             text-transform: uppercase;
         }
 
         .data-table tbody tr {
-            color: var(--white-text); /* Texto de las filas en blanco roto */
+            color: var(--white-off); /* Texto de las filas en blanco roto */
             transition: background-color 0.3s ease;
         }
 
         .data-table tbody tr:hover {
-            background-color: var(--dark-blue); /* Fondo más oscuro al pasar el mouse por la fila */
+            background-color: var(--medium-blue); /* Fondo azul medio al pasar el mouse por la fila */
         }
 
         .pagination {
@@ -176,30 +179,33 @@
         }
 
         .pagination button {
-            background-color: var(--dark-blue-light); /* Botones de paginación azul oscuro */
-            border: 1px solid var(--border-color);
+            background-color: var(--dark-blue); /* Botones de paginación azul oscuro */
+            border: 1px solid var(--border-subtle);
             color: var(--gold); /* Texto de paginación en dorado */
             padding: 8px 15px;
             cursor: pointer;
             border-radius: 5px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
         .pagination button:hover:not(:disabled) {
             background-color: var(--gold); /* Fondo dorado al pasar el mouse */
-            color: var(--dark-blue); /* Texto azul oscuro al pasar el mouse */
+            color: var(--deep-blue); /* Texto azul muy oscuro al pasar el mouse */
             transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
         }
 
         .pagination button:disabled {
             cursor: not-allowed;
             opacity: 0.4;
-            background-color: var(--dark-blue-light);
-            color: rgba(255, 215, 0, 0.5); /* Dorado más tenue */
+            background-color: var(--dark-blue);
+            color: rgba(255, 215, 0, 0.3); /* Dorado más tenue */
+            box-shadow: none;
         }
 
         .pagination span {
-            color: var(--gold); /* Información de página en dorado */
+            color: var(--gold); /* Información de página en dorado brillante */
             padding: 8px 0;
             font-weight: bold;
         }
@@ -213,10 +219,10 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8); /* Fondo de modal más oscuro */
+            background-color: rgba(0, 0, 0, 0.9); /* Fondo de modal casi opaco */
             align-items: center;
             justify-content: center;
-            opacity: 0; /* Para animación de aparición */
+            opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
         .modal.show {
@@ -225,20 +231,19 @@
         }
 
         .modal-content {
-            background-color: var(--dark-blue-light); /* Fondo del modal azul oscuro */
+            background-color: var(--dark-blue); /* Fondo del modal azul oscuro */
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7); /* Sombra más profunda */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8); /* Sombra muy profunda */
             width: 90%;
             max-width: 500px;
             position: relative;
-            transform: translateY(-20px); /* Para animación de deslizamiento */
+            transform: translateY(-30px); /* Para animación de deslizamiento más pronunciada */
             transition: transform 0.3s ease-in-out;
         }
         .modal.show .modal-content {
             transform: translateY(0);
         }
-
 
         .close-button {
             position: absolute;
@@ -246,22 +251,22 @@
             right: 20px;
             font-size: 2em;
             font-weight: bold;
-            color: var(--gold); /* Botón de cerrar en dorado */
+            color: var(--gold); /* Botón de cerrar en dorado brillante */
             cursor: pointer;
             transition: color 0.3s ease, transform 0.2s ease;
         }
 
         .close-button:hover {
             color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse */
-            transform: rotate(90deg); /* Pequeña rotación al cerrar */
+            transform: rotate(90deg) scale(1.1); /* Rotación y pequeño escalado */
         }
 
         .modal-content h2 {
             margin-top: 0;
             margin-bottom: 25px;
-            color: var(--gold); /* Título del modal en dorado */
+            color: var(--gold); /* Título del modal en dorado brillante */
             text-align: center;
-            text-shadow: 0 0 3px rgba(255, 215, 0, 0.3);
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
         }
 
         .form-group {
@@ -272,7 +277,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: var(--gold); /* Etiquetas de formulario en dorado */
+            color: var(--light-gold-text); /* Etiquetas de formulario en dorado claro */
         }
 
         .form-group input[type="text"],
@@ -281,24 +286,25 @@
         .form-group select {
             width: 100%;
             padding: 12px;
-            border: 1px solid var(--input-border);
+            border: 1px solid var(--border-subtle);
             border-radius: 5px;
             font-size: 1em;
             box-sizing: border-box;
-            background-color: var(--input-bg); /* Fondo de campos en azul oscuro */
-            color: var(--white-text); /* Texto en campos en blanco roto */
-            transition: border-color 0.3s ease;
+            background-color: var(--medium-blue); /* Fondo de campos en azul medio */
+            color: var(--white-off); /* Texto en campos en blanco roto */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
         .form-group input::placeholder {
-            color: rgba(255, 215, 0, 0.5);
+            color: rgba(255, 215, 0, 0.4);
         }
         .form-group input:focus,
         .form-group select:focus {
             border-color: var(--gold); /* Borde dorado al enfocar */
             outline: none;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
         }
         .form-group select {
-            appearance: none; /* Elimina estilo nativo de select */
+            appearance: none;
             background-image: url('data:image/svg+xml;utf8,<svg fill="%23FFD700" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
             background-repeat: no-repeat;
             background-position: right 10px center;
@@ -314,32 +320,31 @@
         }
 
         .radio-group label {
-            color: var(--white-text); /* Texto de radio buttons en blanco roto */
+            color: var(--white-off); /* Texto de radio buttons en blanco roto */
         }
         .radio-group input[type="radio"] {
-            /* Estilo básico de radio buttons - personalización avanzada requiere más CSS */
             accent-color: var(--gold); /* Color del radio button marcado */
         }
 
         .member-search-results {
             max-height: 150px;
             overflow-y: auto;
-            border: 1px solid var(--input-border);
+            border: 1px solid var(--border-subtle);
             border-radius: 5px;
             margin-top: 10px;
-            background-color: var(--input-bg);
+            background-color: var(--medium-blue); /* Fondo de resultados azul medio */
         }
 
         .member-search-results div {
             padding: 10px;
             cursor: pointer;
-            color: var(--white-text); /* Texto de resultados en blanco roto */
+            color: var(--white-off); /* Texto de resultados en blanco roto */
             transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         .member-search-results div:hover {
-            background-color: var(--dark-blue-light); /* Fondo azul oscuro al pasar el mouse */
-            color: var(--gold); /* Texto dorado al pasar el mouse */
+            background-color: var(--dark-blue); /* Fondo azul oscuro al pasar el mouse */
+            color: var(--gold); /* Texto dorado brillante al pasar el mouse */
         }
 
         .form-actions {
@@ -348,21 +353,22 @@
         }
 
         .form-actions button {
-            background-color: var(--gold); /* Botón de guardar en dorado */
-            color: var(--dark-blue); /* Texto del botón en azul oscuro */
+            background-color: var(--gold); /* Botón de guardar en dorado brillante */
+            color: var(--deep-blue); /* Texto del botón en azul muy oscuro */
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 1em;
             font-weight: 700;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
         }
 
         .form-actions button:hover {
             background-color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse */
             transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
         }
     </style>
 </head>
@@ -371,7 +377,8 @@
     <div class="sidebar">
         <div class="sidebar-header">Diezmos</div>
         <a href="acceso.html" class="sidebar-link">Dar acceso</a>
-        <a href="diezmos.html" class="sidebar-link active">Diezmos</a> <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+        <a href="diezmos.html" class="sidebar-link active">Diezmos</a>
+        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
         <a href="reportes.html" class="sidebar-link">Reportes</a>
         <a href="discipulado.html" class="sidebar-link">Discipulado</a>
         <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
@@ -578,16 +585,16 @@
             document.getElementById('nombreNoMiembro').focus();
             document.getElementById('nombreNoMiembro').setAttribute('required', 'true');
             miembroSearchInput.removeAttribute('required');
-            selectedMemberCodeInput.value = 'NO_MIEMBRO';
-            selectedMemberNameInput.value = 'NO_MIEMBRO';
+            selectedMemberCodeInput.value = 'NO_MIEMBRO'; // Reinicia si se cambia a no miembro
+            selectedMemberNameInput.value = 'NO_MIEMBRO'; // Reinicia si se cambia a no miembro
         });
 
-        // Búsqueda de miembros (con datos locales o de Firestore, si los cargas)
+        // Búsqueda de miembros - CORRECCIÓN
         miembroSearchInput.addEventListener('input', () => {
-            const searchTerm = miembroSearchInput.value.toLowerCase();
+            const searchTerm = miembroSearchInput.value.toLowerCase().trim(); // Eliminar espacios al inicio/final
             miembroSearchResults.innerHTML = '';
 
-            if (searchTerm.length < 2) {
+            if (searchTerm.length < 2) { // Empieza a buscar solo con 2 o más caracteres
                 return;
             }
 
@@ -596,17 +603,23 @@
                 miembro.nombre.toLowerCase().includes(searchTerm)
             );
 
-            results.forEach(miembro => {
-                const div = document.createElement('div');
-                div.textContent = `${miembro.codigo} - ${miembro.nombre}`;
-                div.addEventListener('click', () => {
-                    miembroSearchInput.value = miembro.nombre;
-                    selectedMemberCodeInput.value = miembro.codigo;
-                    selectedMemberNameInput.value = miembro.nombre;
-                    miembroSearchResults.innerHTML = '';
+            if (results.length > 0) {
+                results.forEach(miembro => {
+                    const div = document.createElement('div');
+                    div.textContent = `${miembro.codigo} - ${miembro.nombre}`;
+                    div.addEventListener('click', () => {
+                        miembroSearchInput.value = miembro.nombre; // Muestra el nombre seleccionado
+                        selectedMemberCodeInput.value = miembro.codigo;
+                        selectedMemberNameInput.value = miembro.nombre;
+                        miembroSearchResults.innerHTML = ''; // Limpia la lista de resultados
+                    });
+                    miembroSearchResults.appendChild(div);
                 });
+            } else {
+                const div = document.createElement('div');
+                div.textContent = "No se encontraron miembros.";
                 miembroSearchResults.appendChild(div);
-            });
+            }
         });
 
         // Lógica para añadir nueva ofrenda a Firestore
@@ -617,8 +630,9 @@
             let nombreOfrenda;
 
             if (esMiembroSi.checked) {
-                if (!selectedMemberCodeInput.value || selectedMemberCodeInput.value === 'NO_MIEMBRO') {
-                    alert('Por favor, selecciona un miembro de la lista.');
+                // Validación para asegurar que se ha seleccionado un miembro de la lista
+                if (!selectedMemberCodeInput.value || selectedMemberCodeInput.value === 'NO_MIEMBRO' || miembroSearchInput.value !== selectedMemberNameInput.value) {
+                    alert('Por favor, busca y selecciona un miembro válido de la lista sugerida.');
                     return;
                 }
                 codigoOfrenda = selectedMemberCodeInput.value;
@@ -703,9 +717,9 @@
             }
         });
 
-        // --- Funcionalidad de Búsqueda ---
+        // --- Funcionalidad de Búsqueda de Ofrendas ---
         searchInput.addEventListener('input', () => {
-            const searchTerm = searchInput.value.toLowerCase();
+            const searchTerm = searchInput.value.toLowerCase().trim();
             filteredOfrendas = allOfrendas.filter(ofrenda =>
                 ofrenda.codigo.toLowerCase().includes(searchTerm) ||
                 ofrenda.miembro.toLowerCase().includes(searchTerm) ||
@@ -721,7 +735,7 @@
             snapshot.forEach((doc) => {
                 allOfrendas.push({ id: doc.id, ...doc.data() });
             });
-            const searchTerm = searchInput.value.toLowerCase();
+            const searchTerm = searchInput.value.toLowerCase().trim();
             if (searchTerm) {
                 filteredOfrendas = allOfrendas.filter(ofrenda =>
                     ofrenda.codigo.toLowerCase().includes(searchTerm) ||
