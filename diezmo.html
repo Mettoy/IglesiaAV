@@ -682,94 +682,32 @@
         </div>
     </div>
 
-    <div id="ofrendaModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="closeModalBtn">&times;</span>
-            <h2 id="modalTitle">Añadir Nuevo Diezmo</h2>
-            <form id="ofrendaForm">
-                <div class="form-group">
-                    <label>¿Es miembro?</label>
-                    <div class="radio-group">
-                        <input type="radio" id="esMiembroSi" name="esMiembro" value="si" required>
-                        <label for="esMiembroSi">Sí</label>
-                        <input type="radio" id="esMiembroNo" name="esMiembro" value="no">
-                        <label for="esMiembroNo">No</label>
-                    </div>
-                </div>
-
-                <div class="form-group" id="miembroSearchGroup" style="display: none;">
-                    <label for="miembroSearch">Buscar miembro:</label>
-                    <input type="text" id="miembroSearch" placeholder="Escribe código o nombre">
-                    <div class="member-search-results" id="miembroSearchResults">
-                    </div>
-                    <input type="hidden" id="selectedMemberCode">
-                    <input type="hidden" id="selectedMemberName">
-                </div>
-
-                <div class="form-group" id="nombreNoMiembroGroup" style="display: none;">
-                    <label for="nombreNoMiembro">Nombre (No miembro):</label>
-                    <input type="text" id="nombreNoMiembro" placeholder="Nombre de la persona">
-
-                    <div style="margin-top: 15px;">
-                        <input type="checkbox" id="addManualCodeNoMiembro">
-                        <label for="addManualCodeNoMiembro" style="display: inline-block; margin-left: 5px;">Colocar Código Manual</label>
-                    </div>
-
-                    <div class="form-group" id="manualCodeNoMiembroGroup" style="display: none;">
-                        <label for="manualCodeNoMiembro">Código Manual (No miembro):</label>
-                        <input type="text" id="manualCodeNoMiembro" placeholder="Ej: NM-001">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="cantidad">Cantidad:</label>
-                    <input type="number" id="cantidad" min="0" step="0.01" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="moneda">Moneda:</label>
-                    <select id="moneda" required>
-                        <option value="USD">Dólar (USD)</option>
-                        <option value="NIO">Córdoba (NIO)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="fecha">Fecha:</label>
-                    <input type="date" id="fecha" required>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="delete-btn hidden" id="deleteDiezmoBtn">Eliminar</button>
-                    <button type="submit" id="saveDiezmoBtn">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script> <script src="https://cdn.jsdelivr.net/npm/handsontable@13.1/dist/handsontable.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@13.1/dist/handsontable.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <script>
-        // --- CONFIGURACIÓN DE FIREBASE (¡MUY IMPORTANTE: VERIFICA QUE ESTA ES TU CONFIGURACIÓN CORRECTA!) ---
+        // --- CONFIGURACIÓN DE FIREBASE (¡CRÍTICO! REEMPLAZA ESTO CON TUS PROPIOS DATOS) ---
+        // ¡ESTA CONFIGURACIÓN DEBE SER EXACTAMENTE LA MISMA QUE EN TU PÁGINA DE LOGIN!
         const firebaseConfig = {
-            apiKey: "TU_API_KEY", // ¡REEMPLAZA ESTO CON TU PROPIA API KEY!
-            authDomain: "TU_AUTH_DOMAIN", // ¡REEMPLAZA ESTO!
-            projectId: "TU_PROJECT_ID", // ¡REEMPLAZA ESTO!
-            storageBucket: "TU_STORAGE_BUCKET", // ¡REEMPLAZA ESTO!
-            messagingSenderId: "TU_MESSAGING_SENDER_ID", // ¡REEMPLAZA ESTO!
-            appId: "TU_APP_ID", // ¡REEMPLAZA ESTO!
-            measurementId: "TU_MEASUREMENT_ID" // ¡REEMPLAZA ESTO!
-        };
+  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+  projectId: "iglesia-adoracion-viva",
+  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+  messagingSenderId: "815332010058",
+  appId: "1:815332010058:web:d2afff616469349d88deb3",
+  measurementId: "G-43MZP6V55D"
+};
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth(); // Asegúrate de tener la instancia de auth
 
         // --- Datos en caché ---
         let miembros = []; // Contendrá la lista completa de miembros
-        let noMiembrosRegistrados = {}; // {codigo: nombre} para no miembros con código manual
         let allDiezmos = []; // Almacenará todos los diezmos cargados de Firestore
         let filteredDiezmos = []; // Diezmos después de aplicar filtros de búsqueda
         let currentEditingDiezmoId = null; // Para saber si estamos editando o añadiendo
@@ -824,40 +762,41 @@
             let backgroundColor;
             switch (type) {
                 case 'success':
-                    backgroundColor = 'linear-gradient(to right, #4CAF50, #66BB6A)'; // Green
+                    backgroundColor = 'linear-gradient(to right, #4CAF50, #66BB6A)';
                     break;
                 case 'error':
-                    backgroundColor = 'linear-gradient(to right, #C62828, #E53935)'; // Red
+                    backgroundColor = 'linear-gradient(to right, #C62828, #E53935)';
                     break;
                 case 'warning':
-                    backgroundColor = 'linear-gradient(to right, #FF9800, #FFB74D)'; // Orange
+                    backgroundColor = 'linear-gradient(to right, #FF9800, #FFB74D)';
                     break;
                 default:
-                    backgroundColor = 'linear-gradient(to right, #2196F3, #42A5F5)'; // Blue (info)
+                    backgroundColor = 'linear-gradient(to right, #2196F3, #42A5F5)';
             }
             Toastify({
                 text: message,
                 duration: 3000,
                 close: true,
-                gravity: "bottom", // `top` or `bottom`
-                position: "right", // `left`, `center` or `right`
-                stopOnFocus: true, // Prevents dismissing on hover
+                gravity: "bottom",
+                position: "right",
+                stopOnFocus: true,
                 style: {
                     background: backgroundColor,
                     borderRadius: '8px'
                 },
-                onClick: function () { } // Callback after click
+                onClick: function () { }
             }).showToast();
         }
 
         // Cerrar Sesión
         function cerrarSesion() {
-            firebase.auth().signOut().then(() => {
+            auth.signOut().then(() => {
                 showToast("Sesión cerrada correctamente.", "success");
-                window.location.href = 'index.html'; // Redirige a la página de inicio de sesión
+                // Asegúrate de que esta URL apunte a tu verdadera página de inicio de sesión
+                window.location.href = 'acceso.html'; // Por ejemplo, si tu página de login es acceso.html
             }).catch((error) => {
                 console.error("Error al cerrar sesión:", error);
-                showToast("Error al cerrar sesión.", "error");
+                showToast("Error al cerrar sesión: " + error.message, "error");
             });
         }
 
@@ -883,7 +822,7 @@
                 return amount.toLocaleString('en-US', options);
             } else if (currency === 'NIO') {
                 options.currency = 'NIO';
-                return `C$${amount.toLocaleString('es-NI', options).replace('NIO', '').trim()}`; // Eliminar "NIO" y añadir "C$"
+                return `C$${amount.toLocaleString('es-NI', options).replace('NIO', '').trim()}`;
             }
             return amount.toLocaleString('en-US', options);
         }
@@ -895,44 +834,26 @@
             try {
                 const snapshot = await db.collection('miembros').get();
                 miembros = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Miembros cargados:', miembros);
+                console.log('Miembros cargados:', miembros.length);
             } catch (error) {
                 console.error("Error al cargar miembros:", error);
-                showToast("Error al cargar la lista de miembros. " + error.message, "error");
-            }
-        }
-
-        // Cargar no-miembros con código manual de Firestore (si aplica)
-        async function loadNoMembersWithManualCode() {
-            try {
-                const snapshot = await db.collection('no_miembros').where('codigoManual', '!=', '').get();
-                noMiembrosRegistrados = {};
-                snapshot.docs.forEach(doc => {
-                    const data = doc.data();
-                    if (data.codigoManual) {
-                        noMiembrosRegistrados[data.codigoManual] = data.nombre;
-                    }
-                });
-                console.log('No-miembros con código manual cargados:', noMiembrosRegistrados);
-            } catch (error) {
-                console.error("Error al cargar no-miembros con código manual:", error);
-                showToast("Error al cargar la lista de no-miembros. " + error.message, "error");
+                showToast("Error al cargar la lista de miembros: " + error.message, "error");
             }
         }
 
         // Cargar diezmos de Firestore (todos para el filtrado local)
         async function loadDiezmos() {
-            showSpinner(summarySpinner); // Muestra spinner al cargar diezmos
+            showSpinner(summarySpinner);
             try {
                 const diezmosSnapshot = await db.collection('diezmos').orderBy('fecha', 'desc').get();
                 allDiezmos = diezmosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Diezmos cargados:', allDiezmos);
+                console.log('Diezmos cargados:', allDiezmos.length);
                 applyFiltersAndRenderTable(); // Aplica filtros de búsqueda y renderiza la tabla
                 updateDiezmosSummary(); // Actualiza el resumen
-                hideSpinner(summarySpinner);
             } catch (error) {
                 console.error("Error al cargar diezmos:", error);
-                showToast("Error al cargar los diezmos. " + error.message, "error");
+                showToast("Error al cargar los diezmos: " + error.message, "error");
+            } finally {
                 hideSpinner(summarySpinner);
             }
         }
@@ -942,13 +863,14 @@
         // Preparar datos para Handsontable
         function prepareDiezmosForTable(diezmosData) {
             return diezmosData.map(diezmo => {
-                const fecha = diezmo.fecha ? new Date(diezmo.fecha.toDate()).toISOString().split('T')[0] : '';
+                // Convertir Timestamp de Firestore a fecha string
+                const fecha = diezmo.fecha && diezmo.fecha.toDate ? new Date(diezmo.fecha.toDate()).toISOString().split('T')[0] : '';
                 return {
-                    id: diezmo.id,
-                    codigo: diezmo.codigo,
-                    nombre: diezmo.nombre,
-                    cantidad: parseFloat(diezmo.cantidad),
-                    moneda: diezmo.moneda,
+                    id: diezmo.id, // ¡Mantener el ID para edición!
+                    codigo: diezmo.codigo || 'N/A',
+                    nombre: diezmo.nombre || 'Desconocido',
+                    cantidad: parseFloat(diezmo.cantidad) || 0,
+                    moneda: diezmo.moneda || 'USD',
                     fecha: fecha,
                     esMiembro: diezmo.esMiembro ? 'Sí' : 'No'
                 };
@@ -962,11 +884,13 @@
             }
 
             const tableData = prepareDiezmosForTable(data);
-            totalPages = Math.ceil(tableData.length / ITEMS_PER_PAGE);
-            if (currentPage > totalPages && totalPages > 0) {
+            totalPages = Math.max(1, Math.ceil(tableData.length / ITEMS_PER_PAGE)); // Asegura al menos 1 página
+            if (currentPage > totalPages) {
                 currentPage = totalPages;
-            } else if (totalPages === 0) {
-                currentPage = 1; // Si no hay datos, mostrar página 1 de 1
+            } else if (currentPage < 1 && totalPages >= 1) { // Si no hay datos y current page es 0, lo arregla
+                currentPage = 1;
+            } else if (totalPages === 0) { // Si no hay datos, pero no hay páginas
+                currentPage = 0;
             }
 
 
@@ -991,7 +915,7 @@
                 rowHeaders: true,
                 filters: true,
                 dropdownMenu: true,
-                readOnly: true, // Hace que la tabla sea solo de lectura, la edición se hace por el modal
+                readOnly: true,
                 licenseKey: 'non-commercial-and-evaluation' // Asegúrate de tener la licencia correcta para producción
             });
 
@@ -1075,10 +999,10 @@
 
                 totalDiezmosUSD.textContent = formatCurrency(totalUSD, 'USD');
                 totalDiezmosNIO.textContent = formatCurrency(totalNIO, 'NIO');
-                hideSpinner(summarySpinner);
             } catch (error) {
                 console.error("Error al calcular resumen de diezmos:", error);
-                showToast("Error al cargar el resumen de diezmos. " + error.message, "error");
+                showToast("Error al cargar el resumen de diezmos: " + error.message, "error");
+            } finally {
                 hideSpinner(summarySpinner);
             }
         }
@@ -1103,6 +1027,7 @@
             ofrendaForm.reset(); // Limpia el formulario
             currentEditingDiezmoId = null; // Reinicia el ID de edición
             deleteDiezmoBtn.classList.add('hidden'); // Oculta el botón de eliminar por defecto
+            miembroSearchResults.innerHTML = ''; // Limpiar resultados de búsqueda anteriores
 
             // Ocultar campos de miembro/no-miembro por defecto
             miembroSearchGroup.style.display = 'none';
@@ -1127,16 +1052,19 @@
                     esMiembroNo.checked = true;
                     nombreNoMiembroGroup.style.display = 'block';
                     nombreNoMiembro.value = diezmoData.nombre || '';
-                    if (diezmoData.codigo && String(diezmoData.codigo).startsWith('NM-') && String(diezmoData.codigo).length > 4) { // Asumimos códigos manuales NM-XXX
+                    if (diezmoData.codigo && String(diezmoData.codigo).startsWith('NM-') && String(diezmoData.codigo).length > 4) {
                         addManualCodeNoMiembroCheckbox.checked = true;
                         manualCodeNoMiembroGroup.style.display = 'block';
                         manualCodeNoMiembroInput.value = diezmoData.codigo;
+                    } else { // Si no tiene un código NM- o no es largo, asegurar que el checkbox esté desmarcado
+                        addManualCodeNoMiembroCheckbox.checked = false;
+                        manualCodeNoMiembroGroup.style.display = 'none';
                     }
                 }
 
                 cantidadInput.value = diezmoData.cantidad;
                 monedaSelect.value = diezmoData.moneda;
-                fechaInput.value = diezmoData.fecha ? new Date(diezmoData.fecha.toDate()).toISOString().split('T')[0] : '';
+                fechaInput.value = diezmoData.fecha && diezmoData.fecha.toDate ? new Date(diezmoData.fecha.toDate()).toISOString().split('T')[0] : '';
                 deleteDiezmoBtn.classList.remove('hidden'); // Muestra el botón de eliminar
             } else {
                 // Modo añadir nuevo
@@ -1147,6 +1075,7 @@
             }
 
             ofrendaModal.classList.add('show');
+            ofrendaModal.style.display = 'flex'; // Asegura que el modal esté visible para la animación
         }
 
         function closeModal() {
@@ -1160,7 +1089,6 @@
         // Event listener para abrir el modal
         addDiezmoBtn.addEventListener('click', () => {
             openModal();
-            ofrendaModal.style.display = 'flex'; // Asegura que el modal esté visible para la animación
         });
 
         // Event listener para cerrar el modal
@@ -1179,7 +1107,6 @@
             nombreNoMiembro.value = '';
             manualCodeNoMiembroInput.value = '';
             addManualCodeNoMiembroCheckbox.checked = false;
-            // Limpiar campos de miembro seleccionado
             selectedMemberCodeInput.value = '';
             selectedMemberNameInput.value = '';
             miembroSearchInput.value = '';
@@ -1189,9 +1116,8 @@
         esMiembroNo.addEventListener('change', () => {
             miembroSearchGroup.style.display = 'none';
             nombreNoMiembroGroup.style.display = 'block';
-            manualCodeNoMiembroGroup.style.display = 'none'; // Ocultar por defecto si cambia a no miembro
-            addManualCodeNoMiembroCheckbox.checked = false; // Desmarcar checkbox
-            // Limpiar campos de miembro seleccionado
+            manualCodeNoMiembroGroup.style.display = 'none';
+            addManualCodeNoMiembroCheckbox.checked = false;
             selectedMemberCodeInput.value = '';
             selectedMemberNameInput.value = '';
             miembroSearchInput.value = '';
@@ -1210,21 +1136,20 @@
         // Búsqueda de Miembros en el Modal
         miembroSearchInput.addEventListener('input', () => {
             const searchTerm = miembroSearchInput.value.toLowerCase();
-            miembroSearchResults.innerHTML = ''; // Limpiar resultados anteriores
+            miembroSearchResults.innerHTML = '';
 
             if (searchTerm.length < 2) {
-                // Si el campo de búsqueda está vacío, también limpiar los valores seleccionados
                 if (searchTerm.length === 0) {
                     selectedMemberCodeInput.value = '';
                     selectedMemberNameInput.value = '';
                 }
-                return; // Esperar al menos 2 caracteres para buscar
+                return;
             }
 
             const filtered = miembros.filter(m =>
                 (m.codigo && String(m.codigo).toLowerCase().includes(searchTerm)) ||
                 (m.nombre && String(m.nombre).toLowerCase().includes(searchTerm))
-            ).slice(0, 5); // Limitar a 5 resultados
+            ).slice(0, 5);
 
             if (filtered.length === 0) {
                 const noResultsDiv = document.createElement('div');
@@ -1245,7 +1170,7 @@
                     miembroSearchInput.value = `${m.codigo || 'N/A'} - ${m.nombre}`;
                     selectedMemberCodeInput.value = m.codigo;
                     selectedMemberNameInput.value = m.nombre;
-                    miembroSearchResults.innerHTML = ''; // Ocultar resultados después de seleccionar
+                    miembroSearchResults.innerHTML = '';
                 });
                 miembroSearchResults.appendChild(div);
             });
@@ -1283,15 +1208,13 @@
                     }
                 } else {
                     // Generar código automático para no miembros sin código manual
-                    // Para evitar duplicados en la colección `no_miembros` si los registras.
-                    // Aquí simplemente generamos un código único para el diezmo.
                     codigo = `NM-${Date.now()}`;
                 }
             }
 
             const cantidad = parseFloat(cantidadInput.value);
             const moneda = monedaSelect.value;
-            const fecha = new Date(fechaInput.value); // Firebase Timestamp
+            const fecha = new Date(fechaInput.value);
 
             if (isNaN(cantidad) || cantidad <= 0) {
                 showToast("La cantidad debe ser un número positivo.", "warning");
@@ -1305,8 +1228,8 @@
                 moneda: moneda,
                 fecha: firebase.firestore.Timestamp.fromDate(fecha),
                 esMiembro: esMiembro,
-                registradoPorUid: firebase.auth().currentUser.uid, // Guarda el UID del usuario que registra
-                registradoPorEmail: firebase.auth().currentUser.email // Guarda el email del usuario
+                registradoPorUid: auth.currentUser.uid,
+                registradoPorEmail: auth.currentUser.email
             };
 
             try {
@@ -1318,14 +1241,6 @@
                     // Añadir nuevo diezmo
                     await db.collection('diezmos').add(diezmoData);
                     showToast("Diezmo añadido correctamente.", "success");
-
-                    // Si es un no-miembro y se usó un código generado, guardar el no-miembro para futuras búsquedas.
-                    // Considera que si usas un código manual, el usuario es responsable de no duplicarlo.
-                    if (!esMiembro && !addManualCodeNoMiembroCheckbox.checked) {
-                        // Puedes considerar tener una colección 'no_miembros' para persistir estos datos
-                        // y buscar en ella, para que el `codigo` NM-Timestamp sea consistente.
-                        // Por ahora, simplemente lo guardamos como parte del diezmo.
-                    }
                 }
                 closeModal();
                 loadDiezmos(); // Recargar datos de la tabla y resumen
@@ -1355,23 +1270,23 @@
             }
         });
 
-        // Evento para editar fila en Handsontable
+        // Evento para editar fila en Handsontable (doble clic)
         hotContainer.addEventListener('dblclick', (event) => {
             if (hot) {
                 const cell = hot.getCell(event.target);
                 if (cell) {
-                    const row = hot.getSelectedLast()[0]; // Obtener la fila seleccionada
-                    if (row !== undefined) {
-                        // Obtener el ID original del diezmo de la lista filtrada, no del HotTable directo
-                        // Asegúrate de que `filteredDiezmos` contenga los IDs de Firestore
+                    const row = hot.getSelectedLast()[0];
+                    if (row !== undefined && row >= 0) { // Asegúrate de que la fila es válida
+                        // La `data` en Handsontable paginada no tiene el ID de Firestore directamente.
+                        // Necesitamos el ID del diezmo original.
                         const diezmoIndexInFiltered = row + (currentPage - 1) * ITEMS_PER_PAGE;
                         const diezmoToEdit = filteredDiezmos[diezmoIndexInFiltered];
 
                         if (diezmoToEdit) {
                             openModal(diezmoToEdit);
-                            ofrendaModal.style.display = 'flex'; // Asegura que el modal esté visible para la animación
                         } else {
-                            showToast("No se pudo encontrar el diezmo para editar.", "error");
+                            showToast("No se pudo encontrar el diezmo para editar. (ID no encontrado)", "error");
+                            console.error("Error: diezmoToEdit es undefined en el índice", diezmoIndexInFiltered);
                         }
                     }
                 }
@@ -1379,23 +1294,23 @@
         });
 
         // --- Autenticación Firebase (Manejador de Estado) ---
-        firebase.auth().onAuthStateChanged(user => {
+        auth.onAuthStateChanged(user => {
             if (user) {
-                // Usuario autenticado, cargar datos
-                console.log("Usuario autenticado:", user.uid);
+                console.log("Usuario autenticado en diezmos.html:", user.uid);
                 // Inicializar Handsontable con datos vacíos para que aparezca al inicio
-                renderHandsontable([]);
+                renderHandsontable([]); // Renderiza una tabla vacía hasta que se carguen los datos
                 loadMembers();
-                loadNoMembersWithManualCode();
                 loadDiezmos(); // Carga inicial de diezmos
                 setInitialSummaryDates(); // Establece fechas iniciales para el resumen
                 updateDiezmosSummary(); // Calcula el resumen inicial
             } else {
-                // Usuario no autenticado, redirigir a la página de inicio de sesión
+                console.log("No hay usuario autenticado en diezmos.html. Redirigiendo a la página de login.");
                 showToast("Debes iniciar sesión para acceder.", "warning");
-                window.location.href = 'index.html';
+                // *** ¡IMPORTANTE! Reemplaza 'acceso.html' con el nombre real de tu archivo de login ***
+                window.location.href = 'acceso.html';
             }
         });
+
     </script>
 </body>
 </html>
