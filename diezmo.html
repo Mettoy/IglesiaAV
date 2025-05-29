@@ -1,352 +1,705 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Diezmos - Adoración Viva</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0d1b2a;
-      color: gold;
-      display: flex;
-    }
-    .sidebar {
-      width: 250px;
-      background: #001d3d;
-      height: 100vh;
-      position: fixed;
-      left: 0;
-      top: 0;
-      overflow: auto;
-      padding: 1rem;
-    }
-    .sidebar img {
-      width: 100%;
-      max-height: 150px;
-      object-fit: contain;
-      cursor: pointer;
-      margin-bottom: 1rem;
-    }
-    .sidebar h2 {
-      font-size: 1rem;
-      margin: 1rem 0;
-    }
-    .content {
-      margin-left: 260px;
-      padding: 2rem;
-      width: 100%;
-    }
-    h1 {
-      color: gold;
-      text-align: center;
-    }
-    .form-container {
-      background: #1b263b;
-      padding: 1rem;
-      border-radius: 10px;
-      margin-bottom: 2rem;
-      display: none;
-    }
-    .form-container label,
-    .form-container input,
-    .form-container select {
-      color: white;
-      display: block;
-      width: 100%;
-      margin-bottom: 0.75rem;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      background: #3a506b;
-    }
-    button {
-      padding: 10px 20px;
-      background: #003566;
-      color: gold;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-    button:hover {
-      background: #001d3d;
-    }
-    .top-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .date-range {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      color: black;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 0.5rem;
-      text-align: center;
-    }
-    th {
-      background: #003566;
-      color: gold;
-    }
-    .datos-miembro {
-      margin-top: 1rem;
-      background: #001d3d;
-      padding: 1rem;
-      border-radius: 5px;
-      color: white;
-    }
-    .datos-miembro img {
-      width: 100px;
-      border-radius: 50%;
-      margin-bottom: 1rem;
-    }
-    .search-results {
-      background: #3a506b;
-      padding: 5px;
-      margin-top: 10px;
-      max-height: 150px;
-      overflow-y: auto;
-    }
-    .search-results div {
-      padding: 5px;
-      background: #4a6378;
-      margin-bottom: 5px;
-      cursor: pointer;
-    }
-    .search-results div:hover {
-      background: #2e4057;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diezmos y Ofrendas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50; /* Verde */
+            --primary-dark: #388E3C;
+            --secondary-color: #2196F3; /* Azul */
+            --background-color: #f4f7f6;
+            --sidebar-bg: #333;
+            --sidebar-link-hover: #575757;
+            --text-color: #333;
+            --border-color: #ddd;
+            --input-border: #ccc;
+            --modal-bg: rgba(0, 0, 0, 0.6);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        /* --- Sidebar Styles --- */
+        .sidebar {
+            width: 250px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--sidebar-link-hover);
+        }
+
+        .logout {
+            margin-top: auto; /* Empuja el botón de cerrar sesión hacia abajo */
+            padding: 15px 25px;
+            background-color: #dc3545; /* Rojo para cerrar sesión */
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout:hover {
+            background-color: #c82333;
+        }
+
+        /* --- Main Content Styles --- */
+        .main-content {
+            margin-left: 250px; /* Deja espacio para la barra lateral */
+            flex-grow: 1;
+            padding: 30px;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .add-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+        }
+
+        .add-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* --- Table Styles --- */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden; /* Para que los bordes redondeados se apliquen a la tabla */
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .pagination button {
+            background-color: #eee;
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .pagination button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* --- Modal Styles --- */
+        .modal {
+            display: none; /* Oculto por defecto */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-bg);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-button:hover {
+            color: #333;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box; /* Incluye padding en el ancho */
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .radio-group input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        .member-search-results {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid var(--input-border);
+            border-radius: 5px;
+            margin-top: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .member-search-results div {
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .member-search-results div:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .form-actions {
+            text-align: right;
+            margin-top: 30px;
+        }
+
+        .form-actions button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+        }
+
+        .form-actions button:hover {
+            background-color: var(--primary-dark);
+        }
+    </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <img id="logo" src="logo.png" alt="Logo" onclick="cambiarLogo()" />
-  <h2>Menú</h2>
-  <p>Inicio</p>
-  <p>Miembros</p>
-  <p>Diezmos</p>
-</div>
-
-<div class="content">
-  <h1>Registro de Diezmos</h1>
-
-  <div class="top-actions">
-    <button onclick="toggleFormulario()" style="background: green;">Añadir Diezmo</button>
-    <div class="date-range">
-      <label for="desde">Desde</label>
-      <input type="date" id="desde" />
-      <label for="hasta">Hasta</label>
-      <input type="date" id="hasta" />
+    <div class="sidebar">
+        <div class="sidebar-header">Diezmos</div>
+        <a href="acceso.html" class="sidebar-link">Dar acceso</a>
+        <a href="diezmos.html" class="sidebar-link active">Diezmos</a> <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+        <a href="reportes.html" class="sidebar-link">Reportes</a>
+        <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
     </div>
-    <div>
-      <button onclick="exportarPDF()">Imprimir PDF</button>
-      <button onclick="exportarExcel()">Imprimir Excel</button>
+
+    <div class="main-content">
+        <div class="header-controls">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Buscar por código, nombre o fecha...">
+            </div>
+            <button class="add-button" id="addOfrendaBtn">Añadir Ofrenda</button>
+        </div>
+
+        <table class="data-table" id="ofrendasTable">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Miembro</th>
+                    <th>Cantidad</th>
+                    <th>Moneda</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+
+        <div class="pagination">
+            <button id="prevPageBtn" disabled>&laquo; Anterior</button>
+            <span id="pageInfo">Página 1 de 1</span>
+            <button id="nextPageBtn" disabled>Siguiente &raquo;</button>
+        </div>
     </div>
-  </div>
 
-  <div class="form-container" id="formulario">
-    <label for="buscarNombre">Buscar Miembro por Nombre</label>
-    <input type="text" id="buscarNombre" oninput="buscarMiembro('nombre')" placeholder="Ingrese nombre..." />
-    <div id="resultadosNombre" class="search-results"></div>
+    <div id="ofrendaModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Añadir Nueva Ofrenda</h2>
+            <form id="ofrendaForm">
+                <div class="form-group">
+                    <label>¿Es miembro?</label>
+                    <div class="radio-group">
+                        <input type="radio" id="esMiembroSi" name="esMiembro" value="si" required>
+                        <label for="esMiembroSi">Sí</label>
+                        <input type="radio" id="esMiembroNo" name="esMiembro" value="no">
+                        <label for="esMiembroNo">No</label>
+                    </div>
+                </div>
 
-    <label for="buscarCodigo">Buscar Miembro por Código</label>
-    <input type="text" id="buscarCodigo" oninput="buscarMiembro('codigo')" placeholder="Ingrese código..." />
-    <div id="resultadosCodigo" class="search-results"></div>
+                <div class="form-group" id="miembroSearchGroup" style="display: none;">
+                    <label for="miembroSearch">Buscar miembro:</label>
+                    <input type="text" id="miembroSearch" placeholder="Escribe código o nombre">
+                    <div class="member-search-results" id="miembroSearchResults">
+                        </div>
+                    <input type="hidden" id="selectedMemberCode">
+                    <input type="hidden" id="selectedMemberName">
+                </div>
+                 <div class="form-group" id="nombreNoMiembroGroup" style="display: none;">
+                    <label for="nombreNoMiembro">Nombre (No miembro):</label>
+                    <input type="text" id="nombreNoMiembro" placeholder="Nombre de la persona">
+                </div>
 
-    <label for="miembro">Seleccionar Miembro</label>
-    <select id="miembro" onchange="mostrarDatosMiembro()">
-      <option value="">Seleccione un miembro</option>
-    </select>
+                <div class="form-group">
+                    <label for="cantidad">Cantidad:</label>
+                    <input type="number" id="cantidad" min="0" step="0.01" required>
+                </div>
 
-    <div class="datos-miembro" id="datosMiembro"></div>
+                <div class="form-group">
+                    <label for="moneda">Moneda:</label>
+                    <select id="moneda" required>
+                        <option value="USD">Dólar (USD)</option>
+                        <option value="NIO">Córdoba (NIO)</option>
+                    </select>
+                </div>
 
-    <label for="fecha">Fecha</label>
-    <input type="date" id="fecha" />
+                <div class="form-group">
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" required>
+                </div>
 
-    <label for="cantidad">Cantidad (C$ o $)</label>
-    <input type="text" id="cantidad" placeholder="Ej: C$500 o $20" />
+                <div class="form-actions">
+                    <button type="submit">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    <button onclick="guardarRegistro()">Guardar</button>
-  </div>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-  <table id="tabla">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th>Edad</th>
-        <th>Fecha</th>
-        <th>Cantidad</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<script>
-  let miembros = JSON.parse(localStorage.getItem("miembros")) || [];
-  let registros = JSON.parse(localStorage.getItem("registrosDiezmo")) || [];
-
-  function cargarMiembros() {
-    const select = document.getElementById("miembro");
-    miembros.forEach(m => {
-      const opt = document.createElement("option");
-      opt.value = m.codigo;
-      opt.textContent = `${m.nombre} (${m.codigo})`;
-      select.appendChild(opt);
-    });
-
-    const logo = localStorage.getItem("logoAdoracionViva");
-    if (logo) document.getElementById("logo").src = logo;
-  }
-
-  function cambiarLogo() {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = (e) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result;
-        localStorage.setItem("logoAdoracionViva", base64);
-        document.getElementById("logo").src = base64;
-      };
-      reader.readAsDataURL(e.target.files[0]);
-    };
-    input.click();
-  }
-
-  function buscarMiembro(tipo) {
-    const filtro = document.getElementById(`buscar${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).value.toLowerCase();
-    const resultados = document.getElementById(`resultados${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
-    resultados.innerHTML = "";
-
-    miembros.forEach(m => {
-      if (m[tipo].toLowerCase().includes(filtro)) {
-        const div = document.createElement("div");
-        div.textContent = `${m.nombre} (${m.codigo})`;
-        div.onclick = () => {
-          document.getElementById("miembro").value = m.codigo;
-          mostrarDatosMiembro(m);
-          resultados.innerHTML = "";
+    <script>
+        // --- CONFIGURACIÓN DE FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
         };
-        resultados.appendChild(div);
-      }
-    });
-  }
 
-  function mostrarDatosMiembro(miembro = null) {
-    if (!miembro) {
-      const codigo = document.getElementById("miembro").value;
-      miembro = miembros.find(m => m.codigo === codigo);
-    }
-    if (miembro) {
-      document.getElementById("datosMiembro").innerHTML = `
-        <img src="${miembro.foto}" alt="Foto del miembro" />
-        <p><strong>Nombre:</strong> ${miembro.nombre}</p>
-        <p><strong>Código:</strong> ${miembro.codigo}</p>
-        <p><strong>Edad:</strong> ${miembro.edad}</p>
-      `;
-    }
-  }
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-  function guardarRegistro() {
-    const codigo = document.getElementById("miembro").value;
-    const miembro = miembros.find(m => m.codigo === codigo);
-    const fecha = document.getElementById("fecha").value;
-    const cantidad = document.getElementById("cantidad").value;
+        // --- Datos de ejemplo de miembros (si aún no los tienes en Firestore, se usarán estos) ---
+        let miembros = [
+            { codigo: 'M001', nombre: 'Juan Pérez' },
+            { codigo: 'M002', nombre: 'María García' },
+            { codigo: 'M003', nombre: 'Carlos Rodríguez' },
+            { codigo: 'M004', nombre: 'Ana López' },
+            { codigo: 'M005', nombre: 'Pedro Ramírez' },
+            { codigo: 'M006', nombre: 'Sofía Martínez' },
+            { codigo: 'M007', nombre: 'Luis Hernández' },
+            { codigo: 'M008', nombre: 'Laura González' },
+            { codigo: 'M009', nombre: 'Diego Sánchez' },
+            { codigo: 'M010', nombre: 'Elena Díaz' },
+            { codigo: 'M011', nombre: 'Jorge Castro' },
+            { codigo: 'M012', nombre: 'Valeria Rojas' },
+            { codigo: 'M013', nombre: 'Ricardo Morales' },
+            { codigo: 'M014', nombre: 'Gabriela Soto' },
+            { codigo: 'M015', nombre: 'Fernando Vargas' },
+            { codigo: 'M016', nombre: 'Andrea Guerrero' },
+            { codigo: 'M017', nombre: 'Manuel Herrera' },
+            { codigo: 'M018', nombre: 'Daniela Flores' },
+            { codigo: 'M019', nombre: 'Sergio Cruz' },
+            { codigo: 'M020', nombre: 'Isabel Ortega' },
+            { codigo: 'M021', nombre: 'Alejandro Rivera' },
+            { codigo: 'M022', nombre: 'Camila Pineda' },
+            { codigo: 'M023', nombre: 'Francisco Ramos' },
+            { codigo: 'M024', nombre: 'Natalia Torres' },
+            { codigo: 'M025', nombre: 'Miguel Salazar' },
+            { codigo: 'M026', nombre: 'Carolina Ruiz' },
+            { codigo: 'M027', nombre: 'Roberto Acosta' },
+            { codigo: 'M028', nombre: 'Viviana Bravo' },
+            { codigo: 'M029', nombre: 'Emilio Delgado' },
+            { codigo: 'M030', nombre: 'Paola Nuñez' },
+            { codigo: 'M031', nombre: 'Arturo Benítez' },
+            { codigo: 'M032', nombre: 'Silvia Contreras' }
+        ];
 
-    if (!miembro || !fecha || !cantidad) {
-      alert("Complete todos los campos correctamente.");
-      return;
-    }
+        let allOfrendas = []; // Mantendrá todas las ofrendas cargadas de Firestore
+        let filteredOfrendas = []; // Ofrendas filtradas por la búsqueda
 
-    registros.push({ codigo: miembro.codigo, nombre: miembro.nombre, edad: miembro.edad, fecha, cantidad });
-    localStorage.setItem("registrosDiezmo", JSON.stringify(registros));
-    mostrarTabla();
-    document.getElementById("formulario").reset();
-    document.getElementById("datosMiembro").innerHTML = "";
-  }
+        // --- Elementos del DOM ---
+        const ofrendasTableBody = document.querySelector('#ofrendasTable tbody');
+        const addOfrendaBtn = document.getElementById('addOfrendaBtn');
+        const ofrendaModal = document.getElementById('ofrendaModal');
+        const closeButton = document.querySelector('.modal .close-button');
+        const ofrendaForm = document.getElementById('ofrendaForm');
+        const esMiembroSi = document.getElementById('esMiembroSi');
+        const esMiembroNo = document.getElementById('esMiembroNo');
+        const miembroSearchGroup = document.getElementById('miembroSearchGroup');
+        const nombreNoMiembroGroup = document.getElementById('nombreNoMiembroGroup');
+        const miembroSearchInput = document.getElementById('miembroSearch');
+        const miembroSearchResults = document.getElementById('miembroSearchResults');
+        const selectedMemberCodeInput = document.getElementById('selectedMemberCode');
+        const selectedMemberNameInput = document.getElementById('selectedMemberName');
+        const cantidadInput = document.getElementById('cantidad');
+        const monedaSelect = document.getElementById('moneda');
+        const fechaInput = document.getElementById('fecha');
+        const searchInput = document.getElementById('searchInput');
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const pageInfoSpan = document.getElementById('pageInfo');
 
-  function mostrarTabla() {
-    const tbody = document.getElementById("tabla").querySelector("tbody");
-    tbody.innerHTML = "";
-    registros.forEach((r, i) => {
-      const row = `<tr>
-        <td>${i + 1}</td>
-        <td>${r.codigo}</td>
-        <td>${r.nombre}</td>
-        <td>${r.edad}</td>
-        <td>${r.fecha}</td>
-        <td>${r.cantidad}</td>
-      </tr>`;
-      tbody.innerHTML += row;
-    });
-  }
+        // --- Paginación y Filtrado ---
+        const rowsPerPage = 30;
+        let currentPage = 1;
 
-  function toggleFormulario() {
-    const formulario = document.getElementById("formulario");
-    formulario.style.display = formulario.style.display === "block" ? "none" : "block";
-  }
+        // --- Funciones del Modal ---
+        function openModal() {
+            ofrendaModal.style.display = 'flex';
+            ofrendaForm.reset();
+            miembroSearchGroup.style.display = 'none';
+            nombreNoMiembroGroup.style.display = 'none';
+            miembroSearchResults.innerHTML = '';
+            selectedMemberCodeInput.value = '';
+            selectedMemberNameInput.value = '';
+            // Asegúrate de que los campos obligatorios se establezcan al seleccionar una opción
+            document.getElementById('nombreNoMiembro').removeAttribute('required');
+            miembroSearchInput.removeAttribute('required');
+        }
 
-  async function exportarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const logo = localStorage.getItem("logoAdoracionViva");
+        function closeModal() {
+            ofrendaModal.style.display = 'none';
+        }
 
-    if (logo) {
-      const img = new Image();
-      img.src = logo;
-      await new Promise(resolve => img.onload = resolve);
-      doc.addImage(img, "PNG", 10, 10, 30, 30);
-    }
+        // --- Manejo del formulario de ofrenda ---
+        esMiembroSi.addEventListener('change', () => {
+            miembroSearchGroup.style.display = 'block';
+            nombreNoMiembroGroup.style.display = 'none';
+            miembroSearchInput.focus();
+            miembroSearchInput.setAttribute('required', 'true');
+            document.getElementById('nombreNoMiembro').removeAttribute('required');
+        });
 
-    doc.setFontSize(16);
-    doc.text("Informe ADORACIÓN VIVA", 50, 20);
-    doc.setFontSize(12);
-    doc.text("Registros de Diezmos", 50, 28);
+        esMiembroNo.addEventListener('change', () => {
+            miembroSearchGroup.style.display = 'none';
+            nombreNoMiembroGroup.style.display = 'block';
+            document.getElementById('nombreNoMiembro').focus();
+            document.getElementById('nombreNoMiembro').setAttribute('required', 'true');
+            miembroSearchInput.removeAttribute('required');
+            selectedMemberCodeInput.value = 'NO_MIEMBRO';
+            selectedMemberNameInput.value = 'NO_MIEMBRO';
+        });
 
-    doc.autoTable({
-      head: [["#", "Código", "Nombre", "Edad", "Fecha", "Cantidad"]],
-      body: registros.map((r, i) => [i + 1, r.codigo, r.nombre, r.edad, r.fecha, r.cantidad]),
-      startY: 40,
-    });
+        // Búsqueda de miembros (con datos locales o de Firestore, si los cargas)
+        miembroSearchInput.addEventListener('input', () => {
+            const searchTerm = miembroSearchInput.value.toLowerCase();
+            miembroSearchResults.innerHTML = '';
 
-    doc.save("informe_diezmos.pdf");
-  }
+            if (searchTerm.length < 2) {
+                return;
+            }
 
-  function exportarExcel() {
-    const wb = XLSX.utils.book_new();
-    const ws_data = [["#", "Código", "Nombre", "Edad", "Fecha", "Cantidad"]];
-    registros.forEach((r, i) => ws_data.push([i + 1, r.codigo, r.nombre, r.edad, r.fecha, r.cantidad]));
-    const ws = XLSX.utils.aoa_to_sheet(ws_data);
-    XLSX.utils.book_append_sheet(wb, ws, "Diezmos");
-    XLSX.writeFile(wb, "informe_diezmos.xlsx");
-  }
+            const results = miembros.filter(miembro =>
+                miembro.codigo.toLowerCase().includes(searchTerm) ||
+                miembro.nombre.toLowerCase().includes(searchTerm)
+            );
 
-  window.onload = () => {
-    cargarMiembros();
-    mostrarTabla();
-  };
-</script>
+            results.forEach(miembro => {
+                const div = document.createElement('div');
+                div.textContent = `${miembro.codigo} - ${miembro.nombre}`;
+                div.addEventListener('click', () => {
+                    miembroSearchInput.value = miembro.nombre;
+                    selectedMemberCodeInput.value = miembro.codigo;
+                    selectedMemberNameInput.value = miembro.nombre;
+                    miembroSearchResults.innerHTML = '';
+                });
+                miembroSearchResults.appendChild(div);
+            });
+        });
+
+        // Lógica para añadir nueva ofrenda a Firestore
+        ofrendaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            let codigoOfrenda;
+            let nombreOfrenda;
+
+            if (esMiembroSi.checked) {
+                if (!selectedMemberCodeInput.value || selectedMemberCodeInput.value === 'NO_MIEMBRO') {
+                    alert('Por favor, selecciona un miembro de la lista.');
+                    return;
+                }
+                codigoOfrenda = selectedMemberCodeInput.value;
+                nombreOfrenda = selectedMemberNameInput.value;
+            } else if (esMiembroNo.checked) {
+                const nombreNoMiembroValue = document.getElementById('nombreNoMiembro').value.trim();
+                if (!nombreNoMiembroValue) {
+                    alert('Por favor, ingresa el nombre de la persona.');
+                    return;
+                }
+                // Firestore generará un ID único para el documento
+                codigoOfrenda = `NO_MIEMBRO_${Date.now()}`; // Un código único simple
+                nombreOfrenda = nombreNoMiembroValue;
+            } else {
+                alert('Por favor, selecciona si es miembro o no.');
+                return;
+            }
+
+            const newOfrenda = {
+                codigo: codigoOfrenda,
+                miembro: nombreOfrenda,
+                cantidad: parseFloat(cantidadInput.value),
+                moneda: monedaSelect.value,
+                fecha: fechaInput.value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar por fecha de creación
+            };
+
+            try {
+                await db.collection('ofrendas').add(newOfrenda);
+                alert('Ofrenda guardada correctamente en Firestore.');
+                closeModal();
+            } catch (error) {
+                console.error("Error al añadir la ofrenda: ", error);
+                alert('Hubo un error al guardar la ofrenda. Por favor, intenta de nuevo.');
+            }
+        });
+
+        // --- Renderizado de la tabla y paginación ---
+        function renderTable() {
+            ofrendasTableBody.innerHTML = '';
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedOfrendas = filteredOfrendas.slice(start, end);
+
+            if (paginatedOfrendas.length === 0 && currentPage > 1) {
+                currentPage--;
+                renderTable();
+                return;
+            }
+
+            paginatedOfrendas.forEach(ofrenda => {
+                const row = ofrendasTableBody.insertRow();
+                row.insertCell(0).textContent = ofrenda.codigo;
+                row.insertCell(1).textContent = ofrenda.miembro;
+                row.insertCell(2).textContent = ofrenda.cantidad.toFixed(2);
+                row.insertCell(3).textContent = ofrenda.moneda;
+                row.insertCell(4).textContent = ofrenda.fecha;
+            });
+
+            updatePaginationControls();
+        }
+
+        function updatePaginationControls() {
+            const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
+            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages || 1}`;
+
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages || filteredOfrendas.length === 0;
+        }
+
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
+
+        // --- Funcionalidad de Búsqueda ---
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            filteredOfrendas = allOfrendas.filter(ofrenda =>
+                ofrenda.codigo.toLowerCase().includes(searchTerm) ||
+                ofrenda.miembro.toLowerCase().includes(searchTerm) ||
+                ofrenda.fecha.includes(searchTerm)
+            );
+            currentPage = 1;
+            renderTable();
+        });
+
+        // --- Listener de Firestore para OFRENDAS ---
+        db.collection('ofrendas').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+            allOfrendas = [];
+            snapshot.forEach((doc) => {
+                allOfrendas.push({ id: doc.id, ...doc.data() });
+            });
+            const searchTerm = searchInput.value.toLowerCase();
+            if (searchTerm) {
+                filteredOfrendas = allOfrendas.filter(ofrenda =>
+                    ofrenda.codigo.toLowerCase().includes(searchTerm) ||
+                    ofrenda.miembro.toLowerCase().includes(searchTerm) ||
+                    ofrenda.fecha.includes(searchTerm)
+                );
+            } else {
+                filteredOfrendas = [...allOfrendas];
+            }
+            currentPage = 1;
+            renderTable();
+        }, (error) => {
+            console.error("Error al obtener las ofrendas de Firestore: ", error);
+            alert('Error al cargar las ofrendas. Por favor, revisa la consola para más detalles.');
+        });
+
+        // --- Listener de Firestore para MIEMBROS (opcional, si los miembros también están en Firestore) ---
+        // Si tienes una colección 'miembros' en Firestore, puedes cargarla así:
+        db.collection('miembros').orderBy('nombre').onSnapshot((snapshot) => {
+            miembros = []; // Limpiamos el array de miembros local
+            snapshot.forEach((doc) => {
+                miembros.push({ id: doc.id, ...doc.data() });
+            });
+            console.log('Miembros cargados desde Firestore:', miembros);
+        }, (error) => {
+            console.warn("Advertencia: No se pudo cargar la colección 'miembros' de Firestore. Usando datos de ejemplo locales.", error);
+            // Si la colección 'miembros' no existe o hay un error, se usarán los datos de `miembros` locales definidos arriba.
+        });
+
+
+        // --- Event Listeners Globales ---
+        addOfrendaBtn.addEventListener('click', openModal);
+        closeButton.addEventListener('click', closeModal);
+
+        window.addEventListener('click', (event) => {
+            if (event.target === ofrendaModal) {
+                closeModal();
+            }
+        });
+
+        function cerrarSesion() {
+            // Aquí iría la lógica para cerrar la sesión, por ejemplo, redirigir a la página de login
+            alert('Sesión cerrada. (Simulación)');
+            // window.location.href = 'index.html'; // Descomenta si tienes una página de inicio de sesión
+        }
+
+        // --- Inicialización ---
+        // El listener de Firestore para ofrendas se encarga de llamar a renderTable() al cargar los datos inicialmente.
+    </script>
 
 </body>
 </html>
