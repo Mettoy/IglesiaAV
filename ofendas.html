@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@13.1/dist/handsontable.full.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        /* Definición de colores principales: Azul Ultra Oscuro y Dorado Vibrante */
+        :root {
+            --ultra-dark-blue: #0A0A1A; /* Base, casi negro */
+            --deep-blue: #1A1A3A; /* Para elementos principales */
+            --dark-accent-blue: #2A2A4A; /* Para elementos secundarios y hover */
+            --gold-vibrant: #FFD700; /* Dorado brillante */
+            --gold-light: #FFEB3B; /* Dorado más claro para texto general */
+            --gold-darker: #CCAD00; /* Dorado para hover/activos */
+            --white-off: #F0F0F0; /* Blanco roto para contraste */
+            --border-line: #3A3A5A; /* Líneas de borde sutiles */
+            --red-alert: #C62828; /* Rojo para acciones de peligro */
+            --green-success: #4CAF50; /* Verde para éxito */
+            --orange-warning: #FF9800; /* Naranja para advertencia */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            background-color: var(--ultra-dark-blue); /* Fondo principal ultra oscuro */
+            color: var(--gold-light); /* Texto general en dorado claro */
+            overflow-x: hidden; /* Evita scroll horizontal por animaciones */
+        }
+
+        /* --- Sidebar Styles --- */
+        .sidebar {
+            width: 250px;
+            background-color: var(--deep-blue); /* Azul muy oscuro para la barra lateral */
+            color: var(--gold-light);
+            padding: 20px 0;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.8); /* Sombra más profunda */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 900;
+            transition: width 0.3s ease; /* Animación al expandir/contraer */
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--gold-vibrant); /* Título en dorado vibrante */
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); /* Sombra dorada intensa */
+            animation: pulseGold 2s infinite alternate; /* Animación sutil del título */
+        }
+
+        @keyframes pulseGold {
+            from { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+            to { text-shadow: 0 0 15px rgba(255, 215, 0, 1), 0 0 20px rgba(255, 215, 0, 0.5); }
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 15px 25px;
+            color: var(--gold-light);
+            text-decoration: none;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-link::before { /* Efecto de brillo al pasar el mouse */
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        .sidebar-link:hover::before {
+            left: 100%;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--dark-accent-blue); /* Fondo más oscuro al pasar el mouse/activo */
+            color: var(--gold-vibrant);
+            transform: translateX(5px); /* Deslizamiento sutil al pasar el mouse */
+        }
+
+        .logout {
+            margin-top: auto;
+            padding: 15px 25px;
+            background-color: var(--red-alert);
+            color: var(--white-off);
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .logout:hover {
+            background-color: #EF5350; /* Rojo más brillante al pasar el mouse */
+            transform: scale(1.02); /* Pequeño escalado */
+        }
+
+        /* --- Main Content Styles --- */
+        .main-content {
+            margin-left: 250px;
+            flex-grow: 1;
+            padding: 30px;
+            background-color: var(--ultra-dark-blue); /* Fondo del contenido principal ultra oscuro */
+            transition: margin-left 0.3s ease;
+        }
+
+        .add-button {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue); /* Texto del botón en azul ultra oscuro */
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            /* Added for this page to have its own margin */
+            margin-bottom: 20px;
+        }
+
+        .add-button:hover {
+            background-color: var(--gold-darker);
+            transform: translateY(-3px) scale(1.02); /* Deslizamiento y ligero escalado */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+
+        /* --- Table Styles (General para tablas de datos) --- */
+        .data-table { /* Esto es para tablas HTML estándar, Handsontable usa sus propias clases */
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--deep-blue); /* Fondo de la tabla azul muy oscuro */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px; /* Espacio extra encima de la tabla para que no se pegue al botón */
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-line);
+        }
+
+        .data-table th {
+            background-color: var(--ultra-dark-blue); /* Encabezado de tabla aún más oscuro */
+            color: var(--gold-vibrant);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .data-table tbody tr {
+            color: var(--white-off);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: var(--dark-accent-blue); /* Fondo azul oscuro al pasar el mouse por la fila */
+            transform: translateX(5px); /* Ligero desplazamiento de la fila */
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+            flex-wrap: wrap; /* Added for responsiveness */
+        }
+
+        .pagination button {
+            background-color: var(--deep-blue);
+            border: 1px solid var(--border-line);
+            color: var(--gold-vibrant);
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            min-width: 100px; /* Ensure buttons have a minimum width */
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .pagination button:disabled {
+            cursor: not-allowed;
+            opacity: 0.3;
+            background-color: var(--deep-blue);
+            color: rgba(255, 215, 0, 0.2);
+            box-shadow: none;
+        }
+
+        .pagination span {
+            color: var(--gold-vibrant);
+            padding: 8px 0;
+            font-weight: bold;
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+
+        /* --- Modal Styles --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95); /* Fondo de modal casi negro total */
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out; /* Transición más larga */
+        }
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--deep-blue);
+            padding: 30px;
+            border-radius: 12px; /* Bordes más suaves */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9); /* Sombra muy profunda */
+            width: 90%;
+            max-width: 550px; /* Un poco más ancho */
+            position: relative;
+            transform: scale(0.9); /* Inicia un poco más pequeño */
+            opacity: 0; /* Para animación de aparición */
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s ease-in-out; /* Bounce effect */
+        }
+        .modal.show .modal-content {
+            transform: scale(1); /* Escala a tamaño normal */
+            opacity: 1;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2.2em; /* Más grande */
+            font-weight: bold;
+            color: var(--gold-vibrant);
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .close-button:hover {
+            color: var(--gold-darker);
+            transform: rotate(180deg) scale(1.2); /* Rotación completa y más grande */
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--gold-vibrant);
+            text-align: center;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--gold-light);
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-line);
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box;
+            background-color: var(--dark-accent-blue); /* Fondo de campos azul más claro */
+            color: var(--white-off);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-group input::placeholder {
+            color: rgba(255, 235, 59, 0.4);
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--gold-vibrant);
+            outline: none;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+        }
+        .form-group select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23FFD700" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+        }
+
+        .form-actions {
+            text-align: right;
+            margin-top: 30px;
+            display: flex; /* For alignment of buttons */
+            justify-content: flex-end; /* Push buttons to the right */
+            gap: 10px; /* Space between buttons */
+        }
+
+        .form-actions button {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-actions button:hover {
+            background-color: var(--gold-darker);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Specific style for delete button in modal */
+        .form-actions button.delete-btn {
+            background-color: var(--red-alert);
+            color: var(--white-off);
+        }
+
+        .form-actions button.delete-btn:hover {
+            background-color: #EF5350;
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        /* Handsontable Styles Overrides */
+        #handsontable-container {
+            margin-top: 20px;
+            border: 1px solid var(--border-line);
+            border-radius: 8px;
+            overflow: hidden;
+            min-height: 400px; /* Altura mínima para el contenedor */
+            height: auto; /* Allow content to dictate height, but maintain minimum */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7); /* Consistent shadow */
+        }
+        .ht_master .wtHolder {
+            background-color: var(--deep-blue);
+        }
+        .htCore {
+            background-color: var(--deep-blue);
+            color: var(--white-off);
+            border-color: var(--border-line);
+        }
+        .htCore th {
+            background-color: var(--ultra-dark-blue);
+            color: var(--gold-vibrant);
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-line); /* Ensure header bottom border */
+            border-right: 1px solid var(--border-line); /* For column dividers */
+        }
+        .htCore td {
+            font-weight: normal;
+            border-bottom: 1px solid var(--border-line);
+            border-right: 1px solid var(--border-line);
+            color: var(--white-off);
+        }
+        /* Specific styling for selected cells or rows */
+        .handsontable .current.highlight, .handsontable .current, .handsontable .area, .handsontable .ht__highlight {
+            background-color: rgba(255, 215, 0, 0.2) !important; /* Semi-transparent gold for selection */
+        }
+        .handsontable .selection.active {
+            background-color: rgba(255, 215, 0, 0.3) !important; /* More opaque gold for active selection */
+        }
+        .handsontable .current.border {
+            border-color: var(--gold-vibrant) !important; /* Gold border for active cell */
+        }
+        .handsontable .rowHeader, .handsontable .colHeader {
+            background-color: var(--dark-accent-blue);
+            color: var(--gold-light);
+            font-weight: bold;
+            border: 1px solid var(--border-line) !important;
+        }
+        .handsontable .wtBorder.current {
+            border-color: var(--gold-vibrant) !important;
+        }
+        .handsontable .form-control { /* For editors within Handsontable */
+            background-color: var(--dark-accent-blue);
+            color: var(--white-off);
+            border: 1px solid var(--gold-vibrant);
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: none; /* Hidden by default */
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            border-top: 4px solid var(--gold-vibrant);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Utility class for hiding/showing elements */
+        .hidden {
+            display: none !important;
+        }
+
+        .action-button {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .action-button:hover {
+            background-color: var(--gold-darker);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">Finanzas</div>
+        <a href="acceso.html" class="sidebar-link">Dar acceso</a>
+        <a href="diezmos.html" class="sidebar-link">Diezmos</a>
+        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+        <a href="finanzas.html" class="sidebar-link active">Finanzas</a>
+        <a href="reportes.html" class="sidebar-link">Reportes</a>
+        <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
+    </div>
+
+    <div class="main-content">
+        <button class="add-button" id="addFinanzaBtn">Añadir Entrada Financiera</button>
+
+        <div id="handsontable-container"></div>
+
+        <div class="pagination">
+            <button id="prevPageBtn" disabled>&laquo; Anterior</button>
+            <span id="pageInfo">Página 1 de 1</span>
+            <button id="nextPageBtn" disabled>Siguiente &raquo;</button>
+        </div>
+    </div>
+
+    <div id="ofrendaModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalBtn">&times;</span>
+            <h2 id="modalTitle">Añadir Nueva Entrada Financiera</h2>
+            <form id="ofrendaForm">
+                <div class="form-group">
+                    <label for="concepto">Concepto:</label>
+                    <input type="text" id="concepto" placeholder="Ej: Pago de Luz, Venta de Libros" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cantidad">Cantidad:</label>
+                    <input type="number" id="cantidad" step="0.01" min="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="moneda">Moneda:</label>
+                    <select id="moneda" required>
+                        <option value="USD">USD - Dólar Estadounidense</option>
+                        <option value="NIO">NIO - Córdoba Nicaragüense</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="deleteFinanzaBtn" class="delete-btn hidden">Eliminar Entrada</button>
+                    <button type="submit" id="saveFinanzaBtn">Guardar Entrada</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@13.1/dist/handsontable.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <script>
+        // --- CONFIGURACIÓN DE FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // --- Datos en caché ---
+        let allFinanzas = []; // Almacenará todas las entradas de finanzas cargadas de Firestore
+        let filteredFinanzas = []; // Entradas después de aplicar filtros (aunque aquí no hay búsqueda, se usa para paginación)
+
+        // --- Estado del Modal ---
+        let currentEditingFinanzaId = null; // Para saber si estamos editando o añadiendo
+
+        // --- Paginación ---
+        const ITEMS_PER_PAGE = 20; // Número de elementos por página
+        let currentPage = 1;
+        let totalPages = 1;
+
+        // --- Referencias a elementos del DOM ---
+        const addFinanzaBtn = document.getElementById('addFinanzaBtn');
+        const ofrendaModal = document.getElementById('ofrendaModal'); // Mantenemos el ID genérico
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalTitle = document.getElementById('modalTitle');
+        const ofrendaForm = document.getElementById('ofrendaForm'); // Mantenemos el ID genérico
+
+        const conceptoInput = document.getElementById('concepto'); // Nuevo campo
+        const cantidadInput = document.getElementById('cantidad');
+        const monedaSelect = document.getElementById('moneda');
+        const fechaInput = document.getElementById('fecha');
+
+        const saveFinanzaBtn = document.getElementById('saveFinanzaBtn');
+        const deleteFinanzaBtn = document.getElementById('deleteFinanzaBtn');
+
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const pageInfoSpan = document.getElementById('pageInfo');
+
+        let hot; // Variable para la instancia de Handsontable
+
+        // --- Funciones de Utilidad ---
+
+        // Función para mostrar mensajes Toastify
+        function showToast(message, type = 'success') {
+            let backgroundColor;
+            if (type === 'success') {
+                backgroundColor = 'linear-gradient(to right, #4CAF50, #66BB6A)';
+            } else if (type === 'error') {
+                backgroundColor = 'linear-gradient(to right, #C62828, #EF5350)';
+            } else if (type === 'info') {
+                backgroundColor = 'linear-gradient(to right, #2196F3, #42A5F5)';
+            } else { // warning
+                backgroundColor = 'linear-gradient(to right, #FF9800, #FFA726)';
+            }
+
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                backgroundColor: backgroundColor,
+                stopOnFocus: true
+            }).showToast();
+        }
+
+        // Función para cerrar sesión
+        function cerrarSesion() {
+            auth.signOut().then(() => {
+                showToast("Sesión cerrada", "info");
+                window.location.href = 'index.html'; // Redirige a la página de inicio de sesión
+            }).catch((error) => {
+                console.error("Error al cerrar sesión:", error);
+                showToast("Error al cerrar sesión", "error");
+            });
+        }
+
+        // Asegurar que el usuario esté loggeado
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = 'index.html'; // Redirige si no hay usuario
+            } else {
+                loadFinanzas(); // Carga los datos solo si está loggeado
+            }
+        });
+
+        // --- Funciones del Modal ---
+
+        function openModal(id = null) {
+            ofrendaForm.reset(); // Limpia el formulario
+            currentEditingFinanzaId = id;
+
+            if (id) {
+                modalTitle.textContent = 'Editar Entrada Financiera';
+                saveFinanzaBtn.textContent = 'Actualizar Entrada';
+                deleteFinanzaBtn.classList.remove('hidden');
+
+                // Buscar la entrada por ID y rellenar el formulario
+                const finanza = allFinanzas.find(item => item.id === id);
+                if (finanza) {
+                    conceptoInput.value = finanza.concepto;
+                    cantidadInput.value = finanza.cantidad;
+                    monedaSelect.value = finanza.moneda;
+                    fechaInput.value = finanza.fecha; // Ya viene en YYYY-MM-DD
+                }
+            } else {
+                modalTitle.textContent = 'Añadir Nueva Entrada Financiera';
+                saveFinanzaBtn.textContent = 'Guardar Entrada';
+                deleteFinanzaBtn.classList.add('hidden');
+                // Establecer la fecha actual por defecto al añadir
+                fechaInput.valueAsDate = new Date();
+            }
+            ofrendaModal.classList.add('show');
+        }
+
+        function closeModal() {
+            ofrendaModal.classList.remove('show');
+            ofrendaForm.reset(); // Limpia el formulario
+            currentEditingFinanzaId = null;
+        }
+
+        // --- Manejo de Datos (CRUD) ---
+
+        async function loadFinanzas() {
+            try {
+                // No hay spinner para resumen aquí, pero si para carga general
+                // const spinner = document.getElementById('summarySpinner'); // If you want a spinner for main table loading
+                // spinner.style.display = 'block';
+
+                const snapshot = await db.collection('finanzas').orderBy('fecha', 'desc').get();
+                allFinanzas = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        concepto: data.concepto || 'Sin concepto',
+                        cantidad: data.cantidad || 0,
+                        moneda: data.moneda || 'USD',
+                        fecha: data.fecha ? data.fecha.toDate().toISOString().split('T')[0] : '' // Formato YYYY-MM-DD
+                    };
+                });
+                applyFiltersAndRenderTable();
+                // spinner.style.display = 'none';
+            } catch (error) {
+                console.error("Error al cargar finanzas:", error);
+                showToast("Error al cargar finanzas", "error");
+                // spinner.style.display = 'none';
+            }
+        }
+
+        async function saveFinanza(event) {
+            event.preventDefault();
+
+            const data = {
+                concepto: conceptoInput.value.trim(),
+                cantidad: parseFloat(cantidadInput.value),
+                moneda: monedaSelect.value,
+                fecha: firebase.firestore.Timestamp.fromDate(new Date(fechaInput.value)),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar y auditoría
+            };
+
+            try {
+                if (currentEditingFinanzaId) {
+                    // Actualizar
+                    await db.collection('finanzas').doc(currentEditingFinanzaId).update(data);
+                    showToast("Entrada financiera actualizada con éxito", "success");
+                } else {
+                    // Añadir nueva
+                    await db.collection('finanzas').add(data);
+                    showToast("Entrada financiera añadida con éxito", "success");
+                }
+                closeModal();
+                loadFinanzas(); // Recargar datos para actualizar la tabla
+            } catch (error) {
+                console.error("Error al guardar entrada financiera:", error);
+                showToast("Error al guardar entrada financiera", "error");
+            }
+        }
+
+        async function deleteFinanza() {
+            if (!currentEditingFinanzaId || !confirm("¿Está seguro de que desea eliminar esta entrada financiera?")) {
+                return;
+            }
+
+            try {
+                await db.collection('finanzas').doc(currentEditingFinanzaId).delete();
+                showToast("Entrada financiera eliminada con éxito", "success");
+                closeModal();
+                loadFinanzas(); // Recargar datos para actualizar la tabla
+            } catch (error) {
+                console.error("Error al eliminar entrada financiera:", error);
+                showToast("Error al eliminar entrada financiera", "error");
+            }
+        }
+
+        // Función para editar una entrada desde Handsontable
+        function editEntry(id) {
+            openModal(id);
+        }
+
+        // --- Paginación y Renderizado de Tabla ---
+
+        function applyFiltersAndRenderTable() {
+            // En esta página de Finanzas, no hay filtros de búsqueda complejos,
+            // por lo que filteredFinanzas es simplemente allFinanzas.
+            filteredFinanzas = [...allFinanzas];
+
+            totalPages = Math.ceil(filteredFinanzas.length / ITEMS_PER_PAGE);
+            if (currentPage > totalPages) {
+                currentPage = totalPages > 0 ? totalPages : 1;
+            }
+            if (filteredFinanzas.length === 0) {
+                currentPage = 1; // Reset to page 1 if no data
+            }
+
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const dataToDisplay = filteredFinanzas.slice(startIndex, endIndex);
+
+            // Actualizar Handsontable
+            if (!hot) {
+                const container = document.getElementById('handsontable-container');
+                hot = new Handsontable(container, {
+                    data: dataToDisplay,
+                    colHeaders: ['ID', 'Concepto', 'Cantidad', 'Moneda', 'Fecha', 'Acciones'],
+                    columns: [
+                        { data: 'id', readOnly: true, className: 'hidden' },
+                        { data: 'concepto', title: 'Concepto', readOnly: true },
+                        { data: 'cantidad', title: 'Cantidad', type: 'numeric', numericFormat: { pattern: '0,0.00' }, readOnly: true },
+                        { data: 'moneda', title: 'Moneda', readOnly: true },
+                        { data: 'fecha', title: 'Fecha', type: 'date', dateFormat: 'YYYY-MM-DD', readOnly: true },
+                        {
+                            data: 'actions',
+                            title: 'Acciones',
+                            renderer: function(instance, td, row, col, prop, value, cellProperties) {
+                                Handsontable.dom.empty(td);
+                                const editButton = document.createElement('button');
+                                editButton.textContent = 'Editar';
+                                editButton.className = 'action-button edit-button';
+                                // Obtener el ID de la fila para pasarlo a editEntry
+                                Handsontable.dom.addEvent(editButton, 'click', () => editEntry(instance.getDataAtRowProp(row, 'id')));
+                                td.appendChild(editButton);
+                                return td;
+                            },
+                            readOnly: true
+                        }
+                    ],
+                    // Configuración adicional de Handsontable para el tema
+                    licenseKey: 'non-commercial-and-evaluation', // Esencial para Handsontable CE
+                    height: 'auto',
+                    autoRowSize: true,
+                    autoColumnSize: true,
+                    rowHeaders: true,
+                    dropdownMenu: true,
+                    filters: true,
+                    readOnly: true, // La edición se hace por modal
+                    columnSorting: true,
+                    fixedColumnsStart: 1, // Fix the ID column (hidden)
+                    afterGetColHeader: function(col, TH) { // Custom header rendering to hide 'ID'
+                        if (col === 0) { // If it's the ID column
+                            TH.style.display = 'none';
+                        }
+                    },
+                     afterGetRowHeader: function(row, TH) {
+                        TH.style.verticalAlign = 'middle';
+                    }
+                });
+            } else {
+                hot.loadData(dataToDisplay);
+            }
+            updatePaginationButtons();
+        }
+
+        function updatePaginationButtons() {
+            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages > 0 ? totalPages : 1}`;
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        // --- Event Listeners ---
+        addFinanzaBtn.addEventListener('click', () => openModal());
+        closeModalBtn.addEventListener('click', closeModal);
+        ofrendaForm.addEventListener('submit', saveFinanza);
+        deleteFinanzaBtn.addEventListener('click', deleteFinanza);
+
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                applyFiltersAndRenderTable();
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                applyFiltersAndRenderTable();
+            }
+        });
+
+        // Inicialización de la página (carga de datos)
+        // La carga inicial se hace en onAuthStateChanged
+    </script>
+</body>
+</html>
