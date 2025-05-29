@@ -682,6 +682,68 @@
         </div>
     </div>
 
+    <div id="ofrendaModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalBtn">&times;</span>
+            <h2 id="modalTitle">Añadir Nuevo Diezmo</h2>
+            <form id="ofrendaForm">
+                <div class="form-group">
+                    <label>Tipo de Contribuyente:</label>
+                    <div class="radio-group">
+                        <input type="radio" id="esMiembroSi" name="tipoContribuyente" value="miembro" checked>
+                        <label for="esMiembroSi">Miembro</label>
+                        <input type="radio" id="esMiembroNo" name="tipoContribuyente" value="no-miembro">
+                        <label for="esMiembroNo">No Miembro</label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="miembroSearchGroup">
+                    <label for="miembroSearch">Buscar Miembro (Código o Nombre):</label>
+                    <input type="text" id="miembroSearch" placeholder="Ej: M-001 o Juan Pérez" autocomplete="off">
+                    <input type="hidden" id="selectedMemberCode">
+                    <input type="hidden" id="selectedMemberName">
+                    <div id="miembroSearchResults" class="member-search-results"></div>
+                </div>
+
+                <div class="form-group" id="nombreNoMiembroGroup" style="display: none;">
+                    <label for="nombreNoMiembro">Nombre del No Miembro:</label>
+                    <input type="text" id="nombreNoMiembro" placeholder="Nombre del no miembro">
+                    <input type="checkbox" id="addManualCodeNoMiembro">
+                    <label for="addManualCodeNoMiembro" style="display: inline-block; margin-left: 5px;">Añadir código manual</label>
+                </div>
+
+                <div class="form-group" id="manualCodeNoMiembroGroup" style="display: none;">
+                    <label for="manualCodeNoMiembro">Código Manual (No Miembro):</label>
+                    <input type="text" id="manualCodeNoMiembro" placeholder="Ej: NM-001">
+                </div>
+
+                <div class="form-group">
+                    <label for="cantidad">Cantidad:</label>
+                    <input type="number" id="cantidad" step="0.01" min="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="moneda">Moneda:</label>
+                    <select id="moneda" required>
+                        <option value="USD">USD - Dólar Estadounidense</option>
+                        <option value="NIO">NIO - Córdoba Nicaragüense</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="deleteDiezmoBtn" class="delete-btn hidden">Eliminar</button>
+                    <button type="submit" id="saveDiezmoBtn">Guardar Diezmo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -689,18 +751,18 @@
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <script>
-        // --- CONFIGURACIÓN DE FIREBASE (¡CRÍTICO! REEMPLAZA ESTO CON TUS PROPIOS DATOS) ---
+        // --- CONFIGURACIÓN DE FIREBASE ---
         // ¡ESTA CONFIGURACIÓN DEBE SER EXACTAMENTE LA MISMA QUE EN TU PÁGINA DE LOGIN!
         const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -710,6 +772,8 @@
         let miembros = []; // Contendrá la lista completa de miembros
         let allDiezmos = []; // Almacenará todos los diezmos cargados de Firestore
         let filteredDiezmos = []; // Diezmos después de aplicar filtros de búsqueda
+
+        // --- Estado del Modal ---
         let currentEditingDiezmoId = null; // Para saber si estamos editando o añadiendo
 
         // --- Paginación ---
@@ -802,11 +866,11 @@
 
         // Mostrar/ocultar spinner
         function showSpinner(spinnerElement) {
-            spinnerElement.style.display = 'inline-block';
+            if (spinnerElement) spinnerElement.style.display = 'inline-block';
         }
 
         function hideSpinner(spinnerElement) {
-            spinnerElement.style.display = 'none';
+            if (spinnerElement) spinnerElement.style.display = 'none';
         }
 
         // Formatear moneda
@@ -843,13 +907,13 @@
 
         // Cargar diezmos de Firestore (todos para el filtrado local)
         async function loadDiezmos() {
-            showSpinner(summarySpinner);
+            showSpinner(summarySpinner); // Usar el mismo spinner para la carga principal también
             try {
                 const diezmosSnapshot = await db.collection('diezmos').orderBy('fecha', 'desc').get();
                 allDiezmos = diezmosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 console.log('Diezmos cargados:', allDiezmos.length);
                 applyFiltersAndRenderTable(); // Aplica filtros de búsqueda y renderiza la tabla
-                updateDiezmosSummary(); // Actualiza el resumen
+                // updateDiezmosSummary(); // Ya se llama en onAuthStateChanged y por el botón "Ver"
             } catch (error) {
                 console.error("Error al cargar diezmos:", error);
                 showToast("Error al cargar los diezmos: " + error.message, "error");
@@ -952,7 +1016,7 @@
             filteredDiezmos = allDiezmos.filter(diezmo => {
                 const matchesCode = diezmo.codigo ? String(diezmo.codigo).toLowerCase().includes(searchText) : false;
                 const matchesName = diezmo.nombre ? String(diezmo.nombre).toLowerCase().includes(searchText) : false;
-                const matchesDate = diezmo.fecha ? new Date(diezmo.fecha.toDate()).toISOString().split('T')[0].includes(searchText) : false;
+                const matchesDate = diezmo.fecha && diezmo.fecha.toDate ? new Date(diezmo.fecha.toDate()).toISOString().split('T')[0].includes(searchText) : false;
                 return matchesCode || matchesName || matchesDate;
             });
             currentPage = 1; // Resetear a la primera página después de filtrar
@@ -962,46 +1026,73 @@
         searchInput.addEventListener('input', applyFiltersAndRenderTable);
 
 
-        // --- Resumen de Diezmos ---
+        // --- Resumen de Diezmos (CÓDIGO REVISADO PARA LA SUMA) ---
         async function updateDiezmosSummary() {
             showSpinner(summarySpinner);
-            const startDate = diezmoStartDateInput.value ? new Date(diezmoStartDateInput.value) : null;
-            const endDate = diezmoEndDateInput.value ? new Date(diezmoEndDateInput.value) : null;
+            
+            const startDateStr = diezmoStartDateInput.value;
+            const endDateStr = diezmoEndDateInput.value;
+
+            // Validación de fechas
+            if (!startDateStr || !endDateStr) {
+                showToast("Por favor, selecciona una fecha de inicio y una fecha de fin para el resumen.", "warning");
+                hideSpinner(summarySpinner);
+                return;
+            }
+
+            let startDate = new Date(startDateStr);
+            let endDate = new Date(endDateStr);
+
+            // Ajuste para incluir todo el día de la fecha final (hasta 23:59:59.999)
+            endDate.setHours(23, 59, 59, 999);
+
+            if (startDate > endDate) {
+                showToast("La fecha de inicio no puede ser posterior a la fecha de fin.", "warning");
+                hideSpinner(summarySpinner);
+                return;
+            }
 
             let query = db.collection('diezmos');
 
-            if (startDate) {
-                query = query.where('fecha', '>=', firebase.firestore.Timestamp.fromDate(startDate));
-            }
-            if (endDate) {
-                // Ajustar endDate para incluir todo el día
-                const adjustedEndDate = new Date(endDate);
-                adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
-                query = query.where('fecha', '<', firebase.firestore.Timestamp.fromDate(adjustedEndDate));
-            }
-
+            // Convertir fechas a Timestamps de Firestore para la consulta
+            query = query.where('fecha', '>=', firebase.firestore.Timestamp.fromDate(startDate));
+            query = query.where('fecha', '<=', firebase.firestore.Timestamp.fromDate(endDate));
+            
             try {
                 const snapshot = await query.get();
                 let totalUSD = 0;
                 let totalNIO = 0;
 
+                if (snapshot.empty) {
+                    console.log("No se encontraron diezmos para el rango de fechas seleccionado.");
+                    // showToast("No se encontraron diezmos para el rango de fechas seleccionado.", "info"); // Opcional: para evitar spam de toasts si es común
+                }
+
                 snapshot.docs.forEach(doc => {
                     const data = doc.data();
-                    const cantidad = parseFloat(data.cantidad);
-                    if (!isNaN(cantidad)) {
+                    // Asegurarse de que 'cantidad' es un número antes de sumar
+                    const cantidad = parseFloat(data.cantidad); 
+
+                    if (!isNaN(cantidad)) { // Solo suma si la cantidad es un número válido
                         if (data.moneda === 'USD') {
                             totalUSD += cantidad;
                         } else if (data.moneda === 'NIO') {
                             totalNIO += cantidad;
                         }
+                    } else {
+                        console.warn(`Diezmo con ID ${doc.id} tiene una cantidad no numérica: ${data.cantidad}`);
                     }
                 });
 
+                // Actualizar los elementos del DOM con los totales formateados
                 totalDiezmosUSD.textContent = formatCurrency(totalUSD, 'USD');
                 totalDiezmosNIO.textContent = formatCurrency(totalNIO, 'NIO');
+
             } catch (error) {
                 console.error("Error al calcular resumen de diezmos:", error);
                 showToast("Error al cargar el resumen de diezmos: " + error.message, "error");
+                totalDiezmosUSD.textContent = formatCurrency(0, 'USD'); // Resetear si hay error
+                totalDiezmosNIO.textContent = formatCurrency(0, 'NIO'); // Resetear si hay error
             } finally {
                 hideSpinner(summarySpinner);
             }
@@ -1010,14 +1101,13 @@
         // Event listeners para los filtros de fecha del resumen
         viewDiezmosBtn.addEventListener('click', updateDiezmosSummary);
 
-        // Establecer fechas por defecto para el resumen (últimos 30 días)
+        // Establecer fechas por defecto para el resumen (primer día del mes actual hasta hoy)
         function setInitialSummaryDates() {
             const today = new Date();
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(today.getDate() - 30);
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
             diezmoEndDateInput.value = today.toISOString().split('T')[0];
-            diezmoStartDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+            diezmoStartDateInput.value = firstDayOfMonth.toISOString().split('T')[0];
         }
 
 
@@ -1273,9 +1363,12 @@
         // Evento para editar fila en Handsontable (doble clic)
         hotContainer.addEventListener('dblclick', (event) => {
             if (hot) {
+                // Obtener la celda donde ocurrió el doble clic
                 const cell = hot.getCell(event.target);
                 if (cell) {
-                    const row = hot.getSelectedLast()[0];
+                    // Obtener la fila seleccionada por el doble clic
+                    const row = hot.getSelectedLast() ? hot.getSelectedLast()[0] : undefined;
+                    
                     if (row !== undefined && row >= 0) { // Asegúrate de que la fila es válida
                         // La `data` en Handsontable paginada no tiene el ID de Firestore directamente.
                         // Necesitamos el ID del diezmo original.
@@ -1283,10 +1376,11 @@
                         const diezmoToEdit = filteredDiezmos[diezmoIndexInFiltered];
 
                         if (diezmoToEdit) {
+                            // Abrir el modal con los datos del diezmo para editar
                             openModal(diezmoToEdit);
                         } else {
                             showToast("No se pudo encontrar el diezmo para editar. (ID no encontrado)", "error");
-                            console.error("Error: diezmoToEdit es undefined en el índice", diezmoIndexInFiltered);
+                            console.error("Error: diezmoToEdit es undefined en el índice", diezmoIndexInFiltered, "con fila", row, "página", currentPage);
                         }
                     }
                 }
@@ -1299,10 +1393,10 @@
                 console.log("Usuario autenticado en diezmos.html:", user.uid);
                 // Inicializar Handsontable con datos vacíos para que aparezca al inicio
                 renderHandsontable([]); // Renderiza una tabla vacía hasta que se carguen los datos
-                loadMembers();
-                loadDiezmos(); // Carga inicial de diezmos
-                setInitialSummaryDates(); // Establece fechas iniciales para el resumen
-                updateDiezmosSummary(); // Calcula el resumen inicial
+                loadMembers(); // Carga la lista de miembros
+                loadDiezmos(); // Carga todos los diezmos y los renderiza en la tabla principal
+                setInitialSummaryDates(); // Establece las fechas iniciales para el resumen
+                updateDiezmosSummary(); // Calcula y muestra el resumen inicial
             } else {
                 console.log("No hay usuario autenticado en diezmos.html. Redirigiendo a la página de login.");
                 showToast("Debes iniciar sesión para acceder.", "warning");
