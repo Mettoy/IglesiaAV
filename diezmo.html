@@ -546,7 +546,7 @@
         const cantidadInput = document.getElementById('cantidad');
         const monedaSelect = document.getElementById('moneda');
         const fechaInput = document.getElementById('fecha');
-        const searchInput = document.getElementById('searchInput');
+        const searchInput = document.getElementById('searchInput'); // La barra de búsqueda de la tabla principal
         const prevPageBtn = document.getElementById('prevPageBtn');
         const nextPageBtn = document.getElementById('nextPageBtn');
         const pageInfoSpan = document.getElementById('pageInfo');
@@ -715,6 +715,49 @@
             }
         });
 
+        // --- Funciones de Carga de Datos Iniciales ---
+
+        // Cargar Miembros desde Firestore
+        async function loadMiembros() {
+            try {
+                // Obtenemos todos los documentos de la colección 'miembros'
+                const snapshot = await db.collection('miembros').orderBy('nombre').get();
+                miembros = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log("Miembros cargados:", miembros);
+            } catch (error) {
+                console.error("Error al cargar miembros:", error);
+                alert("Error al cargar la lista de miembros. Revisa la consola para más detalles.");
+            }
+        }
+
+        // Cargar Ofrendas desde Firestore y configurar listener para actualizaciones en tiempo real
+        function setupOfrendasListener() {
+            db.collection('ofrendas').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+                allOfrendas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                applySearchFilter(); // Aplica el filtro actual cada vez que los datos cambian
+                renderTable();
+            }, error => {
+                console.error("Error al obtener actualizaciones de ofrendas:", error);
+            });
+        }
+
+        // --- Lógica de Filtrado de Búsqueda para la tabla principal ---
+        function applySearchFilter() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            if (searchTerm) {
+                filteredOfrendas = allOfrendas.filter(ofrenda =>
+                    (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm)) ||
+                    (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm)) ||
+                    (ofrenda.fecha && ofrenda.fecha.includes(searchTerm)) // Busca en la fecha (YYYY-MM-DD)
+                );
+            } else {
+                filteredOfrendas = [...allOfrendas]; // Copia todas las ofrendas si no hay término de búsqueda
+            }
+            currentPage = 1; // Reinicia a la primera página con cada nueva búsqueda
+            renderTable();
+        }
+
+
         // --- Renderizado de la tabla principal de Ofrendas y Paginación ---
         function renderTable() {
             ofrendasTableBody.innerHTML = ''; // Limpia la tabla actual
@@ -732,7 +775,7 @@
             }
 
             // Muestra un mensaje si no hay ofrendas
-            if (paginatedOfrendas.length === 0 && totalPages <= 1) {
+            if (paginatedOfrendas.length === 0) { // Simplificado para cubrir caso inicial y sin resultados
                 const row = ofrendasTableBody.insertRow();
                 const cell = row.insertCell(0);
                 cell.colSpan = 5; // Ocupa todas las columnas
@@ -746,22 +789,20 @@
                     const row = ofrendasTableBody.insertRow();
                     row.insertCell(0).textContent = ofrenda.codigo;
                     row.insertCell(1).textContent = ofrenda.miembro;
-                    row.insertCell(2).textContent = ofrenda.cantidad ? ofrenda.cantidad.toFixed(2) : '0.00'; // Formato numérico
+                    row.insertCell(2).textContent = ofrenda.cantidad ? ofrenda.cantidad.toFixed(2) : '0.00';
                     row.insertCell(3).textContent = ofrenda.moneda;
                     row.insertCell(4).textContent = ofrenda.fecha;
                 });
             }
 
-            updatePaginationControls(); // Actualiza los botones de paginación
+            // Actualiza el texto de la paginación y el estado de los botones
+            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages || 1}`; // Muestra 1 de 1 si no hay datos
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
         }
 
-        function updatePaginationControls() {
-            const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
-            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages || 1}`;
-
-            prevPageBtn.disabled = currentPage === 1; // Deshabilita "Anterior" en la primera página
-            nextPageBtn.disabled = currentPage === totalPages || filteredOfrendas.length === 0; // Deshabilita "Siguiente" en la última
-        }
+        // --- Event Listeners para Paginación y Búsqueda de tabla principal ---
+        searchInput.addEventListener('input', applySearchFilter);
 
         prevPageBtn.addEventListener('click', () => {
             if (currentPage > 1) {
@@ -778,92 +819,30 @@
             }
         });
 
-        // --- Funcionalidad de Búsqueda de Ofrendas en la tabla principal ---
-        searchInput.addEventListener('input', () => {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            if (searchTerm) {
-                // Filtra la lista completa de ofrendas
-                filteredOfrendas = allOfrendas.filter(ofrenda =>
-                    (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm)) ||
-                    (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm)) ||
-                    (ofrenda.fecha && ofrenda.fecha.includes(searchTerm))
-                );
-            } else {
-                filteredOfrendas = [...allOfrendas]; // Si el campo de búsqueda está vacío, muestra todas las ofrendas
-            }
-            currentPage = 1; // Reinicia a la primera página al realizar una nueva búsqueda
-            renderTable();
+        // --- Inicialización al cargar la página ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMiembros(); // Carga los miembros una vez al inicio
+            setupOfrendasListener(); // Inicia la escucha en tiempo real para las ofrendas
+            // No es necesario llamar a renderTable() aquí directamente,
+            // ya que setupOfrendasListener lo hará cuando los datos de ofrendas se carguen.
         });
 
-        // --- Listeners de Firestore (Actualización en tiempo real de datos) ---
-
-        // 1. Listener para OFRENDAS: Carga y actualiza la tabla de ofrendas automáticamente
-        db.collection('ofrendas').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
-            allOfrendas = []; // Limpia la lista actual de ofrendas
-            snapshot.forEach((doc) => {
-                allOfrendas.push({ id: doc.id, ...doc.data() });
-            });
-            // Vuelve a aplicar el filtro de búsqueda actual (si hay uno) para mantener la vista consistente
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            if (searchTerm) {
-                filteredOfrendas = allOfrendas.filter(ofrenda =>
-                    (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm)) ||
-                    (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm)) ||
-                    (ofrenda.fecha && ofrenda.fecha.includes(searchTerm))
-                );
-            } else {
-                filteredOfrendas = [...allOfrendas];
-            }
-            currentPage = 1; // Reinicia a la primera página al actualizar datos desde Firestore
-            renderTable(); // Vuelve a renderizar la tabla con los datos actualizados
-        }, (error) => {
-            console.error("Error al cargar las ofrendas de Firestore: ", error);
-            alert("No se pudieron cargar las ofrendas. Por favor, revisa tu conexión a Internet y los permisos de Firebase.");
-        });
-
-        // 2. Listener para MIEMBROS: Carga TODOS los miembros desde Firestore para la búsqueda
-        // Esta es la parte CLAVE para que la búsqueda de miembros funcione.
-        db.collection('miembros').orderBy('nombre').onSnapshot((snapshot) => {
-            miembros = []; // Limpia la lista actual de miembros
-            snapshot.forEach((doc) => {
-                miembros.push({ id: doc.id, ...doc.data() }); // Añade cada miembro al array 'miembros'
-            });
-            console.log("¡Éxito! Miembros cargados desde Firestore para la búsqueda:", miembros);
-            if (miembros.length === 0) {
-                console.warn("Advertencia: La colección 'miembros' en Firestore está vacía o sus documentos no tienen los campos 'nombre' y 'codigo'.");
-            }
-        }, (error) => {
-            console.error("Error al cargar los miembros de Firestore: ", error);
-            alert("No se pudo cargar la lista de miembros para la búsqueda. Esto puede deberse a problemas de conexión o reglas de seguridad en Firestore. Revisa la consola para más detalles.");
-        });
-
-
-        // --- Event Listeners Globales y Funciones Auxiliares ---
+        // --- Event Listeners para el Modal ---
         addOfrendaBtn.addEventListener('click', openModal);
         closeButton.addEventListener('click', closeModal);
-        // Cierra el modal si se hace clic fuera de su contenido
         window.addEventListener('click', (event) => {
-            if (event.target === ofrendaModal) {
+            if (event.target == ofrendaModal) {
                 closeModal();
             }
         });
 
-        // Función de ejemplo para cerrar sesión (si usas Firebase Authentication)
+        // --- Función dummy para cerrar sesión (implementar con Firebase Auth) ---
         function cerrarSesion() {
             // Aquí iría la lógica de cierre de sesión de Firebase Authentication
-            // Por ejemplo:
-            /*
-            firebase.auth().signOut().then(() => {
-                alert('Sesión cerrada correctamente.');
-                window.location.href = 'login.html'; // Redirige a la página de login
-            }).catch((error) => {
-                console.error("Error al cerrar sesión: ", error);
-                alert("No se pudo cerrar la sesión. Por favor, intenta de nuevo.");
-            });
-            */
-            alert('Funcionalidad de cerrar sesión no implementada en este ejemplo de código.');
+            // Por ejemplo: firebase.auth().signOut().then(() => { window.location.href = 'login.html'; });
+            alert('Funcionalidad de "Cerrar sesión" no implementada completamente. Redirigiendo a acceso.html.');
+            window.location.href = 'acceso.html'; // Redirige a la página de acceso o login
         }
-
     </script>
 </body>
 </html>
