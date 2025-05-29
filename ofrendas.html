@@ -635,376 +635,426 @@
 
     <script>
         // --- CONFIGURACIÓN DE FIREBASE ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-            projectId: "iglesia-adoracion-viva",
-            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-            messagingSenderId: "815332010058",
-            appId: "1:815332010058:web:d2afff616469349d88deb3",
-            measurementId: "G-43MZP6V55D"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+      // --- CONFIGURACIÓN DE FIREBASE ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k", // Asegúrate de que esta API Key es la correcta para tu proyecto
+    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+    databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com", // Esto es para Realtime Database, Firestore usa projectId
+    projectId: "iglesia-adoracion-viva", // Este es el importante para Firestore
+    storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+    messagingSenderId: "815332010058",
+    appId: "1:815332010058:web:d2afff616469349d88deb3",
+    measurementId: "G-43MZP6V55D"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-        // --- Datos en caché ---
-        let allFinanzas = []; // Almacenará todas las entradas de finanzas cargadas de Firestore
-        let filteredFinanzas = []; // Entradas después de aplicar filtros (aunque aquí no hay búsqueda, se usa para paginación)
+// --- Datos en caché ---
+let allFinanzas = []; // Almacenará todas las entradas de finanzas cargadas de Firestore
+let filteredFinanzas = []; // Entradas después de aplicar filtros (aunque aquí no hay búsqueda, se usa para paginación)
 
-        // --- Estado del Modal ---
-        let currentEditingFinanzaId = null; // Para saber si estamos editando o añadiendo
+// --- Estado del Modal ---
+let currentEditingFinanzaId = null; // Para saber si estamos editando o añadiendo
 
-        // --- Paginación ---
-        const ITEMS_PER_PAGE = 20; // Número de elementos por página
-        let currentPage = 1;
-        let totalPages = 1;
+// --- Paginación ---
+const ITEMS_PER_PAGE = 20; // Número de elementos por página
+let currentPage = 1;
+let totalPages = 1;
 
-        // --- Referencias a elementos del DOM ---
-        const addFinanzaBtn = document.getElementById('addFinanzaBtn');
-        const ofrendaModal = document.getElementById('ofrendaModal');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const modalTitle = document.getElementById('modalTitle');
-        const ofrendaForm = document.getElementById('ofrendaForm');
+// --- Referencias a elementos del DOM ---
+const addFinanzaBtn = document.getElementById('addFinanzaBtn');
+const ofrendaModal = document.getElementById('ofrendaModal');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const modalTitle = document.getElementById('modalTitle');
+const ofrendaForm = document.getElementById('ofrendaForm');
 
-        const conceptoInput = document.getElementById('concepto');
-        const cantidadInput = document.getElementById('cantidad');
-        const monedaSelect = document.getElementById('moneda');
-        const fechaInput = document.getElementById('fecha');
+const conceptoInput = document.getElementById('concepto');
+const cantidadInput = document.getElementById('cantidad');
+const monedaSelect = document.getElementById('moneda');
+const fechaInput = document.getElementById('fecha');
 
-        const saveFinanzaBtn = document.getElementById('saveFinanzaBtn');
-        const deleteFinanzaBtn = document.getElementById('deleteFinanzaBtn');
+const saveFinanzaBtn = document.getElementById('saveFinanzaBtn');
+const deleteFinanzaBtn = document.getElementById('deleteFinanzaBtn');
 
-        const prevPageBtn = document.getElementById('prevPageBtn');
-        const nextPageBtn = document.getElementById('nextPageBtn');
-        const pageInfoSpan = document.getElementById('pageInfo');
+const prevPageBtn = document.getElementById('prevPageBtn');
+const nextPageBtn = document.getElementById('nextPageBtn');
+const pageInfoSpan = document.getElementById('pageInfo');
 
-        // Referencias para el resumen de ofrendas
-        const totalCordobasSpan = document.getElementById('totalCordobas');
-        const totalDolaresSpan = document.getElementById('totalDolares');
-        const fechaResumenInput = document.getElementById('fechaResumen');
-        const cordobasSpinner = document.getElementById('cordobasSpinner');
-        const dolaresSpinner = document.getElementById('dolaresSpinner');
+// Referencias para el resumen de ofrendas
+const totalCordobasSpan = document.getElementById('totalCordobas');
+const totalDolaresSpan = document.getElementById('totalDolares');
+const fechaResumenInput = document.getElementById('fechaResumen');
+const cordobasSpinner = document.getElementById('cordobasSpinner');
+const dolaresSpinner = document.getElementById('dolaresSpinner');
+const loadingSpinner = document.querySelector('.loading-spinner'); // Spinner para la tabla
 
+let hot; // Variable para la instancia de Handsontable
 
-        let hot; // Variable para la instancia de Handsontable
+// --- Funciones de Utilidad ---
 
-        // --- Funciones de Utilidad ---
+// Función para mostrar mensajes Toastify
+function showToast(message, type = 'success') {
+    let backgroundColor;
+    if (type === 'success') {
+        backgroundColor = 'linear-gradient(to right, #4CAF50, #66BB6A)';
+    } else if (type === 'error') {
+        backgroundColor = 'linear-gradient(to right, #C62828, #EF5350)';
+    } else if (type === 'info') {
+        backgroundColor = 'linear-gradient(to right, #2196F3, #42A5F5)';
+    } else { // warning
+        backgroundColor = 'linear-gradient(to right, #FF9800, #FFA726)';
+    }
 
-        // Función para mostrar mensajes Toastify
-        function showToast(message, type = 'success') {
-            let backgroundColor;
-            if (type === 'success') {
-                backgroundColor = 'linear-gradient(to right, #4CAF50, #66BB6A)';
-            } else if (type === 'error') {
-                backgroundColor = 'linear-gradient(to right, #C62828, #EF5350)';
-            } else if (type === 'info') {
-                backgroundColor = 'linear-gradient(to right, #2196F3, #42A5F5)';
-            } else { // warning
-                backgroundColor = 'linear-gradient(to right, #FF9800, #FFA726)';
-            }
+    Toastify({
+        text: message,
+        duration: 3000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        backgroundColor: backgroundColor,
+        stopOnFocus: true
+    }).showToast();
+}
 
-            Toastify({
-                text: message,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: backgroundColor,
-                stopOnFocus: true
-            }).showToast();
+// Función para cerrar sesión
+function cerrarSesion() {
+    auth.signOut().then(() => {
+        showToast("Sesión cerrada", "info");
+        window.location.href = 'index.html'; // Redirige a la página de inicio de sesión
+    }).catch((error) => {
+        console.error("Error al cerrar sesión:", error);
+        showToast("Error al cerrar sesión", "error");
+    });
+}
+
+// Asegurar que el usuario esté loggeado (o quitar si no quieres autenticación)
+auth.onAuthStateChanged(user => {
+    // Si tus reglas de seguridad de Firestore no requieren autenticación (allow read, write: if true;),
+    // puedes comentar o eliminar esta sección para permitir el acceso público.
+    // Sin embargo, si planeas tener usuarios, esta es una buena práctica.
+    if (!user) {
+        window.location.href = 'index.html'; // Redirige si no hay usuario
+    } else {
+        loadFinanzas(); // Carga los datos solo si está loggeado
+        // Configurar la fecha actual para el resumen por defecto
+        const today = new Date();
+        const currentMonth = today.toISOString().slice(0, 7); // Formato YYYY-MM
+        fechaResumenInput.value = currentMonth;
+        actualizarResumen(); // Cargar el resumen inicial
+    }
+});
+
+// --- Funciones del Modal ---
+
+function openModal(id = null) {
+    ofrendaForm.reset(); // Limpia el formulario
+    currentEditingFinanzaId = id;
+
+    if (id) {
+        modalTitle.textContent = 'Editar Entrada Financiera';
+        saveFinanzaBtn.textContent = 'Actualizar Entrada';
+        deleteFinanzaBtn.classList.remove('hidden');
+
+        // Buscar la entrada por ID y rellenar el formulario
+        const finanza = allFinanzas.find(item => item.id === id);
+        if (finanza) {
+            conceptoInput.value = finanza.concepto;
+            cantidadInput.value = finanza.cantidad;
+            monedaSelect.value = finanza.moneda;
+            fechaInput.value = finanza.fecha; // Ya viene en YYYY-MM-DD
+        } else {
+            showToast("No se encontró la entrada para editar.", "error");
+            closeModal();
+            return;
         }
+    } else {
+        modalTitle.textContent = 'Añadir Nueva Entrada Financiera';
+        saveFinanzaBtn.textContent = 'Guardar Entrada';
+        deleteFinanzaBtn.classList.add('hidden');
+        // Establecer la fecha actual por defecto al añadir
+        fechaInput.valueAsDate = new Date();
+    }
+    ofrendaModal.classList.add('show');
+}
 
-        // Función para cerrar sesión
-        function cerrarSesion() {
-            auth.signOut().then(() => {
-                showToast("Sesión cerrada", "info");
-                window.location.href = 'index.html'; // Redirige a la página de inicio de sesión
-            }).catch((error) => {
-                console.error("Error al cerrar sesión:", error);
-                showToast("Error al cerrar sesión", "error");
-            });
-        }
+function closeModal() {
+    ofrendaModal.classList.remove('show');
+    ofrendaForm.reset(); // Limpia el formulario
+    currentEditingFinanzaId = null;
+}
 
-        // Asegurar que el usuario esté loggeado
-        auth.onAuthStateChanged(user => {
-            if (!user) {
-                window.location.href = 'index.html'; // Redirige si no hay usuario
-            } else {
-                loadFinanzas(); // Carga los datos solo si está loggeado
-                // Configurar la fecha actual para el resumen por defecto
-                const today = new Date();
-                const currentMonth = today.toISOString().slice(0, 7); // Formato YYYY-MM
-                fechaResumenInput.value = currentMonth;
-                actualizarResumen(); // Cargar el resumen inicial
-            }
-        });
+// --- Manejo de Datos (CRUD) ---
 
-        // --- Funciones del Modal ---
-
-        function openModal(id = null) {
-            ofrendaForm.reset(); // Limpia el formulario
-            currentEditingFinanzaId = id;
-
-            if (id) {
-                modalTitle.textContent = 'Editar Entrada Financiera';
-                saveFinanzaBtn.textContent = 'Actualizar Entrada';
-                deleteFinanzaBtn.classList.remove('hidden');
-
-                // Buscar la entrada por ID y rellenar el formulario
-                const finanza = allFinanzas.find(item => item.id === id);
-                if (finanza) {
-                    conceptoInput.value = finanza.concepto;
-                    cantidadInput.value = finanza.cantidad;
-                    monedaSelect.value = finanza.moneda;
-                    fechaInput.value = finanza.fecha; // Ya viene en YYYY-MM-DD
-                }
-            } else {
-                modalTitle.textContent = 'Añadir Nueva Entrada Financiera';
-                saveFinanzaBtn.textContent = 'Guardar Entrada';
-                deleteFinanzaBtn.classList.add('hidden');
-                // Establecer la fecha actual por defecto al añadir
-                fechaInput.valueAsDate = new Date();
-            }
-            ofrendaModal.classList.add('show');
-        }
-
-        function closeModal() {
-            ofrendaModal.classList.remove('show');
-            ofrendaForm.reset(); // Limpia el formulario
-            currentEditingFinanzaId = null;
-        }
-
-        // --- Manejo de Datos (CRUD) ---
-
-        async function loadFinanzas() {
-            try {
-                const snapshot = await db.collection('finanzas').orderBy('fecha', 'desc').get();
-                allFinanzas = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return {
-                        id: doc.id,
-                        concepto: data.concepto || 'Sin concepto',
-                        cantidad: parseFloat(data.cantidad) || 0, // Asegurar que sea número
-                        moneda: data.moneda || 'USD',
-                        fecha: data.fecha ? data.fecha.toDate().toISOString().split('T')[0] : '' // Formato YYYY-MM-DD
-                    };
-                });
-                applyFiltersAndRenderTable();
-            } catch (error) {
-                console.error("Error al cargar finanzas:", error);
-                showToast("Error al cargar finanzas. Asegúrate de tener permisos.", "error");
-            }
-        }
-
-        async function saveFinanza(event) {
-            event.preventDefault();
-
-            // Validación
-            if (!conceptoInput.value.trim() || !cantidadInput.value || !fechaInput.value) {
-                showToast("Por favor, rellena todos los campos.", "warning");
-                return;
-            }
-            if (isNaN(parseFloat(cantidadInput.value)) || parseFloat(cantidadInput.value) <= 0) {
-                showToast("La cantidad debe ser un número positivo.", "warning");
-                return;
-            }
-
-            const finanzaData = {
-                concepto: conceptoInput.value.trim(),
-                cantidad: parseFloat(cantidadInput.value),
-                moneda: monedaSelect.value,
-                fecha: firebase.firestore.Timestamp.fromDate(new Date(fechaInput.value)) // Guarda como Timestamp
+async function loadFinanzas() {
+    loadingSpinner.style.display = 'block'; // Mostrar spinner
+    try {
+        const snapshot = await db.collection('finanzas').orderBy('fecha', 'desc').get();
+        allFinanzas = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                concepto: data.concepto || 'Sin concepto',
+                cantidad: parseFloat(data.cantidad) || 0, // Asegurar que sea número
+                moneda: data.moneda || 'USD',
+                // Asegurar que la fecha sea un string YYYY-MM-DD
+                fecha: data.fecha ? (data.fecha.toDate ? data.fecha.toDate().toISOString().split('T')[0] : data.fecha) : ''
             };
+        });
+        applyPagination(); // Aplicar paginación y renderizar
+    } catch (error) {
+        console.error("Error al cargar finanzas:", error);
+        showToast("Error al cargar finanzas. Revisa la consola y tus reglas de seguridad.", "error");
+    } finally {
+        loadingSpinner.style.display = 'none'; // Ocultar spinner
+    }
+}
 
-            try {
-                if (currentEditingFinanzaId) {
-                    // Actualizar
-                    await db.collection('finanzas').doc(currentEditingFinanzaId).update(finanzaData);
-                    showToast("Entrada financiera actualizada con éxito.", "success");
-                } else {
-                    // Añadir nueva
-                    await db.collection('finanzas').add(finanzaData);
-                    showToast("Nueva entrada financiera guardada con éxito.", "success");
-                }
-                closeModal();
-                loadFinanzas(); // Recargar datos para actualizar la tabla
-                actualizarResumen(); // Recargar el resumen también
-            } catch (error) {
-                console.error("Error al guardar finanza:", error);
-                showToast("Error al guardar finanza. Revisa tus permisos.", "error");
-            }
+async function saveFinanza(event) {
+    event.preventDefault();
+
+    // Validación
+    const concepto = conceptoInput.value.trim();
+    const cantidad = parseFloat(cantidadInput.value);
+    const moneda = monedaSelect.value;
+    const fecha = fechaInput.value; // Ya en formato YYYY-MM-DD
+
+    if (!concepto || isNaN(cantidad) || cantidad <= 0 || !moneda || !fecha) {
+        showToast("Por favor, rellena todos los campos correctamente. La cantidad debe ser un número positivo.", "warning");
+        return;
+    }
+
+    const finanzaData = {
+        concepto: concepto,
+        cantidad: cantidad,
+        moneda: moneda,
+        fecha: fecha // Guardar como string YYYY-MM-DD para facilidad de consulta
+    };
+
+    try {
+        if (currentEditingFinanzaId) {
+            // Actualizar entrada existente
+            await db.collection('finanzas').doc(currentEditingFinanzaId).update(finanzaData);
+            showToast("Entrada financiera actualizada con éxito.", "success");
+        } else {
+            // Añadir nueva entrada
+            await db.collection('finanzas').add(finanzaData);
+            showToast("Entrada financiera guardada con éxito.", "success");
         }
+        closeModal();
+        loadFinanzas(); // Recargar los datos para actualizar la tabla y el resumen
+    } catch (error) {
+        console.error("Error al guardar/actualizar finanza:", error);
+        showToast("Error al guardar la entrada financiera. Consulta la consola.", "error");
+    }
+}
 
-        async function deleteFinanza() {
-            if (!currentEditingFinanzaId || !confirm('¿Estás seguro de que quieres eliminar esta entrada?')) {
-                return;
-            }
+async function deleteFinanza() {
+    if (!currentEditingFinanzaId || !confirm("¿Estás seguro de que quieres eliminar esta entrada financiera?")) {
+        return;
+    }
 
-            try {
-                await db.collection('finanzas').doc(currentEditingFinanzaId).delete();
-                showToast("Entrada financiera eliminada con éxito.", "success");
-                closeModal();
-                loadFinanzas(); // Recargar datos para actualizar la tabla
-                actualizarResumen(); // Recargar el resumen
-            } catch (error) {
-                console.error("Error al eliminar finanza:", error);
-                showToast("Error al eliminar finanza. Revisa tus permisos.", "error");
-            }
-        }
+    try {
+        await db.collection('finanzas').doc(currentEditingFinanzaId).delete();
+        showToast("Entrada financiera eliminada con éxito.", "success");
+        closeModal();
+        loadFinanzas(); // Recargar datos
+    } catch (error) {
+        console.error("Error al eliminar finanza:", error);
+        showToast("Error al eliminar la entrada financiera. Consulta la consola.", "error");
+    }
+}
 
-        // --- Handsontable Initialization and Data Display ---
+// --- Funciones de Handsontable y Paginación ---
 
-        function initializeHandsontable() {
-            const container = document.getElementById('handsontable-container');
-            const tableData = []; // Handsontable expects an array of arrays or array of objects
+function initializeHandsontable(data) {
+    const container = document.getElementById('handsontable-container');
+    if (hot) {
+        hot.destroy(); // Destruye la instancia existente si la hay
+    }
 
-            const hotOptions = {
-                data: tableData, // Initial empty data
-                columns: [
-                    { data: 'fecha', title: 'Fecha', type: 'date', dateFormat: 'YYYY-MM-DD', correctFormat: true, readOnly: true },
-                    { data: 'concepto', title: 'Concepto', type: 'text', readOnly: true },
-                    { data: 'cantidad', title: 'Cantidad', type: 'numeric', numericFormat: { pattern: '0,0.00' }, readOnly: true },
-                    { data: 'moneda', title: 'Moneda', type: 'text', readOnly: true },
-                    { // Acción de editar
-                        data: 'id', // Use ID as data source for the button
-                        title: 'Acciones',
-                        renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                            Handsontable.renderers.HtmlRenderer.apply(this, arguments); // Render HTML
-                            td.innerHTML = `<button class="action-button" onclick="openModal('${value}')">Editar</button>`;
-                            return td;
-                        },
-                        readOnly: true,
-                        width: 100
+    const headers = ['Concepto', 'Cantidad', 'Moneda', 'Fecha', 'Acciones']; // Añadir columna de acciones
+
+    hot = new Handsontable(container, {
+        data: data,
+        colHeaders: headers,
+        columns: [
+            { data: 'concepto', type: 'text' },
+            { data: 'cantidad', type: 'numeric', numericFormat: { pattern: '0,0.00' } },
+            { data: 'moneda', type: 'text' },
+            { data: 'fecha', type: 'date', dateFormat: 'YYYY-MM-DD' },
+            {
+                data: null, // Esta columna no se enlaza a un campo de datos
+                renderer: function (instance, td, row, col, prop, value, cellProperties) {
+                    Handsontable.renderers.HtmlRenderer.apply(this, arguments);
+                    const finanzaId = filteredFinanzas[row] ? filteredFinanzas[row].id : null;
+                    if (finanzaId) {
+                        td.innerHTML = `<button class="action-button edit-finanza-btn" data-id="${finanzaId}">Editar</button>`;
+                    } else {
+                        td.innerHTML = ''; // O vacío si no hay ID
                     }
-                ],
-                colHeaders: ['Fecha', 'Concepto', 'Cantidad', 'Moneda', 'Acciones'],
-                rowHeaders: true,
-                height: 'auto',
-                stretchH: 'all', // Makes columns fill the width
-                licenseKey: 'non-commercial-and-evaluation' // Required for non-commercial use
-            };
-
-            if (hot) {
-                hot.destroy(); // Destroy previous instance if it exists
+                },
+                readOnly: true // Esta columna es solo para el botón
             }
-            hot = new Handsontable(container, hotOptions);
+        ],
+        // Deshabilitar la edición directa en la tabla si no quieres que editen aquí
+        // cell: function(row, col, prop) {
+        //     if (prop !== 'acciones') { // Permitir edición en todas las columnas excepto la de acciones
+        //         return { readOnly: false };
+        //     }
+        // },
+        licenseKey: 'non-commercial-and-evaluation', // Clave para uso no comercial
+        // contextMenu: true, // Habilita el menú contextual (clic derecho)
+        // filters: true, // Habilita filtros por columna
+        // dropdownMenu: true, // Habilita el menú desplegable en encabezados de columna
+        // autoColumnSize: true, // Ajusta el tamaño de las columnas automáticamente
+        height: 'auto', // Altura automática basada en el contenido
+        rowHeaders: true, // Mostrar números de fila
+        stretchH: 'all', // Estirar columnas para llenar el ancho
+        // customBorders: [ // Ejemplo de bordes personalizados (opcional)
+        //     {
+        //         range: {
+        //             from: { row: 0, col: 0 },
+        //             to: { row: data.length - 1, col: data[0].length - 1 }
+        //         },
+        //         left: { width: 2, color: 'var(--border-line)' },
+        //         right: { width: 2, color: 'var(--border-line)' },
+        //         top: { width: 2, color: 'var(--border-line)' },
+        //         bottom: { width: 2, color: 'var(--border-line)' }
+        //     }
+        // ]
+    });
+
+    // Añadir listener para el botón "Editar" en la tabla
+    Handsontable.dom.addEvent(container, 'click', function (event) {
+        if (event.target.classList.contains('edit-finanza-btn')) {
+            const finanzaId = event.target.dataset.id;
+            openModal(finanzaId);
         }
+    });
+}
 
-        function renderTablePage() {
-            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-            const endIndex = startIndex + ITEMS_PER_PAGE;
-            const dataToDisplay = filteredFinanzas.slice(startIndex, endIndex);
 
-            if (hot) {
-                hot.loadData(dataToDisplay); // Load data into Handsontable
-            } else {
-                initializeHandsontable(); // Initialize if not already done
-                hot.loadData(dataToDisplay);
-            }
+function applyPagination() {
+    filteredFinanzas = [...allFinanzas]; // En este caso, no hay filtros, así que todos los datos son filtrados.
+    totalPages = Math.ceil(filteredFinanzas.length / ITEMS_PER_PAGE);
+    currentPage = Math.min(currentPage, totalPages); // Asegurar que la página actual no exceda el total
+    if (totalPages === 0) totalPages = 1; // Para evitar 0 páginas cuando no hay datos
+    if (currentPage < 1) currentPage = 1; // Asegurar que la página actual no sea menor a 1
 
-            totalPages = Math.ceil(filteredFinanzas.length / ITEMS_PER_PAGE);
-            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
 
-            prevPageBtn.disabled = currentPage === 1;
-            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
-        }
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedData = filteredFinanzas.slice(startIndex, endIndex);
 
-        function applyFiltersAndRenderTable() {
-            filteredFinanzas = [...allFinanzas]; // Start with all data
-            // No specific filters implemented yet for the main table,
-            // but this is where you'd add them if you had search/date filters for the main table.
-            currentPage = 1; // Reset to first page on filter change
-            renderTablePage();
-        }
+    initializeHandsontable(paginatedData);
+    updatePaginationControls();
+}
 
-        // --- Paginación Event Handlers ---
-        prevPageBtn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderTablePage();
+function updatePaginationControls() {
+    pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
+    prevPageBtn.disabled = currentPage === 1;
+    nextPageBtn.disabled = currentPage === totalPages;
+}
+
+function goToPrevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        applyPagination();
+    }
+}
+
+function goToNextPage() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        applyPagination();
+    }
+}
+
+// --- Resumen de Ofrendas (Finanzas) ---
+
+async function actualizarResumen() {
+    cordobasSpinner.style.display = 'inline-block';
+    dolaresSpinner.style.display = 'inline-block';
+    totalCordobasSpan.textContent = 'C$ Calculando...';
+    totalDolaresSpan.textContent = '$ Calculando...';
+
+    const selectedMonth = fechaResumenInput.value; // Formato YYYY-MM
+    if (!selectedMonth) {
+        showToast("Por favor, selecciona un mes para el resumen.", "warning");
+        cordobasSpinner.style.display = 'none';
+        dolaresSpinner.style.display = 'none';
+        totalCordobasSpan.textContent = 'C$ 0.00';
+        totalDolaresSpan.textContent = '$ 0.00';
+        return;
+    }
+
+    const startOfMonth = selectedMonth + '-01';
+    // Calcular el último día del mes
+    const year = parseInt(selectedMonth.split('-')[0]);
+    const month = parseInt(selectedMonth.split('-')[1]);
+    const lastDay = new Date(year, month, 0).getDate(); // Día 0 del siguiente mes es el último día del mes actual
+    const endOfMonth = selectedMonth + '-' + (lastDay < 10 ? '0' : '') + lastDay;
+
+
+    let totalCordobas = 0;
+    let totalDolares = 0;
+
+    try {
+        // Query para obtener solo los datos del mes seleccionado
+        const snapshot = await db.collection('finanzas')
+            .where('fecha', '>=', startOfMonth)
+            .where('fecha', '<=', endOfMonth)
+            .get();
+
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            const cantidad = parseFloat(data.cantidad) || 0;
+            const moneda = data.moneda || 'USD';
+
+            if (moneda === 'NIO') {
+                totalCordobas += cantidad;
+            } else if (moneda === 'USD') {
+                totalDolares += cantidad;
             }
         });
 
-        nextPageBtn.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderTablePage();
-            }
-        });
+        totalCordobasSpan.textContent = `C$ ${totalCordobas.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        totalDolaresSpan.textContent = `$ ${totalDolares.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-        // --- Resumen de Ofrendas ---
-
-        async function actualizarResumen() {
-            const selectedMonth = fechaResumenInput.value; // Formato YYYY-MM
-            if (!selectedMonth) {
-                showToast("Por favor, selecciona un mes para el resumen.", "warning");
-                return;
-            }
-
-            cordobasSpinner.style.display = 'inline-block';
-            dolaresSpinner.style.display = 'inline-block';
-            totalCordobasSpan.textContent = 'C$ Calculando...';
-            totalDolaresSpan.textContent = '$ Calculando...';
-
-            const startOfMonth = new Date(selectedMonth + '-01');
-            const endOfMonth = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0); // Last day of the month
-
-            // Convert to Firebase Timestamps
-            const startTimestamp = firebase.firestore.Timestamp.fromDate(startOfMonth);
-            const endTimestamp = firebase.firestore.Timestamp.fromDate(endOfMonth);
-
-            let totalCordobas = 0;
-            let totalDolares = 0;
-
-            try {
-                const snapshot = await db.collection('finanzas')
-                    .where('fecha', '>=', startTimestamp)
-                    .where('fecha', '<=', endTimestamp)
-                    .get();
-
-                snapshot.docs.forEach(doc => {
-                    const data = doc.data();
-                    const cantidad = parseFloat(data.cantidad);
-                    if (data.moneda === 'NIO') {
-                        totalCordobas += cantidad;
-                    } else if (data.moneda === 'USD') {
-                        totalDolares += cantidad;
-                    }
-                });
-
-                totalCordobasSpan.textContent = `C$ ${totalCordobas.toFixed(2)}`;
-                totalDolaresSpan.textContent = `$ ${totalDolares.toFixed(2)}`;
-                showToast("Resumen actualizado con éxito.", "info");
-
-            } catch (error) {
-                console.error("Error al calcular resumen:", error);
-                totalCordobasSpan.textContent = 'C$ Error';
-                totalDolaresSpan.textContent = '$ Error';
-                showToast("Error al mostrar resumen. Revisa tus permisos o conexión.", "error");
-            } finally {
-                cordobasSpinner.style.display = 'none';
-                dolaresSpinner.style.display = 'none';
-            }
-        }
+    } catch (error) {
+        console.error("Error al calcular resumen de finanzas:", error);
+        showToast("Error al calcular el resumen. Revisa la consola.", "error");
+        totalCordobasSpan.textContent = 'C$ Error';
+        totalDolaresSpan.textContent = '$ Error';
+    } finally {
+        cordobasSpinner.style.display = 'none';
+        dolaresSpinner.style.display = 'none';
+    }
+}
 
 
-        // --- Event Listeners ---
-        addFinanzaBtn.addEventListener('click', () => openModal());
-        closeModalBtn.addEventListener('click', closeModal);
-        ofrendaModal.addEventListener('click', (e) => {
-            if (e.target === ofrendaModal) {
-                closeModal();
-            }
-        });
-        ofrendaForm.addEventListener('submit', saveFinanza);
-        deleteFinanzaBtn.addEventListener('click', deleteFinanza);
+// --- Event Listeners ---
+addFinanzaBtn.addEventListener('click', () => openModal());
+closeModalBtn.addEventListener('click', closeModal);
+ofrendaModal.addEventListener('click', (event) => {
+    if (event.target === ofrendaModal) {
+        closeModal();
+    }
+});
 
-        // Call this once on page load to set up the Handsontable grid structure
-        // Data will be loaded by loadFinanzas() once the user is authenticated.
-        initializeHandsontable();
+ofrendaForm.addEventListener('submit', saveFinanza);
+deleteFinanzaBtn.addEventListener('click', deleteFinanza);
 
+prevPageBtn.addEventListener('click', goToPrevPage);
+nextPageBtn.addEventListener('click', goToNextPage);
+
+// Listener para el input de fecha del resumen
+fechaResumenInput.addEventListener('change', actualizarResumen);
+
+// Asegúrate de que las funciones existan globalmente si son llamadas desde el HTML (como cerrarSesion)
+window.cerrarSesion = cerrarSesion;
+window.actualizarResumen = actualizarResumen; // También para el botón "Actualizar Resumen"
     </script>
 </body>
 </html>
