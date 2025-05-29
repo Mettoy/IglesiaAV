@@ -117,6 +117,18 @@
             padding: 30px;
             background-color: var(--ultra-dark-blue); /* Fondo del contenido principal ultra oscuro */
             transition: margin-left 0.3s ease;
+            display: flex; /* Usamos flexbox para alinear los elementos */
+            flex-direction: column; /* Apilamos en columna por defecto */
+            align-items: flex-start; /* Alineamos los elementos al inicio */
+        }
+
+        /* Contenedor para el botón y el resumen */
+        .top-section {
+            display: flex;
+            justify-content: space-between; /* Espacio entre el botón y el resumen */
+            align-items: flex-start; /* Alinea arriba si uno es más alto */
+            width: 100%; /* Ocupa todo el ancho disponible */
+            margin-bottom: 20px; /* Espacio antes de la tabla */
         }
 
         .add-button {
@@ -130,8 +142,7 @@
             font-weight: 700;
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            /* Added for this page to have its own margin */
-            margin-bottom: 20px;
+            /* margin-bottom: 20px; -- Eliminado, ahora el top-section maneja el espaciado */
         }
 
         .add-button:hover {
@@ -139,6 +150,93 @@
             transform: translateY(-3px) scale(1.02); /* Deslizamiento y ligero escalado */
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
         }
+
+        /* Estilos para el cuadro de resumen de ofrendas */
+        .ofrendas-resumen {
+            background-color: var(--deep-blue);
+            color: var(--gold-light);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            width: 300px; /* Ancho fijo para el cuadro */
+            box-sizing: border-box; /* Incluye padding en el ancho */
+        }
+
+        .ofrendas-resumen h2 {
+            color: var(--gold-vibrant);
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.3em;
+        }
+
+        .ofrendas-resumen p {
+            margin: 5px 0;
+            font-size: 0.95em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ofrendas-resumen p span {
+            font-weight: bold;
+            color: var(--white-off);
+        }
+
+        .ofrendas-resumen .selector-fechas {
+            display: flex;
+            flex-direction: column;
+            margin-top: 15px;
+        }
+
+        .ofrendas-resumen .selector-fechas label {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .ofrendas-resumen .selector-fechas input[type="month"] { /* Cambiado a month */
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-line);
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: var(--dark-accent-blue);
+            color: var(--white-off);
+            font-family: 'Roboto', sans-serif; /* Para consistencia */
+        }
+        /* Para cambiar el color del icono del calendario en input type="month" */
+        .ofrendas-resumen .selector-fechas input[type="month"]::-webkit-calendar-picker-indicator {
+            filter: invert(80%) sepia(100%) saturate(2000%) hue-rotate(0deg) brightness(100%) contrast(100%); /* Dorado */
+        }
+
+
+        .ofrendas-resumen .selector-fechas button {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .ofrendas-resumen .selector-fechas button:hover {
+            background-color: var(--gold-darker);
+            transform: translateY(-2px);
+        }
+
+        /* Loading spinner para el resumen */
+        .summary-spinner {
+            display: none; /* Hidden by default */
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-top: 3px solid var(--gold-vibrant);
+            border-radius: 50%;
+            width: 15px;
+            height: 15px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
 
         /* --- Table Styles (General para tablas de datos) --- */
         .data-table { /* Esto es para tablas HTML estándar, Handsontable usa sus propias clases */
@@ -148,7 +246,7 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
             border-radius: 8px;
             overflow: hidden;
-            margin-top: 20px; /* Espacio extra encima de la tabla para que no se pegue al botón */
+            /* margin-top: 20px; -- Eliminado, el top-section maneja el espaciado */
         }
 
         .data-table th, .data-table td {
@@ -360,13 +458,14 @@
 
         /* Handsontable Styles Overrides */
         #handsontable-container {
-            margin-top: 20px;
+            margin-top: 20px; /* Separación con el top-section */
             border: 1px solid var(--border-line);
             border-radius: 8px;
             overflow: hidden;
             min-height: 400px; /* Altura mínima para el contenedor */
             height: auto; /* Allow content to dictate height, but maintain minimum */
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7); /* Consistent shadow */
+            width: 100%; /* Ocupa todo el ancho disponible */
         }
         .ht_master .wtHolder {
             background-color: var(--deep-blue);
@@ -467,7 +566,21 @@
     </div>
 
     <div class="main-content">
-        <button class="add-button" id="addFinanzaBtn">Añadir Entrada Financiera</button>
+        <div class="top-section">
+            <button class="add-button" id="addFinanzaBtn">Añadir Entrada Financiera</button>
+
+            <div class="ofrendas-resumen">
+                <h2>Resumen de Ofrendas</h2>
+                <p>Total en Córdobas: <span id="totalCordobas">C$ 0.00</span> <span class="summary-spinner" id="cordobasSpinner"></span></p>
+                <p>Total en Dólares: <span id="totalDolares">$ 0.00</span> <span class="summary-spinner" id="dolaresSpinner"></span></p>
+
+                <div class="selector-fechas">
+                    <label for="fechaResumen">Seleccionar Mes:</label>
+                    <input type="month" id="fechaResumen">
+                    <button onclick="actualizarResumen()">Actualizar Resumen</button>
+                </div>
+            </div>
+        </div>
 
         <div id="handsontable-container"></div>
 
@@ -550,12 +663,12 @@
 
         // --- Referencias a elementos del DOM ---
         const addFinanzaBtn = document.getElementById('addFinanzaBtn');
-        const ofrendaModal = document.getElementById('ofrendaModal'); // Mantenemos el ID genérico
+        const ofrendaModal = document.getElementById('ofrendaModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
         const modalTitle = document.getElementById('modalTitle');
-        const ofrendaForm = document.getElementById('ofrendaForm'); // Mantenemos el ID genérico
+        const ofrendaForm = document.getElementById('ofrendaForm');
 
-        const conceptoInput = document.getElementById('concepto'); // Nuevo campo
+        const conceptoInput = document.getElementById('concepto');
         const cantidadInput = document.getElementById('cantidad');
         const monedaSelect = document.getElementById('moneda');
         const fechaInput = document.getElementById('fecha');
@@ -566,6 +679,14 @@
         const prevPageBtn = document.getElementById('prevPageBtn');
         const nextPageBtn = document.getElementById('nextPageBtn');
         const pageInfoSpan = document.getElementById('pageInfo');
+
+        // Referencias para el resumen de ofrendas
+        const totalCordobasSpan = document.getElementById('totalCordobas');
+        const totalDolaresSpan = document.getElementById('totalDolares');
+        const fechaResumenInput = document.getElementById('fechaResumen');
+        const cordobasSpinner = document.getElementById('cordobasSpinner');
+        const dolaresSpinner = document.getElementById('dolaresSpinner');
+
 
         let hot; // Variable para la instancia de Handsontable
 
@@ -612,6 +733,11 @@
                 window.location.href = 'index.html'; // Redirige si no hay usuario
             } else {
                 loadFinanzas(); // Carga los datos solo si está loggeado
+                // Configurar la fecha actual para el resumen por defecto
+                const today = new Date();
+                const currentMonth = today.toISOString().slice(0, 7); // Formato YYYY-MM
+                fechaResumenInput.value = currentMonth;
+                actualizarResumen(); // Cargar el resumen inicial
             }
         });
 
@@ -681,6 +807,16 @@
         async function saveFinanza(event) {
             event.preventDefault();
 
+            // Validación básica
+            if (!conceptoInput.value.trim() || !cantidadInput.value || !fechaInput.value) {
+                showToast("Por favor, rellena todos los campos.", "warning");
+                return;
+            }
+            if (isNaN(parseFloat(cantidadInput.value)) || parseFloat(cantidadInput.value) <= 0) {
+                showToast("La cantidad debe ser un número positivo.", "warning");
+                return;
+            }
+
             const data = {
                 concepto: conceptoInput.value.trim(),
                 cantidad: parseFloat(cantidadInput.value),
@@ -701,9 +837,18 @@
                 }
                 closeModal();
                 loadFinanzas(); // Recargar datos para actualizar la tabla
+                actualizarResumen(); // Actualizar el resumen también
             } catch (error) {
                 console.error("Error al guardar entrada financiera:", error);
-                showToast("Error al guardar entrada financiera", "error");
+                // Mostrar un mensaje más detallado si es posible
+                let errorMessage = "Error al guardar entrada financiera.";
+                if (error.code) {
+                    errorMessage += ` Código: ${error.code}.`;
+                }
+                if (error.message) {
+                    errorMessage += ` Mensaje: ${error.message}`;
+                }
+                showToast(errorMessage, "error");
             }
         }
 
@@ -717,6 +862,7 @@
                 showToast("Entrada financiera eliminada con éxito", "success");
                 closeModal();
                 loadFinanzas(); // Recargar datos para actualizar la tabla
+                actualizarResumen(); // Actualizar el resumen también
             } catch (error) {
                 console.error("Error al eliminar entrada financiera:", error);
                 showToast("Error al eliminar entrada financiera", "error");
@@ -728,12 +874,71 @@
             openModal(id);
         }
 
+        // --- Lógica del Resumen de Ofrendas ---
+        async function actualizarResumen() {
+            totalCordobasSpan.textContent = 'C$ 0.00';
+            totalDolaresSpan.textContent = '$ 0.00';
+            cordobasSpinner.style.display = 'inline-block';
+            dolaresSpinner.style.display = 'inline-block';
+
+            const selectedMonth = fechaResumenInput.value; // Formato YYYY-MM
+            if (!selectedMonth) {
+                showToast("Por favor, selecciona un mes para el resumen.", "warning");
+                cordobasSpinner.style.display = 'none';
+                dolaresSpinner.style.display = 'none';
+                return;
+            }
+
+            const [year, month] = selectedMonth.split('-').map(Number);
+            const startDate = new Date(year, month - 1, 1); // Primer día del mes
+            const endDate = new Date(year, month, 0); // Último día del mes (día 0 del siguiente mes)
+
+            // Convertir a Timestamp de Firebase
+            const startTimestamp = firebase.firestore.Timestamp.fromDate(startDate);
+            const endTimestamp = firebase.firestore.Timestamp.fromDate(endDate);
+
+            let totalNIO = 0;
+            let totalUSD = 0;
+
+            try {
+                const querySnapshot = await db.collection('finanzas')
+                    .where('fecha', '>=', startTimestamp)
+                    .where('fecha', '<=', endTimestamp)
+                    .get();
+
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Asumiendo que 'tipo_entrada' es el campo para distinguir entre 'ofrendas' y otras 'finanzas'
+                    // Si todas las entradas en la colección 'finanzas' son 'ofrendas', puedes omitir esta condición.
+                    // Ajusta 'ofrenda' según el valor que uses en tu campo 'tipo_entrada' (si existe).
+                    // Si no tienes un campo 'tipo_entrada', entonces sumará todo.
+                    // Para este ejemplo, sumaremos todas las entradas en la colección 'finanzas'.
+                    if (data.moneda === 'NIO') {
+                        totalNIO += data.cantidad || 0;
+                    } else if (data.moneda === 'USD') {
+                        totalUSD += data.cantidad || 0;
+                    }
+                });
+
+                totalCordobasSpan.textContent = `C$ ${totalNIO.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`; // Formato de miles
+                totalDolaresSpan.textContent = `$ ${totalUSD.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+
+            } catch (error) {
+                console.error("Error al calcular resumen de ofrendas:", error);
+                showToast("Error al cargar el resumen de ofrendas.", "error");
+                totalCordobasSpan.textContent = 'Error';
+                totalDolaresSpan.textContent = 'Error';
+            } finally {
+                cordobasSpinner.style.display = 'none';
+                dolaresSpinner.style.display = 'none';
+            }
+        }
+
+
         // --- Paginación y Renderizado de Tabla ---
 
         function applyFiltersAndRenderTable() {
-            // En esta página de Finanzas, no hay filtros de búsqueda complejos,
-            // por lo que filteredFinanzas es simplemente allFinanzas.
-            filteredFinanzas = [...allFinanzas];
+            filteredFinanzas = [...allFinanzas]; // Actualmente no hay filtros activos
 
             totalPages = Math.ceil(filteredFinanzas.length / ITEMS_PER_PAGE);
             if (currentPage > totalPages) {
@@ -747,14 +952,15 @@
             const endIndex = startIndex + ITEMS_PER_PAGE;
             const dataToDisplay = filteredFinanzas.slice(startIndex, endIndex);
 
-            // Actualizar Handsontable
+            updatePaginationControls();
+
             if (!hot) {
                 const container = document.getElementById('handsontable-container');
                 hot = new Handsontable(container, {
                     data: dataToDisplay,
                     colHeaders: ['ID', 'Concepto', 'Cantidad', 'Moneda', 'Fecha', 'Acciones'],
                     columns: [
-                        { data: 'id', readOnly: true, className: 'hidden' },
+                        { data: 'id', readOnly: true, className: 'hidden' }, // Oculto visualmente
                         { data: 'concepto', title: 'Concepto', readOnly: true },
                         { data: 'cantidad', title: 'Cantidad', type: 'numeric', numericFormat: { pattern: '0,0.00' }, readOnly: true },
                         { data: 'moneda', title: 'Moneda', readOnly: true },
@@ -775,34 +981,26 @@
                             readOnly: true
                         }
                     ],
-                    // Configuración adicional de Handsontable para el tema
+                    hiddenColumns: {
+                        columns: [0] // Oculta la columna ID
+                    },
                     licenseKey: 'non-commercial-and-evaluation', // Esencial para Handsontable CE
                     height: 'auto',
                     autoRowSize: true,
                     autoColumnSize: true,
                     rowHeaders: true,
-                    dropdownMenu: true,
+                    dropdownMenu: ['remove_row'], // Permite eliminar filas desde el menú contextual
+                    contextMenu: ['remove_row'], // Menú contextual para eliminar
                     filters: true,
-                    readOnly: true, // La edición se hace por modal
-                    columnSorting: true,
-                    fixedColumnsStart: 1, // Fix the ID column (hidden)
-                    afterGetColHeader: function(col, TH) { // Custom header rendering to hide 'ID'
-                        if (col === 0) { // If it's the ID column
-                            TH.style.display = 'none';
-                        }
-                    },
-                     afterGetRowHeader: function(row, TH) {
-                        TH.style.verticalAlign = 'middle';
-                    }
+                    readOnly: true // Hace toda la tabla de solo lectura para evitar edición directa, usar el modal
                 });
             } else {
                 hot.loadData(dataToDisplay);
             }
-            updatePaginationButtons();
         }
 
-        function updatePaginationButtons() {
-            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages > 0 ? totalPages : 1}`;
+        function updatePaginationControls() {
+            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
             prevPageBtn.disabled = currentPage === 1;
             nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
         }
@@ -827,8 +1025,6 @@
             }
         });
 
-        // Inicialización de la página (carga de datos)
-        // La carga inicial se hace en onAuthStateChanged
     </script>
 </body>
 </html>
