@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diezmos y Ofrendas</title>
+    <title>Ofrendas</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Definición de colores principales: Azul Ultra Oscuro y Dorado Vibrante */
@@ -414,8 +414,8 @@
     <div class="sidebar">
         <div class="sidebar-header">Diezmos</div>
         <a href="acceso.html" class="sidebar-link">Dar acceso</a>
-        <a href="diezmos.html" class="sidebar-link active">Diezmos</a>
-        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+        <a href="diezmos.html" class="sidebar-link">Diezmos</a>
+        <a href="ofrendas.html" class="sidebar-link active">Ofrendas</a>
         <a href="reportes.html" class="sidebar-link">Reportes</a>
         <a href="discipulado.html" class="sidebar-link">Discipulado</a>
         <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
@@ -440,7 +440,7 @@
                 </tr>
             </thead>
             <tbody>
-                </tbody>
+            </tbody>
         </table>
 
         <div class="pagination">
@@ -469,11 +469,11 @@
                     <label for="miembroSearch">Buscar miembro:</label>
                     <input type="text" id="miembroSearch" placeholder="Escribe código o nombre">
                     <div class="member-search-results" id="miembroSearchResults">
-                        </div>
+                    </div>
                     <input type="hidden" id="selectedMemberCode">
                     <input type="hidden" id="selectedMemberName">
                 </div>
-                 <div class="form-group" id="nombreNoMiembroGroup" style="display: none;">
+                   <div class="form-group" id="nombreNoMiembroGroup" style="display: none;">
                     <label for="nombreNoMiembro">Nombre (No miembro):</label>
                     <input type="text" id="nombreNoMiembro" placeholder="Nombre de la persona">
                 </div>
@@ -509,55 +509,22 @@
     <script>
         // --- CONFIGURACIÓN DE FIREBASE ---
         const firebaseConfig = {
-            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-            projectId: "iglesia-adoracion-viva",
-            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-            messagingSenderId: "815332010058",
-            appId: "1:815332010058:web:d2afff616469349d88deb3",
-            measurementId: "G-43MZP6V55D"
+            apiKey: "TU_API_KEY", // ¡IMPORTANTE! Reemplaza con tu propia API Key
+            authDomain: "TU_AUTH_DOMAIN", // Reemplaza con tu Auth Domain
+            databaseURL: "TU_DATABASE_URL", // Reemplaza con tu Database URL
+            projectId: "TU_PROJECT_ID", // Reemplaza con tu Project ID
+            storageBucket: "TU_STORAGE_BUCKET", // Reemplaza con tu Storage Bucket
+            messagingSenderId: "TU_MESSAGING_SENDER_ID", // Reemplaza con tu Messaging Sender ID
+            appId: "TU_APP_ID", // Reemplaza con tu App ID
+            measurementId: "TU_MEASUREMENT_ID" // Reemplaza con tu Measurement ID
         };
 
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- Datos de ejemplo de miembros (si aún no los tienes en Firestore, se usarán estos) ---
-        let miembros = [
-            { codigo: 'M001', nombre: 'Juan Pérez' },
-            { codigo: 'M002', nombre: 'María García' },
-            { codigo: 'M003', nombre: 'Carlos Rodríguez' },
-            { codigo: 'M004', nombre: 'Ana López' },
-            { codigo: 'M005', nombre: 'Pedro Ramírez' },
-            { codigo: 'M006', nombre: 'Sofía Martínez' },
-            { codigo: 'M007', nombre: 'Luis Hernández' },
-            { codigo: 'M008', nombre: 'Laura González' },
-            { codigo: 'M009', nombre: 'Diego Sánchez' },
-            { codigo: 'M010', nombre: 'Elena Díaz' },
-            { codigo: 'M011', nombre: 'Jorge Castro' },
-            { codigo: 'M012', nombre: 'Valeria Rojas' },
-            { codigo: 'M013', nombre: 'Ricardo Morales' },
-            { codigo: 'M014', nombre: 'Gabriela Soto' },
-            { codigo: 'M015', nombre: 'Fernando Vargas' },
-            { codigo: 'M016', nombre: 'Andrea Guerrero' },
-            { codigo: 'M017', nombre: 'Manuel Herrera' },
-            { codigo: 'M018', nombre: 'Daniela Flores' },
-            { codigo: 'M019', nombre: 'Sergio Cruz' },
-            { codigo: 'M020', nombre: 'Isabel Ortega' },
-            { codigo: 'M021', nombre: 'Alejandro Rivera' },
-            { codigo: 'M022', nombre: 'Camila Pineda' },
-            { codigo: 'M023', nombre: 'Francisco Ramos' },
-            { codigo: 'M024', nombre: 'Natalia Torres' },
-            { codigo: 'M025', nombre: 'Miguel Salazar' },
-            { codigo: 'M026', nombre: 'Carolina Ruiz' },
-            { codigo: 'M027', nombre: 'Roberto Acosta' },
-            { codigo: 'M028', nombre: 'Viviana Bravo' },
-            { codigo: 'M029', nombre: 'Emilio Delgado' },
-            { codigo: 'M030', nombre: 'Paola Nuñez' },
-            { codigo: 'M031', nombre: 'Arturo Benítez' },
-            { codigo: 'M032', nombre: 'Silvia Contreras' }
-        ];
+        // --- Datos de miembros (se cargarán desde Firestore) ---
+        let miembros = []; // Ahora se cargará dinámicamente
 
         let allOfrendas = []; // Mantendrá todas las ofrendas cargadas de Firestore
         let filteredOfrendas = []; // Ofrendas filtradas por la búsqueda
@@ -590,7 +557,8 @@
 
         // --- Funciones del Modal ---
         function openModal() {
-            ofrendaModal.classList.add('show');
+            ofrendaModal.style.display = 'flex'; // Asegura que esté visible antes de la transición
+            setTimeout(() => ofrendaModal.classList.add('show'), 10); // Pequeño retraso para la transición
             ofrendaForm.reset();
             miembroSearchGroup.style.display = 'none';
             nombreNoMiembroGroup.style.display = 'none';
@@ -599,13 +567,13 @@
             selectedMemberNameInput.value = '';
             document.getElementById('nombreNoMiembro').removeAttribute('required');
             miembroSearchInput.removeAttribute('required');
-            // Asegúrate de que el focus se dirija al primer elemento interactivo
-            esMiembroSi.focus();
+            esMiembroSi.checked = false; // Desmarcar ambos para que el usuario elija
+            esMiembroNo.checked = false;
+            // No enfocamos nada al inicio para que el usuario elija el radio button
         }
 
         function closeModal() {
             ofrendaModal.classList.remove('show');
-            // Restablece el display a 'none' después de la transición para asegurar que no interfiera con otros elementos
             setTimeout(() => { ofrendaModal.style.display = 'none'; }, 400); // Coincide con la duración de la transición
         }
 
@@ -616,9 +584,10 @@
             miembroSearchInput.focus();
             miembroSearchInput.setAttribute('required', 'true');
             document.getElementById('nombreNoMiembro').removeAttribute('required');
-            // Limpiar valores seleccionados al cambiar a "es Miembro"
-            selectedMemberCodeInput.value = '';
+            selectedMemberCodeInput.value = ''; // Limpiar valores seleccionados al cambiar
             selectedMemberNameInput.value = '';
+            miembroSearchInput.value = ''; // Limpiar el input de búsqueda
+            miembroSearchResults.innerHTML = ''; // Limpiar resultados
         });
 
         esMiembroNo.addEventListener('change', () => {
@@ -627,33 +596,41 @@
             document.getElementById('nombreNoMiembro').focus();
             document.getElementById('nombreNoMiembro').setAttribute('required', 'true');
             miembroSearchInput.removeAttribute('required');
-            selectedMemberCodeInput.value = 'NO_MIEMBRO';
-            selectedMemberNameInput.value = 'NO_MIEMBRO';
+            selectedMemberCodeInput.value = 'NO_MIEMBRO'; // Marcar como no miembro
+            selectedMemberNameInput.value = document.getElementById('nombreNoMiembro').value; // Usar el valor del campo si ya existe
             miembroSearchResults.innerHTML = ''; // Limpiar resultados de búsqueda si había
         });
 
-        // Búsqueda de miembros - CORRECCIÓN CLAVE
+        // Event listener para actualizar selectedMemberNameInput cuando se escribe en nombreNoMiembro
+        document.getElementById('nombreNoMiembro').addEventListener('input', (e) => {
+            if (esMiembroNo.checked) {
+                selectedMemberNameInput.value = e.target.value.trim();
+            }
+        });
+
+
+        // Búsqueda de miembros desde la lista 'miembros' (cargada de Firestore)
         miembroSearchInput.addEventListener('input', () => {
             const searchTerm = miembroSearchInput.value.toLowerCase().trim();
             miembroSearchResults.innerHTML = ''; // Limpia resultados anteriores
 
-            if (searchTerm.length === 0) { // No muestra nada si el campo está vacío
+            if (searchTerm.length < 2) { // Mostrar resultados solo si hay al menos 2 caracteres
                 return;
             }
 
             const results = miembros.filter(miembro =>
-                miembro.codigo.toLowerCase().includes(searchTerm) ||
-                miembro.nombre.toLowerCase().includes(searchTerm)
+                (miembro.codigo && miembro.codigo.toLowerCase().includes(searchTerm)) ||
+                (miembro.nombre && miembro.nombre.toLowerCase().includes(searchTerm))
             );
 
             if (results.length > 0) {
                 results.forEach(miembro => {
                     const div = document.createElement('div');
-                    div.textContent = `${miembro.codigo} - ${miembro.nombre}`;
+                    div.textContent = `${miembro.codigo || ''} - ${miembro.nombre || 'Nombre desconocido'}`;
                     div.addEventListener('click', () => {
-                        miembroSearchInput.value = miembro.nombre;
-                        selectedMemberCodeInput.value = miembro.codigo;
-                        selectedMemberNameInput.value = miembro.nombre;
+                        miembroSearchInput.value = miembro.nombre; // Muestra el nombre en el input de búsqueda
+                        selectedMemberCodeInput.value = miembro.codigo; // Almacena el código real
+                        selectedMemberNameInput.value = miembro.nombre; // Almacena el nombre real
                         miembroSearchResults.innerHTML = ''; // Limpia la lista después de seleccionar
                     });
                     miembroSearchResults.appendChild(div);
@@ -661,7 +638,7 @@
             } else {
                 const div = document.createElement('div');
                 div.textContent = "No se encontraron miembros.";
-                div.classList.add('no-results'); // Clase para estilizar el mensaje
+                div.classList.add('no-results');
                 miembroSearchResults.appendChild(div);
             }
         });
@@ -674,9 +651,9 @@
             let nombreOfrenda;
 
             if (esMiembroSi.checked) {
-                // Validación estricta para asegurar que se seleccionó de la lista
-                if (!selectedMemberCodeInput.value || selectedMemberCodeInput.value === 'NO_MIEMBRO' || miembroSearchInput.value.trim() !== selectedMemberNameInput.value.trim()) {
-                    alert('Por favor, busca y selecciona un miembro válido de la lista sugerida. Si el miembro no aparece, asegúrate de que esté registrado.');
+                // Validar que se haya seleccionado un miembro de la lista de resultados
+                if (!selectedMemberCodeInput.value || selectedMemberNameInput.value.trim() === '') {
+                    alert('Por favor, busca y selecciona un miembro válido de la lista sugerida.');
                     return;
                 }
                 codigoOfrenda = selectedMemberCodeInput.value;
@@ -687,6 +664,7 @@
                     alert('Por favor, ingresa el nombre de la persona.');
                     return;
                 }
+                // Genera un código único para no miembros, prefiero un prefijo para distinguir
                 codigoOfrenda = `NO_MIEMBRO_${Date.now()}`;
                 nombreOfrenda = nombreNoMiembroValue;
             } else {
@@ -700,15 +678,18 @@
                 cantidad: parseFloat(cantidadInput.value),
                 moneda: monedaSelect.value,
                 fecha: fechaInput.value,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar por fecha de creación en Firestore
             };
+
+            // Log para depuración: Ver qué se intenta guardar
+            console.log("Intentando guardar esta ofrenda:", newOfrenda);
 
             try {
                 await db.collection('ofrendas').add(newOfrenda);
                 alert('Ofrenda guardada correctamente en Firestore.');
                 closeModal();
             } catch (error) {
-                console.error("Error al añadir la ofrenda: ", error);
+                console.error("Error al añadir la ofrenda: ", error); // ¡Este es el mensaje clave!
                 alert('Hubo un error al guardar la ofrenda. Por favor, intenta de nuevo.');
             }
         });
@@ -722,18 +703,28 @@
 
             if (paginatedOfrendas.length === 0 && currentPage > 1) {
                 currentPage--;
-                renderTable();
+                renderTable(); // Re-renderiza para ajustar la página si no hay datos
                 return;
             }
 
-            paginatedOfrendas.forEach(ofrenda => {
+            if (paginatedOfrendas.length === 0) {
                 const row = ofrendasTableBody.insertRow();
-                row.insertCell(0).textContent = ofrenda.codigo;
-                row.insertCell(1).textContent = ofrenda.miembro;
-                row.insertCell(2).textContent = ofrenda.cantidad.toFixed(2);
-                row.insertCell(3).textContent = ofrenda.moneda;
-                row.insertCell(4).textContent = ofrenda.fecha;
-            });
+                const cell = row.insertCell(0);
+                cell.colSpan = 5; // Abarca todas las columnas
+                cell.textContent = "No hay ofrendas registradas o que coincidan con la búsqueda.";
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.color = 'rgba(255, 235, 59, 0.5)';
+            } else {
+                paginatedOfrendas.forEach(ofrenda => {
+                    const row = ofrendasTableBody.insertRow();
+                    row.insertCell(0).textContent = ofrenda.codigo;
+                    row.insertCell(1).textContent = ofrenda.miembro;
+                    row.insertCell(2).textContent = ofrenda.cantidad ? ofrenda.cantidad.toFixed(2) : '0.00'; // Formato numérico
+                    row.insertCell(3).textContent = ofrenda.moneda;
+                    row.insertCell(4).textContent = ofrenda.fecha;
+                });
+            }
 
             updatePaginationControls();
         }
@@ -764,72 +755,92 @@
         // --- Funcionalidad de Búsqueda de Ofrendas ---
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
-            filteredOfrendas = allOfrendas.filter(ofrenda =>
-                ofrenda.codigo.toLowerCase().includes(searchTerm) ||
-                ofrenda.miembro.toLowerCase().includes(searchTerm) ||
-                ofrenda.fecha.includes(searchTerm)
-            );
-            currentPage = 1;
+            if (searchTerm) {
+                filteredOfrendas = allOfrendas.filter(ofrenda =>
+                    (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm)) ||
+                    (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm)) ||
+                    (ofrenda.fecha && ofrenda.fecha.includes(searchTerm))
+                );
+            } else {
+                filteredOfrendas = [...allOfrendas]; // Si no hay término de búsqueda, muestra todo
+            }
+            currentPage = 1; // Reinicia a la primera página al buscar
             renderTable();
         });
 
-        // --- Listener de Firestore para OFRENDAS ---
+        // --- Listeners de Firestore ---
+
+        // 1. Listener para OFRENDAS
         db.collection('ofrendas').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
             allOfrendas = [];
             snapshot.forEach((doc) => {
                 allOfrendas.push({ id: doc.id, ...doc.data() });
             });
+            // Aplicar el filtro de búsqueda actual si existe
             const searchTerm = searchInput.value.toLowerCase().trim();
             if (searchTerm) {
                 filteredOfrendas = allOfrendas.filter(ofrenda =>
-                    ofrenda.codigo.toLowerCase().includes(searchTerm) ||
-                    ofrenda.miembro.toLowerCase().includes(searchTerm) ||
-                    ofrenda.fecha.includes(searchTerm)
+                    (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm)) ||
+                    (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm)) ||
+                    (ofrenda.fecha && ofrenda.fecha.includes(searchTerm))
                 );
             } else {
                 filteredOfrendas = [...allOfrendas];
             }
-            currentPage = 1;
+            currentPage = 1; // Reinicia a la primera página al actualizar datos
             renderTable();
         }, (error) => {
-            console.error("Error al obtener las ofrendas de Firestore: ", error);
-            alert('Error al cargar las ofrendas. Por favor, revisa la consola para más detalles.');
+            console.error("Error al cargar las ofrendas de Firestore: ", error);
+            alert("No se pudieron cargar las ofrendas. Por favor, revisa tu conexión y permisos de Firebase.");
         });
 
-        // --- Listener de Firestore para MIEMBROS (opcional, si los miembros también están en Firestore) ---
-        // ¡IMPORTANTE! Asegúrate de tener una colección 'miembros' en Firestore con documentos que tengan campos 'codigo' y 'nombre'.
+        // 2. Listener para MIEMBROS (¡NUEVO!)
         db.collection('miembros').orderBy('nombre').onSnapshot((snapshot) => {
-            miembros = [];
+            miembros = []; // Limpiar la lista actual de miembros
             snapshot.forEach((doc) => {
                 miembros.push({ id: doc.id, ...doc.data() });
             });
-            console.log('Miembros cargados desde Firestore:', miembros);
+            console.log("Miembros cargados desde Firestore:", miembros);
+            // Si la aplicación requiere que la tabla de ofrendas dependa de los miembros cargados,
+            // podrías llamar a renderTable() aquí también, pero el listener de ofrendas ya lo hace.
         }, (error) => {
-            console.warn("Advertencia: No se pudo cargar la colección 'miembros' de Firestore. Usando datos de ejemplo locales. Error:", error);
+            console.error("Error al cargar los miembros de Firestore: ", error);
+            // Puedes mostrar un mensaje al usuario si esto es crítico
         });
 
 
         // --- Event Listeners Globales ---
         addOfrendaBtn.addEventListener('click', openModal);
         closeButton.addEventListener('click', closeModal);
-
         window.addEventListener('click', (event) => {
             if (event.target === ofrendaModal) {
                 closeModal();
             }
         });
 
+        // Función de ejemplo para cerrar sesión (si usas Firebase Auth)
         function cerrarSesion() {
-            alert('Sesión cerrada. (Simulación)');
-            // Si usas autenticación de Firebase, aquí iría:
+            // Aquí iría la lógica de cierre de sesión de Firebase Authentication
             // firebase.auth().signOut().then(() => {
-            //     window.location.href = 'index.html'; // Redirigir a la página de login
+            //     alert('Sesión cerrada.');
+            //     window.location.href = 'login.html'; // Redirigir a la página de login
             // }).catch((error) => {
             //     console.error("Error al cerrar sesión: ", error);
-            //     alert("Error al cerrar sesión. Intenta de nuevo.");
+            //     alert("No se pudo cerrar la sesión.");
             // });
+            alert('Funcionalidad de cerrar sesión no implementada en este ejemplo.');
         }
-    </script>
 
+        // Inicializar la tabla al cargar la página (aunque el listener de Firestore ya lo hace)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Establece la fecha actual por defecto en el campo de fecha del modal
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Enero es 0
+            const dd = String(today.getDate()).padStart(2, '0');
+            fechaInput.value = `${yyyy}-${mm}-${dd}`;
+        });
+
+    </script>
 </body>
 </html>
