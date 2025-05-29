@@ -6,17 +6,17 @@
     <title>Diezmos y Ofrendas</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Definición de colores principales: Azul Muy Oscuro y Dorado */
+        /* Definición de colores principales: Azul Ultra Oscuro y Dorado Vibrante */
         :root {
-            --deep-blue: #00002A; /* Azul muy muy oscuro, casi negro */
-            --dark-blue: #00004D; /* Azul oscuro para fondos principales */
-            --medium-blue: #000066; /* Un azul un poco más claro para elementos secundarios/hover */
-            --gold: #FFD700; /* Dorado brillante para texto y acentos */
-            --gold-dark: #CCAD00; /* Dorado más oscuro para hover */
-            --light-gold-text: #FFEB3B; /* Dorado un poco más claro para texto en general */
+            --ultra-dark-blue: #0A0A1A; /* Base, casi negro */
+            --deep-blue: #1A1A3A; /* Para elementos principales */
+            --dark-accent-blue: #2A2A4A; /* Para elementos secundarios y hover */
+            --gold-vibrant: #FFD700; /* Dorado brillante */
+            --gold-light: #FFEB3B; /* Dorado más claro para texto general */
+            --gold-darker: #CCAD00; /* Dorado para hover/activos */
             --white-off: #F0F0F0; /* Blanco roto para contraste */
-            --border-subtle: #00003D; /* Borde muy oscuro, apenas visible */
-            --red-alert: #B71C1C; /* Rojo oscuro para alertas/logout */
+            --border-line: #3A3A5A; /* Líneas de borde sutiles */
+            --red-alert: #C62828; /* Rojo para acciones de peligro */
         }
 
         body {
@@ -24,17 +24,18 @@
             margin: 0;
             padding: 0;
             display: flex;
-            background-color: var(--deep-blue); /* Fondo principal azul muy oscuro */
-            color: var(--light-gold-text); /* Texto general dorado claro */
+            background-color: var(--ultra-dark-blue); /* Fondo principal ultra oscuro */
+            color: var(--gold-light); /* Texto general en dorado claro */
+            overflow-x: hidden; /* Evita scroll horizontal por animaciones */
         }
 
         /* --- Sidebar Styles --- */
         .sidebar {
             width: 250px;
-            background-color: var(--dark-blue); /* Azul oscuro para la barra lateral */
-            color: var(--light-gold-text); /* Texto de la barra lateral en dorado claro */
+            background-color: var(--deep-blue); /* Azul muy oscuro para la barra lateral */
+            color: var(--gold-light);
             padding: 20px 0;
-            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.7); /* Sombra más pronunciada para profundidad */
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.8); /* Sombra más profunda */
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -42,6 +43,7 @@
             top: 0;
             left: 0;
             z-index: 900;
+            transition: width 0.3s ease; /* Animación al expandir/contraer */
         }
 
         .sidebar-header {
@@ -49,35 +51,59 @@
             margin-bottom: 30px;
             font-size: 1.8em;
             font-weight: 700;
-            color: var(--gold); /* Título en dorado brillante */
-            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); /* Sombra dorada más intensa */
+            color: var(--gold-vibrant); /* Título en dorado vibrante */
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); /* Sombra dorada intensa */
+            animation: pulseGold 2s infinite alternate; /* Animación sutil del título */
+        }
+
+        @keyframes pulseGold {
+            from { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+            to { text-shadow: 0 0 15px rgba(255, 215, 0, 1), 0 0 20px rgba(255, 215, 0, 0.5); }
         }
 
         .sidebar-link {
             display: block;
             padding: 15px 25px;
-            color: var(--light-gold-text); /* Enlaces en dorado claro */
+            color: var(--gold-light);
             text-decoration: none;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-link::before { /* Efecto de brillo al pasar el mouse */
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        .sidebar-link:hover::before {
+            left: 100%;
         }
 
         .sidebar-link:hover, .sidebar-link.active {
-            background-color: var(--deep-blue); /* Fondo aún más oscuro al pasar el mouse/activo */
-            color: var(--gold); /* Dorado brillante al pasar el mouse/activo */
+            background-color: var(--dark-accent-blue); /* Fondo más oscuro al pasar el mouse/activo */
+            color: var(--gold-vibrant);
+            transform: translateX(5px); /* Deslizamiento sutil al pasar el mouse */
         }
 
         .logout {
             margin-top: auto;
             padding: 15px 25px;
-            background-color: var(--red-alert); /* Rojo oscuro para cerrar sesión */
-            color: var(--white-off); /* Texto blanco roto para contraste */
+            background-color: var(--red-alert);
+            color: var(--white-off);
             cursor: pointer;
             text-align: center;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
         .logout:hover {
-            background-color: #D32F2F; /* Rojo un poco más claro al pasar el mouse */
+            background-color: #EF5350; /* Rojo más brillante al pasar el mouse */
+            transform: scale(1.02); /* Pequeño escalado */
         }
 
         /* --- Main Content Styles --- */
@@ -85,7 +111,8 @@
             margin-left: 250px;
             flex-grow: 1;
             padding: 30px;
-            background-color: var(--deep-blue); /* Fondo del contenido principal muy oscuro */
+            background-color: var(--ultra-dark-blue); /* Fondo del contenido principal ultra oscuro */
+            transition: margin-left 0.3s ease;
         }
 
         .header-controls {
@@ -103,26 +130,26 @@
         .search-bar input {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--border-line);
             border-radius: 8px;
             font-size: 1em;
             box-sizing: border-box;
-            background-color: var(--dark-blue); /* Fondo de inputs oscuro */
-            color: var(--gold); /* Texto de la búsqueda en dorado */
-            transition: border-color 0.3s ease;
+            background-color: var(--deep-blue); /* Fondo de inputs azul muy oscuro */
+            color: var(--gold-light);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
         .search-bar input::placeholder {
-            color: rgba(255, 215, 0, 0.5); /* Placeholder en dorado más suave */
+            color: rgba(255, 235, 59, 0.6); /* Placeholder en dorado más suave */
         }
         .search-bar input:focus {
-            border-color: var(--gold); /* Borde dorado al enfocar */
+            border-color: var(--gold-vibrant); /* Borde dorado al enfocar */
             outline: none;
-            box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); /* Sombra brillante */
         }
 
         .add-button {
-            background-color: var(--gold); /* Botón en dorado brillante */
-            color: var(--deep-blue); /* Texto del botón en azul muy oscuro */
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue); /* Texto del botón en azul ultra oscuro */
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
@@ -130,21 +157,21 @@
             font-size: 1em;
             font-weight: 700;
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         .add-button:hover {
-            background-color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+            background-color: var(--gold-darker);
+            transform: translateY(-3px) scale(1.02); /* Deslizamiento y ligero escalado */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
         }
 
         /* --- Table Styles --- */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            background-color: var(--dark-blue); /* Fondo de la tabla azul oscuro */
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            background-color: var(--deep-blue); /* Fondo de la tabla azul muy oscuro */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
             border-radius: 8px;
             overflow: hidden;
         }
@@ -152,23 +179,24 @@
         .data-table th, .data-table td {
             padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid var(--border-subtle); /* Borde de tabla en azul muy oscuro */
+            border-bottom: 1px solid var(--border-line);
         }
 
         .data-table th {
-            background-color: var(--deep-blue); /* Encabezado de tabla aún más oscuro */
-            color: var(--gold); /* Texto del encabezado en dorado brillante */
+            background-color: var(--ultra-dark-blue); /* Encabezado de tabla aún más oscuro */
+            color: var(--gold-vibrant);
             font-weight: 700;
             text-transform: uppercase;
         }
 
         .data-table tbody tr {
-            color: var(--white-off); /* Texto de las filas en blanco roto */
-            transition: background-color 0.3s ease;
+            color: var(--white-off);
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
         .data-table tbody tr:hover {
-            background-color: var(--medium-blue); /* Fondo azul medio al pasar el mouse por la fila */
+            background-color: var(--dark-accent-blue); /* Fondo azul oscuro al pasar el mouse por la fila */
+            transform: translateX(5px); /* Ligero desplazamiento de la fila */
         }
 
         .pagination {
@@ -179,33 +207,33 @@
         }
 
         .pagination button {
-            background-color: var(--dark-blue); /* Botones de paginación azul oscuro */
-            border: 1px solid var(--border-subtle);
-            color: var(--gold); /* Texto de paginación en dorado */
+            background-color: var(--deep-blue);
+            border: 1px solid var(--border-line);
+            color: var(--gold-vibrant);
             padding: 8px 15px;
             cursor: pointer;
             border-radius: 5px;
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
         .pagination button:hover:not(:disabled) {
-            background-color: var(--gold); /* Fondo dorado al pasar el mouse */
-            color: var(--deep-blue); /* Texto azul muy oscuro al pasar el mouse */
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
         }
 
         .pagination button:disabled {
             cursor: not-allowed;
-            opacity: 0.4;
-            background-color: var(--dark-blue);
-            color: rgba(255, 215, 0, 0.3); /* Dorado más tenue */
+            opacity: 0.3;
+            background-color: var(--deep-blue);
+            color: rgba(255, 215, 0, 0.2);
             box-shadow: none;
         }
 
         .pagination span {
-            color: var(--gold); /* Información de página en dorado brillante */
+            color: var(--gold-vibrant);
             padding: 8px 0;
             font-weight: bold;
         }
@@ -219,11 +247,11 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); /* Fondo de modal casi opaco */
+            background-color: rgba(0, 0, 0, 0.95); /* Fondo de modal casi negro total */
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transition: opacity 0.3s ease-in-out;
+            transition: opacity 0.4s ease-in-out; /* Transición más larga */
         }
         .modal.show {
             display: flex;
@@ -231,42 +259,44 @@
         }
 
         .modal-content {
-            background-color: var(--dark-blue); /* Fondo del modal azul oscuro */
+            background-color: var(--deep-blue);
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8); /* Sombra muy profunda */
+            border-radius: 12px; /* Bordes más suaves */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9); /* Sombra muy profunda */
             width: 90%;
-            max-width: 500px;
+            max-width: 550px; /* Un poco más ancho */
             position: relative;
-            transform: translateY(-30px); /* Para animación de deslizamiento más pronunciada */
-            transition: transform 0.3s ease-in-out;
+            transform: scale(0.9); /* Inicia un poco más pequeño */
+            opacity: 0; /* Para animación de aparición */
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s ease-in-out; /* Bounce effect */
         }
         .modal.show .modal-content {
-            transform: translateY(0);
+            transform: scale(1); /* Escala a tamaño normal */
+            opacity: 1;
         }
 
         .close-button {
             position: absolute;
             top: 15px;
             right: 20px;
-            font-size: 2em;
+            font-size: 2.2em; /* Más grande */
             font-weight: bold;
-            color: var(--gold); /* Botón de cerrar en dorado brillante */
+            color: var(--gold-vibrant);
             cursor: pointer;
-            transition: color 0.3s ease, transform 0.2s ease;
+            transition: color 0.3s ease, transform 0.3s ease;
         }
 
         .close-button:hover {
-            color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse */
-            transform: rotate(90deg) scale(1.1); /* Rotación y pequeño escalado */
+            color: var(--gold-darker);
+            transform: rotate(180deg) scale(1.2); /* Rotación completa y más grande */
         }
 
         .modal-content h2 {
             margin-top: 0;
             margin-bottom: 25px;
-            color: var(--gold); /* Título del modal en dorado brillante */
+            color: var(--gold-vibrant);
             text-align: center;
-            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
         }
 
         .form-group {
@@ -277,7 +307,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: var(--light-gold-text); /* Etiquetas de formulario en dorado claro */
+            color: var(--gold-light);
         }
 
         .form-group input[type="text"],
@@ -286,22 +316,22 @@
         .form-group select {
             width: 100%;
             padding: 12px;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--border-line);
             border-radius: 5px;
             font-size: 1em;
             box-sizing: border-box;
-            background-color: var(--medium-blue); /* Fondo de campos en azul medio */
-            color: var(--white-off); /* Texto en campos en blanco roto */
+            background-color: var(--dark-accent-blue); /* Fondo de campos azul más claro */
+            color: var(--white-off);
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
         .form-group input::placeholder {
-            color: rgba(255, 215, 0, 0.4);
+            color: rgba(255, 235, 59, 0.4);
         }
         .form-group input:focus,
         .form-group select:focus {
-            border-color: var(--gold); /* Borde dorado al enfocar */
+            border-color: var(--gold-vibrant);
             outline: none;
-            box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
         }
         .form-group select {
             appearance: none;
@@ -311,7 +341,6 @@
             background-size: 20px;
         }
 
-
         .radio-group {
             display: flex;
             gap: 20px;
@@ -320,31 +349,39 @@
         }
 
         .radio-group label {
-            color: var(--white-off); /* Texto de radio buttons en blanco roto */
+            color: var(--white-off);
         }
         .radio-group input[type="radio"] {
-            accent-color: var(--gold); /* Color del radio button marcado */
+            accent-color: var(--gold-vibrant);
         }
 
         .member-search-results {
-            max-height: 150px;
+            max-height: 180px; /* Un poco más de altura */
             overflow-y: auto;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--border-line);
             border-radius: 5px;
             margin-top: 10px;
-            background-color: var(--medium-blue); /* Fondo de resultados azul medio */
+            background-color: var(--dark-accent-blue);
         }
 
         .member-search-results div {
             padding: 10px;
             cursor: pointer;
-            color: var(--white-off); /* Texto de resultados en blanco roto */
+            color: var(--white-off);
             transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         .member-search-results div:hover {
-            background-color: var(--dark-blue); /* Fondo azul oscuro al pasar el mouse */
-            color: var(--gold); /* Texto dorado brillante al pasar el mouse */
+            background-color: var(--deep-blue);
+            color: var(--gold-vibrant);
+        }
+        .member-search-results div.no-results {
+            color: rgba(255, 235, 59, 0.5); /* Texto tenue para "no results" */
+            cursor: default;
+        }
+        .member-search-results div.no-results:hover {
+            background-color: var(--dark-accent-blue); /* No cambiar de color al pasar el mouse */
+            color: rgba(255, 235, 59, 0.5);
         }
 
         .form-actions {
@@ -353,8 +390,8 @@
         }
 
         .form-actions button {
-            background-color: var(--gold); /* Botón de guardar en dorado brillante */
-            color: var(--deep-blue); /* Texto del botón en azul muy oscuro */
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
@@ -362,13 +399,13 @@
             font-size: 1em;
             font-weight: 700;
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         .form-actions button:hover {
-            background-color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+            background-color: var(--gold-darker);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
         }
     </style>
 </head>
@@ -553,7 +590,7 @@
 
         // --- Funciones del Modal ---
         function openModal() {
-            ofrendaModal.classList.add('show'); // Añade clase para mostrar con animación
+            ofrendaModal.classList.add('show');
             ofrendaForm.reset();
             miembroSearchGroup.style.display = 'none';
             nombreNoMiembroGroup.style.display = 'none';
@@ -562,12 +599,14 @@
             selectedMemberNameInput.value = '';
             document.getElementById('nombreNoMiembro').removeAttribute('required');
             miembroSearchInput.removeAttribute('required');
+            // Asegúrate de que el focus se dirija al primer elemento interactivo
+            esMiembroSi.focus();
         }
 
         function closeModal() {
-            ofrendaModal.classList.remove('show'); // Quita clase para ocultar con animación
-            // Opcional: poner display none después de la transición si es necesario para accesibilidad
-            // setTimeout(() => { ofrendaModal.style.display = 'none'; }, 300);
+            ofrendaModal.classList.remove('show');
+            // Restablece el display a 'none' después de la transición para asegurar que no interfiera con otros elementos
+            setTimeout(() => { ofrendaModal.style.display = 'none'; }, 400); // Coincide con la duración de la transición
         }
 
         // --- Manejo del formulario de ofrenda ---
@@ -577,6 +616,9 @@
             miembroSearchInput.focus();
             miembroSearchInput.setAttribute('required', 'true');
             document.getElementById('nombreNoMiembro').removeAttribute('required');
+            // Limpiar valores seleccionados al cambiar a "es Miembro"
+            selectedMemberCodeInput.value = '';
+            selectedMemberNameInput.value = '';
         });
 
         esMiembroNo.addEventListener('change', () => {
@@ -585,16 +627,17 @@
             document.getElementById('nombreNoMiembro').focus();
             document.getElementById('nombreNoMiembro').setAttribute('required', 'true');
             miembroSearchInput.removeAttribute('required');
-            selectedMemberCodeInput.value = 'NO_MIEMBRO'; // Reinicia si se cambia a no miembro
-            selectedMemberNameInput.value = 'NO_MIEMBRO'; // Reinicia si se cambia a no miembro
+            selectedMemberCodeInput.value = 'NO_MIEMBRO';
+            selectedMemberNameInput.value = 'NO_MIEMBRO';
+            miembroSearchResults.innerHTML = ''; // Limpiar resultados de búsqueda si había
         });
 
-        // Búsqueda de miembros - CORRECCIÓN
+        // Búsqueda de miembros - CORRECCIÓN CLAVE
         miembroSearchInput.addEventListener('input', () => {
-            const searchTerm = miembroSearchInput.value.toLowerCase().trim(); // Eliminar espacios al inicio/final
-            miembroSearchResults.innerHTML = '';
+            const searchTerm = miembroSearchInput.value.toLowerCase().trim();
+            miembroSearchResults.innerHTML = ''; // Limpia resultados anteriores
 
-            if (searchTerm.length < 2) { // Empieza a buscar solo con 2 o más caracteres
+            if (searchTerm.length === 0) { // No muestra nada si el campo está vacío
                 return;
             }
 
@@ -608,16 +651,17 @@
                     const div = document.createElement('div');
                     div.textContent = `${miembro.codigo} - ${miembro.nombre}`;
                     div.addEventListener('click', () => {
-                        miembroSearchInput.value = miembro.nombre; // Muestra el nombre seleccionado
+                        miembroSearchInput.value = miembro.nombre;
                         selectedMemberCodeInput.value = miembro.codigo;
                         selectedMemberNameInput.value = miembro.nombre;
-                        miembroSearchResults.innerHTML = ''; // Limpia la lista de resultados
+                        miembroSearchResults.innerHTML = ''; // Limpia la lista después de seleccionar
                     });
                     miembroSearchResults.appendChild(div);
                 });
             } else {
                 const div = document.createElement('div');
                 div.textContent = "No se encontraron miembros.";
+                div.classList.add('no-results'); // Clase para estilizar el mensaje
                 miembroSearchResults.appendChild(div);
             }
         });
@@ -630,9 +674,9 @@
             let nombreOfrenda;
 
             if (esMiembroSi.checked) {
-                // Validación para asegurar que se ha seleccionado un miembro de la lista
-                if (!selectedMemberCodeInput.value || selectedMemberCodeInput.value === 'NO_MIEMBRO' || miembroSearchInput.value !== selectedMemberNameInput.value) {
-                    alert('Por favor, busca y selecciona un miembro válido de la lista sugerida.');
+                // Validación estricta para asegurar que se seleccionó de la lista
+                if (!selectedMemberCodeInput.value || selectedMemberCodeInput.value === 'NO_MIEMBRO' || miembroSearchInput.value.trim() !== selectedMemberNameInput.value.trim()) {
+                    alert('Por favor, busca y selecciona un miembro válido de la lista sugerida. Si el miembro no aparece, asegúrate de que esté registrado.');
                     return;
                 }
                 codigoOfrenda = selectedMemberCodeInput.value;
@@ -753,6 +797,7 @@
         });
 
         // --- Listener de Firestore para MIEMBROS (opcional, si los miembros también están en Firestore) ---
+        // ¡IMPORTANTE! Asegúrate de tener una colección 'miembros' en Firestore con documentos que tengan campos 'codigo' y 'nombre'.
         db.collection('miembros').orderBy('nombre').onSnapshot((snapshot) => {
             miembros = [];
             snapshot.forEach((doc) => {
@@ -760,7 +805,7 @@
             });
             console.log('Miembros cargados desde Firestore:', miembros);
         }, (error) => {
-            console.warn("Advertencia: No se pudo cargar la colección 'miembros' de Firestore. Usando datos de ejemplo locales.", error);
+            console.warn("Advertencia: No se pudo cargar la colección 'miembros' de Firestore. Usando datos de ejemplo locales. Error:", error);
         });
 
 
@@ -776,7 +821,13 @@
 
         function cerrarSesion() {
             alert('Sesión cerrada. (Simulación)');
-            // window.location.href = 'index.html';
+            // Si usas autenticación de Firebase, aquí iría:
+            // firebase.auth().signOut().then(() => {
+            //     window.location.href = 'index.html'; // Redirigir a la página de login
+            // }).catch((error) => {
+            //     console.error("Error al cerrar sesión: ", error);
+            //     alert("Error al cerrar sesión. Intenta de nuevo.");
+            // });
         }
     </script>
 
