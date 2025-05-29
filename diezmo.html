@@ -507,29 +507,29 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
     <script>
-        // --- CONFIGURACIÓN DE FIREBASE (¡VERIFICA QUE ESTA ES TU CONFIGURACIÓN CORRECTA!) ---
+        // --- CONFIGURACIÓN DE FIREBASE (¡MUY IMPORTANTE: VERIFICA QUE ESTA ES TU CONFIGURACIÓN CORRECTA!) ---
         const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
 
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- Datos de miembros (se cargarán TODOS desde Firestore) ---
-        let miembros = []; // Esta variable contendrá todos los miembros cargados
+        // --- Datos de miembros (se cargarán TODOS y automáticamente desde Firestore) ---
+        let miembros = []; // Esta variable JavaScript contendrá la lista completa de miembros
 
-        let allOfrendas = []; // Mantendrá todas las ofrendas cargadas de Firestore
-        let filteredOfrendas = []; // Ofrendas filtradas por la búsqueda
+        let allOfrendas = []; // Almacenará todas las ofrendas cargadas de Firestore
+        let filteredOfrendas = []; // Almacenará las ofrendas después de aplicar filtros de búsqueda
 
-        // --- Elementos del DOM ---
+        // --- Referencias a elementos del DOM (Document Object Model) ---
         const ofrendasTableBody = document.querySelector('#ofrendasTable tbody');
         const addOfrendaBtn = document.getElementById('addOfrendaBtn');
         const ofrendaModal = document.getElementById('ofrendaModal');
@@ -551,128 +551,124 @@
         const nextPageBtn = document.getElementById('nextPageBtn');
         const pageInfoSpan = document.getElementById('pageInfo');
 
-        // --- Paginación y Filtrado ---
+        // --- Variables de Paginación y Filtrado de tabla principal ---
         const rowsPerPage = 30;
         let currentPage = 1;
 
-        // --- Funciones del Modal ---
+        // --- Funciones para manejar el Modal de Ofrendas ---
         function openModal() {
-            ofrendaModal.style.display = 'flex'; // Asegura que esté visible antes de la transición
-            setTimeout(() => ofrendaModal.classList.add('show'), 10); // Pequeño retraso para la transición
-            ofrendaForm.reset();
-            miembroSearchGroup.style.display = 'none';
-            nombreNoMiembroGroup.style.display = 'none';
-            miembroSearchResults.innerHTML = '';
-            selectedMemberCodeInput.value = '';
+            ofrendaModal.style.display = 'flex'; // Hace el modal visible
+            setTimeout(() => ofrendaModal.classList.add('show'), 10); // Activa la transición CSS
+            ofrendaForm.reset(); // Limpia el formulario
+            miembroSearchGroup.style.display = 'none'; // Oculta los campos de búsqueda de miembro
+            nombreNoMiembroGroup.style.display = 'none'; // Oculta el campo de nombre de no miembro
+            miembroSearchResults.innerHTML = ''; // Limpia los resultados de búsqueda previos
+            selectedMemberCodeInput.value = ''; // Resetea el miembro seleccionado
             selectedMemberNameInput.value = '';
-            document.getElementById('nombreNoMiembro').removeAttribute('required');
-            miembroSearchInput.removeAttribute('required');
-            esMiembroSi.checked = false; // Desmarcar ambos para que el usuario elija
+            document.getElementById('nombreNoMiembro').removeAttribute('required'); // Remueve 'required' si estaba puesto
+            miembroSearchInput.removeAttribute('required'); // Remueve 'required' si estaba puesto
+            esMiembroSi.checked = false; // Desmarca las opciones de radio
             esMiembroNo.checked = false;
 
             // Establece la fecha actual por defecto en el campo de fecha del modal
             const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Enero es 0
-            const dd = String(today.getDate()).padStart(2, '0');
-            fechaInput.value = `${yyyy}-${mm}-${dd}`;
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // Enero es 0, por eso +1
+            const day = String(today.getDate()).padStart(2, '0');
+            fechaInput.value = `${year}-${month}-${day}`;
         }
 
         function closeModal() {
-            ofrendaModal.classList.remove('show');
-            setTimeout(() => { ofrendaModal.style.display = 'none'; }, 400); // Coincide con la duración de la transición
+            ofrendaModal.classList.remove('show'); // Desactiva la transición CSS
+            setTimeout(() => { ofrendaModal.style.display = 'none'; }, 400); // Oculta el modal después de la transición
         }
 
-        // --- Manejo del formulario de ofrenda ---
+        // --- Lógica de la interfaz de usuario del formulario de ofrenda ---
         esMiembroSi.addEventListener('change', () => {
-            miembroSearchGroup.style.display = 'block';
-            nombreNoMiembroGroup.style.display = 'none';
-            miembroSearchInput.focus();
-            miembroSearchInput.setAttribute('required', 'true');
+            miembroSearchGroup.style.display = 'block'; // Muestra la búsqueda de miembro
+            nombreNoMiembroGroup.style.display = 'none'; // Oculta el campo de no miembro
+            miembroSearchInput.focus(); // Enfoca el campo de búsqueda
+            miembroSearchInput.setAttribute('required', 'true'); // Hace el campo de búsqueda requerido
             document.getElementById('nombreNoMiembro').removeAttribute('required');
-            selectedMemberCodeInput.value = ''; // Limpiar valores seleccionados al cambiar
+            selectedMemberCodeInput.value = ''; // Limpia valores anteriores de miembro
             selectedMemberNameInput.value = '';
-            miembroSearchInput.value = ''; // Limpiar el input de búsqueda
-            miembroSearchResults.innerHTML = ''; // Limpiar resultados
+            miembroSearchInput.value = ''; // Limpia el texto en el input de búsqueda
+            miembroSearchResults.innerHTML = ''; // Limpia resultados de búsqueda
         });
 
         esMiembroNo.addEventListener('change', () => {
-            miembroSearchGroup.style.display = 'none';
-            nombreNoMiembroGroup.style.display = 'block';
-            document.getElementById('nombreNoMiembro').focus();
-            document.getElementById('nombreNoMiembro').setAttribute('required', 'true');
+            miembroSearchGroup.style.display = 'none'; // Oculta la búsqueda de miembro
+            nombreNoMiembroGroup.style.display = 'block'; // Muestra el campo de no miembro
+            document.getElementById('nombreNoMiembro').focus(); // Enfoca el campo
+            document.getElementById('nombreNoMiembro').setAttribute('required', 'true'); // Hace el campo requerido
             miembroSearchInput.removeAttribute('required');
-            selectedMemberCodeInput.value = 'NO_MIEMBRO'; // Marcar como no miembro
-            // No se establece selectedMemberNameInput aquí, se capturará al enviar el formulario
-            miembroSearchResults.innerHTML = ''; // Limpiar resultados de búsqueda si había
+            selectedMemberCodeInput.value = 'NO_MIEMBRO'; // Asigna un código especial para no miembros
+            miembroSearchResults.innerHTML = ''; // Limpia resultados de búsqueda
         });
 
-        // Event listener para actualizar selectedMemberNameInput cuando se escribe en nombreNoMiembro
+        // Este listener mantiene el campo oculto `selectedMemberNameInput` sincronizado para no miembros
         document.getElementById('nombreNoMiembro').addEventListener('input', (e) => {
             if (esMiembroNo.checked) {
                 selectedMemberNameInput.value = e.target.value.trim();
             }
         });
 
-
-        // Búsqueda de miembros desde la lista 'miembros' (cargada de Firestore)
+        // --- Lógica de Búsqueda y Selección de Miembros (¡Aquí está la magia de la búsqueda!) ---
         miembroSearchInput.addEventListener('input', () => {
             const searchTerm = miembroSearchInput.value.toLowerCase().trim();
-            miembroSearchResults.innerHTML = ''; // Limpia resultados anteriores
+            miembroSearchResults.innerHTML = ''; // Limpia los resultados anteriores
 
-            // --- DEPURACIÓN: Verifica el término de búsqueda y la lista de miembros ---
-            console.log("Término de búsqueda de miembro:", searchTerm);
-            console.log("Miembros disponibles para buscar:", miembros);
-
-            if (searchTerm.length < 2) { // Mostrar resultados solo si hay al menos 2 caracteres
+            // Mensaje si la búsqueda es muy corta
+            if (searchTerm.length < 2) {
                 const div = document.createElement('div');
-                div.textContent = "Escribe al menos 2 letras para buscar.";
+                div.textContent = "Escribe al menos 2 letras para buscar miembros...";
                 div.classList.add('no-results');
                 miembroSearchResults.appendChild(div);
                 return;
             }
 
+            // Filtra la lista completa de 'miembros' (cargada de Firestore)
+            // Busca si el término de búsqueda está incluido en el código O en el nombre del miembro
             const results = miembros.filter(miembro =>
                 (miembro.codigo && miembro.codigo.toLowerCase().includes(searchTerm)) ||
                 (miembro.nombre && miembro.nombre.toLowerCase().includes(searchTerm))
             );
 
-            // --- DEPURACIÓN: Verifica los resultados de la búsqueda ---
-            console.log("Resultados de la búsqueda de miembro:", results);
-
-
+            // Muestra los resultados o un mensaje de "no encontrados"
             if (results.length > 0) {
                 results.forEach(miembro => {
                     const div = document.createElement('div');
-                    // Asegúrate de que miembro.codigo y miembro.nombre existen antes de usarlos
+                    // Muestra tanto el código como el nombre en la lista de resultados
                     const displayCode = miembro.codigo ? miembro.codigo : 'N/A';
                     const displayName = miembro.nombre ? miembro.nombre : 'Nombre desconocido';
                     div.textContent = `${displayCode} - ${displayName}`;
+
+                    // Cuando se hace clic en un resultado, selecciona al miembro
                     div.addEventListener('click', () => {
-                        miembroSearchInput.value = displayName; // Muestra el nombre en el input de búsqueda
-                        selectedMemberCodeInput.value = displayCode; // Almacena el código real
-                        selectedMemberNameInput.value = displayName; // Almacena el nombre real
-                        miembroSearchResults.innerHTML = ''; // Limpia la lista después de seleccionar
+                        miembroSearchInput.value = displayName; // Pone el nombre en el campo de búsqueda visible
+                        selectedMemberCodeInput.value = displayCode; // Almacena el código del miembro
+                        selectedMemberNameInput.value = displayName; // Almacena el nombre del miembro
+                        miembroSearchResults.innerHTML = ''; // Limpia la lista de resultados después de seleccionar
                     });
                     miembroSearchResults.appendChild(div);
                 });
             } else {
                 const div = document.createElement('div');
-                div.textContent = "No se encontraron miembros.";
+                div.textContent = "No se encontraron miembros con ese nombre o código.";
                 div.classList.add('no-results');
                 miembroSearchResults.appendChild(div);
             }
         });
 
-        // Lógica para añadir nueva ofrenda a Firestore
+        // --- Lógica para guardar la nueva ofrenda en Firestore ---
         ofrendaForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+            e.preventDefault(); // Evita que el formulario se envíe de la forma tradicional
 
             let codigoOfrenda;
             let nombreOfrenda;
 
             if (esMiembroSi.checked) {
-                // Validar que se haya seleccionado un miembro de la lista de resultados
+                // Si es miembro, validar que se haya seleccionado uno de la lista
                 if (!selectedMemberCodeInput.value || selectedMemberNameInput.value.trim() === '') {
                     alert('Por favor, busca y selecciona un miembro válido de la lista sugerida.');
                     return;
@@ -680,65 +676,72 @@
                 codigoOfrenda = selectedMemberCodeInput.value;
                 nombreOfrenda = selectedMemberNameInput.value;
             } else if (esMiembroNo.checked) {
+                // Si no es miembro, validar que se haya ingresado un nombre
                 const nombreNoMiembroValue = document.getElementById('nombreNoMiembro').value.trim();
                 if (!nombreNoMiembroValue) {
                     alert('Por favor, ingresa el nombre de la persona.');
                     return;
                 }
-                // Genera un código único para no miembros, prefiero un prefijo para distinguir
+                // Genera un código único para no miembros usando la marca de tiempo actual
                 codigoOfrenda = `NO_MIEMBRO_${Date.now()}`;
                 nombreOfrenda = nombreNoMiembroValue;
             } else {
-                alert('Por favor, selecciona si es miembro o no.');
+                // Si no se ha seleccionado ninguna opción
+                alert('Por favor, selecciona si la persona es miembro o no.');
                 return;
             }
 
+            // Crea el objeto de la nueva ofrenda
             const newOfrenda = {
                 codigo: codigoOfrenda,
                 miembro: nombreOfrenda,
                 cantidad: parseFloat(cantidadInput.value),
                 moneda: monedaSelect.value,
                 fecha: fechaInput.value,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar por fecha de creación en Firestore
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Firestore añade un campo de tiempo para ordenar
             };
 
-            // Log para depuración: Ver qué se intenta guardar
-            console.log("Intentando guardar esta ofrenda:", newOfrenda);
+            console.log("Intentando guardar esta ofrenda en Firestore:", newOfrenda);
 
             try {
+                // Añade el documento a la colección 'ofrendas' en Firestore
                 await db.collection('ofrendas').add(newOfrenda);
                 alert('Ofrenda guardada correctamente en Firestore.');
-                closeModal();
+                closeModal(); // Cierra el modal al guardar con éxito
             } catch (error) {
-                console.error("Error al añadir la ofrenda: ", error); // ¡Este es el mensaje clave para depurar!
-                alert('Hubo un error al guardar la ofrenda. Por favor, intenta de nuevo.');
+                // Manejo de errores al guardar (¡revisa la consola para más detalles!)
+                console.error("Error al añadir la ofrenda a Firestore: ", error);
+                alert('Hubo un error al guardar la ofrenda. Por favor, intenta de nuevo o revisa la consola del navegador.');
             }
         });
 
-        // --- Renderizado de la tabla y paginación ---
+        // --- Renderizado de la tabla principal de Ofrendas y Paginación ---
         function renderTable() {
-            ofrendasTableBody.innerHTML = '';
+            ofrendasTableBody.innerHTML = ''; // Limpia la tabla actual
             const start = (currentPage - 1) * rowsPerPage;
             const end = start + rowsPerPage;
             const paginatedOfrendas = filteredOfrendas.slice(start, end);
 
             const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
 
+            // Ajusta la página actual si no hay elementos en ella (ej. al eliminar el último elemento de una página)
             if (paginatedOfrendas.length === 0 && currentPage > 1) {
                 currentPage--;
-                renderTable(); // Re-renderiza para ajustar la página si no hay datos en la página actual
+                renderTable();
                 return;
             }
 
-            if (paginatedOfrendas.length === 0 && totalPages <= 1) { // Si no hay datos y solo hay una página
+            // Muestra un mensaje si no hay ofrendas
+            if (paginatedOfrendas.length === 0 && totalPages <= 1) {
                 const row = ofrendasTableBody.insertRow();
                 const cell = row.insertCell(0);
-                cell.colSpan = 5; // Abarca todas las columnas
+                cell.colSpan = 5; // Ocupa todas las columnas
                 cell.textContent = "No hay ofrendas registradas o que coincidan con la búsqueda.";
                 cell.style.textAlign = 'center';
                 cell.style.padding = '20px';
                 cell.style.color = 'rgba(255, 235, 59, 0.5)';
             } else {
+                // Rellena la tabla con los datos paginados
                 paginatedOfrendas.forEach(ofrenda => {
                     const row = ofrendasTableBody.insertRow();
                     row.insertCell(0).textContent = ofrenda.codigo;
@@ -749,15 +752,15 @@
                 });
             }
 
-            updatePaginationControls();
+            updatePaginationControls(); // Actualiza los botones de paginación
         }
 
         function updatePaginationControls() {
             const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
             pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages || 1}`;
 
-            prevPageBtn.disabled = currentPage === 1;
-            nextPageBtn.disabled = currentPage === totalPages || filteredOfrendas.length === 0;
+            prevPageBtn.disabled = currentPage === 1; // Deshabilita "Anterior" en la primera página
+            nextPageBtn.disabled = currentPage === totalPages || filteredOfrendas.length === 0; // Deshabilita "Siguiente" en la última
         }
 
         prevPageBtn.addEventListener('click', () => {
@@ -775,31 +778,32 @@
             }
         });
 
-        // --- Funcionalidad de Búsqueda de Ofrendas en tabla ---
+        // --- Funcionalidad de Búsqueda de Ofrendas en la tabla principal ---
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             if (searchTerm) {
+                // Filtra la lista completa de ofrendas
                 filteredOfrendas = allOfrendas.filter(ofrenda =>
                     (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm)) ||
                     (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm)) ||
                     (ofrenda.fecha && ofrenda.fecha.includes(searchTerm))
                 );
             } else {
-                filteredOfrendas = [...allOfrendas]; // Si no hay término de búsqueda, muestra todo
+                filteredOfrendas = [...allOfrendas]; // Si el campo de búsqueda está vacío, muestra todas las ofrendas
             }
-            currentPage = 1; // Reinicia a la primera página al buscar
+            currentPage = 1; // Reinicia a la primera página al realizar una nueva búsqueda
             renderTable();
         });
 
-        // --- Listeners de Firestore ---
+        // --- Listeners de Firestore (Actualización en tiempo real de datos) ---
 
-        // 1. Listener para OFRENDAS: Carga y actualiza la tabla de ofrendas
+        // 1. Listener para OFRENDAS: Carga y actualiza la tabla de ofrendas automáticamente
         db.collection('ofrendas').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
-            allOfrendas = [];
+            allOfrendas = []; // Limpia la lista actual de ofrendas
             snapshot.forEach((doc) => {
                 allOfrendas.push({ id: doc.id, ...doc.data() });
             });
-            // Aplicar el filtro de búsqueda actual si existe
+            // Vuelve a aplicar el filtro de búsqueda actual (si hay uno) para mantener la vista consistente
             const searchTerm = searchInput.value.toLowerCase().trim();
             if (searchTerm) {
                 filteredOfrendas = allOfrendas.filter(ofrenda =>
@@ -810,49 +814,54 @@
             } else {
                 filteredOfrendas = [...allOfrendas];
             }
-            currentPage = 1; // Reinicia a la primera página al actualizar datos
-            renderTable();
+            currentPage = 1; // Reinicia a la primera página al actualizar datos desde Firestore
+            renderTable(); // Vuelve a renderizar la tabla con los datos actualizados
         }, (error) => {
             console.error("Error al cargar las ofrendas de Firestore: ", error);
-            alert("No se pudieron cargar las ofrendas. Por favor, revisa tu conexión y permisos de Firebase.");
+            alert("No se pudieron cargar las ofrendas. Por favor, revisa tu conexión a Internet y los permisos de Firebase.");
         });
 
-        // 2. Listener para MIEMBROS: Carga TODOS los miembros para la búsqueda en el modal
+        // 2. Listener para MIEMBROS: Carga TODOS los miembros desde Firestore para la búsqueda
+        // Esta es la parte CLAVE para que la búsqueda de miembros funcione.
         db.collection('miembros').orderBy('nombre').onSnapshot((snapshot) => {
-            miembros = []; // Limpiar la lista actual de miembros
+            miembros = []; // Limpia la lista actual de miembros
             snapshot.forEach((doc) => {
-                miembros.push({ id: doc.id, ...doc.data() });
+                miembros.push({ id: doc.id, ...doc.data() }); // Añade cada miembro al array 'miembros'
             });
-            console.log("¡Éxito! Miembros cargados desde Firestore:", miembros);
+            console.log("¡Éxito! Miembros cargados desde Firestore para la búsqueda:", miembros);
             if (miembros.length === 0) {
-                console.warn("Advertencia: La colección 'miembros' está vacía o no tiene documentos con 'nombre' y 'codigo'.");
+                console.warn("Advertencia: La colección 'miembros' en Firestore está vacía o sus documentos no tienen los campos 'nombre' y 'codigo'.");
             }
         }, (error) => {
             console.error("Error al cargar los miembros de Firestore: ", error);
-            alert("No se pudieron cargar la lista de miembros para la búsqueda. Esto puede deberse a problemas de conexión o permisos en Firestore. Revisa la consola para más detalles.");
+            alert("No se pudo cargar la lista de miembros para la búsqueda. Esto puede deberse a problemas de conexión o reglas de seguridad en Firestore. Revisa la consola para más detalles.");
         });
 
 
-        // --- Event Listeners Globales ---
+        // --- Event Listeners Globales y Funciones Auxiliares ---
         addOfrendaBtn.addEventListener('click', openModal);
         closeButton.addEventListener('click', closeModal);
+        // Cierra el modal si se hace clic fuera de su contenido
         window.addEventListener('click', (event) => {
             if (event.target === ofrendaModal) {
                 closeModal();
             }
         });
 
-        // Función de ejemplo para cerrar sesión (si usas Firebase Auth)
+        // Función de ejemplo para cerrar sesión (si usas Firebase Authentication)
         function cerrarSesion() {
             // Aquí iría la lógica de cierre de sesión de Firebase Authentication
-            // firebase.auth().signOut().then(() => {
-            //     alert('Sesión cerrada.');
-            //     window.location.href = 'login.html'; // Redirigir a la página de login
-            // }).catch((error) => {
-            //     console.error("Error al cerrar sesión: ", error);
-            //     alert("No se pudo cerrar la sesión.");
-            // });
-            alert('Funcionalidad de cerrar sesión no implementada en este ejemplo.');
+            // Por ejemplo:
+            /*
+            firebase.auth().signOut().then(() => {
+                alert('Sesión cerrada correctamente.');
+                window.location.href = 'login.html'; // Redirige a la página de login
+            }).catch((error) => {
+                console.error("Error al cerrar sesión: ", error);
+                alert("No se pudo cerrar la sesión. Por favor, intenta de nuevo.");
+            });
+            */
+            alert('Funcionalidad de cerrar sesión no implementada en este ejemplo de código.');
         }
 
     </script>
