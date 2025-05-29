@@ -127,6 +127,7 @@
         .search-bar {
             flex-grow: 1;
             min-width: 200px; /* Asegura que la barra de búsqueda no sea demasiado pequeña */
+            margin-bottom: 0; /* Asegura que no haya espacio extra debajo de la barra de búsqueda */
         }
 
         .search-bar input {
@@ -160,6 +161,8 @@
             font-weight: 700;
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            margin-top: 15px; /* Espacio entre la barra de búsqueda y el botón */
+            margin-bottom: 30px; /* Espacio debajo del botón antes de la tabla */
         }
 
         .add-button:hover {
@@ -190,14 +193,23 @@
 
         .diezmos-summary .date-filters {
             display: flex;
+            flex-wrap: wrap; /* Permite que los elementos se envuelvan */
             justify-content: space-between;
             gap: 10px;
             margin-bottom: 15px;
+            align-items: flex-end; /* Alinea los elementos al final */
+        }
+
+        .diezmos-summary .date-filters > div {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .diezmos-summary .date-filters label {
             font-size: 0.9em;
             color: var(--gold-light);
+            margin-bottom: 5px;
         }
 
         .diezmos-summary .date-filters input[type="date"] {
@@ -210,6 +222,28 @@
             flex-grow: 1;
             cursor: pointer;
         }
+
+        /* Estilos para el botón "Ver" en el resumen de diezmos */
+        .diezmos-summary .date-filters button {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            white-space: nowrap; /* Evita que el texto se rompa */
+        }
+
+        .diezmos-summary .date-filters button:hover {
+            background-color: var(--gold-darker);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
 
         .diezmos-summary table {
             width: 100%;
@@ -257,6 +291,7 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
             border-radius: 8px;
             overflow: hidden;
+            margin-top: 20px; /* Espacio extra encima de la tabla para que no se pegue al botón */
         }
 
         .data-table th, .data-table td {
@@ -527,7 +562,7 @@
                         <label for="diezmoEndDate">Hasta:</label>
                         <input type="date" id="diezmoEndDate">
                     </div>
-                </div>
+                    <button id="viewDiezmosBtn">Ver</button> </div>
                 <table>
                     <thead>
                         <tr>
@@ -697,6 +732,7 @@
         const diezmoEndDateInput = document.getElementById('diezmoEndDate');
         const totalDiezmosUSD = document.getElementById('totalDiezmosUSD');
         const totalDiezmosNIO = document.getElementById('totalDiezmosNIO');
+        const viewDiezmosBtn = document.getElementById('viewDiezmosBtn'); // Nuevo botón "Ver"
 
         // --- Variables de Paginación y Filtrado de tabla principal ---
         const rowsPerPage = 30;
@@ -785,201 +821,84 @@
         // Este listener mantiene el campo oculto `selectedMemberNameInput` sincronizado para no miembros
         document.getElementById('nombreNoMiembro').addEventListener('input', (e) => {
             if (esMiembroNo.checked) {
-                selectedMemberNameInput.value = e.target.value.trim();
+                selectedMemberNameInput.value = e.target.value;
             }
         });
 
-        // --- Lógica de Búsqueda y Selección de Miembros (¡Aquí está la magia de la búsqueda!) ---
+        // Búsqueda de miembros (se activa cuando el usuario escribe en el campo de búsqueda)
         miembroSearchInput.addEventListener('input', () => {
-            const searchTerm = miembroSearchInput.value.toLowerCase().trim();
-            miembroSearchResults.innerHTML = ''; // Limpia los resultados anteriores
+            const searchTerm = miembroSearchInput.value.toLowerCase();
+            miembroSearchResults.innerHTML = ''; // Limpiar resultados anteriores
 
-            // Mensaje si la búsqueda es muy corta
-            if (searchTerm.length < 2) {
-                const div = document.createElement('div');
-                div.textContent = "Escribe al menos 2 letras para buscar miembros...";
-                div.classList.add('no-results');
-                miembroSearchResults.appendChild(div);
-                return;
-            }
+            if (searchTerm.length > 0) {
+                const results = miembros.filter(miembro =>
+                    miembro.nombre.toLowerCase().includes(searchTerm) ||
+                    miembro.codigo.toLowerCase().includes(searchTerm)
+                );
 
-            // Filtra la lista completa de 'miembros' (cargada de Firestore)
-            // Busca si el término de búsqueda está incluido en el código O en el nombre del miembro
-            const results = miembros.filter(miembro =>
-                (miembro.codigo && miembro.codigo.toLowerCase().includes(searchTerm)) ||
-                (miembro.nombre && miembro.nombre.toLowerCase().includes(searchTerm))
-            );
-
-            // Muestra los resultados o un mensaje de "no encontrados"
-            if (results.length > 0) {
-                results.forEach(miembro => {
-                    const div = document.createElement('div');
-                    // Muestra tanto el código como el nombre en la lista de resultados
-                    const displayCode = miembro.codigo ? miembro.codigo : 'N/A';
-                    const displayName = miembro.nombre ? miembro.nombre : 'Nombre desconocido';
-                    div.textContent = `${displayCode} - ${displayName}`;
-
-                    // Cuando se hace clic en un resultado, selecciona al miembro
-                    div.addEventListener('click', () => {
-                        miembroSearchInput.value = displayName; // Pone el nombre en el campo de búsqueda visible
-                        selectedMemberCodeInput.value = displayCode; // Almacena el código del miembro
-                        selectedMemberNameInput.value = displayName; // Almacena el nombre del miembro
-                        miembroSearchResults.innerHTML = ''; // Limpia la lista de resultados después de seleccionar
+                if (results.length > 0) {
+                    results.forEach(miembro => {
+                        const div = document.createElement('div');
+                        div.textContent = `${miembro.codigo} - ${miembro.nombre}`;
+                        div.dataset.code = miembro.codigo;
+                        div.dataset.name = miembro.nombre;
+                        div.addEventListener('click', () => {
+                            miembroSearchInput.value = `${miembro.codigo} - ${miembro.nombre}`;
+                            selectedMemberCodeInput.value = miembro.codigo;
+                            selectedMemberNameInput.value = miembro.nombre;
+                            miembroSearchResults.innerHTML = ''; // Ocultar resultados después de seleccionar
+                        });
+                        miembroSearchResults.appendChild(div);
                     });
-                    miembroSearchResults.appendChild(div);
-                });
-            } else {
-                const div = document.createElement('div');
-                div.textContent = "No se encontraron miembros con ese nombre o código.";
-                div.classList.add('no-results');
-                miembroSearchResults.appendChild(div);
-            }
-        });
-
-        // Función para generar un código para no miembros (ej. NM-20231027-143000-XYZ)
-        function generateNonMemberCode() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const random = Math.floor(1000 + Math.random() * 9000); // 4 dígitos aleatorios
-            return `NM-${year}${month}${day}-${hours}${minutes}${seconds}-${random}`;
-        }
-
-
-        // --- Lógica para guardar la nueva ofrenda en Firestore ---
-        ofrendaForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Evita que el formulario se envíe de la forma tradicional
-
-            let codigoOfrenda;
-            let nombreOfrenda;
-
-            if (esMiembroSi.checked) {
-                // Si es miembro, validar que se haya seleccionado uno de la lista
-                if (!selectedMemberCodeInput.value || selectedMemberNameInput.value.trim() === '') {
-                    alert('Por favor, busca y selecciona un miembro válido de la lista sugerida.');
-                    return;
-                }
-                codigoOfrenda = selectedMemberCodeInput.value;
-                nombreOfrenda = selectedMemberNameInput.value;
-            } else if (esMiembroNo.checked) {
-                // Si no es miembro, validar que se haya ingresado un nombre
-                const nombreNoMiembroValue = document.getElementById('nombreNoMiembro').value.trim();
-                if (nombreNoMiembroValue === '') {
-                    alert('Por favor, ingresa un nombre para el no miembro.');
-                    return;
-                }
-                nombreOfrenda = nombreNoMiembroValue;
-
-                // Si el checkbox de código manual está marcado, usa ese código
-                if (addManualCodeNoMiembroCheckbox.checked) {
-                    const manualCode = manualCodeNoMiembroInput.value.trim();
-                    if (manualCode === '') {
-                        alert('Por favor, ingresa un código manual para el no miembro.');
-                        return;
-                    }
-                    codigoOfrenda = manualCode;
                 } else {
-                    // Si no, genera un código automático
-                    codigoOfrenda = generateNonMemberCode();
+                    const noResultsDiv = document.createElement('div');
+                    noResultsDiv.textContent = 'No se encontraron miembros.';
+                    noResultsDiv.classList.add('no-results');
+                    miembroSearchResults.appendChild(noResultsDiv);
                 }
-            } else {
-                alert('Por favor, selecciona si es miembro o no.');
-                return;
-            }
-
-            const cantidad = parseFloat(cantidadInput.value);
-            const moneda = monedaSelect.value;
-            const fecha = fechaInput.value; // Formato YYYY-MM-DD
-
-            const newOfrenda = {
-                codigo: codigoOfrenda,
-                miembro: nombreOfrenda,
-                cantidad: cantidad,
-                moneda: moneda,
-                fecha: fecha,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar y auditoría
-            };
-
-            try {
-                await db.collection('ofrendas').add(newOfrenda);
-                alert('Ofrenda guardada exitosamente!');
-                closeModal();
-                loadOfrendas(); // Recarga la tabla de ofrendas
-            } catch (error) {
-                console.error("Error al guardar la ofrenda: ", error);
-                alert('Error al guardar la ofrenda. Por favor, intenta de nuevo.');
             }
         });
 
-        // --- Funciones de Carga y Renderizado de Tablas ---
-
-        // Cargar miembros desde Firestore (para el formulario)
+        // --- Carga inicial de datos (miembros y ofrendas) ---
         async function loadMiembros() {
             try {
-                const snapshot = await db.collection('miembros').orderBy('nombre').get();
+                const snapshot = await db.collection('miembros').get();
                 miembros = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log("Miembros cargados:", miembros); // Para depuración
+                console.log('Miembros cargados:', miembros);
             } catch (error) {
                 console.error("Error al cargar miembros: ", error);
+                alert("Error al cargar la lista de miembros.");
             }
         }
 
-        // Cargar ofrendas desde Firestore y mostrarlas en la tabla principal
         async function loadOfrendas() {
             try {
-                const snapshot = await db.collection('ofrendas').orderBy('timestamp', 'desc').get();
+                const snapshot = await db.collection('ofrendas').orderBy('fecha', 'desc').get();
                 allOfrendas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                applySearchFilter(); // Aplica el filtro de búsqueda inicial
+                console.log('Ofrendas cargadas:', allOfrendas);
+                applyFilterAndPaginate(); // Aplicar filtros y paginación inicial
             } catch (error) {
                 console.error("Error al cargar ofrendas: ", error);
+                alert("Error al cargar las ofrendas.");
             }
         }
 
-        // Cargar Diezmos desde Firestore y calcular el resumen
-        async function loadDiezmosAndSummarize() {
+        // NUEVA FUNCIÓN: Cargar diezmos para el resumen
+        async function loadDiezmosForSummary() {
             try {
-                const snapshot = await db.collection('diezmos').orderBy('fecha').get(); // Asume que tienes una colección 'diezmos'
+                const snapshot = await db.collection('diezmos').orderBy('fecha', 'desc').get();
                 allDiezmos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateDiezmosSummary(); // Actualiza el resumen con los diezmos cargados
+                console.log('Diezmos cargados para resumen:', allDiezmos);
+                updateDiezmosSummary(); // Actualizar el resumen después de cargar
             } catch (error) {
-                console.error("Error al cargar diezmos: ", error);
-                // Si la colección 'diezmos' no existe o está vacía, los totales serán 0.00, lo cual es correcto.
+                console.error("Error al cargar diezmos para resumen: ", error);
             }
         }
 
-        // Función para actualizar el resumen de diezmos
-        function updateDiezmosSummary() {
-            let totalUSD = 0;
-            let totalNIO = 0;
-
-            const startDate = diezmoStartDateInput.value ? new Date(diezmoStartDateInput.value + 'T00:00:00') : null;
-            const endDate = diezmoEndDateInput.value ? new Date(diezmoEndDateInput.value + 'T23:59:59') : null;
-
-            allDiezmos.forEach(diezmo => {
-                const diezmoDate = new Date(diezmo.fecha + 'T00:00:00'); // Asegurarse de comparar fechas correctamente
-
-                const isWithinDateRange = (!startDate || diezmoDate >= startDate) && (!endDate || diezmoDate <= endDate);
-
-                if (isWithinDateRange) {
-                    if (diezmo.moneda === 'USD') {
-                        totalUSD += diezmo.cantidad;
-                    } else if (diezmo.moneda === 'NIO') {
-                        totalNIO += diezmo.cantidad;
-                    }
-                }
-            });
-
-            totalDiezmosUSD.textContent = `$${totalUSD.toFixed(2)}`;
-            totalDiezmosNIO.textContent = `C$${totalNIO.toFixed(2)}`;
-        }
-
-
+        // --- Lógica de la tabla principal (filtrado y paginación) ---
         function displayOfrendas(ofrendasToDisplay) {
-            ofrendasTableBody.innerHTML = ''; // Limpia la tabla actual
+            ofrendasTableBody.innerHTML = ''; // Limpiar tabla
+
             const startIndex = (currentPage - 1) * rowsPerPage;
             const endIndex = startIndex + rowsPerPage;
             const paginatedOfrendas = ofrendasToDisplay.slice(startIndex, endIndex);
@@ -987,45 +906,122 @@
             if (paginatedOfrendas.length === 0) {
                 const row = ofrendasTableBody.insertRow();
                 const cell = row.insertCell(0);
-                cell.colSpan = 5; // Asegura que ocupe todas las columnas
-                cell.textContent = "No hay ofrendas para mostrar.";
-                cell.style.textAlign = "center";
-                cell.style.padding = "20px";
-                cell.style.color = "rgba(255, 235, 59, 0.5)";
-            } else {
-                paginatedOfrendas.forEach(ofrenda => {
-                    const row = ofrendasTableBody.insertRow();
-                    row.insertCell(0).textContent = ofrenda.codigo || 'N/A';
-                    row.insertCell(1).textContent = ofrenda.miembro || 'Desconocido';
-                    row.insertCell(2).textContent = ofrenda.cantidad.toFixed(2);
-                    row.insertCell(3).textContent = ofrenda.moneda;
-                    row.insertCell(4).textContent = ofrenda.fecha;
-                });
+                cell.colSpan = 5; // Columna para abarcar todas las celdas
+                cell.textContent = 'No hay ofrendas para mostrar.';
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.color = 'rgba(255, 235, 59, 0.5)';
+                return;
             }
+
+            paginatedOfrendas.forEach(ofrenda => {
+                const row = ofrendasTableBody.insertRow();
+                row.insertCell(0).textContent = ofrenda.codigo || 'N/A';
+                row.insertCell(1).textContent = ofrenda.miembro || 'Desconocido';
+                row.insertCell(2).textContent = parseFloat(ofrenda.cantidad).toLocaleString('es-NI', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                row.insertCell(3).textContent = ofrenda.moneda;
+                row.insertCell(4).textContent = ofrenda.fecha;
+            });
+
             updatePaginationControls(ofrendasToDisplay.length);
         }
 
-        // Aplica el filtro de búsqueda a las ofrendas y actualiza la tabla
-        function applySearchFilter() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            filteredOfrendas = allOfrendas.filter(ofrenda => {
-                const memberMatch = (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm));
-                const codeMatch = (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm));
-                const dateMatch = (ofrenda.fecha && ofrenda.fecha.toLowerCase().includes(searchTerm)); // Búsqueda simple por fecha
-                return memberMatch || codeMatch || dateMatch;
-            });
-            currentPage = 1; // Reinicia a la primera página con nuevos filtros
+        function applyFilterAndPaginate() {
+            const searchTerm = searchInput.value.toLowerCase();
+            filteredOfrendas = allOfrendas.filter(ofrenda =>
+                (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm)) ||
+                (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm)) ||
+                (ofrenda.fecha && ofrenda.fecha.includes(searchTerm)) // Buscar por fecha exacta o parcial
+            );
+            currentPage = 1; // Resetear a la primera página con un nuevo filtro
             displayOfrendas(filteredOfrendas);
         }
 
-        // --- Funciones de Paginación ---
-        function updatePaginationControls(totalItems) {
-            const totalPages = Math.ceil(totalItems / rowsPerPage);
+        function updatePaginationControls(totalRows) {
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
             pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
             prevPageBtn.disabled = currentPage === 1;
             nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
         }
 
+        // --- Manejo de eventos ---
+        addOfrendaBtn.addEventListener('click', openModal);
+        closeButton.addEventListener('click', closeModal);
+        window.addEventListener('click', (event) => {
+            if (event.target === ofrendaModal) {
+                closeModal();
+            }
+        });
+
+        // Listener para el formulario de ofrendas (envío)
+        ofrendaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            let codigoOfrenda;
+            let nombreOfrenda;
+
+            if (esMiembroSi.checked) {
+                codigoOfrenda = selectedMemberCodeInput.value;
+                nombreOfrenda = selectedMemberNameInput.value;
+                if (!codigoOfrenda || !nombreOfrenda) {
+                    alert('Por favor, selecciona un miembro de la lista de búsqueda.');
+                    return;
+                }
+            } else { // No es miembro
+                nombreOfrenda = document.getElementById('nombreNoMiembro').value;
+                if (addManualCodeNoMiembroCheckbox.checked) {
+                    codigoOfrenda = manualCodeNoMiembroInput.value;
+                    if (!codigoOfrenda) {
+                        alert('Por favor, ingresa el código manual para el no miembro.');
+                        return;
+                    }
+                } else {
+                    // Generar código para no miembro si no se ingresa manualmente
+                    const lastNoMiembro = allOfrendas
+                        .filter(o => o.codigo && o.codigo.startsWith('NM-'))
+                        .sort((a, b) => {
+                            const numA = parseInt(a.codigo.split('-')[1]);
+                            const numB = parseInt(b.codigo.split('-')[1]);
+                            return numB - numA;
+                        })[0];
+                    let nextNum = 1;
+                    if (lastNoMiembro) {
+                        nextNum = parseInt(lastNoMiembro.codigo.split('-')[1]) + 1;
+                    }
+                    codigoOfrenda = `NM-${String(nextNum).padStart(3, '0')}`;
+                }
+                if (!nombreOfrenda) {
+                    alert('Por favor, ingresa el nombre de la persona (no miembro).');
+                    return;
+                }
+            }
+
+            const newOfrenda = {
+                codigo: codigoOfrenda,
+                miembro: nombreOfrenda,
+                cantidad: parseFloat(cantidadInput.value),
+                moneda: monedaSelect.value,
+                fecha: fechaInput.value
+            };
+
+            try {
+                await db.collection('ofrendas').add(newOfrenda);
+                alert('Ofrenda guardada exitosamente!');
+                closeModal();
+                loadOfrendas(); // Recargar todas las ofrendas para actualizar la tabla
+            } catch (error) {
+                console.error("Error al guardar la ofrenda: ", error);
+                alert("Error al guardar la ofrenda.");
+            }
+        });
+
+        // Búsqueda de la tabla principal
+        searchInput.addEventListener('input', applyFilterAndPaginate);
+
+        // Paginación
         prevPageBtn.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
@@ -1041,45 +1037,76 @@
             }
         });
 
-        // --- Event Listeners Globales ---
-        addOfrendaBtn.addEventListener('click', openModal);
-        closeButton.addEventListener('click', closeModal);
-        window.addEventListener('click', (event) => {
-            if (event.target === ofrendaModal) {
-                closeModal();
-            }
-        });
-        searchInput.addEventListener('input', applySearchFilter);
+        // --- Lógica del Resumen de Diezmos ---
 
-        // Event listeners para los filtros de fecha del resumen de diezmos
-        diezmoStartDateInput.addEventListener('change', updateDiezmosSummary);
-        diezmoEndDateInput.addEventListener('change', updateDiezmosSummary);
+        // Función para obtener el primer y último día del mes actual
+        function getMonthStartEndDates() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth(); // 0-11
 
+            const startDate = new Date(year, month, 1);
+            const endDate = new Date(year, month + 1, 0); // El día 0 del mes siguiente es el último día del mes actual
 
-        // Función para cerrar sesión (simplificada para el frontend)
-        function cerrarSesion() {
-            alert('Sesión cerrada. Redirigiendo a la página de login...');
-            // Aquí puedes redirigir a tu página de login
-            window.location.href = 'login.html'; // Asegúrate de que esta sea la ruta correcta
+            return {
+                start: startDate.toISOString().split('T')[0], // Formato YYYY-MM-DD
+                end: endDate.toISOString().split('T')[0]
+            };
         }
 
+        // Función para inicializar los campos de fecha del resumen
+        function initializeDiezmoDateFilters() {
+            const { start, end } = getMonthStartEndDates();
+            diezmoStartDateInput.value = start;
+            diezmoEndDateInput.value = end;
+        }
+
+        function updateDiezmosSummary() {
+            const startDate = diezmoStartDateInput.value;
+            const endDate = diezmoEndDateInput.value;
+
+            let totalUSD = 0;
+            let totalNIO = 0;
+
+            const filteredDiezmos = allDiezmos.filter(diezmo => {
+                // Asegúrate de que la fecha del diezmo sea una cadena comparable
+                return diezmo.fecha >= startDate && diezmo.fecha <= endDate;
+            });
+
+            filteredDiezmos.forEach(diezmo => {
+                if (diezmo.moneda === 'USD') {
+                    totalUSD += diezmo.cantidad;
+                } else if (diezmo.moneda === 'NIO') {
+                    totalNIO += diezmo.cantidad;
+                }
+            });
+
+            totalDiezmosUSD.textContent = `$${totalUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            totalDiezmosNIO.textContent = `C$${totalNIO.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        // Event listener para el botón "Ver" del resumen de diezmos
+        viewDiezmosBtn.addEventListener('click', updateDiezmosSummary);
+
         // --- Inicialización al cargar la página ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadMiembros(); // Carga los miembros una vez al inicio
-            loadOfrendas(); // Carga las ofrendas al inicio
-            loadDiezmosAndSummarize(); // Carga los diezmos y calcula el resumen al inicio
-
-            // Establecer fechas por defecto para el resumen de diezmos: mes actual
-            const today = new Date();
-            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-            diezmoStartDateInput.value = firstDayOfMonth.toISOString().split('T')[0];
-            diezmoEndDateInput.value = lastDayOfMonth.toISOString().split('T')[0];
-            // Asegura que el resumen se calcule con las fechas por defecto al cargar
-            updateDiezmosSummary(); 
+        document.addEventListener('DOMContentLoaded', async () => {
+            initializeDiezmoDateFilters(); // Configura las fechas del mes actual
+            await loadMiembros();
+            await loadOfrendas();
+            await loadDiezmosForSummary(); // Carga los diezmos al inicio
         });
 
+        // Función para cerrar sesión (si tienes un sistema de autenticación de Firebase configurado)
+        function cerrarSesion() {
+            // firebase.auth().signOut().then(() => {
+            //     alert('Sesión cerrada exitosamente!');
+            //     window.location.href = 'login.html'; // Redirige a la página de login
+            // }).catch((error) => {
+            //     console.error("Error al cerrar sesión: ", error);
+            //     alert("Error al cerrar sesión.");
+            // });
+            alert('Funcionalidad de cerrar sesión no implementada en este ejemplo.');
+        }
     </script>
 </body>
 </html>
