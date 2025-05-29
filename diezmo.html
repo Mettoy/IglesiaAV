@@ -412,7 +412,7 @@
 <body>
 
     <div class="sidebar">
-        <div class="sidebar-header">Diezmos</div>
+        <div class="sidebar-header">Ofrendas</div>
         <a href="acceso.html" class="sidebar-link">Dar acceso</a>
         <a href="diezmos.html" class="sidebar-link">Diezmos</a>
         <a href="ofrendas.html" class="sidebar-link active">Ofrendas</a>
@@ -509,22 +509,22 @@
     <script>
         // --- CONFIGURACIÓN DE FIREBASE ---
         const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
 
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         // --- Datos de miembros (se cargarán desde Firestore) ---
-        let miembros = []; // Ahora se cargará dinámicamente
+        let miembros = []; // Se cargará dinámicamente desde Firestore
 
         let allOfrendas = []; // Mantendrá todas las ofrendas cargadas de Firestore
         let filteredOfrendas = []; // Ofrendas filtradas por la búsqueda
@@ -570,6 +570,13 @@
             esMiembroSi.checked = false; // Desmarcar ambos para que el usuario elija
             esMiembroNo.checked = false;
             // No enfocamos nada al inicio para que el usuario elija el radio button
+
+            // Establece la fecha actual por defecto en el campo de fecha del modal
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Enero es 0
+            const dd = String(today.getDate()).padStart(2, '0');
+            fechaInput.value = `${yyyy}-${mm}-${dd}`;
         }
 
         function closeModal() {
@@ -597,7 +604,7 @@
             document.getElementById('nombreNoMiembro').setAttribute('required', 'true');
             miembroSearchInput.removeAttribute('required');
             selectedMemberCodeInput.value = 'NO_MIEMBRO'; // Marcar como no miembro
-            selectedMemberNameInput.value = document.getElementById('nombreNoMiembro').value; // Usar el valor del campo si ya existe
+            // No se establece selectedMemberNameInput aquí, se capturará al enviar el formulario
             miembroSearchResults.innerHTML = ''; // Limpiar resultados de búsqueda si había
         });
 
@@ -626,7 +633,7 @@
             if (results.length > 0) {
                 results.forEach(miembro => {
                     const div = document.createElement('div');
-                    div.textContent = `${miembro.codigo || ''} - ${miembro.nombre || 'Nombre desconocido'}`;
+                    div.textContent = `${miembro.codigo || 'N/A'} - ${miembro.nombre || 'Nombre desconocido'}`;
                     div.addEventListener('click', () => {
                         miembroSearchInput.value = miembro.nombre; // Muestra el nombre en el input de búsqueda
                         selectedMemberCodeInput.value = miembro.codigo; // Almacena el código real
@@ -701,13 +708,15 @@
             const end = start + rowsPerPage;
             const paginatedOfrendas = filteredOfrendas.slice(start, end);
 
+            const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
+
             if (paginatedOfrendas.length === 0 && currentPage > 1) {
                 currentPage--;
-                renderTable(); // Re-renderiza para ajustar la página si no hay datos
+                renderTable(); // Re-renderiza para ajustar la página si no hay datos en la página actual
                 return;
             }
 
-            if (paginatedOfrendas.length === 0) {
+            if (paginatedOfrendas.length === 0 && totalPages <= 1) { // Si no hay datos y solo hay una página
                 const row = ofrendasTableBody.insertRow();
                 const cell = row.insertCell(0);
                 cell.colSpan = 5; // Abarca todas las columnas
@@ -752,7 +761,7 @@
             }
         });
 
-        // --- Funcionalidad de Búsqueda de Ofrendas ---
+        // --- Funcionalidad de Búsqueda de Ofrendas en tabla ---
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             if (searchTerm) {
@@ -770,7 +779,7 @@
 
         // --- Listeners de Firestore ---
 
-        // 1. Listener para OFRENDAS
+        // 1. Listener para OFRENDAS: Carga y actualiza la tabla de ofrendas
         db.collection('ofrendas').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
             allOfrendas = [];
             snapshot.forEach((doc) => {
@@ -794,18 +803,17 @@
             alert("No se pudieron cargar las ofrendas. Por favor, revisa tu conexión y permisos de Firebase.");
         });
 
-        // 2. Listener para MIEMBROS (¡NUEVO!)
+        // 2. Listener para MIEMBROS: Carga y actualiza la lista de miembros para la búsqueda
         db.collection('miembros').orderBy('nombre').onSnapshot((snapshot) => {
             miembros = []; // Limpiar la lista actual de miembros
             snapshot.forEach((doc) => {
                 miembros.push({ id: doc.id, ...doc.data() });
             });
             console.log("Miembros cargados desde Firestore:", miembros);
-            // Si la aplicación requiere que la tabla de ofrendas dependa de los miembros cargados,
-            // podrías llamar a renderTable() aquí también, pero el listener de ofrendas ya lo hace.
         }, (error) => {
             console.error("Error al cargar los miembros de Firestore: ", error);
             // Puedes mostrar un mensaje al usuario si esto es crítico
+            alert("No se pudieron cargar la lista de miembros. La búsqueda de miembros puede no funcionar correctamente.");
         });
 
 
@@ -831,14 +839,10 @@
             alert('Funcionalidad de cerrar sesión no implementada en este ejemplo.');
         }
 
-        // Inicializar la tabla al cargar la página (aunque el listener de Firestore ya lo hace)
+        // Se ejecuta una vez que el DOM está completamente cargado
         document.addEventListener('DOMContentLoaded', () => {
-            // Establece la fecha actual por defecto en el campo de fecha del modal
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Enero es 0
-            const dd = String(today.getDate()).padStart(2, '0');
-            fechaInput.value = `${yyyy}-${mm}-${dd}`;
+            // El campo de fecha ya se setea en openModal, así que no es necesario aquí.
+            // Los listeners de Firestore se encargarán de cargar los datos.
         });
 
     </script>
