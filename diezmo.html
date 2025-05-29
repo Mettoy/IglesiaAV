@@ -1,1134 +1,253 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diezmos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@13.1/dist/handsontable.full.min.css">
-    <style>
-        /* Definición de colores principales: Azul Ultra Oscuro y Dorado Vibrante */
-        :root {
-            --ultra-dark-blue: #0A0A1A; /* Base, casi negro */
-            --deep-blue: #1A1A3A; /* Para elementos principales */
-            --dark-accent-blue: #2A2A4A; /* Para elementos secundarios y hover */
-            --gold-vibrant: #FFD700; /* Dorado brillante */
-            --gold-light: #FFEB3B; /* Dorado más claro para texto general */
-            --gold-darker: #CCAD00; /* Dorado para hover/activos */
-            --white-off: #F0F0F0; /* Blanco roto para contraste */
-            --border-line: #3A3A5A; /* Líneas de borde sutiles */
-            --red-alert: #C62828; /* Rojo para acciones de peligro */
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            background-color: var(--ultra-dark-blue); /* Fondo principal ultra oscuro */
-            color: var(--gold-light); /* Texto general en dorado claro */
-            overflow-x: hidden; /* Evita scroll horizontal por animaciones */
-        }
-
-        /* --- Sidebar Styles --- */
-        .sidebar {
-            width: 250px;
-            background-color: var(--deep-blue); /* Azul muy oscuro para la barra lateral */
-            color: var(--gold-light);
-            padding: 20px 0;
-            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.8); /* Sombra más profunda */
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 900;
-            transition: width 0.3s ease; /* Animación al expandir/contraer */
-        }
-
-        .sidebar-header {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 1.8em;
-            font-weight: 700;
-            color: var(--gold-vibrant); /* Título en dorado vibrante */
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); /* Sombra dorada intensa */
-            animation: pulseGold 2s infinite alternate; /* Animación sutil del título */
-        }
-
-        @keyframes pulseGold {
-            from { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
-            to { text-shadow: 0 0 15px rgba(255, 215, 0, 1), 0 0 20px rgba(255, 215, 0, 0.5); }
-        }
-
-        .sidebar-link {
-            display: block;
-            padding: 15px 25px;
-            color: var(--gold-light);
-            text-decoration: none;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar-link::before { /* Efecto de brillo al pasar el mouse */
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s ease;
-        }
-        .sidebar-link:hover::before {
-            left: 100%;
-        }
-
-        .sidebar-link:hover, .sidebar-link.active {
-            background-color: var(--dark-accent-blue); /* Fondo más oscuro al pasar el mouse/activo */
-            color: var(--gold-vibrant);
-            transform: translateX(5px); /* Deslizamiento sutil al pasar el mouse */
-        }
-
-        .logout {
-            margin-top: auto;
-            padding: 15px 25px;
-            background-color: var(--red-alert);
-            color: var(--white-off);
-            cursor: pointer;
-            text-align: center;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .logout:hover {
-            background-color: #EF5350; /* Rojo más brillante al pasar el mouse */
-            transform: scale(1.02); /* Pequeño escalado */
-        }
-
-        /* --- Main Content Styles --- */
-        .main-content {
-            margin-left: 250px;
-            flex-grow: 1;
-            padding: 30px;
-            background-color: var(--ultra-dark-blue); /* Fondo del contenido principal ultra oscuro */
-            transition: margin-left 0.3s ease;
-        }
-
-        /* Contenedor para la barra de búsqueda y el botón Añadir Diezmo */
-        .search-add-container {
-            display: flex;
-            align-items: center;
-            gap: 20px; /* Espacio entre los elementos */
-            margin-bottom: 30px; /* Espacio debajo de este contenedor */
-            flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
-        }
-
-        .search-bar {
-            flex-grow: 1;
-            min-width: 250px; /* Asegura que la barra de búsqueda no sea demasiado pequeña */
-        }
-
-        .search-bar input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-line);
-            border-radius: 8px;
-            font-size: 1em;
-            box-sizing: border-box;
-            background-color: var(--deep-blue); /* Fondo de inputs azul muy oscuro */
-            color: var(--gold-light);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .search-bar input::placeholder {
-            color: rgba(255, 235, 59, 0.6); /* Placeholder en dorado más suave */
-        }
-        .search-bar input:focus {
-            border-color: var(--gold-vibrant); /* Borde dorado al enfocar */
-            outline: none;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); /* Sombra brillante */
-        }
-
-        .add-button {
-            background-color: var(--gold-vibrant);
-            color: var(--ultra-dark-blue); /* Texto del botón en azul ultra oscuro */
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 700;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
-
-        .add-button:hover {
-            background-color: var(--gold-darker);
-            transform: translateY(-3px) scale(1.02); /* Deslizamiento y ligero escalado */
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
-        }
-
-        /* --- Resumen de Diezmos Styles (Nueva Tabla) --- */
-        .diezmos-summary {
-            background-color: var(--deep-blue);
-            border-radius: 8px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            margin-bottom: 30px; /* Espacio debajo de la tabla de resumen */
-            width: 100%; /* Ocupa todo el ancho disponible */
-        }
-
-        .diezmos-summary h3 {
-            color: var(--gold-vibrant);
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 15px;
-            text-shadow: 0 0 5px rgba(255, 215, 0, 0.6);
-        }
-
-        .diezmos-summary .date-filters {
-            display: flex;
-            flex-wrap: wrap; /* Permite que los elementos se envuelvan */
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 15px;
-            align-items: flex-end; /* Alinea los elementos al final */
-        }
-
-        .diezmos-summary .date-filters > div {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .diezmos-summary .date-filters label {
-            font-size: 0.9em;
-            color: var(--gold-light);
-            margin-bottom: 5px;
-        }
-
-        .diezmos-summary .date-filters input[type="date"] {
-            background-color: var(--dark-accent-blue);
-            border: 1px solid var(--border-line);
-            color: var(--white-off);
-            padding: 8px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            flex-grow: 1;
-            cursor: pointer;
-        }
-
-        /* Estilos para el botón "Ver" en el resumen de diezmos */
-        .diezmos-summary .date-filters button {
-            background-color: var(--gold-vibrant);
-            color: var(--ultra-dark-blue);
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 700;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            white-space: nowrap; /* Evita que el texto se rompa */
-        }
-
-        .diezmos-summary .date-filters button:hover {
-            background-color: var(--gold-darker);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .diezmos-summary table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .diezmos-summary th, .diezmos-summary td {
-            padding: 8px 10px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-line);
-            color: var(--white-off);
-        }
-
-        .diezmos-summary th {
-            background-color: var(--dark-accent-blue);
-            color: var(--gold-vibrant);
-            font-weight: 700;
-            font-size: 0.9em;
-        }
-
-        .diezmos-summary td {
-            font-weight: bold;
-            color: var(--gold-light);
-        }
-        .diezmos-summary td.amount {
-            text-align: right;
-        }
-
-        /* --- Table Styles (General para tablas de datos) --- */
-        .data-table { /* Esto es para tablas HTML estándar, Handsontable usa sus propias clases */
-            width: 100%;
-            border-collapse: collapse;
-            background-color: var(--deep-blue); /* Fondo de la tabla azul muy oscuro */
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
-            border-radius: 8px;
-            overflow: hidden;
-            margin-top: 20px; /* Espacio extra encima de la tabla para que no se pegue al botón */
-        }
-
-        .data-table th, .data-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-line);
-        }
-
-        .data-table th {
-            background-color: var(--ultra-dark-blue); /* Encabezado de tabla aún más oscuro */
-            color: var(--gold-vibrant);
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .data-table tbody tr {
-            color: var(--white-off);
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .data-table tbody tr:hover {
-            background-color: var(--dark-accent-blue); /* Fondo azul oscuro al pasar el mouse por la fila */
-            transform: translateX(5px); /* Ligero desplazamiento de la fila */
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-            gap: 10px;
-        }
-
-        .pagination button {
-            background-color: var(--deep-blue);
-            border: 1px solid var(--border-line);
-            color: var(--gold-vibrant);
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-        }
-
-        .pagination button:hover:not(:disabled) {
-            background-color: var(--gold-vibrant);
-            color: var(--ultra-dark-blue);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-        }
-
-        .pagination button:disabled {
-            cursor: not-allowed;
-            opacity: 0.3;
-            background-color: var(--deep-blue);
-            color: rgba(255, 215, 0, 0.2);
-            box-shadow: none;
-        }
-
-        .pagination span {
-            color: var(--gold-vibrant);
-            padding: 8px 0;
-            font-weight: bold;
-        }
-
-        /* --- Modal Styles --- */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95); /* Fondo de modal casi negro total */
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.4s ease-in-out; /* Transición más larga */
-        }
-        .modal.show {
-            display: flex;
-            opacity: 1;
-        }
-
-        .modal-content {
-            background-color: var(--deep-blue);
-            padding: 30px;
-            border-radius: 12px; /* Bordes más suaves */
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9); /* Sombra muy profunda */
-            width: 90%;
-            max-width: 550px; /* Un poco más ancho */
-            position: relative;
-            transform: scale(0.9); /* Inicia un poco más pequeño */
-            opacity: 0; /* Para animación de aparición */
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s ease-in-out; /* Bounce effect */
-        }
-        .modal.show .modal-content {
-            transform: scale(1); /* Escala a tamaño normal */
-            opacity: 1;
-        }
-
-        .close-button {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 2.2em; /* Más grande */
-            font-weight: bold;
-            color: var(--gold-vibrant);
-            cursor: pointer;
-            transition: color 0.3s ease, transform 0.3s ease;
-        }
-
-        .close-button:hover {
-            color: var(--gold-darker);
-            transform: rotate(180deg) scale(1.2); /* Rotación completa y más grande */
-        }
-
-        .modal-content h2 {
-            margin-top: 0;
-            margin-bottom: 25px;
-            color: var(--gold-vibrant);
-            text-align: center;
-            text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: var(--gold-light);
-        }
-
-        .form-group input[type="text"],
-        .form-group input[type="number"],
-        .form-group input[type="date"],
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-line);
-            border-radius: 5px;
-            font-size: 1em;
-            box-sizing: border-box;
-            background-color: var(--dark-accent-blue); /* Fondo de campos azul más claro */
-            color: var(--white-off);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .form-group input::placeholder {
-            color: rgba(255, 235, 59, 0.4);
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: var(--gold-vibrant);
-            outline: none;
-            box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
-        }
-        .form-group select {
-            appearance: none;
-            background-image: url('data:image/svg+xml;utf8,<svg fill="%23FFD700" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 20px;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            margin-top: 5px;
-        }
-
-        .radio-group label {
-            color: var(--white-off);
-        }
-        .radio-group input[type="radio"] {
-            accent-color: var(--gold-vibrant);
-        }
-
-        /* Estilos para el checkbox manual de código */
-        #addManualCodeNoMiembro {
-            vertical-align: middle;
-            margin-right: 5px;
-        }
-
-        .member-search-results {
-            max-height: 180px; /* Un poco más de altura */
-            overflow-y: auto;
-            border: 1px solid var(--border-line);
-            border-radius: 5px;
-            margin-top: 10px;
-            background-color: var(--dark-accent-blue);
-        }
-
-        .member-search-results div {
-            padding: 10px;
-            cursor: pointer;
-            color: var(--white-off);
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
-
-        .member-search-results div:hover {
-            background-color: var(--deep-blue);
-            color: var(--gold-vibrant);
-        }
-        .member-search-results div.no-results {
-            color: rgba(255, 235, 59, 0.5); /* Texto tenue para "no results" */
-            cursor: default;
-        }
-        .member-search-results div.no-results:hover {
-            background-color: var(--dark-accent-blue); /* No cambiar de color al pasar el mouse */
-            color: rgba(255, 235, 59, 0.5);
-        }
-
-        .form-actions {
-            text-align: right;
-            margin-top: 30px;
-        }
-
-        .form-actions button {
-            background-color: var(--gold-vibrant);
-            color: var(--ultra-dark-blue);
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 700;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
-
-        .form-actions button:hover {
-            background-color: var(--gold-darker);
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
-        }
-
-        /* Handsontable Styles */
-        #handsontable-container {
-            margin-top: 20px;
-            border: 1px solid var(--border-line);
-            border-radius: 8px;
-            overflow: hidden;
-            height: 400px; /* Altura fija para el contenedor de Handsontable */
-        }
-        .htCore {
-            background-color: var(--deep-blue);
-            color: var(--white-off);
-            border-color: var(--border-line);
-        }
-        .htCore th {
-            background-color: var(--ultra-dark-blue);
-            color: var(--gold-vibrant);
-            font-weight: bold;
-        }
-        .htCore td {
-            font-weight: normal;
-        }
-        .ht_master .htCore {
-            border: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Diezmos</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0b1c2c;
+      color: gold;
+    }
+    .sidebar {
+      position: fixed;
+      width: 200px;
+      height: 100%;
+      background-color: #081521;
+      padding-top: 20px;
+    }
+    .sidebar-header {
+      text-align: center;
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .sidebar-link {
+      display: block;
+      padding: 10px 20px;
+      color: gold;
+      text-decoration: none;
+    }
+    .sidebar-link.active, .sidebar-link:hover {
+      background-color: #11283f;
+    }
+    .logout {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      cursor: pointer;
+    }
+    .main {
+      margin-left: 220px;
+      padding: 20px;
+    }
+    button {
+      background-color: gold;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    input, select {
+      padding: 6px;
+      margin: 5px;
+    }
+    table {
+      width: 100%;
+      margin-top: 10px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid gold;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #1a2c3b;
+      padding: 20px;
+      width: 400px;
+      color: gold;
+      border-radius: 10px;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="sidebar-header">Ofrendas</div>
-        <a href="acceso.html" class="sidebar-link">Dar acceso</a>
-        <a href="diezmos.html" class="sidebar-link active">Diezmos</a>
-        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-        <a href="reportes.html" class="sidebar-link">Reportes</a>
-        <a href="discipulado.html" class="sidebar-link">Discipulado</a>
-        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
+<div class="sidebar"> 
+  <div class="sidebar-header">Ofrendas</div>
+  <a href="acceso.html" class="sidebar-link">Dar acceso</a>
+  <a href="diezmos.html" class="sidebar-link active">Diezmos</a>
+  <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+  <a href="reportes.html" class="sidebar-link">Reportes</a>
+  <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+  <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
+</div>
+
+<div class="main">
+  <h2>Diezmos</h2>
+  <input type="text" id="busquedaDiezmo" placeholder="Buscar diezmo por nombre o código">
+  <button onclick="abrirModal()">Añadir Diezmo</button>
+  <br><br>
+  <label>Desde: <input type="date" id="desde"></label>
+  <label>Hasta: <input type="date" id="hasta"></label>
+  <button onclick="cargarDiezmos()">Filtrar</button>
+
+  <h3>Resumen</h3>
+  <p>Total Córdobas: <span id="totalCordoba">C$0.00</span></p>
+  <p>Total Dólares: <span id="totalDolar">$0.00</span></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Monto</th>
+        <th>Moneda</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody id="tablaDiezmos"></tbody>
+  </table>
+</div>
+
+<div class="modal" id="modalDiezmo">
+  <div class="modal-content">
+    <h3>Registrar Diezmo</h3>
+    <label>¿Es miembro? 
+      <select id="esMiembro" onchange="mostrarCampos()">
+        <option value="si">Sí</option>
+        <option value="no">No</option>
+      </select>
+    </label><br>
+    <div id="miembroCampos">
+      <input type="text" id="busquedaMiembro" placeholder="Buscar por código o nombre" oninput="buscarMiembros()">
+      <select id="selectMiembro"></select>
     </div>
-
-    <div class="main-content">
-        <div class="search-add-container">
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Buscar por código, nombre o fecha...">
-            </div>
-            <button class="add-button" id="addDiezmoBtn">Añadir Diezmo</button>
-        </div>
-
-        <div class="diezmos-summary">
-            <h3>Resumen de Diezmos</h3>
-            <div class="date-filters">
-                <div>
-                    <label for="diezmoStartDate">Desde:</label>
-                    <input type="date" id="diezmoStartDate">
-                </div>
-                <div>
-                    <label for="diezmoEndDate">Hasta:</label>
-                    <input type="date" id="diezmoEndDate">
-                </div>
-                <button id="viewDiezmosBtn">Ver</button>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Moneda</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>USD</td>
-                        <td id="totalDiezmosUSD" class="amount">$0.00</td>
-                    </tr>
-                    <tr>
-                        <td>NIO</td>
-                        <td id="totalDiezmosNIO" class="amount">C$0.00</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div id="handsontable-container"></div>
-
-        <div class="pagination">
-            <button id="prevPageBtn" disabled>&laquo; Anterior</button>
-            <span id="pageInfo">Página 1 de 1</span>
-            <button id="nextPageBtn" disabled>Siguiente &raquo;</button>
-        </div>
+    <div id="noMiembroCampos" style="display:none;">
+      <input type="text" id="nombreNoMiembro" placeholder="Nombre completo"><br>
+      <input type="text" id="codigoNoMiembro" placeholder="Código"><br>
     </div>
+    <input type="number" id="cantidad" placeholder="Cantidad"><br>
+    <select id="moneda">
+      <option value="cordoba">Córdoba</option>
+      <option value="dolar">Dólar</option>
+    </select><br>
+    <input type="date" id="fecha"><br><br>
+    <button onclick="guardarDiezmo()">Guardar</button>
+    <button onclick="cerrarModal()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+    authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+    databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+    projectId: "iglesia-adoracion-viva",
+    storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+    messagingSenderId: "815332010058",
+    appId: "1:815332010058:web:d2afff616469349d88deb3",
+    measurementId: "G-43MZP6V55D"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const abrirModal = () => document.getElementById('modalDiezmo').style.display = 'flex';
+  const cerrarModal = () => document.getElementById('modalDiezmo').style.display = 'none';
+
+  const mostrarCampos = () => {
+    const es = document.getElementById('esMiembro').value;
+    document.getElementById('miembroCampos').style.display = es === 'si' ? 'block' : 'none';
+    document.getElementById('noMiembroCampos').style.display = es === 'no' ? 'block' : 'none';
+  };
+
+  const buscarMiembros = async () => {
+    const q = document.getElementById('busquedaMiembro').value.toLowerCase();
+    const snap = await db.collection('miembros').get();
+    const select = document.getElementById('selectMiembro');
+    select.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (d.nombre.toLowerCase().includes(q) || d.codigo?.toLowerCase().includes(q)) {
+        const opt = document.createElement('option');
+        opt.value = JSON.stringify({ nombre: d.nombre, codigo: d.codigo });
+        opt.text = `${d.codigo} - ${d.nombre}`;
+        select.appendChild(opt);
+      }
+    });
+  };
+
+  const guardarDiezmo = async () => {
+    let nombre, codigo;
+    if (document.getElementById('esMiembro').value === 'si') {
+      const val = document.getElementById('selectMiembro').value;
+      if (!val) return alert("Seleccione un miembro.");
+      const obj = JSON.parse(val);
+      nombre = obj.nombre;
+      codigo = obj.codigo;
+    } else {
+      nombre = document.getElementById('nombreNoMiembro').value;
+      codigo = document.getElementById('codigoNoMiembro').value;
+    }
+    const cantidad = parseFloat(document.getElementById('cantidad').value);
+    const moneda = document.getElementById('moneda').value;
+    const fecha = document.getElementById('fecha').value;
+    if (!nombre || !codigo || !cantidad || !fecha) return alert("Todos los campos son obligatorios.");
+
+    await db.collection('diezmos').add({ nombre, codigo, cantidad, moneda, fecha });
+    cerrarModal();
+    cargarDiezmos();
+  };
+
+  const cargarDiezmos = async () => {
+    const desde = document.getElementById('desde').value;
+    const hasta = document.getElementById('hasta').value;
+    const snap = await db.collection('diezmos')
+      .where("fecha", ">=", desde)
+      .where("fecha", "<=", hasta)
+      .get();
+
+    const tbody = document.getElementById('tablaDiezmos');
+    tbody.innerHTML = "";
+    let totalCordoba = 0, totalDolar = 0;
+
+    snap.forEach(doc => {
+      const d = doc.data();
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${d.nombre}</td><td>${d.codigo}</td><td>${d.cantidad}</td><td>${d.moneda}</td><td>${d.fecha}</td>`;
+      tbody.appendChild(tr);
+      if (d.moneda === "cordoba") totalCordoba += d.cantidad;
+      else totalDolar += d.cantidad;
+    });
+
+    document.getElementById('totalCordoba').innerText = `C$${totalCordoba.toFixed(2)}`;
+    document.getElementById('totalDolar').innerText = `$${totalDolar.toFixed(2)}`;
+  };
+
+  const setFechasIniciales = () => {
+    const hoy = new Date();
+    const desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const hasta = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+    document.getElementById('desde').value = desde.toISOString().split('T')[0];
+    document.getElementById('hasta').value = hasta.toISOString().split('T')[0];
+    cargarDiezmos();
+  };
+
+  window.onload = setFechasIniciales;
+</script>
 
-    <div id="ofrendaModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Añadir Nuevo Diezmo</h2>
-            <form id="ofrendaForm">
-                <div class="form-group">
-                    <label>¿Es miembro?</label>
-                    <div class="radio-group">
-                        <input type="radio" id="esMiembroSi" name="esMiembro" value="si" required>
-                        <label for="esMiembroSi">Sí</label>
-                        <input type="radio" id="esMiembroNo" name="esMiembro" value="no">
-                        <label for="esMiembroNo">No</label>
-                    </div>
-                </div>
-
-                <div class="form-group" id="miembroSearchGroup" style="display: none;">
-                    <label for="miembroSearch">Buscar miembro:</label>
-                    <input type="text" id="miembroSearch" placeholder="Escribe código o nombre">
-                    <div class="member-search-results" id="miembroSearchResults">
-                    </div>
-                    <input type="hidden" id="selectedMemberCode">
-                    <input type="hidden" id="selectedMemberName">
-                </div>
-
-                <div class="form-group" id="nombreNoMiembroGroup" style="display: none;">
-                    <label for="nombreNoMiembro">Nombre (No miembro):</label>
-                    <input type="text" id="nombreNoMiembro" placeholder="Nombre de la persona">
-
-                    <div style="margin-top: 15px;">
-                        <input type="checkbox" id="addManualCodeNoMiembro">
-                        <label for="addManualCodeNoMiembro" style="display: inline-block; margin-left: 5px;">Colocar Código Manual</label>
-                    </div>
-
-                    <div class="form-group" id="manualCodeNoMiembroGroup" style="display: none;">
-                        <label for="manualCodeNoMiembro">Código Manual (No miembro):</label>
-                        <input type="text" id="manualCodeNoMiembro" placeholder="Ej: NM-001">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="cantidad">Cantidad:</label>
-                    <input type="number" id="cantidad" min="0" step="0.01" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="moneda">Moneda:</label>
-                    <select id="moneda" required>
-                        <option value="USD">Dólar (USD)</option>
-                        <option value="NIO">Córdoba (NIO)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="fecha">Fecha:</label>
-                    <input type="date" id="fecha" required>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@13.1/dist/handsontable.full.min.js"></script>
-
-    <script>
-        // --- CONFIGURACIÓN DE FIREBASE (¡MUY IMPORTANTE: VERIFICA QUE ESTA ES TU CONFIGURACIÓN CORRECTA!) ---
-        const firebaseConfig = {
-            apiKey: "TU_API_KEY", // <--- REEMPLAZA CON TU API KEY REAL
-            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-            projectId: "iglesia-adoracion-viva",
-            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-            messagingSenderId: "815332010058",
-            appId: "1:815332010058:web:d2afff616469349d88deb3",
-            measurementId: "G-43MZP6V55D"
-        };
-
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // --- Datos de miembros y diezmos ---
-        let miembros = []; // Contendrá la lista completa de miembros
-        let allDiezmos = []; // Almacenará todos los diezmos cargados de Firestore
-        let displayedDiezmos = []; // Diezmos actualmente mostrados en Handsontable (después de filtros y paginación)
-
-        // --- Referencias a elementos del DOM ---
-        const addDiezmoBtn = document.getElementById('addDiezmoBtn');
-        const ofrendaModal = document.getElementById('ofrendaModal');
-        const closeButton = document.querySelector('.modal .close-button');
-        const ofrendaForm = document.getElementById('ofrendaForm');
-        const esMiembroSi = document.getElementById('esMiembroSi');
-        const esMiembroNo = document.getElementById('esMiembroNo');
-        const miembroSearchGroup = document.getElementById('miembroSearchGroup');
-        const nombreNoMiembroGroup = document.getElementById('nombreNoMiembroGroup');
-        const miembroSearchInput = document.getElementById('miembroSearch');
-        const miembroSearchResults = document.getElementById('miembroSearchResults');
-        const selectedMemberCodeInput = document.getElementById('selectedMemberCode');
-        const selectedMemberNameInput = document.getElementById('selectedMemberName');
-        const cantidadInput = document.getElementById('cantidad');
-        const monedaSelect = document.getElementById('moneda');
-        const fechaInput = document.getElementById('fecha');
-        const searchInput = document.getElementById('searchInput');
-        const prevPageBtn = document.getElementById('prevPageBtn');
-        const nextPageBtn = document.getElementById('nextPageBtn');
-        const pageInfoSpan = document.getElementById('pageInfo');
-        const addManualCodeNoMiembroCheckbox = document.getElementById('addManualCodeNoMiembro');
-        const manualCodeNoMiembroGroup = document.getElementById('manualCodeNoMiembroGroup');
-        const manualCodeNoMiembroInput = document.getElementById('manualCodeNoMiembro');
-        const diezmoStartDateInput = document.getElementById('diezmoStartDate');
-        const diezmoEndDateInput = document.getElementById('diezmoEndDate');
-        const totalDiezmosUSD = document.getElementById('totalDiezmosUSD');
-        const totalDiezmosNIO = document.getElementById('totalDiezmosNIO');
-        const viewDiezmosBtn = document.getElementById('viewDiezmosBtn');
-
-        // --- Handsontable setup ---
-        const container = document.getElementById('handsontable-container');
-        let hot; // Variable para la instancia de Handsontable
-
-        // --- Variables de Paginación y Filtrado de tabla principal ---
-        const rowsPerPage = 30;
-        let currentPage = 1;
-
-        // Función para cerrar sesión (si tienes un sistema de autenticación de Firebase)
-        function cerrarSesion() {
-            // Implementa tu lógica de cierre de sesión aquí
-            // Ejemplo: firebase.auth().signOut().then(() => { window.location.href = 'login.html'; });
-            alert('Funcionalidad de cerrar sesión aún no implementada en este ejemplo.');
-            window.location.href = 'acceso.html'; // Redirige a la página de acceso, asumiendo que es tu login
-        }
-
-        // --- Funciones para manejar el Modal de Ofrendas ---
-        function openModal() {
-            ofrendaModal.style.display = 'flex';
-            setTimeout(() => ofrendaModal.classList.add('show'), 10);
-            ofrendaForm.reset();
-            miembroSearchGroup.style.display = 'none';
-            nombreNoMiembroGroup.style.display = 'none';
-            miembroSearchResults.innerHTML = '';
-            selectedMemberCodeInput.value = '';
-            selectedMemberNameInput.value = '';
-            document.getElementById('nombreNoMiembro').removeAttribute('required');
-            miembroSearchInput.removeAttribute('required');
-            esMiembroSi.checked = false;
-            esMiembroNo.checked = false;
-
-            // Reinicia el estado del checkbox de código manual
-            addManualCodeNoMiembroCheckbox.checked = false;
-            manualCodeNoMiembroGroup.style.display = 'none';
-            manualCodeNoMiembroInput.value = '';
-            manualCodeNoMiembroInput.removeAttribute('required');
-
-            // Establece la fecha actual por defecto en el campo de fecha del modal
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            fechaInput.value = `${year}-${month}-${day}`;
-        }
-
-        function closeModal() {
-            ofrendaModal.classList.remove('show');
-            setTimeout(() => { ofrendaModal.style.display = 'none'; }, 400);
-        }
-
-        // --- Lógica de la interfaz de usuario del formulario de ofrenda ---
-        esMiembroSi.addEventListener('change', () => {
-            miembroSearchGroup.style.display = 'block';
-            nombreNoMiembroGroup.style.display = 'none';
-            miembroSearchInput.focus();
-            miembroSearchInput.setAttribute('required', 'true');
-            document.getElementById('nombreNoMiembro').removeAttribute('required');
-            selectedMemberCodeInput.value = '';
-            selectedMemberNameInput.value = '';
-            miembroSearchInput.value = '';
-            miembroSearchResults.innerHTML = '';
-
-            addManualCodeNoMiembroCheckbox.checked = false;
-            manualCodeNoMiembroGroup.style.display = 'none';
-            manualCodeNoMiembroInput.value = '';
-            manualCodeNoMiembroInput.removeAttribute('required');
-        });
-
-        esMiembroNo.addEventListener('change', () => {
-            miembroSearchGroup.style.display = 'none';
-            nombreNoMiembroGroup.style.display = 'block';
-            document.getElementById('nombreNoMiembro').focus();
-            document.getElementById('nombreNoMiembro').setAttribute('required', 'true');
-            miembroSearchInput.removeAttribute('required');
-            selectedMemberCodeInput.value = ''; // Limpia valores anteriores de miembro
-            selectedMemberNameInput.value = '';
-        });
-
-        addManualCodeNoMiembroCheckbox.addEventListener('change', () => {
-            if (addManualCodeNoMiembroCheckbox.checked) {
-                manualCodeNoMiembroGroup.style.display = 'block';
-                manualCodeNoMiembroInput.setAttribute('required', 'true');
-            } else {
-                manualCodeNoMiembroGroup.style.display = 'none';
-                manualCodeNoMiembroInput.removeAttribute('required');
-                manualCodeNoMiembroInput.value = ''; // Limpiar el valor cuando se oculta
-            }
-        });
-
-        // --- Funciones de Firebase Firestore ---
-
-        // Función para cargar miembros
-        async function loadMembers() {
-            try {
-                console.log("Intentando cargar miembros...");
-                const snapshot = await db.collection('miembros').get();
-                miembros = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log("Miembros cargados:", miembros);
-                // Si el error "Error al cargar los miembros" persiste,
-                // y no hay otros errores en la consola, el problema podría ser que
-                // la colección 'miembros' esté vacía o no exista, o los datos no tienen 'codigo' y 'nombre'.
-                if (miembros.length === 0) {
-                    console.warn("La colección 'miembros' está vacía o no se encontraron documentos.");
-                }
-            } catch (error) {
-                console.error("Error al cargar los miembros:", error);
-                alert("Error al cargar la lista de miembros. Por favor, revisa la consola para más detalles y asegúrate de que tienes permisos de lectura en la colección 'miembros' de Firestore.");
-            }
-        }
-
-        // Función para cargar todos los diezmos de Firebase
-        async function loadDiezmos() {
-            try {
-                console.log("Cargando diezmos de Firestore...");
-                const diezmosRef = db.collection('diezmos');
-                // Ordenar por fecha en orden descendente y luego por timestamp para consistencia
-                const snapshot = await diezmosRef.orderBy('fecha', 'desc').orderBy('timestamp', 'desc').get();
-                allDiezmos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                // Asegúrate de que las fechas se manejen como strings 'YYYY-MM-DD' para Handsontable
-                allDiezmos = allDiezmos.map(diezmo => {
-                    if (diezmo.fecha instanceof firebase.firestore.Timestamp) {
-                        diezmo.fecha = diezmo.fecha.toDate().toISOString().split('T')[0];
-                    }
-                    return diezmo;
-                });
-
-                console.log("Diezmos cargados:", allDiezmos);
-                applyFiltersAndPagination(); // Aplicar filtros y paginación después de cargar
-                updateDiezmosSummary(); // Actualizar el resumen de diezmos al cargar
-            } catch (error) {
-                console.error("Error al cargar los diezmos:", error);
-                alert("Error al cargar los diezmos. Por favor, revisa la consola para más detalles.");
-            }
-        }
-
-        // Función para añadir un nuevo diezmo
-        async function addDiezmo(event) {
-            event.preventDefault(); // Evita el envío del formulario
-
-            let codigo = '';
-            let nombre = '';
-            const cantidad = parseFloat(cantidadInput.value);
-            const moneda = monedaSelect.value;
-            const fecha = fechaInput.value; // Formato YYYY-MM-DD
-
-            if (esMiembroSi.checked) {
-                codigo = selectedMemberCodeInput.value;
-                nombre = selectedMemberNameInput.value;
-                if (!codigo || !nombre) {
-                    alert("Por favor, selecciona un miembro de la lista.");
-                    return;
-                }
-            } else if (esMiembroNo.checked) {
-                nombre = document.getElementById('nombreNoMiembro').value.trim();
-                if (!nombre) {
-                    alert("Por favor, ingresa el nombre del no miembro.");
-                    return;
-                }
-                if (addManualCodeNoMiembroCheckbox.checked) {
-                    codigo = manualCodeNoMiembroInput.value.trim();
-                    if (!codigo) {
-                        alert("Por favor, ingresa un código manual para el no miembro.");
-                        return;
-                    }
-                } else {
-                    // Generar un código simple para no miembros si no se ingresa manualmente
-                    // Considera una forma más robusta de generar IDs si esto será permanente
-                    codigo = `NM-${Date.now().toString().slice(-6)}`;
-                }
-            } else {
-                alert("Por favor, indica si es miembro o no.");
-                return;
-            }
-
-            if (isNaN(cantidad) || cantidad <= 0) {
-                alert("Por favor, ingresa una cantidad válida para el diezmo.");
-                return;
-            }
-
-            try {
-                await db.collection('diezmos').add({
-                    codigo: codigo,
-                    nombre: nombre,
-                    cantidad: cantidad,
-                    moneda: moneda,
-                    fecha: fecha, // Guardamos la fecha como string 'YYYY-MM-DD'
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para un ordenamiento más preciso
-                });
-                console.log("Diezmo añadido con éxito.");
-                closeModal();
-                await loadDiezmos(); // Recargar los diezmos para actualizar la tabla y el resumen
-            } catch (error) {
-                console.error("Error al añadir el diezmo:", error);
-                alert("Hubo un error al guardar el diezmo. Inténtalo de nuevo.");
-            }
-        }
-
-        // --- Funciones de filtrado y paginación de la tabla principal ---
-
-        function filterDiezmos(query = '') {
-            const lowerCaseQuery = query.toLowerCase();
-            return allDiezmos.filter(diezmo => {
-                const searchString = `${diezmo.codigo || ''} ${diezmo.nombre || ''} ${diezmo.fecha || ''}`.toLowerCase();
-                return searchString.includes(lowerCaseQuery);
-            });
-        }
-
-        function paginateDiezmos(filteredData) {
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = startIndex + rowsPerPage;
-            return filteredData.slice(startIndex, endIndex);
-        }
-
-        function updatePaginationButtons(filteredData) {
-            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages || 1}`;
-            prevPageBtn.disabled = currentPage === 1;
-            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
-        }
-
-        function renderHandsontable(data) {
-            if (hot) {
-                hot.destroy(); // Destruye la instancia existente si la hay
-            }
-
-            hot = new Handsontable(container, {
-                data: data,
-                colHeaders: ['Código', 'Nombre', 'Cantidad', 'Moneda', 'Fecha'],
-                columns: [
-                    { data: 'codigo', readOnly: true },
-                    { data: 'nombre', readOnly: true },
-                    { data: 'cantidad', type: 'numeric', numericFormat: { pattern: '$0,0.00' }, readOnly: true },
-                    { data: 'moneda', readOnly: true },
-                    { data: 'fecha', type: 'date', dateFormat: 'YYYY-MM-DD', readOnly: true },
-                ],
-                stretchH: 'all', // Estira las columnas para ocupar todo el ancho
-                height: 400,
-                licenseKey: 'non-commercial-and-evaluation', // Necesario para evitar la marca de agua
-                rowHeaders: true,
-                contextMenu: ['remove_row'], // Habilitar menú contextual para eliminar filas
-                beforeRemoveRow: function(index, amount) {
-                    const rowData = hot.getDataAtRow(index);
-                    const diezmoId = displayedDiezmos[index] ? displayedDiezmos[index].id : null;
-
-                    if (diezmoId && confirm(`¿Estás seguro de que quieres eliminar el diezmo de ${rowData[1]} por ${rowData[2]} ${rowData[3]} de la fecha ${rowData[4]}?`)) {
-                        deleteDiezmo(diezmoId);
-                        // No es necesario llamar a hot.render() o updateSettings() aquí.
-                        // loadDiezmos() se encargará de recargar los datos.
-                        return true; // Permitir que Handsontable elimine la fila visualmente (temporalmente)
-                    }
-                    return false; // Cancelar la eliminación
-                }
-            });
-        }
-
-        async function deleteDiezmo(id) {
-            try {
-                await db.collection('diezmos').doc(id).delete();
-                console.log("Diezmo eliminado con éxito:", id);
-                await loadDiezmos(); // Recargar todos los diezmos para actualizar la tabla y el resumen
-            } catch (error) {
-                console.error("Error al eliminar el diezmo:", error);
-                alert("Hubo un error al eliminar el diezmo. Inténtalo de nuevo.");
-            }
-        }
-
-
-        function applyFiltersAndPagination() {
-            const query = searchInput.value;
-            let filtered = filterDiezmos(query);
-
-            // Filtrar por rango de fechas del resumen, si están definidas
-            const startDate = diezmoStartDateInput.value;
-            const endDate = diezmoEndDateInput.value;
-
-            if (startDate && endDate) {
-                filtered = filtered.filter(diezmo => {
-                    const diezmoDate = new Date(diezmo.fecha);
-                    const start = new Date(startDate);
-                    const end = new Date(endDate);
-                    // Asegúrate de que los rangos incluyen el día completo
-                    end.setDate(end.getDate() + 1); // Suma un día para incluir el final del día de la fecha final
-                    return diezmoDate >= start && diezmoDate < end;
-                });
-            } else if (startDate) {
-                filtered = filtered.filter(diezmo => new Date(diezmo.fecha) >= new Date(startDate));
-            } else if (endDate) {
-                const end = new Date(endDate);
-                end.setDate(end.getDate() + 1);
-                filtered = filtered.filter(diezmo => new Date(diezmo.fecha) < end);
-            }
-
-            displayedDiezmos = filtered; // Guardar los diezmos filtrados para la paginación y eliminación
-            const paginatedData = paginateDiezmos(filtered);
-            renderHandsontable(paginatedData);
-            updatePaginationButtons(filtered);
-            updateDiezmosSummary(filtered); // Actualizar resumen con los diezmos filtrados (no paginados)
-        }
-
-        // Función para actualizar el resumen de diezmos
-        function updateDiezmosSummary(dataToSummarize = allDiezmos) {
-            let totalUSD = 0;
-            let totalNIO = 0;
-
-            dataToSummarize.forEach(diezmo => {
-                if (diezmo.moneda === 'USD') {
-                    totalUSD += diezmo.cantidad;
-                } else if (diezmo.moneda === 'NIO') {
-                    totalNIO += diezmo.cantidad;
-                }
-            });
-
-            totalDiezmosUSD.textContent = `$${totalUSD.toFixed(2)}`;
-            totalDiezmosNIO.textContent = `C$${totalNIO.toFixed(2)}`;
-        }
-
-
-        // --- Event Listeners ---
-        addDiezmoBtn.addEventListener('click', openModal);
-        closeButton.addEventListener('click', closeModal);
-        ofrendaModal.addEventListener('click', (e) => {
-            if (e.target === ofrendaModal) {
-                closeModal();
-            }
-        });
-        ofrendaForm.addEventListener('submit', addDiezmo);
-
-        miembroSearchInput.addEventListener('input', () => {
-            const query = miembroSearchInput.value.toLowerCase();
-            miembroSearchResults.innerHTML = '';
-            if (query.length < 2) {
-                miembroSearchResults.innerHTML = '<div class="no-results">Escribe al menos 2 caracteres...</div>';
-                return;
-            }
-
-            const results = miembros.filter(miembro =>
-                (miembro.codigo && miembro.codigo.toLowerCase().includes(query)) ||
-                (miembro.nombre && miembro.nombre.toLowerCase().includes(query))
-            );
-
-            if (results.length > 0) {
-                results.forEach(miembro => {
-                    const div = document.createElement('div');
-                    div.textContent = `${miembro.codigo} - ${miembro.nombre}`;
-                    div.addEventListener('click', () => {
-                        miembroSearchInput.value = `${miembro.codigo} - ${miembro.nombre}`;
-                        selectedMemberCodeInput.value = miembro.codigo;
-                        selectedMemberNameInput.value = miembro.nombre;
-                        miembroSearchResults.innerHTML = ''; // Limpiar resultados
-                    });
-                    miembroSearchResults.appendChild(div);
-                });
-            } else {
-                miembroSearchResults.innerHTML = '<div class="no-results">No se encontraron miembros.</div>';
-            }
-        });
-
-        searchInput.addEventListener('input', () => {
-            currentPage = 1; // Resetear la paginación al buscar
-            applyFiltersAndPagination();
-        });
-
-        prevPageBtn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                applyFiltersAndPagination();
-            }
-        });
-
-        nextPageBtn.addEventListener('click', () => {
-            const totalPages = Math.ceil(displayedDiezmos.length / rowsPerPage);
-            if (currentPage < totalPages) {
-                currentPage++;
-                applyFiltersAndPagination();
-            }
-        });
-
-        // Event listener para el botón "Ver" del resumen de diezmos
-        viewDiezmosBtn.addEventListener('click', () => {
-            currentPage = 1; // Resetear paginación al aplicar filtro de fecha
-            applyFiltersAndPagination();
-        });
-
-        // Establecer las fechas por defecto para el resumen: inicio del mes actual y hoy
-        function setDefaultDateFilters() {
-            const today = new Date();
-            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-            const format = (date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            };
-
-            diezmoStartDateInput.value = format(firstDayOfMonth);
-            diezmoEndDateInput.value = format(today);
-        }
-
-
-        // --- Inicialización al cargar la página ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            setDefaultDateFilters(); // Establece las fechas por defecto en los filtros
-            await loadMembers(); // Cargar miembros al inicio
-            await loadDiezmos(); // Cargar diezmos al inicio y renderizar la tabla
-        });
-    </script>
 </body>
 </html>
