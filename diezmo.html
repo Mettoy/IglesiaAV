@@ -1,1067 +1,1028 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diezmos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        /* Definición de colores principales: Azul Ultra Oscuro y Dorado Vibrante */
-        :root {
-            --ultra-dark-blue: #0A0A1A; /* Base, casi negro */
-            --deep-blue: #1A1A3A; /* Para elementos principales */
-            --dark-accent-blue: #2A2A4A; /* Para elementos secundarios y hover */
-            --gold-vibrant: #FFD700; /* Dorado brillante */
-            --gold-light: #FFEB3B; /* Dorado más claro para texto general */
-            --gold-darker: #CCAD00; /* Dorado para hover/activos */
-            --white-off: #F0F0F0; /* Blanco roto para contraste */
-            --border-line: #3A3A5A; /* Líneas de borde sutiles */
-            --red-alert: #C62828; /* Rojo para acciones de peligro */
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diezmos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Definición de colores principales: Azul Ultra Oscuro y Dorado Vibrante */
+        :root {
+            --ultra-dark-blue: #0A0A1A; /* Base, casi negro */
+            --deep-blue: #1A1A3A; /* Para elementos principales */
+            --dark-accent-blue: #2A2A4A; /* Para elementos secundarios y hover */
+            --gold-vibrant: #FFD700; /* Dorado brillante */
+            --gold-light: #FFEB3B; /* Dorado más claro para texto general */
+            --gold-darker: #CCAD00; /* Dorado para hover/activos */
+            --white-off: #F0F0F0; /* Blanco roto para contraste */
+            --border-line: #3A3A5A; /* Líneas de borde sutiles */
+            --red-alert: #C62828; /* Rojo para acciones de peligro */
+        }
 
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            background-color: var(--ultra-dark-blue); /* Fondo principal ultra oscuro */
-            color: var(--gold-light); /* Texto general en dorado claro */
-            overflow-x: hidden; /* Evita scroll horizontal por animaciones */
-        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            background-color: var(--ultra-dark-blue); /* Fondo principal ultra oscuro */
+            color: var(--gold-light); /* Texto general en dorado claro */
+            overflow-x: hidden; /* Evita scroll horizontal por animaciones */
+        }
 
-        /* --- Sidebar Styles --- */
-        .sidebar {
-            width: 250px;
-            background-color: var(--deep-blue); /* Azul muy oscuro para la barra lateral */
-            color: var(--gold-light);
-            padding: 20px 0;
-            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.8); /* Sombra más profunda */
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 900;
-            transition: width 0.3s ease; /* Animación al expandir/contraer */
-        }
+        /* --- Sidebar Styles --- */
+        .sidebar {
+            width: 250px;
+            background-color: var(--deep-blue); /* Azul muy oscuro para la barra lateral */
+            color: var(--gold-light);
+            padding: 20px 0;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.8); /* Sombra más profunda */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 900;
+            transition: width 0.3s ease; /* Animación al expandir/contraer */
+        }
 
-        .sidebar-header {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 1.8em;
-            font-weight: 700;
-            color: var(--gold-vibrant); /* Título en dorado vibrante */
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); /* Sombra dorada intensa */
-            animation: pulseGold 2s infinite alternate; /* Animación sutil del título */
-        }
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--gold-vibrant); /* Título en dorado vibrante */
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); /* Sombra dorada intensa */
+            animation: pulseGold 2s infinite alternate; /* Animación sutil del título */
+        }
 
-        @keyframes pulseGold {
-            from { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
-            to { text-shadow: 0 0 15px rgba(255, 215, 0, 1), 0 0 20px rgba(255, 215, 0, 0.5); }
-        }
+        @keyframes pulseGold {
+            from { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+            to { text-shadow: 0 0 15px rgba(255, 215, 0, 1), 0 0 20px rgba(255, 215, 0, 0.5); }
+        }
 
-        .sidebar-link {
-            display: block;
-            padding: 15px 25px;
-            color: var(--gold-light);
-            text-decoration: none;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
+        .sidebar-link {
+            display: block;
+            padding: 15px 25px;
+            color: var(--gold-light);
+            text-decoration: none;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
 
-        .sidebar-link::before { /* Efecto de brillo al pasar el mouse */
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s ease;
-        }
-        .sidebar-link:hover::before {
-            left: 100%;
-        }
+        .sidebar-link::before { /* Efecto de brillo al pasar el mouse */
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        .sidebar-link:hover::before {
+            left: 100%;
+        }
 
-        .sidebar-link:hover, .sidebar-link.active {
-            background-color: var(--dark-accent-blue); /* Fondo más oscuro al pasar el mouse/activo */
-            color: var(--gold-vibrant);
-            transform: translateX(5px); /* Deslizamiento sutil al pasar el mouse */
-        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--dark-accent-blue); /* Fondo más oscuro al pasar el mouse/activo */
+            color: var(--gold-vibrant);
+            transform: translateX(5px); /* Deslizamiento sutil al pasar el mouse */
+        }
 
-        .logout {
-            margin-top: auto;
-            padding: 15px 25px;
-            background-color: var(--red-alert);
-            color: var(--white-off);
-            cursor: pointer;
-            text-align: center;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
+        .logout {
+            margin-top: auto;
+            padding: 15px 25px;
+            background-color: var(--red-alert);
+            color: var(--white-off);
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
 
-        .logout:hover {
-            background-color: #EF5350; /* Rojo más brillante al pasar el mouse */
-            transform: scale(1.02); /* Pequeño escalado */
-        }
+        .logout:hover {
+            background-color: #EF5350; /* Rojo más brillante al pasar el mouse */
+            transform: scale(1.02); /* Pequeño escalado */
+        }
 
-        /* --- Main Content Styles --- */
-        .main-content {
-            margin-left: 250px;
-            flex-grow: 1;
-            padding: 30px;
-            background-color: var(--ultra-dark-blue); /* Fondo del contenido principal ultra oscuro */
-            transition: margin-left 0.3s ease;
-        }
+        /* --- Main Content Styles --- */
+        .main-content {
+            margin-left: 250px;
+            flex-grow: 1;
+            padding: 30px;
+            background-color: var(--ultra-dark-blue); /* Fondo del contenido principal ultra oscuro */
+            transition: margin-left 0.3s ease;
+        }
 
         /* Contenedor para la barra de búsqueda y el botón Añadir Diezmo */
-        .search-add-container {
-            display: flex;
-            align-items: center;
-            gap: 20px; /* Espacio entre los elementos */
-            margin-bottom: 30px; /* Espacio debajo de este contenedor */
-            flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
-        }
+        .search-add-container {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Espacio entre los elementos */
+            margin-bottom: 30px; /* Espacio debajo de este contenedor */
+            flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
+        }
 
-        .search-bar {
-            flex-grow: 1;
-            min-width: 250px; /* Asegura que la barra de búsqueda no sea demasiado pequeña */
-        }
+        .search-bar {
+            flex-grow: 1;
+            min-width: 250px; /* Asegura que la barra de búsqueda no sea demasiado pequeña */
+        }
 
-        .search-bar input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-line);
-            border-radius: 8px;
-            font-size: 1em;
-            box-sizing: border-box;
-            background-color: var(--deep-blue); /* Fondo de inputs azul muy oscuro */
-            color: var(--gold-light);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .search-bar input::placeholder {
-            color: rgba(255, 235, 59, 0.6); /* Placeholder en dorado más suave */
-        }
-        .search-bar input:focus {
-            border-color: var(--gold-vibrant); /* Borde dorado al enfocar */
-            outline: none;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); /* Sombra brillante */
-        }
+        .search-bar input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-line);
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            background-color: var(--deep-blue); /* Fondo de inputs azul muy oscuro */
+            color: var(--gold-light);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .search-bar input::placeholder {
+            color: rgba(255, 235, 59, 0.6); /* Placeholder en dorado más suave */
+        }
+        .search-bar input:focus {
+            border-color: var(--gold-vibrant); /* Borde dorado al enfocar */
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); /* Sombra brillante */
+        }
 
-        .add-button {
-            background-color: var(--gold-vibrant);
-            color: var(--ultra-dark-blue); /* Texto del botón en azul ultra oscuro */
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 700;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
+        .add-button {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue); /* Texto del botón en azul ultra oscuro */
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
 
-        .add-button:hover {
-            background-color: var(--gold-darker);
-            transform: translateY(-3px) scale(1.02); /* Deslizamiento y ligero escalado */
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
-        }
+        .add-button:hover {
+            background-color: var(--gold-darker);
+            transform: translateY(-3px) scale(1.02); /* Deslizamiento y ligero escalado */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
 
-        /* --- Resumen de Diezmos Styles (Nueva Tabla) --- */
-        .diezmos-summary {
-            background-color: var(--deep-blue);
-            border-radius: 8px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            margin-bottom: 30px; /* Espacio debajo de la tabla de resumen */
+        /* --- Resumen de Diezmos Styles (Nueva Tabla) --- */
+        .diezmos-summary {
+            background-color: var(--deep-blue);
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            margin-bottom: 30px; /* Espacio debajo de la tabla de resumen */
             width: 100%; /* Ocupa todo el ancho disponible */
-        }
+        }
 
-        .diezmos-summary h3 {
-            color: var(--gold-vibrant);
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 15px;
-            text-shadow: 0 0 5px rgba(255, 215, 0, 0.6);
-        }
+        .diezmos-summary h3 {
+            color: var(--gold-vibrant);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.6);
+        }
 
-        .diezmos-summary .date-filters {
-            display: flex;
-            flex-wrap: wrap; /* Permite que los elementos se envuelvan */
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 15px;
-            align-items: flex-end; /* Alinea los elementos al final */
-        }
+        .diezmos-summary .date-filters {
+            display: flex;
+            flex-wrap: wrap; /* Permite que los elementos se envuelvan */
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: flex-end; /* Alinea los elementos al final */
+        }
 
-        .diezmos-summary .date-filters > div {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
+        .diezmos-summary .date-filters > div {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
 
-        .diezmos-summary .date-filters label {
-            font-size: 0.9em;
-            color: var(--gold-light);
-            margin-bottom: 5px;
-        }
+        .diezmos-summary .date-filters label {
+            font-size: 0.9em;
+            color: var(--gold-light);
+            margin-bottom: 5px;
+        }
 
-        .diezmos-summary .date-filters input[type="date"] {
-            background-color: var(--dark-accent-blue);
-            border: 1px solid var(--border-line);
-            color: var(--white-off);
-            padding: 8px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            flex-grow: 1;
-            cursor: pointer;
-        }
+        .diezmos-summary .date-filters input[type="date"] {
+            background-color: var(--dark-accent-blue);
+            border: 1px solid var(--border-line);
+            color: var(--white-off);
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            flex-grow: 1;
+            cursor: pointer;
+        }
 
-        /* Estilos para el botón "Ver" en el resumen de diezmos */
-        .diezmos-summary .date-filters button {
-            background-color: var(--gold-vibrant);
-            color: var(--ultra-dark-blue);
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 700;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            white-space: nowrap; /* Evita que el texto se rompa */
-        }
+        /* Estilos para el botón "Ver" en el resumen de diezmos */
+        .diezmos-summary .date-filters button {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            white-space: nowrap; /* Evita que el texto se rompa */
+        }
 
-        .diezmos-summary .date-filters button:hover {
-            background-color: var(--gold-darker);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-        }
+        .diezmos-summary .date-filters button:hover {
+            background-color: var(--gold-darker);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
 
+        .diezmos-summary table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-        .diezmos-summary table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        .diezmos-summary th, .diezmos-summary td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-line);
+            color: var(--white-off);
+        }
 
-        .diezmos-summary th, .diezmos-summary td {
-            padding: 8px 10px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-line);
-            color: var(--white-off);
-        }
+        .diezmos-summary th {
+            background-color: var(--dark-accent-blue);
+            color: var(--gold-vibrant);
+            font-weight: 700;
+            font-size: 0.9em;
+        }
 
-        .diezmos-summary th {
-            background-color: var(--dark-accent-blue);
-            color: var(--gold-vibrant);
-            font-weight: 700;
-            font-size: 0.9em;
-        }
+        .diezmos-summary td {
+            font-weight: bold;
+            color: var(--gold-light);
+        }
+        .diezmos-summary td.amount {
+            text-align: right;
+        }
 
-        .diezmos-summary td {
-            font-weight: bold;
-            color: var(--gold-light);
-        }
-        .diezmos-summary td.amount {
-            text-align: right;
-        }
+        /* --- Table Styles (General para tablas de datos) --- */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--deep-blue); /* Fondo de la tabla azul muy oscuro */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px; /* Espacio extra encima de la tabla para que no se pegue al botón */
+        }
 
-        /* --- Table Styles (General para tablas de datos) --- */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: var(--deep-blue); /* Fondo de la tabla azul muy oscuro */
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
-            border-radius: 8px;
-            overflow: hidden;
-            margin-top: 20px; /* Espacio extra encima de la tabla para que no se pegue al botón */
-        }
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-line);
+        }
 
-        .data-table th, .data-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-line);
-        }
+        .data-table th {
+            background-color: var(--ultra-dark-blue); /* Encabezado de tabla aún más oscuro */
+            color: var(--gold-vibrant);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
 
-        .data-table th {
-            background-color: var(--ultra-dark-blue); /* Encabezado de tabla aún más oscuro */
-            color: var(--gold-vibrant);
-            font-weight: 700;
-            text-transform: uppercase;
-        }
+        .data-table tbody tr {
+            color: var(--white-off);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
 
-        .data-table tbody tr {
-            color: var(--white-off);
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
+        .data-table tbody tr:hover {
+            background-color: var(--dark-accent-blue); /* Fondo azul oscuro al pasar el mouse por la fila */
+            transform: translateX(5px); /* Ligero desplazamiento de la fila */
+        }
 
-        .data-table tbody tr:hover {
-            background-color: var(--dark-accent-blue); /* Fondo azul oscuro al pasar el mouse por la fila */
-            transform: translateX(5px); /* Ligero desplazamiento de la fila */
-        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
 
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-            gap: 10px;
-        }
+        .pagination button {
+            background-color: var(--deep-blue);
+            border: 1px solid var(--border-line);
+            color: var(--gold-vibrant);
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
 
-        .pagination button {
-            background-color: var(--deep-blue);
-            border: 1px solid var(--border-line);
-            color: var(--gold-vibrant);
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-        }
+        .pagination button:hover:not(:disabled) {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        }
 
-        .pagination button:hover:not(:disabled) {
-            background-color: var(--gold-vibrant);
-            color: var(--ultra-dark-blue);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-        }
+        .pagination button:disabled {
+            cursor: not-allowed;
+            opacity: 0.3;
+            background-color: var(--deep-blue);
+            color: rgba(255, 215, 0, 0.2);
+            box-shadow: none;
+        }
 
-        .pagination button:disabled {
-            cursor: not-allowed;
-            opacity: 0.3;
-            background-color: var(--deep-blue);
-            color: rgba(255, 215, 0, 0.2);
-            box-shadow: none;
-        }
+        .pagination span {
+            color: var(--gold-vibrant);
+            padding: 8px 0;
+            font-weight: bold;
+        }
 
-        .pagination span {
-            color: var(--gold-vibrant);
-            padding: 8px 0;
-            font-weight: bold;
-        }
+        /* --- Modal Styles --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95); /* Fondo de modal casi negro total */
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out; /* Transición más larga */
+        }
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
 
-        /* --- Modal Styles --- */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95); /* Fondo de modal casi negro total */
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.4s ease-in-out; /* Transición más larga */
-        }
-        .modal.show {
-            display: flex;
-            opacity: 1;
-        }
+        .modal-content {
+            background-color: var(--deep-blue);
+            padding: 30px;
+            border-radius: 12px; /* Bordes más suaves */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9); /* Sombra muy profunda */
+            width: 90%;
+            max-width: 550px; /* Un poco más ancho */
+            position: relative;
+            transform: scale(0.9); /* Inicia un poco más pequeño */
+            opacity: 0; /* Para animación de aparición */
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s ease-in-out; /* Bounce effect */
+        }
+        .modal.show .modal-content {
+            transform: scale(1); /* Escala a tamaño normal */
+            opacity: 1;
+        }
 
-        .modal-content {
-            background-color: var(--deep-blue);
-            padding: 30px;
-            border-radius: 12px; /* Bordes más suaves */
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9); /* Sombra muy profunda */
-            width: 90%;
-            max-width: 550px; /* Un poco más ancho */
-            position: relative;
-            transform: scale(0.9); /* Inicia un poco más pequeño */
-            opacity: 0; /* Para animación de aparición */
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.4s ease-in-out; /* Bounce effect */
-        }
-        .modal.show .modal-content {
-            transform: scale(1); /* Escala a tamaño normal */
-            opacity: 1;
-        }
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2.2em; /* Más grande */
+            font-weight: bold;
+            color: var(--gold-vibrant);
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
 
-        .close-button {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 2.2em; /* Más grande */
-            font-weight: bold;
-            color: var(--gold-vibrant);
-            cursor: pointer;
-            transition: color 0.3s ease, transform 0.3s ease;
-        }
+        .close-button:hover {
+            color: var(--gold-darker);
+            transform: rotate(180deg) scale(1.2); /* Rotación completa y más grande */
+        }
 
-        .close-button:hover {
-            color: var(--gold-darker);
-            transform: rotate(180deg) scale(1.2); /* Rotación completa y más grande */
-        }
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--gold-vibrant);
+            text-align: center;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+        }
 
-        .modal-content h2 {
-            margin-top: 0;
-            margin-bottom: 25px;
-            color: var(--gold-vibrant);
-            text-align: center;
-            text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
-        }
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--gold-light);
+        }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: var(--gold-light);
-        }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-line);
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box;
+            background-color: var(--dark-accent-blue); /* Fondo de campos azul más claro */
+            color: var(--white-off);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-group input::placeholder {
+            color: rgba(255, 235, 59, 0.4);
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--gold-vibrant);
+            outline: none;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+        }
+        .form-group select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23FFD700" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+        }
 
-        .form-group input[type="text"],
-        .form-group input[type="number"],
-        .form-group input[type="date"],
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-line);
-            border-radius: 5px;
-            font-size: 1em;
-            box-sizing: border-box;
-            background-color: var(--dark-accent-blue); /* Fondo de campos azul más claro */
-            color: var(--white-off);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .form-group input::placeholder {
-            color: rgba(255, 235, 59, 0.4);
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: var(--gold-vibrant);
-            outline: none;
-            box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
-        }
-        .form-group select {
-            appearance: none;
-            background-image: url('data:image/svg+xml;utf8,<svg fill="%23FFD700" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 20px;
-        }
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-top: 5px;
+        }
 
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            margin-top: 5px;
-        }
+        .radio-group label {
+            color: var(--white-off);
+        }
+        .radio-group input[type="radio"] {
+            accent-color: var(--gold-vibrant);
+        }
 
-        .radio-group label {
-            color: var(--white-off);
-        }
-        .radio-group input[type="radio"] {
-            accent-color: var(--gold-vibrant);
-        }
+        /* Estilos para el checkbox manual de código */
+        #addManualCodeNoMiembro {
+            vertical-align: middle;
+            margin-right: 5px;
+        }
 
-        /* Estilos para el checkbox manual de código */
-        #addManualCodeNoMiembro {
-            vertical-align: middle;
-            margin-right: 5px;
-        }
+        .member-search-results {
+            max-height: 180px; /* Un poco más de altura */
+            overflow-y: auto;
+            border: 1px solid var(--border-line);
+            border-radius: 5px;
+            margin-top: 10px;
+            background-color: var(--dark-accent-blue);
+        }
 
-        .member-search-results {
-            max-height: 180px; /* Un poco más de altura */
-            overflow-y: auto;
-            border: 1px solid var(--border-line);
-            border-radius: 5px;
-            margin-top: 10px;
-            background-color: var(--dark-accent-blue);
-        }
+        .member-search-results div {
+            padding: 10px;
+            cursor: pointer;
+            color: var(--white-off);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
 
-        .member-search-results div {
-            padding: 10px;
-            cursor: pointer;
-            color: var(--white-off);
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
+        .member-search-results div:hover {
+            background-color: var(--deep-blue);
+            color: var(--gold-vibrant);
+        }
+        .member-search-results div.no-results {
+            color: rgba(255, 235, 59, 0.5); /* Texto tenue para "no results" */
+            cursor: default;
+        }
+        .member-search-results div.no-results:hover {
+            background-color: var(--dark-accent-blue); /* No cambiar de color al pasar el mouse */
+            color: rgba(255, 235, 59, 0.5);
+        }
 
-        .member-search-results div:hover {
-            background-color: var(--deep-blue);
-            color: var(--gold-vibrant);
-        }
-        .member-search-results div.no-results {
-            color: rgba(255, 235, 59, 0.5); /* Texto tenue para "no results" */
-            cursor: default;
-        }
-        .member-search-results div.no-results:hover {
-            background-color: var(--dark-accent-blue); /* No cambiar de color al pasar el mouse */
-            color: rgba(255, 235, 59, 0.5);
-        }
+        .form-actions {
+            text-align: right;
+            margin-top: 30px;
+        }
 
-        .form-actions {
-            text-align: right;
-            margin-top: 30px;
-        }
+        .form-actions button {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
 
-        .form-actions button {
-            background-color: var(--gold-vibrant);
-            color: var(--ultra-dark-blue);
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 700;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
-
-        .form-actions button:hover {
-            background-color: var(--gold-darker);
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
-        }
-    </style>
+        .form-actions button:hover {
+            background-color: var(--gold-darker);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+    </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="sidebar-header">Ofrendas</div>
-        <a href="acceso.html" class="sidebar-link">Dar acceso</a>
-        <a href="diezmos.html" class="sidebar-link active">Diezmos</a>
-        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-        <a href="reportes.html" class="sidebar-link">Reportes</a>
-        <a href="discipulado.html" class="sidebar-link">Discipulado</a>
-        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
-    </div>
+    <div class="sidebar">
+        <div class="sidebar-header">Ofrendas</div>
+        <a href="acceso.html" class="sidebar-link">Dar acceso</a>
+        <a href="diezmos.html" class="sidebar-link active">Diezmos</a>
+        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+        <a href="reportes.html" class="sidebar-link">Reportes</a>
+        <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
+    </div>
 
-    <div class="main-content">
-                <div class="search-add-container">
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Buscar por código, nombre o fecha...">
-            </div>
-            <button class="add-button" id="addDiezmoBtn">Añadir Diezmo</button>
-        </div>
-
-                <div class="diezmos-summary">
-            <h3>Resumen de Diezmos</h3>
-            <div class="date-filters">
-                <div>
-                    <label for="diezmoStartDate">Desde:</label>
-                    <input type="date" id="diezmoStartDate">
-                </div>
-                <div>
-                    <label for="diezmoEndDate">Hasta:</label>
-                    <input type="date" id="diezmoEndDate">
-                </div>
-                <button id="viewDiezmosBtn">Ver</button>
+    <div class="main-content">
+        <div class="search-add-container">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Buscar por código, nombre o fecha...">
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Moneda</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>USD</td>
-                        <td id="totalDiezmosUSD" class="amount">$0.00</td>
-                    </tr>
-                    <tr>
-                        <td>NIO</td>
-                        <td id="totalDiezmosNIO" class="amount">C$0.00</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <table class="data-table" id="ofrendasTable">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Miembro</th>
-                    <th>Cantidad</th>
-                    <th>Moneda</th>
-                    <th>Fecha</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-
-        <div class="pagination">
-            <button id="prevPageBtn" disabled>&laquo; Anterior</button>
-            <span id="pageInfo">Página 1 de 1</span>
-            <button id="nextPageBtn" disabled>Siguiente &raquo;</button>
-        </div>
-    </div>
-
-    <div id="ofrendaModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Añadir Nuevo Diezmo</h2>             <form id="ofrendaForm">
-                <div class="form-group">
-                    <label>¿Es miembro?</label>
-                    <div class="radio-group">
-                        <input type="radio" id="esMiembroSi" name="esMiembro" value="si" required>
-                        <label for="esMiembroSi">Sí</label>
-                        <input type="radio" id="esMiembroNo" name="esMiembro" value="no">
-                        <label for="esMiembroNo">No</label>
-                    </div>
-                </div>
-
-                <div class="form-group" id="miembroSearchGroup" style="display: none;">
-                    <label for="miembroSearch">Buscar miembro:</label>
-                    <input type="text" id="miembroSearch" placeholder="Escribe código o nombre">
-                    <div class="member-search-results" id="miembroSearchResults">
-                    </div>
-                    <input type="hidden" id="selectedMemberCode">
-                    <input type="hidden" id="selectedMemberName">
-                </div>
-
-                <div class="form-group" id="nombreNoMiembroGroup" style="display: none;">
-                    <label for="nombreNoMiembro">Nombre (No miembro):</label>
-                    <input type="text" id="nombreNoMiembro" placeholder="Nombre de la persona">
-
-                    <div style="margin-top: 15px;">
-                        <input type="checkbox" id="addManualCodeNoMiembro">
-                        <label for="addManualCodeNoMiembro" style="display: inline-block; margin-left: 5px;">Colocar Código SI Y NO</label>
-                    </div>
-                    
-                    <div class="form-group" id="manualCodeNoMiembroGroup" style="display: none;">
-                        <label for="manualCodeNoMiembro">Código Manual (No miembro):</label>
-                        <input type="text" id="manualCodeNoMiembro" placeholder="Ej: NM-001 o el código de miembro si no aparece">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="cantidad">Cantidad:</label>
-                    <input type="number" id="cantidad" min="0" step="0.01" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="moneda">Moneda:</label>
-                    <select id="moneda" required>
-                        <option value="USD">Dólar (USD)</option>
-                        <option value="NIO">Córdoba (NIO)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="fecha">Fecha:</label>
-                    <input type="date" id="fecha" required>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
-    <script>
-        // --- CONFIGURACIÓN DE FIREBASE (¡MUY IMPORTANTE: VERIFICA QUE ESTA ES TU CONFIGURACIÓN CORRECTA!) ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-            projectId: "iglesia-adoracion-viva",
-            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-            messagingSenderId: "815332010058",
-            appId: "1:815332010058:web:d2afff616469349d88deb3",
-            measurementId: "G-43MZP6V55D"
-        };
-
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // --- Datos de miembros (se cargarán TODOS y automáticamente desde Firestore) ---
-        let miembros = []; // Esta variable JavaScript contendrá la lista completa de miembros
-
-        let allDiezmos = []; // Almacenará todos los diezmos cargados de Firestore
-        let filteredOfrendas = []; // Almacenará los diezmos después de aplicar filtros de búsqueda en la tabla principal (mantengo el nombre original por compatibilidad, aunque ahora son diezmos)
-
-        // --- Referencias a elementos del DOM (Document Object Model) ---
-        const ofrendasTableBody = document.querySelector('#ofrendasTable tbody');
-        const addDiezmoBtn = document.getElementById('addDiezmoBtn');
-        const ofrendaModal = document.getElementById('ofrendaModal');
-        const closeButton = document.querySelector('.modal .close-button');
-        const ofrendaForm = document.getElementById('ofrendaForm');
-        const esMiembroSi = document.getElementById('esMiembroSi');
-        const esMiembroNo = document.getElementById('esMiembroNo');
-        const miembroSearchGroup = document.getElementById('miembroSearchGroup');
-        const nombreNoMiembroGroup = document.getElementById('nombreNoMiembroGroup');
-        const miembroSearchInput = document.getElementById('miembroSearch');
-        const miembroSearchResults = document.getElementById('miembroSearchResults');
-        const selectedMemberCodeInput = document.getElementById('selectedMemberCode');
-        const selectedMemberNameInput = document.getElementById('selectedMemberName');
-        const cantidadInput = document.getElementById('cantidad');
-        const monedaSelect = document.getElementById('moneda');
-        const fechaInput = document.getElementById('fecha');
-        const searchInput = document.getElementById('searchInput'); // La barra de búsqueda de la tabla principal
-        const prevPageBtn = document.getElementById('prevPageBtn');
-        const nextPageBtn = document.getElementById('nextPageBtn');
-        const pageInfoSpan = document.getElementById('pageInfo');
-
-        // REFERENCIAS PARA EL CAMPO MANUAL DE CÓDIGO
-        const addManualCodeNoMiembroCheckbox = document.getElementById('addManualCodeNoMiembro');
-        const manualCodeNoMiembroGroup = document.getElementById('manualCodeNoMiembroGroup');
-        const manualCodeNoMiembroInput = document.getElementById('manualCodeNoMiembro');
-
-        // REFERENCIAS PARA EL RESUMEN DE DIEZMOS
-        const diezmoStartDateInput = document.getElementById('diezmoStartDate');
-        const diezmoEndDateInput = document.getElementById('diezmoEndDate');
-        const totalDiezmosUSD = document.getElementById('totalDiezmosUSD');
-        const totalDiezmosNIO = document.getElementById('totalDiezmosNIO');
-        const viewDiezmosBtn = document.getElementById('viewDiezmosBtn'); // Botón "Ver"
-
-        // --- Variables de Paginación y Filtrado de tabla principal ---
-        const rowsPerPage = 30;
-        let currentPage = 1;
-
-        // --- Funciones para manejar el Modal de Ofrendas ---
-        function openModal() {
-            ofrendaModal.style.display = 'flex'; // Hace el modal visible
-            setTimeout(() => ofrendaModal.classList.add('show'), 10); // Activa la transición CSS
-            ofrendaForm.reset(); // Limpia el formulario
-            miembroSearchGroup.style.display = 'none'; // Oculta los campos de búsqueda de miembro
-            nombreNoMiembroGroup.style.display = 'none'; // Oculta el campo de nombre de no miembro
-            miembroSearchResults.innerHTML = ''; // Limpia los resultados de búsqueda previos
-            selectedMemberCodeInput.value = ''; // Resetea el miembro seleccionado
-            selectedMemberNameInput.value = '';
-            document.getElementById('nombreNoMiembro').removeAttribute('required'); // Remueve 'required' si estaba puesto
-            miembroSearchInput.removeAttribute('required'); // Remueve 'required' si estaba puesto
-            esMiembroSi.checked = false; // Desmarca las opciones de radio
-            esMiembroNo.checked = false;
-
-            // Reinicia el estado del checkbox de código manual
-            addManualCodeNoMiembroCheckbox.checked = false;
-            manualCodeNoMiembroGroup.style.display = 'none';
-            manualCodeNoMiembroInput.value = '';
-            manualCodeNoMiembroInput.removeAttribute('required');
-
-            // Establece la fecha actual por defecto en el campo de fecha del modal
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0'); // Enero es 0, por eso +1
-            const day = String(today.getDate()).padStart(2, '0');
-            fechaInput.value = `${year}-${month}-${day}`;
-        }
-
-        function closeModal() {
-            ofrendaModal.classList.remove('show'); // Desactiva la transición CSS
-            setTimeout(() => { ofrendaModal.style.display = 'none'; }, 400); // Oculta el modal después de la transición
-        }
-
-        // --- Lógica de la interfaz de usuario del formulario de ofrenda ---
-        esMiembroSi.addEventListener('change', () => {
-            miembroSearchGroup.style.display = 'block'; // Muestra la búsqueda de miembro
-            nombreNoMiembroGroup.style.display = 'none'; // Oculta el campo de no miembro
-            miembroSearchInput.focus(); // Enfoca el campo de búsqueda
-            miembroSearchInput.setAttribute('required', 'true'); // Hace el campo de búsqueda requerido
-            document.getElementById('nombreNoMiembro').removeAttribute('required');
-            selectedMemberCodeInput.value = ''; // Limpia valores anteriores de miembro
-            selectedMemberNameInput.value = '';
-            miembroSearchInput.value = ''; // Limpia el texto en el input de búsqueda
-            miembroSearchResults.innerHTML = ''; // Limpia resultados de búsqueda
-
-            // Oculta y resetea el campo de código manual para no miembros
-            addManualCodeNoMiembroCheckbox.checked = false;
-            manualCodeNoMiembroGroup.style.display = 'none';
-            manualCodeNoMiembroInput.value = '';
-            manualCodeNoMiembroInput.removeAttribute('required');
-        });
-
-        esMiembroNo.addEventListener('change', () => {
-            miembroSearchGroup.style.display = 'none'; // Oculta la búsqueda de miembro
-            nombreNoMiembroGroup.style.display = 'block'; // Muestra el campo de no miembro
-            document.getElementById('nombreNoMiembro').focus(); // Enfoca el campo de nombre
-            document.getElementById('nombreNoMiembro').setAttribute('required', 'true'); // Hace el campo requerido
-            miembroSearchInput.removeAttribute('required');
-
-            // Muestra el checkbox de código manual por defecto cuando no es miembro
-            addManualCodeNoMiembroCheckbox.checked = false; // Desmarca por defecto
-            manualCodeNoMiembroGroup.style.display = 'none'; // Oculta el campo al inicio
-            manualCodeNoMiembroInput.value = '';
-            manualCodeNoMiembroInput.removeAttribute('required');
-        });
-
-        addManualCodeNoMiembroCheckbox.addEventListener('change', () => {
-            if (addManualCodeNoMiembroCheckbox.checked) {
-                manualCodeNoMiembroGroup.style.display = 'block';
-                manualCodeNoMiembroInput.setAttribute('required', 'true');
-            } else {
-                manualCodeNoMiembroGroup.style.display = 'none';
-                manualCodeNoMiembroInput.value = '';
-                manualCodeNoMiembroInput.removeAttribute('required');
-            }
-        });
-
-        miembroSearchInput.addEventListener('input', () => {
-            const searchTerm = miembroSearchInput.value.toLowerCase();
-            miembroSearchResults.innerHTML = ''; // Limpia resultados anteriores
-            selectedMemberCodeInput.value = '';
-            selectedMemberNameInput.value = '';
-
-            if (searchTerm.length < 2) { // Requiere al menos 2 caracteres para buscar
-                return;
-            }
-
-            const filteredMembers = miembros.filter(member =>
-                member.codigo.toLowerCase().includes(searchTerm) ||
-                member.nombre.toLowerCase().includes(searchTerm)
-            );
-
-            if (filteredMembers.length > 0) {
-                filteredMembers.forEach(member => {
-                    const div = document.createElement('div');
-                    div.textContent = `${member.codigo} - ${member.nombre}`;
-                    div.dataset.code = member.codigo;
-                    div.dataset.name = member.nombre;
-                    div.addEventListener('click', () => {
-                        miembroSearchInput.value = `${member.codigo} - ${member.nombre}`;
-                        selectedMemberCodeInput.value = member.codigo;
-                        selectedMemberNameInput.value = member.nombre;
-                        miembroSearchResults.innerHTML = '';
-                    });
-                    miembroSearchResults.appendChild(div);
-                });
-            } else {
-                const div = document.createElement('div');
-                div.textContent = 'No se encontraron miembros.';
-                div.classList.add('no-results');
-                miembroSearchResults.appendChild(div);
-            }
-        });
-
-
-        // --- Carga de miembros desde Firestore ---
-        async function loadMiembros() {
-            try {
-                const snapshot = await db.collection('miembros').get();
-                miembros = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Miembros cargados:', miembros.length);
-            } catch (error) {
-                console.error("Error al cargar miembros:", error);
-                alert("Error al cargar la lista de miembros. Por favor, inténtalo de nuevo.");
-            }
-        }
-
-        // --- Carga y Muestra de Diezmos ---
-        async function loadDiezmos() {
-            try {
-                const snapshot = await db.collection('diezmos').orderBy('fecha', 'desc').get();
-                allDiezmos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Almacena TODOS los diezmos
-                filteredOfrendas = [...allDiezmos]; // Inicialmente, todos los diezmos son los filtrados para la tabla principal
-                displayDiezmos(filteredOfrendas); // Mostrar en la tabla principal
-                updateDiezmosSummary(); // Actualizar el resumen con TODOS los diezmos al cargar
-            } catch (error) {
-                console.error("Error al cargar diezmos:", error);
-                alert("Error al cargar los diezmos. Por favor, inténtalo de nuevo.");
-            }
-        }
-
-        function displayDiezmos(diezmosToDisplay) {
-            ofrendasTableBody.innerHTML = '';
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = startIndex + rowsPerPage;
-            const paginatedDiezmos = diezmosToDisplay.slice(startIndex, endIndex);
-
-            if (paginatedDiezmos.length === 0) {
-                const row = ofrendasTableBody.insertRow();
-                const cell = row.insertCell(0);
-                cell.colSpan = 5;
-                cell.textContent = 'No hay diezmos registrados.';
-                cell.style.textAlign = 'center';
-                return;
-            }
-
-            paginatedDiezmos.forEach(diezmo => {
-                const row = ofrendasTableBody.insertRow();
-                // Asegúrate de que diezmo.codigo y diezmo.nombre existan
-                row.insertCell(0).textContent = diezmo.codigo || 'N/A'; // Muestra N/A si no hay código
-                row.insertCell(1).textContent = diezmo.nombre || 'N/A'; // Muestra N/A si no hay nombre
-                row.insertCell(2).textContent = parseFloat(diezmo.cantidad).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                row.insertCell(3).textContent = diezmo.moneda;
-                row.insertCell(4).textContent = diezmo.fecha;
-            });
-            updatePaginationButtons(diezmosToDisplay.length);
-        }
-
-        function updatePaginationButtons(totalRows) {
-            const totalPages = Math.ceil(totalRows / rowsPerPage);
-            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
-            prevPageBtn.disabled = currentPage === 1;
-            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
-        }
-
-        // --- Funcionalidad de Búsqueda de tabla principal ---
-        searchInput.addEventListener('input', () => {
-            const searchTerm = searchInput.value.toLowerCase();
-            filteredOfrendas = allDiezmos.filter(diezmo =>
-                (diezmo.codigo && diezmo.codigo.toLowerCase().includes(searchTerm)) || // Verifica si existe antes de usarlo
-                (diezmo.nombre && diezmo.nombre.toLowerCase().includes(searchTerm)) || // Verifica si existe antes de usarlo
-                diezmo.fecha.includes(searchTerm) // Asumiendo formato YYYY-MM-DD
-            );
-            currentPage = 1; // Resetear a la primera página con nuevos filtros
-            displayDiezmos(filteredOfrendas);
-        });
-
-        // --- Paginación ---
-        prevPageBtn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                displayDiezmos(filteredOfrendas);
-            }
-        });
-
-        nextPageBtn.addEventListener('click', () => {
-            const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
-            if (currentPage < totalPages) {
-                currentPage++;
-                displayDiezmos(filteredOfrendas);
-            }
-        });
-
-
-        // --- Añadir Nuevo Diezmo a Firestore ---
-        ofrendaForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            let codigo = '';
-            let nombre = '';
-
-            if (esMiembroSi.checked) {
-                codigo = selectedMemberCodeInput.value;
-                nombre = selectedMemberNameInput.value;
-                if (!codigo || !nombre) {
-                    alert("Por favor, selecciona un miembro de la lista.");
-                    return;
-                }
-            } else if (esMiembroNo.checked) {
-                nombre = document.getElementById('nombreNoMiembro').value.trim();
-                if (addManualCodeNoMiembroCheckbox.checked) {
-                    codigo = manualCodeNoMiembroInput.value.trim();
-                    if (!codigo) {
-                        alert("Por favor, introduce el código manual.");
-                        return;
-                    }
-                } else {
-                    // Generar un código simple para no miembros si no se proporciona manual
-                    // Se genera un código único para cada "no miembro" si no se introduce manualmente
-                    const timestamp = Date.now().toString().slice(-6); // Últimos 6 dígitos del timestamp
-                    codigo = `NM-${timestamp}`;
-                }
-                if (!nombre) {
-                    alert("Por favor, introduce el nombre del no miembro.");
-                    return;
-                }
-            } else {
-                alert("Por favor, indica si es miembro o no.");
-                return;
-            }
-
-            const cantidad = parseFloat(cantidadInput.value);
-            const moneda = monedaSelect.value;
-            const fecha = fechaInput.value;
-
-            if (isNaN(cantidad) || cantidad <= 0) {
-                alert("Por favor, ingresa una cantidad válida y mayor que cero.");
-                return;
-            }
-
-            try {
-                await db.collection('diezmos').add({
-                    codigo: codigo,
-                    nombre: nombre,
-                    cantidad: cantidad,
-                    moneda: moneda,
-                    fecha: fecha,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar y filtrar por fecha real
-                });
-                alert('Diezmo guardado exitosamente!');
-                closeModal();
-                loadDiezmos(); // Recargar la tabla y el resumen de diezmos para reflejar el nuevo dato
-            } catch (error) {
-                console.error("Error al guardar diezmo:", error);
-                alert("Error al guardar el diezmo. Por favor, inténtalo de nuevo.");
-            }
-        });
-
-        // --- Funcionalidad del Resumen de Diezmos ---
-        function updateDiezmosSummary(diezmosToSum = allDiezmos) { // Por defecto, suma todos los diezmos
-            let totalUSD = 0;
-            let totalNIO = 0;
-
-            diezmosToSum.forEach(diezmo => {
-                if (diezmo.moneda === 'USD') {
-                    totalUSD += diezmo.cantidad;
-                } else if (diezmo.moneda === 'NIO') {
-                    totalNIO += diezmo.cantidad;
-                }
-            });
-
-            totalDiezmosUSD.textContent = `$${totalUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            totalDiezmosNIO.textContent = `C$${totalNIO.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        }
-
-        // Event Listener para el botón "Ver" del resumen de diezmos
-        viewDiezmosBtn.addEventListener('click', () => {
-            const startDate = diezmoStartDateInput.value;
-            const endDate = diezmoEndDateInput.value;
-
-            let diezmosFilteredForSummary = allDiezmos; // Empieza con todos los diezmos
-
-            if (startDate || endDate) { // Solo filtra si al menos una fecha está seleccionada
-                diezmosFilteredForSummary = allDiezmos.filter(diezmo => {
-                    const diezmoDate = new Date(diezmo.fecha + 'T00:00:00'); // Asegura que la hora sea medianoche para comparación
-
-                    let meetsStartDate = true;
-                    if (startDate) {
-                        const start = new Date(startDate + 'T00:00:00');
-                        meetsStartDate = diezmoDate >= start;
-                    }
-
-                    let meetsEndDate = true;
-                    if (endDate) {
-                        const end = new Date(endDate + 'T23:59:59'); // Incluye hasta el final del día
-                        meetsEndDate = diezmoDate <= end;
-                    }
-
-                    return meetsStartDate && meetsEndDate;
-                });
-            }
-            updateDiezmosSummary(diezmosFilteredForSummary); // Llama con los diezmos filtrados por fecha
-        });
-
-        // --- Inicialización ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadMiembros();
-            loadDiezmos(); // Cargar diezmos al iniciar y actualizar el resumen
-
-            addDiezmoBtn.addEventListener('click', openModal);
-            closeButton.addEventListener('click', closeModal);
-            window.addEventListener('click', (event) => {
-                if (event.target == ofrendaModal) {
-                    closeModal();
-                }
-            });
-
-            // Establecer las fechas por defecto para el resumen: inicio del mes actual y fin del mes actual
-            const today = new Date();
-            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-            diezmoStartDateInput.value = firstDayOfMonth.toISOString().split('T')[0];
-            diezmoEndDateInput.value = lastDayOfMonth.toISOString().split('T')[0];
-        });
-
-        function cerrarSesion() {
-            // Aquí deberías incluir la lógica para cerrar la sesión de Firebase Authentication
-            // Por ejemplo: firebase.auth().signOut().then(() => { ... });
-            alert('Sesión cerrada. (Implementar lógica de Firebase Auth)');
-            window.location.href = 'login.html'; // Redirigir al login
-        }
-    </script>
-
+            <button class="add-button" id="addDiezmoBtn">Añadir Diezmo</button>
+        </div>
+
+        <div class="diezmos-summary">
+            <h3>Resumen de Diezmos</h3>
+            <div class="date-filters">
+                <div>
+                    <label for="diezmoStartDate">Desde:</label>
+                    <input type="date" id="diezmoStartDate">
+                </div>
+                <div>
+                    <label for="diezmoEndDate">Hasta:</label>
+                    <input type="date" id="diezmoEndDate">
+                </div>
+                <button id="viewDiezmosBtn">Ver</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Moneda</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>USD</td>
+                        <td id="totalDiezmosUSD" class="amount">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td>NIO</td>
+                        <td id="totalDiezmosNIO" class="amount">C$0.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <table class="data-table" id="ofrendasTable">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Miembro</th>
+                    <th>Cantidad</th>
+                    <th>Moneda</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <button id="prevPageBtn" disabled>&laquo; Anterior</button>
+            <span id="pageInfo">Página 1 de 1</span>
+            <button id="nextPageBtn" disabled>Siguiente &raquo;</button>
+        </div>
+    </div>
+
+    <div id="ofrendaModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Añadir Nuevo Diezmo</h2>
+            <form id="ofrendaForm">
+                <div class="form-group">
+                    <label>¿Es miembro?</label>
+                    <div class="radio-group">
+                        <input type="radio" id="esMiembroSi" name="esMiembro" value="si" required>
+                        <label for="esMiembroSi">Sí</label>
+                        <input type="radio" id="esMiembroNo" name="esMiembro" value="no">
+                        <label for="esMiembroNo">No</label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="miembroSearchGroup" style="display: none;">
+                    <label for="miembroSearch">Buscar miembro:</label>
+                    <input type="text" id="miembroSearch" placeholder="Escribe código o nombre">
+                    <div class="member-search-results" id="miembroSearchResults">
+                    </div>
+                    <input type="hidden" id="selectedMemberCode">
+                    <input type="hidden" id="selectedMemberName">
+                </div>
+
+                <div class="form-group" id="nombreNoMiembroGroup" style="display: none;">
+                    <label for="nombreNoMiembro">Nombre (No miembro):</label>
+                    <input type="text" id="nombreNoMiembro" placeholder="Nombre de la persona">
+
+                    <div style="margin-top: 15px;">
+                        <input type="checkbox" id="addManualCodeNoMiembro">
+                        <label for="addManualCodeNoMiembro" style="display: inline-block; margin-left: 5px;">Colocar Código SI Y NO</label>
+                    </div>
+
+                    <div class="form-group" id="manualCodeNoMiembroGroup" style="display: none;">
+                        <label for="manualCodeNoMiembro">Código Manual (No miembro):</label>
+                        <input type="text" id="manualCodeNoMiembro" placeholder="Ej: NM-001 o el código de miembro si no aparece">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cantidad">Cantidad:</label>
+                    <input type="number" id="cantidad" min="0" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="moneda">Moneda:</label>
+                    <select id="moneda" required>
+                        <option value="USD">Dólar (USD)</option>
+                        <option value="NIO">Córdoba (NIO)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <script>
+        // --- CONFIGURACIÓN DE FIREBASE (¡MUY IMPORTANTE: VERIFICA QUE ESTA ES TU CONFIGURACIÓN CORRECTA!) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // --- Datos de miembros (se cargarán TODOS y automáticamente desde Firestore) ---
+        let miembros = []; // Esta variable JavaScript contendrá la lista completa de miembros
+
+        let allDiezmos = []; // Almacenará todos los diezmos cargados de Firestore
+        let filteredOfrendas = []; // Almacenará los diezmos después de aplicar filtros de búsqueda en la tabla principal (mantengo el nombre original por compatibilidad, aunque ahora son diezmos)
+
+        // --- Referencias a elementos del DOM (Document Object Model) ---
+        const ofrendasTableBody = document.querySelector('#ofrendasTable tbody');
+        const addDiezmoBtn = document.getElementById('addDiezmoBtn');
+        const ofrendaModal = document.getElementById('ofrendaModal');
+        const closeButton = document.querySelector('.modal .close-button');
+        const ofrendaForm = document.getElementById('ofrendaForm');
+        const esMiembroSi = document.getElementById('esMiembroSi');
+        const esMiembroNo = document.getElementById('esMiembroNo');
+        const miembroSearchGroup = document.getElementById('miembroSearchGroup');
+        const nombreNoMiembroGroup = document.getElementById('nombreNoMiembroGroup');
+        const miembroSearchInput = document.getElementById('miembroSearch');
+        const miembroSearchResults = document.getElementById('miembroSearchResults');
+        const selectedMemberCodeInput = document.getElementById('selectedMemberCode');
+        const selectedMemberNameInput = document.getElementById('selectedMemberName');
+        const cantidadInput = document.getElementById('cantidad');
+        const monedaSelect = document.getElementById('moneda');
+        const fechaInput = document.getElementById('fecha');
+        const searchInput = document.getElementById('searchInput'); // La barra de búsqueda de la tabla principal
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const pageInfoSpan = document.getElementById('pageInfo');
+
+        // REFERENCIAS PARA EL CAMPO MANUAL DE CÓDIGO
+        const addManualCodeNoMiembroCheckbox = document.getElementById('addManualCodeNoMiembro');
+        const manualCodeNoMiembroGroup = document.getElementById('manualCodeNoMiembroGroup');
+        const manualCodeNoMiembroInput = document.getElementById('manualCodeNoMiembro');
+
+        // REFERENCIAS PARA EL RESUMEN DE DIEZMOS
+        const diezmoStartDateInput = document.getElementById('diezmoStartDate');
+        const diezmoEndDateInput = document.getElementById('diezmoEndDate');
+        const totalDiezmosUSD = document.getElementById('totalDiezmosUSD');
+        const totalDiezmosNIO = document.getElementById('totalDiezmosNIO');
+        const viewDiezmosBtn = document.getElementById('viewDiezmosBtn'); // Botón "Ver"
+
+        // --- Variables de Paginación y Filtrado de tabla principal ---
+        const rowsPerPage = 30;
+        let currentPage = 1;
+
+        // --- Funciones para manejar el Modal de Ofrendas ---
+        function openModal() {
+            ofrendaModal.style.display = 'flex'; // Hace el modal visible
+            setTimeout(() => ofrendaModal.classList.add('show'), 10); // Activa la transición CSS
+            ofrendaForm.reset(); // Limpia el formulario
+            miembroSearchGroup.style.display = 'none'; // Oculta los campos de búsqueda de miembro
+            nombreNoMiembroGroup.style.display = 'none'; // Oculta el campo de nombre de no miembro
+            miembroSearchResults.innerHTML = ''; // Limpia los resultados de búsqueda previos
+            selectedMemberCodeInput.value = ''; // Resetea el miembro seleccionado
+            selectedMemberNameInput.value = '';
+            document.getElementById('nombreNoMiembro').removeAttribute('required'); // Remueve 'required' si estaba puesto
+            miembroSearchInput.removeAttribute('required'); // Remueve 'required' si estaba puesto
+            esMiembroSi.checked = false; // Desmarca las opciones de radio
+            esMiembroNo.checked = false;
+
+            // Reinicia el estado del checkbox de código manual
+            addManualCodeNoMiembroCheckbox.checked = false;
+            manualCodeNoMiembroGroup.style.display = 'none';
+            manualCodeNoMiembroInput.value = '';
+            manualCodeNoMiembroInput.removeAttribute('required');
+
+            // Establece la fecha actual por defecto en el campo de fecha del modal
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // Enero es 0, por eso +1
+            const day = String(today.getDate()).padStart(2, '0');
+            fechaInput.value = `${year}-${month}-${day}`;
+        }
+
+        function closeModal() {
+            ofrendaModal.classList.remove('show'); // Desactiva la transición CSS
+            setTimeout(() => { ofrendaModal.style.display = 'none'; }, 400); // Oculta el modal después de la transición
+        }
+
+        // --- Lógica de la interfaz de usuario del formulario de ofrenda ---
+        esMiembroSi.addEventListener('change', () => {
+            miembroSearchGroup.style.display = 'block'; // Muestra la búsqueda de miembro
+            nombreNoMiembroGroup.style.display = 'none'; // Oculta el campo de no miembro
+            miembroSearchInput.focus(); // Enfoca el campo de búsqueda
+            miembroSearchInput.setAttribute('required', 'true'); // Hace el campo de búsqueda requerido
+            document.getElementById('nombreNoMiembro').removeAttribute('required');
+            selectedMemberCodeInput.value = ''; // Limpia valores anteriores de miembro
+            selectedMemberNameInput.value = '';
+            miembroSearchInput.value = ''; // Limpia el texto en el input de búsqueda
+            miembroSearchResults.innerHTML = ''; // Limpia resultados de búsqueda
+
+            // Oculta y resetea el campo de código manual para no miembros
+            addManualCodeNoMiembroCheckbox.checked = false;
+            manualCodeNoMiembroGroup.style.display = 'none';
+            manualCodeNoMiembroInput.value = '';
+            manualCodeNoMiembroInput.removeAttribute('required');
+        });
+
+        esMiembroNo.addEventListener('change', () => {
+            miembroSearchGroup.style.display = 'none'; // Oculta la búsqueda de miembro
+            nombreNoMiembroGroup.style.display = 'block'; // Muestra el campo de no miembro
+            document.getElementById('nombreNoMiembro').focus(); // Enfoca el campo de nombre
+            document.getElementById('nombreNoMiembro').setAttribute('required', 'true'); // Hace el campo requerido
+            miembroSearchInput.removeAttribute('required');
+
+            // Muestra el checkbox de código manual por defecto cuando no es miembro
+            addManualCodeNoMiembroCheckbox.checked = false; // Desmarca por defecto
+            manualCodeNoMiembroGroup.style.display = 'none'; // Oculta el campo al inicio
+            manualCodeNoMiembroInput.value = '';
+            manualCodeNoMiembroInput.removeAttribute('required');
+        });
+
+        addManualCodeNoMiembroCheckbox.addEventListener('change', () => {
+            if (addManualCodeNoMiembroCheckbox.checked) {
+                manualCodeNoMiembroGroup.style.display = 'block';
+                manualCodeNoMiembroInput.setAttribute('required', 'true');
+            } else {
+                manualCodeNoMiembroGroup.style.display = 'none';
+                manualCodeNoMiembroInput.removeAttribute('required');
+                manualCodeNoMiembroInput.value = ''; // Limpia el valor cuando se oculta
+            }
+        });
+
+        miembroSearchInput.addEventListener('input', () => {
+            const searchTerm = miembroSearchInput.value.toLowerCase();
+            miembroSearchResults.innerHTML = '';
+
+            if (searchTerm.length > 1) {
+                const results = miembros.filter(miembro =>
+                    miembro.codigo.toLowerCase().includes(searchTerm) ||
+                    miembro.nombre.toLowerCase().includes(searchTerm)
+                );
+
+                if (results.length > 0) {
+                    results.forEach(miembro => {
+                        const div = document.createElement('div');
+                        div.textContent = `${miembro.codigo} - ${miembro.nombre}`;
+                        div.dataset.code = miembro.codigo;
+                        div.dataset.name = miembro.nombre;
+                        div.addEventListener('click', () => {
+                            miembroSearchInput.value = `${miembro.codigo} - ${miembro.nombre}`;
+                            selectedMemberCodeInput.value = miembro.codigo;
+                            selectedMemberNameInput.value = miembro.nombre;
+                            miembroSearchResults.innerHTML = '';
+                        });
+                        miembroSearchResults.appendChild(div);
+                    });
+                } else {
+                    const div = document.createElement('div');
+                    div.textContent = 'No se encontraron miembros.';
+                    div.classList.add('no-results');
+                    miembroSearchResults.appendChild(div);
+                }
+            }
+        });
+
+        // --- Manejo del envío del formulario de Diezmo ---
+        ofrendaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            let diezmoData = {
+                cantidad: parseFloat(cantidadInput.value),
+                moneda: monedaSelect.value,
+                fecha: fechaInput.value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar por fecha de creación
+            };
+
+            if (esMiembroSi.checked) {
+                if (!selectedMemberCodeInput.value || !selectedMemberNameInput.value) {
+                    alert('Por favor, selecciona un miembro de la lista.');
+                    return;
+                }
+                diezmoData.codigo = selectedMemberCodeInput.value;
+                diezmoData.miembro = selectedMemberNameInput.value;
+            } else { // No es miembro
+                diezmoData.miembro = document.getElementById('nombreNoMiembro').value;
+                if (addManualCodeNoMiembroCheckbox.checked) {
+                    diezmoData.codigo = manualCodeNoMiembroInput.value;
+                } else {
+                    diezmoData.codigo = 'NM-000'; // Código por defecto para no miembros sin código manual
+                }
+                if (!diezmoData.miembro) {
+                    alert('Por favor, ingresa el nombre de la persona no miembro.');
+                    return;
+                }
+            }
+
+            try {
+                await db.collection('diezmos').add(diezmoData);
+                alert('Diezmo guardado exitosamente!');
+                closeModal();
+                loadDiezmos(); // Recargar la tabla principal y el resumen
+            } catch (error) {
+                console.error("Error al guardar el diezmo: ", error);
+                alert('Error al guardar el diezmo. Consulta la consola para más detalles.');
+            }
+        });
+
+        // --- Funciones para cargar y mostrar datos ---
+
+        async function loadMiembros() {
+            try {
+                const snapshot = await db.collection('usuarios').get();
+                miembros = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                // Ordenar miembros alfabéticamente por nombre para una mejor búsqueda
+                miembros.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                console.log("Miembros cargados:", miembros);
+            } catch (error) {
+                console.error("Error al cargar miembros: ", error);
+            }
+        }
+
+        async function loadDiezmos() {
+            try {
+                const snapshot = await db.collection('diezmos').orderBy('fecha', 'desc').get();
+                allDiezmos = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                applySearchFilter(); // Aplica el filtro de búsqueda actual al recargar
+                calculateDiezmoSummary(); // Recalcula el resumen
+            } catch (error) {
+                console.error("Error al cargar diezmos: ", error);
+            }
+        }
+
+        function displayDiezmos(diezmosToDisplay) {
+            ofrendasTableBody.innerHTML = ''; // Limpia la tabla
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const paginatedDiezmos = diezmosToDisplay.slice(startIndex, endIndex);
+
+            if (paginatedDiezmos.length === 0) {
+                const row = ofrendasTableBody.insertRow();
+                const cell = row.insertCell(0);
+                cell.colSpan = 5;
+                cell.textContent = 'No se encontraron diezmos.';
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.color = 'rgba(255, 235, 59, 0.5)';
+            } else {
+                paginatedDiezmos.forEach(diezmo => {
+                    const row = ofrendasTableBody.insertRow();
+                    row.insertCell(0).textContent = diezmo.codigo || 'N/A';
+                    row.insertCell(1).textContent = diezmo.miembro || 'Desconocido';
+                    row.insertCell(2).textContent = diezmo.cantidad.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    row.insertCell(3).textContent = diezmo.moneda;
+                    row.insertCell(4).textContent = diezmo.fecha; // Ya viene en formato YYYY-MM-DD
+                });
+            }
+            updatePaginationControls(diezmosToDisplay.length);
+        }
+
+        function updatePaginationControls(totalRows) {
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages || 1}`;
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        function applySearchFilter() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            if (searchTerm === "") {
+                filteredOfrendas = [...allDiezmos]; // Copia completa si no hay filtro
+            } else {
+                filteredOfrendas = allDiezmos.filter(diezmo =>
+                    (diezmo.codigo && diezmo.codigo.toLowerCase().includes(searchTerm)) ||
+                    (diezmo.miembro && diezmo.miembro.toLowerCase().includes(searchTerm)) ||
+                    (diezmo.fecha && diezmo.fecha.includes(searchTerm)) // Asumiendo formato YYYY-MM-DD
+                );
+            }
+            currentPage = 1; // Resetear a la primera página con cada búsqueda
+            displayDiezmos(filteredOfrendas);
+        }
+
+        function calculateDiezmoSummary() {
+            let totalUSD = 0;
+            let totalNIO = 0;
+
+            const startDate = diezmoStartDateInput.value ? new Date(diezmoStartDateInput.value + 'T00:00:00') : null;
+            const endDate = diezmoEndDateInput.value ? new Date(diezmoEndDateInput.value + 'T23:59:59') : null; // Incluir todo el día
+
+            allDiezmos.forEach(diezmo => {
+                const diezmoDate = new Date(diezmo.fecha + 'T00:00:00'); // Asegurarse de comparar solo la fecha
+
+                const isWithinDateRange =
+                    (!startDate || diezmoDate >= startDate) &&
+                    (!endDate || diezmoDate <= endDate);
+
+                if (isWithinDateRange) {
+                    if (diezmo.moneda === 'USD') {
+                        totalUSD += diezmo.cantidad;
+                    } else if (diezmo.moneda === 'NIO') {
+                        totalNIO += diezmo.cantidad;
+                    }
+                }
+            });
+
+            totalDiezmosUSD.textContent = `$${totalUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            totalDiezmosNIO.textContent = `C$${totalNIO.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+
+        // --- Event Listeners ---
+        addDiezmoBtn.addEventListener('click', openModal);
+        closeButton.addEventListener('click', closeModal);
+        window.addEventListener('click', (e) => {
+            if (e.target === ofrendaModal) {
+                closeModal();
+            }
+        });
+        searchInput.addEventListener('input', applySearchFilter);
+
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                displayDiezmos(filteredOfrendas);
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayDiezmos(filteredOfrendas);
+            }
+        });
+
+        // Event listener para el botón "Ver" del resumen
+        viewDiezmosBtn.addEventListener('click', calculateDiezmoSummary);
+
+        // --- Inicialización ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMiembros();
+            loadDiezmos(); // Esto también llamará a applySearchFilter y calculateDiezmoSummary
+        });
+
+        // Función de ejemplo para cerrar sesión (puedes reemplazarla con tu lógica real)
+        function cerrarSesion() {
+            alert('Cerrar sesión (Esta es una función de demostración)');
+            // Aquí iría tu lógica real para cerrar sesión, por ejemplo:
+            // firebase.auth().signOut().then(() => {
+            //     window.location.href = 'login.html';
+            // }).catch((error) => {
+            //     console.error("Error al cerrar sesión: ", error);
+            // });
+        }
+    </script>
 </body>
 </html>
