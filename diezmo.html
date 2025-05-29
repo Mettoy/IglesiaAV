@@ -526,15 +526,15 @@
     <script>
         // --- CONFIGURACIÓN DE FIREBASE (¡MUY IMPORTANTE: VERIFICA QUE ESTA ES TU CONFIGURACIÓN CORRECTA!) ---
         const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
 
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
@@ -747,21 +747,22 @@
                     alert('Por favor, ingresa el nombre de la persona no miembro.');
                     return;
                 }
-                nombreOfrenda = nombreNoMiembroValue; // El nombre siempre es el del campo visible
+                nombreOfrenda = nombreNoMiembroValue;
 
-                // Determinar el código para no miembros: manual o automático
+                // Determinar el código para el no miembro
                 if (addManualCodeNoMiembroCheckbox.checked) {
                     const manualCode = manualCodeNoMiembroInput.value.trim();
                     if (!manualCode) {
-                        alert('Por favor, ingresa el código manual para la persona que no es miembro.');
+                        alert('Por favor, ingresa el código manual para el no miembro.');
                         return;
                     }
-                    codigoOfrenda = manualCode; // Usa el código manual proporcionado
+                    codigoOfrenda = manualCode;
                 } else {
-                    codigoOfrenda = generateNonMemberCode(); // Genera un código automático
+                    // Generar un código automático si el checkbox no está marcado
+                    codigoOfrenda = generateNonMemberCode();
                 }
             } else {
-                alert('Por favor, selecciona si la persona es miembro o no.');
+                alert('Por favor, indica si la persona es miembro o no.');
                 return;
             }
 
@@ -769,13 +770,23 @@
             const moneda = monedaSelect.value;
             const fecha = fechaInput.value; // Formato YYYY-MM-DD
 
+            // Validación básica
+            if (isNaN(cantidad) || cantidad <= 0) {
+                alert('Por favor, ingresa una cantidad válida para la ofrenda.');
+                return;
+            }
+            if (!fecha) {
+                alert('Por favor, selecciona la fecha de la ofrenda.');
+                return;
+            }
+
             const nuevaOfrenda = {
                 codigo: codigoOfrenda,
-                miembro: nombreOfrenda, // Usamos 'miembro' para el nombre, sea miembro o no
+                miembro: nombreOfrenda, // Puede ser el nombre de miembro o el nombre del no miembro
                 cantidad: cantidad,
                 moneda: moneda,
-                fecha: firebase.firestore.Timestamp.fromDate(new Date(fecha + 'T12:00:00')), // Convertir a Timestamp para Firestore
-                createdAt: firebase.firestore.FieldValue.serverTimestamp() // Para saber cuándo fue creada la entrada
+                fecha: fecha,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar y obtener la fecha exacta de registro
             };
 
             try {
@@ -783,105 +794,105 @@
                 await db.collection('ofrendas').add(nuevaOfrenda);
                 alert('Ofrenda guardada exitosamente!');
                 closeModal();
-                loadOfrendas(); // Recarga la tabla para mostrar la nueva ofrenda
+                loadOfrendas(); // Recargar la tabla para mostrar la nueva ofrenda
             } catch (error) {
-                console.error('Error al guardar la ofrenda:', error);
-                alert('Hubo un error al guardar la ofrenda. Por favor, intenta de nuevo.');
+                console.error("Error al guardar la ofrenda: ", error);
+                alert('Hubo un error al guardar la ofrenda. Inténtalo de nuevo.');
             }
         });
 
-        // --- Funciones para cargar y mostrar datos en la tabla principal ---
+        // --- Funciones de Carga y Visualización de Datos en la Tabla Principal ---
 
-        // Función para cargar miembros de Firestore
+        // Carga los miembros desde Firestore
         async function loadMiembros() {
             try {
-                const snapshot = await db.collection('miembros').get();
+                const snapshot = await db.collection('miembros').orderBy('nombre').get();
                 miembros = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Miembros cargados:', miembros); // Para depuración
+                console.log("Miembros cargados:", miembros);
             } catch (error) {
-                console.error('Error al cargar los miembros:', error);
+                console.error("Error al cargar los miembros:", error);
+                alert("No se pudieron cargar los miembros. La funcionalidad de búsqueda podría no funcionar correctamente.");
             }
         }
 
-        // Función para cargar ofrendas de Firestore
+        // Carga las ofrendas desde Firestore
         async function loadOfrendas() {
             try {
-                const snapshot = await db.collection('ofrendas').orderBy('fecha', 'desc').get();
+                const snapshot = await db.collection('ofrendas').orderBy('timestamp', 'desc').get();
                 allOfrendas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                filterAndPaginateOfrendas();
+                filterAndRenderOfrendas(); // Después de cargar, filtra y renderiza
             } catch (error) {
-                console.error('Error al cargar las ofrendas:', error);
+                console.error("Error al cargar las ofrendas:", error);
+                alert("No se pudieron cargar las ofrendas.");
             }
         }
 
-        // Función para filtrar y paginar las ofrendas
-        function filterAndPaginateOfrendas() {
+        // Filtra las ofrendas según el término de búsqueda y renderiza la página actual
+        function filterAndRenderOfrendas() {
             const searchTerm = searchInput.value.toLowerCase().trim();
-
-            filteredOfrendas = allOfrendas.filter(ofrenda => {
-                const codigo = ofrenda.codigo ? ofrenda.codigo.toLowerCase() : '';
-                const miembro = ofrenda.miembro ? ofrenda.miembro.toLowerCase() : '';
-                const fecha = ofrenda.fecha ? ofrenda.fecha.toDate().toLocaleDateString('es-ES') : ''; // Convertir Timestamp a fecha legible
-
-                return codigo.includes(searchTerm) ||
-                       miembro.includes(searchTerm) ||
-                       fecha.includes(searchTerm);
-            });
-
-            currentPage = 1; // Resetear a la primera página después de filtrar
-            renderTable();
+            if (searchTerm) {
+                filteredOfrendas = allOfrendas.filter(ofrenda =>
+                    (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm)) ||
+                    (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm)) ||
+                    (ofrenda.fecha && ofrenda.fecha.toLowerCase().includes(searchTerm))
+                );
+            } else {
+                filteredOfrendas = [...allOfrendas]; // Si no hay término de búsqueda, muestra todas
+            }
+            currentPage = 1; // Reinicia a la primera página con cada nuevo filtro
+            renderTablePage();
         }
 
-        // Función para renderizar la tabla con los datos actuales
-        function renderTable() {
-            ofrendasTableBody.innerHTML = ''; // Limpia la tabla
+        // Renderiza solo las ofrendas de la página actual
+        function renderTablePage() {
+            ofrendasTableBody.innerHTML = ''; // Limpiar la tabla
             const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
-            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages || 1}`;
-
-            prevPageBtn.disabled = currentPage === 1;
-            nextPageBtn.disabled = currentPage === totalPages || filteredOfrendas.length === 0;
-
             const startIndex = (currentPage - 1) * rowsPerPage;
             const endIndex = startIndex + rowsPerPage;
-            const itemsToDisplay = filteredOfrendas.slice(startIndex, endIndex);
+            const ofrendasToDisplay = filteredOfrendas.slice(startIndex, endIndex);
 
-            if (itemsToDisplay.length === 0) {
-                const row = ofrendasTableBody.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = 5;
-                cell.textContent = "No hay ofrendas para mostrar.";
-                cell.style.textAlign = "center";
-                cell.style.color = "rgba(255, 235, 59, 0.5)";
-                return;
+            if (ofrendasToDisplay.length === 0) {
+                ofrendasTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: rgba(255,255,255,0.6);">No hay ofrendas para mostrar.</td></tr>';
+            } else {
+                ofrendasToDisplay.forEach(ofrenda => {
+                    const row = ofrendasTableBody.insertRow();
+                    row.insertCell(0).textContent = ofrenda.codigo || 'N/A';
+                    row.insertCell(1).textContent = ofrenda.miembro || 'Desconocido';
+                    row.insertCell(2).textContent = `${ofrenda.cantidad.toFixed(2)} ${ofrenda.moneda}`;
+                    row.insertCell(3).textContent = ofrenda.moneda;
+                    row.insertCell(4).textContent = ofrenda.fecha;
+                });
             }
 
-            itemsToDisplay.forEach(ofrenda => {
-                const row = ofrendasTableBody.insertRow();
-                row.insertCell().textContent = ofrenda.codigo || 'N/A'; // Mostrar código
-                row.insertCell().textContent = ofrenda.miembro || 'Desconocido'; // Mostrar nombre
-                row.insertCell().textContent = `${ofrenda.cantidad.toFixed(2)}`;
-                row.insertCell().textContent = ofrenda.moneda;
-                row.insertCell().textContent = ofrenda.fecha ? ofrenda.fecha.toDate().toLocaleDateString('es-ES') : 'N/A'; // Formatear fecha
-            });
+            updatePaginationControls(totalPages);
+        }
+
+        // Actualiza los botones de paginación y la información de la página
+        function updatePaginationControls(totalPages) {
+            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
         }
 
         // --- Event Listeners Globales ---
         addOfrendaBtn.addEventListener('click', openModal);
         closeButton.addEventListener('click', closeModal);
-        window.addEventListener('click', (event) => {
-            if (event.target === ofrendaModal) {
+        ofrendaModal.addEventListener('click', (e) => {
+            if (e.target === ofrendaModal) {
                 closeModal();
             }
         });
 
-        // Event listener para la barra de búsqueda principal
-        searchInput.addEventListener('input', filterAndPaginateOfrendas);
+        // Event listener para la búsqueda en la tabla principal
+        searchInput.addEventListener('input', () => {
+            filterAndRenderOfrendas();
+        });
 
-        // Event listeners para la paginación
+        // Event listeners para los botones de paginación
         prevPageBtn.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
-                renderTable();
+                renderTablePage();
             }
         });
 
@@ -889,22 +900,26 @@
             const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
             if (currentPage < totalPages) {
                 currentPage++;
-                renderTable();
+                renderTablePage();
             }
         });
 
-        // Al cargar la página, cargar miembros y ofrendas
+        // --- Inicialización al cargar la página ---
         document.addEventListener('DOMContentLoaded', () => {
-            loadMiembros();
-            loadOfrendas();
+            loadMiembros(); // Carga los miembros primero
+            loadOfrendas(); // Luego carga las ofrendas
         });
 
+        // Función de cerrar sesión (ejemplo, puedes expandirla con Firebase Auth)
         function cerrarSesion() {
-            // Lógica para cerrar sesión (ej. redirigir a la página de login)
-            alert('Cerrando sesión...'); // Placeholder
-            window.location.href = 'login.html'; // Cambia esto a tu página de login
+            alert('Cerrar sesión simulado.');
+            // En un entorno real, aquí iría la lógica de Firebase Authentication para cerrar sesión:
+            // firebase.auth().signOut().then(() => {
+            //   window.location.href = 'login.html'; // Redirigir a la página de login
+            // }).catch((error) => {
+            //   console.error("Error al cerrar sesión: ", error);
+            // });
         }
-
     </script>
 </body>
 </html>
