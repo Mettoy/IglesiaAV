@@ -355,6 +355,12 @@
             accent-color: var(--gold-vibrant);
         }
 
+        /* Estilos para el checkbox manual de código */
+        #addManualCodeNoMiembro {
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
         .member-search-results {
             max-height: 180px; /* Un poco más de altura */
             overflow-y: auto;
@@ -473,9 +479,19 @@
                     <input type="hidden" id="selectedMemberCode">
                     <input type="hidden" id="selectedMemberName">
                 </div>
-                   <div class="form-group" id="nombreNoMiembroGroup" style="display: none;">
+
+                <div class="form-group" id="nombreNoMiembroGroup" style="display: none;">
                     <label for="nombreNoMiembro">Nombre (No miembro):</label>
                     <input type="text" id="nombreNoMiembro" placeholder="Nombre de la persona">
+
+                    <div style="margin-top: 15px;">
+                        <input type="checkbox" id="addManualCodeNoMiembro">
+                        <label for="addManualCodeNoMiembro" style="display: inline-block; margin-left: 5px;">Añadir Código Manual (Opcional)</label>
+                    </div>
+                    <div class="form-group" id="manualCodeNoMiembroGroup" style="display: none;">
+                        <label for="manualCodeNoMiembro">Código Manual (No miembro):</label>
+                        <input type="text" id="manualCodeNoMiembro" placeholder="Ej: NM-001 o el código de miembro si no aparece">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -551,6 +567,11 @@
         const nextPageBtn = document.getElementById('nextPageBtn');
         const pageInfoSpan = document.getElementById('pageInfo');
 
+        // NUEVAS REFERENCIAS PARA EL CAMPO MANUAL DE CÓDIGO
+        const addManualCodeNoMiembroCheckbox = document.getElementById('addManualCodeNoMiembro');
+        const manualCodeNoMiembroGroup = document.getElementById('manualCodeNoMiembroGroup');
+        const manualCodeNoMiembroInput = document.getElementById('manualCodeNoMiembro');
+
         // --- Variables de Paginación y Filtrado de tabla principal ---
         const rowsPerPage = 30;
         let currentPage = 1;
@@ -569,6 +590,12 @@
             miembroSearchInput.removeAttribute('required'); // Remueve 'required' si estaba puesto
             esMiembroSi.checked = false; // Desmarca las opciones de radio
             esMiembroNo.checked = false;
+
+            // Reinicia el estado del checkbox de código manual
+            addManualCodeNoMiembroCheckbox.checked = false;
+            manualCodeNoMiembroGroup.style.display = 'none';
+            manualCodeNoMiembroInput.value = '';
+            manualCodeNoMiembroInput.removeAttribute('required');
 
             // Establece la fecha actual por defecto en el campo de fecha del modal
             const today = new Date();
@@ -594,6 +621,12 @@
             selectedMemberNameInput.value = '';
             miembroSearchInput.value = ''; // Limpia el texto en el input de búsqueda
             miembroSearchResults.innerHTML = ''; // Limpia resultados de búsqueda
+
+            // Oculta y resetea el campo de código manual para no miembros
+            addManualCodeNoMiembroCheckbox.checked = false;
+            manualCodeNoMiembroGroup.style.display = 'none';
+            manualCodeNoMiembroInput.value = '';
+            manualCodeNoMiembroInput.removeAttribute('required');
         });
 
         esMiembroNo.addEventListener('change', () => {
@@ -604,6 +637,23 @@
             miembroSearchInput.removeAttribute('required');
             selectedMemberCodeInput.value = 'NO_MIEMBRO'; // Asigna un código especial para no miembros
             miembroSearchResults.innerHTML = ''; // Limpia resultados de búsqueda
+
+            // Asegúrate de que el campo de código manual esté oculto inicialmente, a menos que se marque el checkbox
+            manualCodeNoMiembroGroup.style.display = 'none';
+            manualCodeNoMiembroInput.removeAttribute('required');
+        });
+
+        // Listener para el checkbox de añadir código manual para no miembros
+        addManualCodeNoMiembroCheckbox.addEventListener('change', () => {
+            if (addManualCodeNoMiembroCheckbox.checked) {
+                manualCodeNoMiembroGroup.style.display = 'block';
+                manualCodeNoMiembroInput.setAttribute('required', 'true'); // Hazlo requerido si se marca
+                manualCodeNoMiembroInput.focus();
+            } else {
+                manualCodeNoMiembroGroup.style.display = 'none';
+                manualCodeNoMiembroInput.value = ''; // Limpia el valor si se desmarca
+                manualCodeNoMiembroInput.removeAttribute('required');
+            }
         });
 
         // Este listener mantiene el campo oculto `selectedMemberNameInput` sincronizado para no miembros
@@ -682,8 +732,19 @@
                     alert('Por favor, ingresa el nombre de la persona.');
                     return;
                 }
-                // Genera un código único para no miembros usando la marca de tiempo actual
-                codigoOfrenda = `NO_MIEMBRO_${Date.now()}`;
+
+                // Determinar el código para no miembros: manual o automático
+                if (addManualCodeNoMiembroCheckbox.checked) {
+                    const manualCode = manualCodeNoMiembroInput.value.trim();
+                    if (!manualCode) {
+                        alert('Por favor, ingresa el código manual para la persona que no es miembro.');
+                        return;
+                    }
+                    codigoOfrenda = manualCode; // Usa el código manual proporcionado
+                } else {
+                    // Si el checkbox no está marcado, genera un código único para no miembros
+                    codigoOfrenda = `NO_MIEMBRO_${Date.now()}`;
+                }
                 nombreOfrenda = nombreNoMiembroValue;
             } else {
                 // Si no se ha seleccionado ninguna opción
@@ -735,7 +796,6 @@
             db.collection('ofrendas').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
                 allOfrendas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 applySearchFilter(); // Aplica el filtro actual cada vez que los datos cambian
-                renderTable();
             }, error => {
                 console.error("Error al obtener actualizaciones de ofrendas:", error);
             });
@@ -745,65 +805,89 @@
         function applySearchFilter() {
             const searchTerm = searchInput.value.toLowerCase().trim();
             if (searchTerm) {
-                filteredOfrendas = allOfrendas.filter(ofrenda =>
-                    (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm)) ||
-                    (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm)) ||
-                    (ofrenda.fecha && ofrenda.fecha.includes(searchTerm)) // Busca en la fecha (YYYY-MM-DD)
-                );
+                filteredOfrendas = allOfrendas.filter(ofrenda => {
+                    const memberName = ofrenda.miembro ? ofrenda.miembro.toLowerCase() : '';
+                    const memberCode = ofrenda.codigo ? ofrenda.codigo.toLowerCase() : '';
+                    const offerDate = ofrenda.fecha ? ofrenda.fecha.toLowerCase() : ''; // Buscar por fecha también
+
+                    return memberCode.includes(searchTerm) ||
+                           memberName.includes(searchTerm) ||
+                           offerDate.includes(searchTerm);
+                });
             } else {
-                filteredOfrendas = [...allOfrendas]; // Copia todas las ofrendas si no hay término de búsqueda
+                filteredOfrendas = [...allOfrendas]; // Si no hay término de búsqueda, muestra todas las ofrendas
             }
-            currentPage = 1; // Reinicia a la primera página con cada nueva búsqueda
+            currentPage = 1; // Reiniciar a la primera página con cada nueva búsqueda/filtro
             renderTable();
         }
 
-
-        // --- Renderizado de la tabla principal de Ofrendas y Paginación ---
+        // --- Renderizado de la tabla principal ---
         function renderTable() {
-            ofrendasTableBody.innerHTML = ''; // Limpia la tabla actual
-            const start = (currentPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const paginatedOfrendas = filteredOfrendas.slice(start, end);
+            ofrendasTableBody.innerHTML = ''; // Limpia la tabla existente
 
             const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const currentOfrendas = filteredOfrendas.slice(start, end);
 
-            // Ajusta la página actual si no hay elementos en ella (ej. al eliminar el último elemento de una página)
-            if (paginatedOfrendas.length === 0 && currentPage > 1) {
-                currentPage--;
-                renderTable();
+            if (currentOfrendas.length === 0 && searchInput.value.trim() !== '') {
+                const row = ofrendasTableBody.insertRow();
+                const cell = row.insertCell(0);
+                cell.colSpan = 5; // Celdas totales en la tabla
+                cell.textContent = "No se encontraron ofrendas con ese criterio de búsqueda.";
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.color = 'var(--gold-light)';
+                // Deshabilitar botones de paginación si no hay resultados para el filtro
+                prevPageBtn.disabled = true;
+                nextPageBtn.disabled = true;
+                pageInfoSpan.textContent = `Página 0 de 0`; // O `Página 1 de 1` si lo prefieres para "no results"
+                return;
+            } else if (currentOfrendas.length === 0) {
+                const row = ofrendasTableBody.insertRow();
+                const cell = row.insertCell(0);
+                cell.colSpan = 5; // Celdas totales en la tabla
+                cell.textContent = "No hay ofrendas registradas. ¡Añade la primera!";
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.color = 'var(--gold-light)';
+                // Deshabilitar botones de paginación si no hay datos en general
+                prevPageBtn.disabled = true;
+                nextPageBtn.disabled = true;
+                pageInfoSpan.textContent = `Página 0 de 0`;
                 return;
             }
 
-            // Muestra un mensaje si no hay ofrendas
-            if (paginatedOfrendas.length === 0) { // Simplificado para cubrir caso inicial y sin resultados
+            currentOfrendas.forEach(ofrenda => {
                 const row = ofrendasTableBody.insertRow();
-                const cell = row.insertCell(0);
-                cell.colSpan = 5; // Ocupa todas las columnas
-                cell.textContent = "No hay ofrendas registradas o que coincidan con la búsqueda.";
-                cell.style.textAlign = 'center';
-                cell.style.padding = '20px';
-                cell.style.color = 'rgba(255, 235, 59, 0.5)';
-            } else {
-                // Rellena la tabla con los datos paginados
-                paginatedOfrendas.forEach(ofrenda => {
-                    const row = ofrendasTableBody.insertRow();
-                    row.insertCell(0).textContent = ofrenda.codigo;
-                    row.insertCell(1).textContent = ofrenda.miembro;
-                    row.insertCell(2).textContent = ofrenda.cantidad ? ofrenda.cantidad.toFixed(2) : '0.00';
-                    row.insertCell(3).textContent = ofrenda.moneda;
-                    row.insertCell(4).textContent = ofrenda.fecha;
-                });
-            }
+                row.insertCell(0).textContent = ofrenda.codigo || 'N/A';
+                row.insertCell(1).textContent = ofrenda.miembro || 'Desconocido';
+                row.insertCell(2).textContent = ofrenda.cantidad ? `${ofrenda.cantidad.toFixed(2)}` : '0.00'; // Formato con 2 decimales
+                row.insertCell(3).textContent = ofrenda.moneda || 'N/A';
+                row.insertCell(4).textContent = ofrenda.fecha || 'Sin fecha';
+            });
 
-            // Actualiza el texto de la paginación y el estado de los botones
-            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages || 1}`; // Muestra 1 de 1 si no hay datos
+            // Actualizar controles de paginación
+            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
             prevPageBtn.disabled = currentPage === 1;
             nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
         }
 
-        // --- Event Listeners para Paginación y Búsqueda de tabla principal ---
-        searchInput.addEventListener('input', applySearchFilter);
+        // --- Event Listeners Globales ---
+        addOfrendaBtn.addEventListener('click', openModal);
+        closeButton.addEventListener('click', closeModal);
+        window.addEventListener('click', (event) => {
+            if (event.target === ofrendaModal) {
+                closeModal();
+            }
+        });
 
+        // Listener para la barra de búsqueda principal de la tabla
+        searchInput.addEventListener('input', () => {
+            applySearchFilter();
+        });
+
+        // Listeners de paginación
         prevPageBtn.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
@@ -819,30 +903,19 @@
             }
         });
 
-        // --- Inicialización al cargar la página ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadMiembros(); // Carga los miembros una vez al inicio
-            setupOfrendasListener(); // Inicia la escucha en tiempo real para las ofrendas
-            // No es necesario llamar a renderTable() aquí directamente,
-            // ya que setupOfrendasListener lo hará cuando los datos de ofrendas se carguen.
-        });
-
-        // --- Event Listeners para el Modal ---
-        addOfrendaBtn.addEventListener('click', openModal);
-        closeButton.addEventListener('click', closeModal);
-        window.addEventListener('click', (event) => {
-            if (event.target == ofrendaModal) {
-                closeModal();
-            }
-        });
-
-        // --- Función dummy para cerrar sesión (implementar con Firebase Auth) ---
+        // Función para cerrar sesión (simulada)
         function cerrarSesion() {
-            // Aquí iría la lógica de cierre de sesión de Firebase Authentication
-            // Por ejemplo: firebase.auth().signOut().then(() => { window.location.href = 'login.html'; });
-            alert('Funcionalidad de "Cerrar sesión" no implementada completamente. Redirigiendo a acceso.html.');
-            window.location.href = 'acceso.html'; // Redirige a la página de acceso o login
+            // Aquí iría la lógica real de cierre de sesión de Firebase Auth si la estuvieras usando
+            // Por ahora, simplemente redirige a la página de inicio de sesión o a otra página.
+            alert("Cerrando sesión...");
+            window.location.href = 'index.html'; // Redirige a tu página de inicio de sesión o principal
         }
+
+        // --- Carga inicial de datos al cargar la página ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadMiembros(); // Carga los miembros primero
+            setupOfrendasListener(); // Luego configura el listener de ofrendas en tiempo real
+        });
     </script>
 </body>
 </html>
