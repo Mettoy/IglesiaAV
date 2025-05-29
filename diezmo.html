@@ -507,24 +507,24 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
     <script>
-        // --- CONFIGURACIÓN DE FIREBASE ---
+        // --- CONFIGURACIÓN DE FIREBASE (¡VERIFICA QUE ESTA ES TU CONFIGURACIÓN CORRECTA!) ---
         const firebaseConfig = {
-            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-            projectId: "iglesia-adoracion-viva",
-            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-            messagingSenderId: "815332010058",
-            appId: "1:815332010058:web:d2afff616469349d88deb3",
-            measurementId: "G-43MZP6V55D"
-        };
+  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+  projectId: "iglesia-adoracion-viva",
+  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+  messagingSenderId: "815332010058",
+  appId: "1:815332010058:web:d2afff616469349d88deb3",
+  measurementId: "G-43MZP6V55D"
+};
 
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- Datos de miembros (se cargarán desde Firestore) ---
-        let miembros = []; // Se cargará dinámicamente desde Firestore
+        // --- Datos de miembros (se cargarán TODOS desde Firestore) ---
+        let miembros = []; // Esta variable contendrá todos los miembros cargados
 
         let allOfrendas = []; // Mantendrá todas las ofrendas cargadas de Firestore
         let filteredOfrendas = []; // Ofrendas filtradas por la búsqueda
@@ -569,7 +569,6 @@
             miembroSearchInput.removeAttribute('required');
             esMiembroSi.checked = false; // Desmarcar ambos para que el usuario elija
             esMiembroNo.checked = false;
-            // No enfocamos nada al inicio para que el usuario elija el radio button
 
             // Establece la fecha actual por defecto en el campo de fecha del modal
             const today = new Date();
@@ -621,7 +620,15 @@
             const searchTerm = miembroSearchInput.value.toLowerCase().trim();
             miembroSearchResults.innerHTML = ''; // Limpia resultados anteriores
 
+            // --- DEPURACIÓN: Verifica el término de búsqueda y la lista de miembros ---
+            console.log("Término de búsqueda de miembro:", searchTerm);
+            console.log("Miembros disponibles para buscar:", miembros);
+
             if (searchTerm.length < 2) { // Mostrar resultados solo si hay al menos 2 caracteres
+                const div = document.createElement('div');
+                div.textContent = "Escribe al menos 2 letras para buscar.";
+                div.classList.add('no-results');
+                miembroSearchResults.appendChild(div);
                 return;
             }
 
@@ -630,14 +637,21 @@
                 (miembro.nombre && miembro.nombre.toLowerCase().includes(searchTerm))
             );
 
+            // --- DEPURACIÓN: Verifica los resultados de la búsqueda ---
+            console.log("Resultados de la búsqueda de miembro:", results);
+
+
             if (results.length > 0) {
                 results.forEach(miembro => {
                     const div = document.createElement('div');
-                    div.textContent = `${miembro.codigo || 'N/A'} - ${miembro.nombre || 'Nombre desconocido'}`;
+                    // Asegúrate de que miembro.codigo y miembro.nombre existen antes de usarlos
+                    const displayCode = miembro.codigo ? miembro.codigo : 'N/A';
+                    const displayName = miembro.nombre ? miembro.nombre : 'Nombre desconocido';
+                    div.textContent = `${displayCode} - ${displayName}`;
                     div.addEventListener('click', () => {
-                        miembroSearchInput.value = miembro.nombre; // Muestra el nombre en el input de búsqueda
-                        selectedMemberCodeInput.value = miembro.codigo; // Almacena el código real
-                        selectedMemberNameInput.value = miembro.nombre; // Almacena el nombre real
+                        miembroSearchInput.value = displayName; // Muestra el nombre en el input de búsqueda
+                        selectedMemberCodeInput.value = displayCode; // Almacena el código real
+                        selectedMemberNameInput.value = displayName; // Almacena el nombre real
                         miembroSearchResults.innerHTML = ''; // Limpia la lista después de seleccionar
                     });
                     miembroSearchResults.appendChild(div);
@@ -696,7 +710,7 @@
                 alert('Ofrenda guardada correctamente en Firestore.');
                 closeModal();
             } catch (error) {
-                console.error("Error al añadir la ofrenda: ", error); // ¡Este es el mensaje clave!
+                console.error("Error al añadir la ofrenda: ", error); // ¡Este es el mensaje clave para depurar!
                 alert('Hubo un error al guardar la ofrenda. Por favor, intenta de nuevo.');
             }
         });
@@ -803,17 +817,19 @@
             alert("No se pudieron cargar las ofrendas. Por favor, revisa tu conexión y permisos de Firebase.");
         });
 
-        // 2. Listener para MIEMBROS: Carga y actualiza la lista de miembros para la búsqueda
+        // 2. Listener para MIEMBROS: Carga TODOS los miembros para la búsqueda en el modal
         db.collection('miembros').orderBy('nombre').onSnapshot((snapshot) => {
             miembros = []; // Limpiar la lista actual de miembros
             snapshot.forEach((doc) => {
                 miembros.push({ id: doc.id, ...doc.data() });
             });
-            console.log("Miembros cargados desde Firestore:", miembros);
+            console.log("¡Éxito! Miembros cargados desde Firestore:", miembros);
+            if (miembros.length === 0) {
+                console.warn("Advertencia: La colección 'miembros' está vacía o no tiene documentos con 'nombre' y 'codigo'.");
+            }
         }, (error) => {
             console.error("Error al cargar los miembros de Firestore: ", error);
-            // Puedes mostrar un mensaje al usuario si esto es crítico
-            alert("No se pudieron cargar la lista de miembros. La búsqueda de miembros puede no funcionar correctamente.");
+            alert("No se pudieron cargar la lista de miembros para la búsqueda. Esto puede deberse a problemas de conexión o permisos en Firestore. Revisa la consola para más detalles.");
         });
 
 
@@ -838,12 +854,6 @@
             // });
             alert('Funcionalidad de cerrar sesión no implementada en este ejemplo.');
         }
-
-        // Se ejecuta una vez que el DOM está completamente cargado
-        document.addEventListener('DOMContentLoaded', () => {
-            // El campo de fecha ya se setea en openModal, así que no es necesario aquí.
-            // Los listeners de Firestore se encargarán de cargar los datos.
-        });
 
     </script>
 </body>
