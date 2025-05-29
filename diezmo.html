@@ -121,10 +121,12 @@
             align-items: center;
             margin-bottom: 30px;
             gap: 20px;
+            flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
         }
 
         .search-bar {
             flex-grow: 1;
+            min-width: 200px; /* Asegura que la barra de búsqueda no sea demasiado pequeña */
         }
 
         .search-bar input {
@@ -166,7 +168,88 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
         }
 
-        /* --- Table Styles --- */
+        /* --- Resumen de Diezmos Styles (Nueva Tabla) --- */
+        .diezmos-summary {
+            background-color: var(--deep-blue);
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            margin-bottom: 30px; /* Espacio debajo de la tabla de resumen */
+            width: 300px; /* Ancho fijo para la tabla pequeña */
+            flex-shrink: 0; /* Evita que se encoja */
+            margin-left: auto; /* Mueve la tabla a la derecha */
+        }
+
+        .diezmos-summary h3 {
+            color: var(--gold-vibrant);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.6);
+        }
+
+        .diezmos-summary .date-filters {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .diezmos-summary .date-filters label {
+            font-size: 0.9em;
+            color: var(--gold-light);
+        }
+
+        .diezmos-summary .date-filters input[type="date"] {
+            background-color: var(--dark-accent-blue);
+            border: 1px solid var(--border-line);
+            color: var(--white-off);
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            flex-grow: 1;
+            cursor: pointer;
+        }
+
+        .diezmos-summary table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .diezmos-summary th, .diezmos-summary td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-line);
+            color: var(--white-off);
+        }
+
+        .diezmos-summary th {
+            background-color: var(--dark-accent-blue);
+            color: var(--gold-vibrant);
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .diezmos-summary td {
+            font-weight: bold;
+            color: var(--gold-light);
+        }
+        .diezmos-summary td.amount {
+            text-align: right;
+        }
+
+        /* Contenedor para que la barra de búsqueda y el resumen de diezmos estén en la misma fila */
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Alinea los elementos en la parte superior */
+            margin-bottom: 30px;
+            gap: 30px; /* Espacio entre los elementos */
+            flex-wrap: wrap; /* Permite el ajuste en pantallas pequeñas */
+        }
+
+
+        /* --- Table Styles (General para tablas de datos) --- */
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -428,12 +511,45 @@
     </div>
 
     <div class="main-content">
-        <div class="header-controls">
+        <div class="top-section">
             <div class="search-bar">
                 <input type="text" id="searchInput" placeholder="Buscar por código, nombre o fecha...">
             </div>
-            <button class="add-button" id="addOfrendaBtn">Añadir Ofrenda</button>
+
+            <div class="diezmos-summary">
+                <h3>Resumen de Diezmos</h3>
+                <div class="date-filters">
+                    <div>
+                        <label for="diezmoStartDate">Desde:</label>
+                        <input type="date" id="diezmoStartDate">
+                    </div>
+                    <div>
+                        <label for="diezmoEndDate">Hasta:</label>
+                        <input type="date" id="diezmoEndDate">
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Moneda</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>USD</td>
+                            <td id="totalDiezmosUSD" class="amount">$0.00</td>
+                        </tr>
+                        <tr>
+                            <td>NIO</td>
+                            <td id="totalDiezmosNIO" class="amount">C$0.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
+        <button class="add-button" id="addOfrendaBtn">Añadir Ofrenda</button>
 
         <table class="data-table" id="ofrendasTable">
             <thead>
@@ -546,6 +662,9 @@
         let allOfrendas = []; // Almacenará todas las ofrendas cargadas de Firestore
         let filteredOfrendas = []; // Almacenará las ofrendas después de aplicar filtros de búsqueda
 
+        // NEW: Almacenará todos los diezmos para el cálculo del resumen
+        let allDiezmos = []; 
+
         // --- Referencias a elementos del DOM (Document Object Model) ---
         const ofrendasTableBody = document.querySelector('#ofrendasTable tbody');
         const addOfrendaBtn = document.getElementById('addOfrendaBtn');
@@ -572,6 +691,12 @@
         const addManualCodeNoMiembroCheckbox = document.getElementById('addManualCodeNoMiembro');
         const manualCodeNoMiembroGroup = document.getElementById('manualCodeNoMiembroGroup');
         const manualCodeNoMiembroInput = document.getElementById('manualCodeNoMiembro');
+
+        // NUEVAS REFERENCIAS PARA EL RESUMEN DE DIEZMOS
+        const diezmoStartDateInput = document.getElementById('diezmoStartDate');
+        const diezmoEndDateInput = document.getElementById('diezmoEndDate');
+        const totalDiezmosUSD = document.getElementById('totalDiezmosUSD');
+        const totalDiezmosNIO = document.getElementById('totalDiezmosNIO');
 
         // --- Variables de Paginación y Filtrado de tabla principal ---
         const rowsPerPage = 30;
@@ -743,26 +868,26 @@
             } else if (esMiembroNo.checked) {
                 // Si no es miembro, validar que se haya ingresado un nombre
                 const nombreNoMiembroValue = document.getElementById('nombreNoMiembro').value.trim();
-                if (!nombreNoMiembroValue) {
-                    alert('Por favor, ingresa el nombre de la persona no miembro.');
+                if (nombreNoMiembroValue === '') {
+                    alert('Por favor, ingresa un nombre para el no miembro.');
                     return;
                 }
                 nombreOfrenda = nombreNoMiembroValue;
 
-                // Determinar el código para el no miembro
+                // Si el checkbox de código manual está marcado, usa ese código
                 if (addManualCodeNoMiembroCheckbox.checked) {
                     const manualCode = manualCodeNoMiembroInput.value.trim();
-                    if (!manualCode) {
-                        alert('Por favor, ingresa el código manual para el no miembro.');
+                    if (manualCode === '') {
+                        alert('Por favor, ingresa un código manual para el no miembro.');
                         return;
                     }
                     codigoOfrenda = manualCode;
                 } else {
-                    // Generar un código automático si el checkbox no está marcado
+                    // Si no, genera un código automático
                     codigoOfrenda = generateNonMemberCode();
                 }
             } else {
-                alert('Por favor, indica si la persona es miembro o no.');
+                alert('Por favor, selecciona si es miembro o no.');
                 return;
             }
 
@@ -770,129 +895,141 @@
             const moneda = monedaSelect.value;
             const fecha = fechaInput.value; // Formato YYYY-MM-DD
 
-            // Validación básica
-            if (isNaN(cantidad) || cantidad <= 0) {
-                alert('Por favor, ingresa una cantidad válida para la ofrenda.');
-                return;
-            }
-            if (!fecha) {
-                alert('Por favor, selecciona la fecha de la ofrenda.');
-                return;
-            }
-
-            const nuevaOfrenda = {
+            const newOfrenda = {
                 codigo: codigoOfrenda,
-                miembro: nombreOfrenda, // Puede ser el nombre de miembro o el nombre del no miembro
+                miembro: nombreOfrenda,
                 cantidad: cantidad,
                 moneda: moneda,
                 fecha: fecha,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar y obtener la fecha exacta de registro
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar y auditoría
             };
 
             try {
-                // Añadir la ofrenda a la colección 'ofrendas' en Firestore
-                await db.collection('ofrendas').add(nuevaOfrenda);
+                await db.collection('ofrendas').add(newOfrenda);
                 alert('Ofrenda guardada exitosamente!');
                 closeModal();
-                loadOfrendas(); // Recargar la tabla para mostrar la nueva ofrenda
+                loadOfrendas(); // Recarga la tabla de ofrendas
             } catch (error) {
                 console.error("Error al guardar la ofrenda: ", error);
-                alert('Hubo un error al guardar la ofrenda. Inténtalo de nuevo.');
+                alert('Error al guardar la ofrenda. Por favor, intenta de nuevo.');
             }
         });
 
-        // --- Funciones de Carga y Visualización de Datos en la Tabla Principal ---
+        // --- Funciones de Carga y Renderizado de Tablas ---
 
-        // Carga los miembros desde Firestore
+        // Cargar miembros desde Firestore (para el formulario)
         async function loadMiembros() {
             try {
                 const snapshot = await db.collection('miembros').orderBy('nombre').get();
                 miembros = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log("Miembros cargados:", miembros);
+                console.log("Miembros cargados:", miembros); // Para depuración
             } catch (error) {
-                console.error("Error al cargar los miembros:", error);
-                alert("No se pudieron cargar los miembros. La funcionalidad de búsqueda podría no funcionar correctamente.");
+                console.error("Error al cargar miembros: ", error);
             }
         }
 
-        // Carga las ofrendas desde Firestore
+        // Cargar ofrendas desde Firestore y mostrarlas en la tabla principal
         async function loadOfrendas() {
             try {
                 const snapshot = await db.collection('ofrendas').orderBy('timestamp', 'desc').get();
                 allOfrendas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                filterAndRenderOfrendas(); // Después de cargar, filtra y renderiza
+                applySearchFilter(); // Aplica el filtro de búsqueda inicial
             } catch (error) {
-                console.error("Error al cargar las ofrendas:", error);
-                alert("No se pudieron cargar las ofrendas.");
+                console.error("Error al cargar ofrendas: ", error);
             }
         }
 
-        // Filtra las ofrendas según el término de búsqueda y renderiza la página actual
-        function filterAndRenderOfrendas() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            if (searchTerm) {
-                filteredOfrendas = allOfrendas.filter(ofrenda =>
-                    (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm)) ||
-                    (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm)) ||
-                    (ofrenda.fecha && ofrenda.fecha.toLowerCase().includes(searchTerm))
-                );
-            } else {
-                filteredOfrendas = [...allOfrendas]; // Si no hay término de búsqueda, muestra todas
+        // Cargar Diezmos desde Firestore y calcular el resumen
+        async function loadDiezmosAndSummarize() {
+            try {
+                const snapshot = await db.collection('diezmos').orderBy('fecha').get(); // Asume que tienes una colección 'diezmos'
+                allDiezmos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateDiezmosSummary(); // Actualiza el resumen con los diezmos cargados
+            } catch (error) {
+                console.error("Error al cargar diezmos: ", error);
+                // Si la colección 'diezmos' no existe o está vacía, los totales serán 0.00, lo cual es correcto.
             }
-            currentPage = 1; // Reinicia a la primera página con cada nuevo filtro
-            renderTablePage();
         }
 
-        // Renderiza solo las ofrendas de la página actual
-        function renderTablePage() {
-            ofrendasTableBody.innerHTML = ''; // Limpiar la tabla
-            const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
+        // Función para actualizar el resumen de diezmos
+        function updateDiezmosSummary() {
+            let totalUSD = 0;
+            let totalNIO = 0;
+
+            const startDate = diezmoStartDateInput.value ? new Date(diezmoStartDateInput.value + 'T00:00:00') : null;
+            const endDate = diezmoEndDateInput.value ? new Date(diezmoEndDateInput.value + 'T23:59:59') : null;
+
+            allDiezmos.forEach(diezmo => {
+                const diezmoDate = new Date(diezmo.fecha + 'T00:00:00'); // Asegurarse de comparar fechas correctamente
+
+                const isWithinDateRange = (!startDate || diezmoDate >= startDate) && (!endDate || diezmoDate <= endDate);
+
+                if (isWithinDateRange) {
+                    if (diezmo.moneda === 'USD') {
+                        totalUSD += diezmo.cantidad;
+                    } else if (diezmo.moneda === 'NIO') {
+                        totalNIO += diezmo.cantidad;
+                    }
+                }
+            });
+
+            totalDiezmosUSD.textContent = `$${totalUSD.toFixed(2)}`;
+            totalDiezmosNIO.textContent = `C$${totalNIO.toFixed(2)}`;
+        }
+
+
+        function displayOfrendas(ofrendasToDisplay) {
+            ofrendasTableBody.innerHTML = ''; // Limpia la tabla actual
             const startIndex = (currentPage - 1) * rowsPerPage;
             const endIndex = startIndex + rowsPerPage;
-            const ofrendasToDisplay = filteredOfrendas.slice(startIndex, endIndex);
+            const paginatedOfrendas = ofrendasToDisplay.slice(startIndex, endIndex);
 
-            if (ofrendasToDisplay.length === 0) {
-                ofrendasTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: rgba(255,255,255,0.6);">No hay ofrendas para mostrar.</td></tr>';
+            if (paginatedOfrendas.length === 0) {
+                const row = ofrendasTableBody.insertRow();
+                const cell = row.insertCell(0);
+                cell.colSpan = 5; // Asegura que ocupe todas las columnas
+                cell.textContent = "No hay ofrendas para mostrar.";
+                cell.style.textAlign = "center";
+                cell.style.padding = "20px";
+                cell.style.color = "rgba(255, 235, 59, 0.5)";
             } else {
-                ofrendasToDisplay.forEach(ofrenda => {
+                paginatedOfrendas.forEach(ofrenda => {
                     const row = ofrendasTableBody.insertRow();
                     row.insertCell(0).textContent = ofrenda.codigo || 'N/A';
                     row.insertCell(1).textContent = ofrenda.miembro || 'Desconocido';
-                    row.insertCell(2).textContent = `${ofrenda.cantidad.toFixed(2)} ${ofrenda.moneda}`;
+                    row.insertCell(2).textContent = ofrenda.cantidad.toFixed(2);
                     row.insertCell(3).textContent = ofrenda.moneda;
                     row.insertCell(4).textContent = ofrenda.fecha;
                 });
             }
-
-            updatePaginationControls(totalPages);
+            updatePaginationControls(ofrendasToDisplay.length);
         }
 
-        // Actualiza los botones de paginación y la información de la página
-        function updatePaginationControls(totalPages) {
+        // Aplica el filtro de búsqueda a las ofrendas y actualiza la tabla
+        function applySearchFilter() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            filteredOfrendas = allOfrendas.filter(ofrenda => {
+                const memberMatch = (ofrenda.miembro && ofrenda.miembro.toLowerCase().includes(searchTerm));
+                const codeMatch = (ofrenda.codigo && ofrenda.codigo.toLowerCase().includes(searchTerm));
+                const dateMatch = (ofrenda.fecha && ofrenda.fecha.toLowerCase().includes(searchTerm)); // Búsqueda simple por fecha
+                return memberMatch || codeMatch || dateMatch;
+            });
+            currentPage = 1; // Reinicia a la primera página con nuevos filtros
+            displayOfrendas(filteredOfrendas);
+        }
+
+        // --- Funciones de Paginación ---
+        function updatePaginationControls(totalItems) {
+            const totalPages = Math.ceil(totalItems / rowsPerPage);
             pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
             prevPageBtn.disabled = currentPage === 1;
             nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
         }
 
-        // --- Event Listeners Globales ---
-        addOfrendaBtn.addEventListener('click', openModal);
-        closeButton.addEventListener('click', closeModal);
-        ofrendaModal.addEventListener('click', (e) => {
-            if (e.target === ofrendaModal) {
-                closeModal();
-            }
-        });
-
-        // Event listener para la búsqueda en la tabla principal
-        searchInput.addEventListener('input', () => {
-            filterAndRenderOfrendas();
-        });
-
-        // Event listeners para los botones de paginación
         prevPageBtn.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
-                renderTablePage();
+                displayOfrendas(filteredOfrendas);
             }
         });
 
@@ -900,26 +1037,49 @@
             const totalPages = Math.ceil(filteredOfrendas.length / rowsPerPage);
             if (currentPage < totalPages) {
                 currentPage++;
-                renderTablePage();
+                displayOfrendas(filteredOfrendas);
             }
         });
 
+        // --- Event Listeners Globales ---
+        addOfrendaBtn.addEventListener('click', openModal);
+        closeButton.addEventListener('click', closeModal);
+        window.addEventListener('click', (event) => {
+            if (event.target === ofrendaModal) {
+                closeModal();
+            }
+        });
+        searchInput.addEventListener('input', applySearchFilter);
+
+        // Event listeners para los filtros de fecha del resumen de diezmos
+        diezmoStartDateInput.addEventListener('change', updateDiezmosSummary);
+        diezmoEndDateInput.addEventListener('change', updateDiezmosSummary);
+
+
+        // Función para cerrar sesión (simplificada para el frontend)
+        function cerrarSesion() {
+            alert('Sesión cerrada. Redirigiendo a la página de login...');
+            // Aquí puedes redirigir a tu página de login
+            window.location.href = 'login.html'; // Asegúrate de que esta sea la ruta correcta
+        }
+
         // --- Inicialización al cargar la página ---
         document.addEventListener('DOMContentLoaded', () => {
-            loadMiembros(); // Carga los miembros primero
-            loadOfrendas(); // Luego carga las ofrendas
+            loadMiembros(); // Carga los miembros una vez al inicio
+            loadOfrendas(); // Carga las ofrendas al inicio
+            loadDiezmosAndSummarize(); // Carga los diezmos y calcula el resumen al inicio
+
+            // Establecer fechas por defecto para el resumen de diezmos: mes actual
+            const today = new Date();
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+            diezmoStartDateInput.value = firstDayOfMonth.toISOString().split('T')[0];
+            diezmoEndDateInput.value = lastDayOfMonth.toISOString().split('T')[0];
+            // Asegura que el resumen se calcule con las fechas por defecto al cargar
+            updateDiezmosSummary(); 
         });
 
-        // Función de cerrar sesión (ejemplo, puedes expandirla con Firebase Auth)
-        function cerrarSesion() {
-            alert('Cerrar sesión simulado.');
-            // En un entorno real, aquí iría la lógica de Firebase Authentication para cerrar sesión:
-            // firebase.auth().signOut().then(() => {
-            //   window.location.href = 'login.html'; // Redirigir a la página de login
-            // }).catch((error) => {
-            //   console.error("Error al cerrar sesión: ", error);
-            // });
-        }
     </script>
 </body>
 </html>
