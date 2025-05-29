@@ -780,34 +780,28 @@
 
         async function loadFinanzas() {
             try {
-                // No hay spinner para resumen aquí, pero si para carga general
-                // const spinner = document.getElementById('summarySpinner'); // If you want a spinner for main table loading
-                // spinner.style.display = 'block';
-
                 const snapshot = await db.collection('finanzas').orderBy('fecha', 'desc').get();
                 allFinanzas = snapshot.docs.map(doc => {
                     const data = doc.data();
                     return {
                         id: doc.id,
                         concepto: data.concepto || 'Sin concepto',
-                        cantidad: data.cantidad || 0,
+                        cantidad: parseFloat(data.cantidad) || 0, // Asegurar que sea número
                         moneda: data.moneda || 'USD',
                         fecha: data.fecha ? data.fecha.toDate().toISOString().split('T')[0] : '' // Formato YYYY-MM-DD
                     };
                 });
                 applyFiltersAndRenderTable();
-                // spinner.style.display = 'none';
             } catch (error) {
                 console.error("Error al cargar finanzas:", error);
-                showToast("Error al cargar finanzas", "error");
-                // spinner.style.display = 'none';
+                showToast("Error al cargar finanzas. Asegúrate de tener permisos.", "error");
             }
         }
 
         async function saveFinanza(event) {
             event.preventDefault();
 
-            // Validación básica
+            // Validación
             if (!conceptoInput.value.trim() || !cantidadInput.value || !fechaInput.value) {
                 showToast("Por favor, rellena todos los campos.", "warning");
                 return;
@@ -817,117 +811,178 @@
                 return;
             }
 
-            const data = {
+            const finanzaData = {
                 concepto: conceptoInput.value.trim(),
                 cantidad: parseFloat(cantidadInput.value),
                 moneda: monedaSelect.value,
-                fecha: firebase.firestore.Timestamp.fromDate(new Date(fechaInput.value)),
-                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar y auditoría
+                fecha: firebase.firestore.Timestamp.fromDate(new Date(fechaInput.value)) // Guarda como Timestamp
             };
 
             try {
                 if (currentEditingFinanzaId) {
                     // Actualizar
-                    await db.collection('finanzas').doc(currentEditingFinanzaId).update(data);
-                    showToast("Entrada financiera actualizada con éxito", "success");
+                    await db.collection('finanzas').doc(currentEditingFinanzaId).update(finanzaData);
+                    showToast("Entrada financiera actualizada con éxito.", "success");
                 } else {
                     // Añadir nueva
-                    await db.collection('finanzas').add(data);
-                    showToast("Entrada financiera añadida con éxito", "success");
+                    await db.collection('finanzas').add(finanzaData);
+                    showToast("Nueva entrada financiera guardada con éxito.", "success");
                 }
                 closeModal();
                 loadFinanzas(); // Recargar datos para actualizar la tabla
-                actualizarResumen(); // Actualizar el resumen también
+                actualizarResumen(); // Recargar el resumen también
             } catch (error) {
-                console.error("Error al guardar entrada financiera:", error);
-                // Mostrar un mensaje más detallado si es posible
-                let errorMessage = "Error al guardar entrada financiera.";
-                if (error.code) {
-                    errorMessage += ` Código: ${error.code}.`;
-                }
-                if (error.message) {
-                    errorMessage += ` Mensaje: ${error.message}`;
-                }
-                showToast(errorMessage, "error");
+                console.error("Error al guardar finanza:", error);
+                showToast("Error al guardar finanza. Revisa tus permisos.", "error");
             }
         }
 
         async function deleteFinanza() {
-            if (!currentEditingFinanzaId || !confirm("¿Está seguro de que desea eliminar esta entrada financiera?")) {
+            if (!currentEditingFinanzaId || !confirm('¿Estás seguro de que quieres eliminar esta entrada?')) {
                 return;
             }
 
             try {
                 await db.collection('finanzas').doc(currentEditingFinanzaId).delete();
-                showToast("Entrada financiera eliminada con éxito", "success");
+                showToast("Entrada financiera eliminada con éxito.", "success");
                 closeModal();
                 loadFinanzas(); // Recargar datos para actualizar la tabla
-                actualizarResumen(); // Actualizar el resumen también
+                actualizarResumen(); // Recargar el resumen
             } catch (error) {
-                console.error("Error al eliminar entrada financiera:", error);
-                showToast("Error al eliminar entrada financiera", "error");
+                console.error("Error al eliminar finanza:", error);
+                showToast("Error al eliminar finanza. Revisa tus permisos.", "error");
             }
         }
 
-        // Función para editar una entrada desde Handsontable
-        function editEntry(id) {
-            openModal(id);
+        // --- Handsontable Initialization and Data Display ---
+
+        function initializeHandsontable() {
+            const container = document.getElementById('handsontable-container');
+            const tableData = []; // Handsontable expects an array of arrays or array of objects
+
+            const hotOptions = {
+                data: tableData, // Initial empty data
+                columns: [
+                    { data: 'fecha', title: 'Fecha', type: 'date', dateFormat: 'YYYY-MM-DD', correctFormat: true, readOnly: true },
+                    { data: 'concepto', title: 'Concepto', type: 'text', readOnly: true },
+                    { data: 'cantidad', title: 'Cantidad', type: 'numeric', numericFormat: { pattern: '0,0.00' }, readOnly: true },
+                    { data: 'moneda', title: 'Moneda', type: 'text', readOnly: true },
+                    { // Acción de editar
+                        data: 'id', // Use ID as data source for the button
+                        title: 'Acciones',
+                        renderer: function(instance, td, row, col, prop, value, cellProperties) {
+                            Handsontable.renderers.HtmlRenderer.apply(this, arguments); // Render HTML
+                            td.innerHTML = `<button class="action-button" onclick="openModal('${value}')">Editar</button>`;
+                            return td;
+                        },
+                        readOnly: true,
+                        width: 100
+                    }
+                ],
+                colHeaders: ['Fecha', 'Concepto', 'Cantidad', 'Moneda', 'Acciones'],
+                rowHeaders: true,
+                height: 'auto',
+                stretchH: 'all', // Makes columns fill the width
+                licenseKey: 'non-commercial-and-evaluation' // Required for non-commercial use
+            };
+
+            if (hot) {
+                hot.destroy(); // Destroy previous instance if it exists
+            }
+            hot = new Handsontable(container, hotOptions);
         }
 
-        // --- Lógica del Resumen de Ofrendas ---
-        async function actualizarResumen() {
-            totalCordobasSpan.textContent = 'C$ 0.00';
-            totalDolaresSpan.textContent = '$ 0.00';
-            cordobasSpinner.style.display = 'inline-block';
-            dolaresSpinner.style.display = 'inline-block';
+        function renderTablePage() {
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const dataToDisplay = filteredFinanzas.slice(startIndex, endIndex);
 
+            if (hot) {
+                hot.loadData(dataToDisplay); // Load data into Handsontable
+            } else {
+                initializeHandsontable(); // Initialize if not already done
+                hot.loadData(dataToDisplay);
+            }
+
+            totalPages = Math.ceil(filteredFinanzas.length / ITEMS_PER_PAGE);
+            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
+
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        function applyFiltersAndRenderTable() {
+            filteredFinanzas = [...allFinanzas]; // Start with all data
+            // No specific filters implemented yet for the main table,
+            // but this is where you'd add them if you had search/date filters for the main table.
+            currentPage = 1; // Reset to first page on filter change
+            renderTablePage();
+        }
+
+        // --- Paginación Event Handlers ---
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTablePage();
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTablePage();
+            }
+        });
+
+        // --- Resumen de Ofrendas ---
+
+        async function actualizarResumen() {
             const selectedMonth = fechaResumenInput.value; // Formato YYYY-MM
             if (!selectedMonth) {
                 showToast("Por favor, selecciona un mes para el resumen.", "warning");
-                cordobasSpinner.style.display = 'none';
-                dolaresSpinner.style.display = 'none';
                 return;
             }
 
-            const [year, month] = selectedMonth.split('-').map(Number);
-            const startDate = new Date(year, month - 1, 1); // Primer día del mes
-            const endDate = new Date(year, month, 0); // Último día del mes (día 0 del siguiente mes)
+            cordobasSpinner.style.display = 'inline-block';
+            dolaresSpinner.style.display = 'inline-block';
+            totalCordobasSpan.textContent = 'C$ Calculando...';
+            totalDolaresSpan.textContent = '$ Calculando...';
 
-            // Convertir a Timestamp de Firebase
-            const startTimestamp = firebase.firestore.Timestamp.fromDate(startDate);
-            const endTimestamp = firebase.firestore.Timestamp.fromDate(endDate);
+            const startOfMonth = new Date(selectedMonth + '-01');
+            const endOfMonth = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0); // Last day of the month
 
-            let totalNIO = 0;
-            let totalUSD = 0;
+            // Convert to Firebase Timestamps
+            const startTimestamp = firebase.firestore.Timestamp.fromDate(startOfMonth);
+            const endTimestamp = firebase.firestore.Timestamp.fromDate(endOfMonth);
+
+            let totalCordobas = 0;
+            let totalDolares = 0;
 
             try {
-                const querySnapshot = await db.collection('finanzas')
+                const snapshot = await db.collection('finanzas')
                     .where('fecha', '>=', startTimestamp)
                     .where('fecha', '<=', endTimestamp)
                     .get();
 
-                querySnapshot.forEach(doc => {
+                snapshot.docs.forEach(doc => {
                     const data = doc.data();
-                    // Asumiendo que 'tipo_entrada' es el campo para distinguir entre 'ofrendas' y otras 'finanzas'
-                    // Si todas las entradas en la colección 'finanzas' son 'ofrendas', puedes omitir esta condición.
-                    // Ajusta 'ofrenda' según el valor que uses en tu campo 'tipo_entrada' (si existe).
-                    // Si no tienes un campo 'tipo_entrada', entonces sumará todo.
-                    // Para este ejemplo, sumaremos todas las entradas en la colección 'finanzas'.
+                    const cantidad = parseFloat(data.cantidad);
                     if (data.moneda === 'NIO') {
-                        totalNIO += data.cantidad || 0;
+                        totalCordobas += cantidad;
                     } else if (data.moneda === 'USD') {
-                        totalUSD += data.cantidad || 0;
+                        totalDolares += cantidad;
                     }
                 });
 
-                totalCordobasSpan.textContent = `C$ ${totalNIO.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`; // Formato de miles
-                totalDolaresSpan.textContent = `$ ${totalUSD.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+                totalCordobasSpan.textContent = `C$ ${totalCordobas.toFixed(2)}`;
+                totalDolaresSpan.textContent = `$ ${totalDolares.toFixed(2)}`;
+                showToast("Resumen actualizado con éxito.", "info");
 
             } catch (error) {
-                console.error("Error al calcular resumen de ofrendas:", error);
-                showToast("Error al cargar el resumen de ofrendas.", "error");
-                totalCordobasSpan.textContent = 'Error';
-                totalDolaresSpan.textContent = 'Error';
+                console.error("Error al calcular resumen:", error);
+                totalCordobasSpan.textContent = 'C$ Error';
+                totalDolaresSpan.textContent = '$ Error';
+                showToast("Error al mostrar resumen. Revisa tus permisos o conexión.", "error");
             } finally {
                 cordobasSpinner.style.display = 'none';
                 dolaresSpinner.style.display = 'none';
@@ -935,95 +990,20 @@
         }
 
 
-        // --- Paginación y Renderizado de Tabla ---
-
-        function applyFiltersAndRenderTable() {
-            filteredFinanzas = [...allFinanzas]; // Actualmente no hay filtros activos
-
-            totalPages = Math.ceil(filteredFinanzas.length / ITEMS_PER_PAGE);
-            if (currentPage > totalPages) {
-                currentPage = totalPages > 0 ? totalPages : 1;
-            }
-            if (filteredFinanzas.length === 0) {
-                currentPage = 1; // Reset to page 1 if no data
-            }
-
-            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-            const endIndex = startIndex + ITEMS_PER_PAGE;
-            const dataToDisplay = filteredFinanzas.slice(startIndex, endIndex);
-
-            updatePaginationControls();
-
-            if (!hot) {
-                const container = document.getElementById('handsontable-container');
-                hot = new Handsontable(container, {
-                    data: dataToDisplay,
-                    colHeaders: ['ID', 'Concepto', 'Cantidad', 'Moneda', 'Fecha', 'Acciones'],
-                    columns: [
-                        { data: 'id', readOnly: true, className: 'hidden' }, // Oculto visualmente
-                        { data: 'concepto', title: 'Concepto', readOnly: true },
-                        { data: 'cantidad', title: 'Cantidad', type: 'numeric', numericFormat: { pattern: '0,0.00' }, readOnly: true },
-                        { data: 'moneda', title: 'Moneda', readOnly: true },
-                        { data: 'fecha', title: 'Fecha', type: 'date', dateFormat: 'YYYY-MM-DD', readOnly: true },
-                        {
-                            data: 'actions',
-                            title: 'Acciones',
-                            renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                                Handsontable.dom.empty(td);
-                                const editButton = document.createElement('button');
-                                editButton.textContent = 'Editar';
-                                editButton.className = 'action-button edit-button';
-                                // Obtener el ID de la fila para pasarlo a editEntry
-                                Handsontable.dom.addEvent(editButton, 'click', () => editEntry(instance.getDataAtRowProp(row, 'id')));
-                                td.appendChild(editButton);
-                                return td;
-                            },
-                            readOnly: true
-                        }
-                    ],
-                    hiddenColumns: {
-                        columns: [0] // Oculta la columna ID
-                    },
-                    licenseKey: 'non-commercial-and-evaluation', // Esencial para Handsontable CE
-                    height: 'auto',
-                    autoRowSize: true,
-                    autoColumnSize: true,
-                    rowHeaders: true,
-                    dropdownMenu: ['remove_row'], // Permite eliminar filas desde el menú contextual
-                    contextMenu: ['remove_row'], // Menú contextual para eliminar
-                    filters: true,
-                    readOnly: true // Hace toda la tabla de solo lectura para evitar edición directa, usar el modal
-                });
-            } else {
-                hot.loadData(dataToDisplay);
-            }
-        }
-
-        function updatePaginationControls() {
-            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
-            prevPageBtn.disabled = currentPage === 1;
-            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
-        }
-
         // --- Event Listeners ---
         addFinanzaBtn.addEventListener('click', () => openModal());
         closeModalBtn.addEventListener('click', closeModal);
+        ofrendaModal.addEventListener('click', (e) => {
+            if (e.target === ofrendaModal) {
+                closeModal();
+            }
+        });
         ofrendaForm.addEventListener('submit', saveFinanza);
         deleteFinanzaBtn.addEventListener('click', deleteFinanza);
 
-        prevPageBtn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                applyFiltersAndRenderTable();
-            }
-        });
-
-        nextPageBtn.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                applyFiltersAndRenderTable();
-            }
-        });
+        // Call this once on page load to set up the Handsontable grid structure
+        // Data will be loaded by loadFinanzas() once the user is authenticated.
+        initializeHandsontable();
 
     </script>
 </body>
