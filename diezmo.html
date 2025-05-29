@@ -6,17 +6,16 @@
     <title>Diezmos y Ofrendas</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* Definición de colores principales */
         :root {
-            --primary-color: #4CAF50; /* Verde */
-            --primary-dark: #388E3C;
-            --secondary-color: #2196F3; /* Azul */
-            --background-color: #f4f7f6;
-            --sidebar-bg: #333;
-            --sidebar-link-hover: #575757;
-            --text-color: #333;
-            --border-color: #ddd;
-            --input-border: #ccc;
-            --modal-bg: rgba(0, 0, 0, 0.6);
+            --dark-blue: #00004d; /* Azul muy oscuro para fondos */
+            --dark-blue-light: #000066; /* Un poco más claro para hover/fondo secundario */
+            --gold: #FFD700; /* Dorado para texto y acentos */
+            --gold-dark: #ccad00; /* Dorado más oscuro para hover */
+            --white-text: #f0f0f0; /* Blanco roto para texto en fondos oscuros */
+            --border-color: #0a0a70; /* Borde sutil para elementos */
+            --input-bg: #000033; /* Fondo de inputs oscuro */
+            --input-border: #1a1a80; /* Borde de inputs */
         }
 
         body {
@@ -24,23 +23,24 @@
             margin: 0;
             padding: 0;
             display: flex;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            background-color: var(--dark-blue); /* Fondo principal azul oscuro */
+            color: var(--white-text); /* Texto general blanco roto */
         }
 
         /* --- Sidebar Styles --- */
         .sidebar {
             width: 250px;
-            background-color: var(--sidebar-bg);
-            color: white;
+            background-color: var(--dark-blue-light); /* Azul oscuro para la barra lateral */
+            color: var(--gold); /* Texto de la barra lateral en dorado */
             padding: 20px 0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5); /* Sombra más pronunciada */
             height: 100vh;
             display: flex;
             flex-direction: column;
             position: fixed;
             top: 0;
             left: 0;
+            z-index: 900; /* Para asegurar que esté sobre el contenido principal */
         }
 
         .sidebar-header {
@@ -48,39 +48,43 @@
             margin-bottom: 30px;
             font-size: 1.8em;
             font-weight: 700;
-            color: var(--primary-color);
+            color: var(--gold); /* Título en dorado */
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.4); /* Sombra dorada */
         }
 
         .sidebar-link {
             display: block;
             padding: 15px 25px;
-            color: white;
+            color: var(--gold); /* Enlaces en dorado */
             text-decoration: none;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .sidebar-link:hover, .sidebar-link.active {
-            background-color: var(--sidebar-link-hover);
+            background-color: var(--dark-blue); /* Fondo más oscuro al pasar el mouse/activo */
+            color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse/activo */
         }
 
         .logout {
-            margin-top: auto; /* Empuja el botón de cerrar sesión hacia abajo */
+            margin-top: auto;
             padding: 15px 25px;
-            background-color: #dc3545; /* Rojo para cerrar sesión */
+            background-color: #8B0000; /* Rojo oscuro para cerrar sesión */
+            color: var(--white-text); /* Texto blanco para contraste */
             cursor: pointer;
             text-align: center;
             transition: background-color 0.3s ease;
         }
 
         .logout:hover {
-            background-color: #c82333;
+            background-color: #a00000; /* Rojo un poco más claro al pasar el mouse */
         }
 
         /* --- Main Content Styles --- */
         .main-content {
-            margin-left: 250px; /* Deja espacio para la barra lateral */
+            margin-left: 250px;
             flex-grow: 1;
             padding: 30px;
+            background-color: var(--dark-blue); /* Fondo del contenido principal */
         }
 
         .header-controls {
@@ -102,49 +106,66 @@
             border-radius: 8px;
             font-size: 1em;
             box-sizing: border-box;
+            background-color: var(--input-bg); /* Fondo oscuro para la barra de búsqueda */
+            color: var(--gold); /* Texto de la búsqueda en dorado */
+            transition: border-color 0.3s ease;
+        }
+        .search-bar input::placeholder {
+            color: rgba(255, 215, 0, 0.6); /* Placeholder en dorado más suave */
+        }
+        .search-bar input:focus {
+            border-color: var(--gold); /* Borde dorado al enfocar */
+            outline: none;
         }
 
         .add-button {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--gold); /* Botón en dorado */
+            color: var(--dark-blue); /* Texto del botón en azul oscuro */
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 1em;
             font-weight: 700;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease; /* Animación al pasar el mouse */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .add-button:hover {
-            background-color: var(--primary-dark);
+            background-color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse */
+            transform: translateY(-2px); /* Pequeño levantamiento */
         }
 
         /* --- Table Styles --- */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            background-color: var(--dark-blue-light); /* Fondo de la tabla azul oscuro */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
             border-radius: 8px;
-            overflow: hidden; /* Para que los bordes redondeados se apliquen a la tabla */
+            overflow: hidden;
         }
 
         .data-table th, .data-table td {
             padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color); /* Borde de tabla en azul oscuro */
         }
 
         .data-table th {
-            background-color: var(--secondary-color);
-            color: white;
+            background-color: var(--dark-blue); /* Encabezado de tabla más oscuro */
+            color: var(--gold); /* Texto del encabezado en dorado */
             font-weight: 700;
             text-transform: uppercase;
         }
 
+        .data-table tbody tr {
+            color: var(--white-text); /* Texto de las filas en blanco roto */
+            transition: background-color 0.3s ease;
+        }
+
         .data-table tbody tr:hover {
-            background-color: #f1f1f1;
+            background-color: var(--dark-blue); /* Fondo más oscuro al pasar el mouse por la fila */
         }
 
         .pagination {
@@ -155,47 +176,69 @@
         }
 
         .pagination button {
-            background-color: #eee;
+            background-color: var(--dark-blue-light); /* Botones de paginación azul oscuro */
             border: 1px solid var(--border-color);
+            color: var(--gold); /* Texto de paginación en dorado */
             padding: 8px 15px;
             cursor: pointer;
             border-radius: 5px;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
         .pagination button:hover:not(:disabled) {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--gold); /* Fondo dorado al pasar el mouse */
+            color: var(--dark-blue); /* Texto azul oscuro al pasar el mouse */
+            transform: translateY(-1px);
         }
 
         .pagination button:disabled {
             cursor: not-allowed;
-            opacity: 0.6;
+            opacity: 0.4;
+            background-color: var(--dark-blue-light);
+            color: rgba(255, 215, 0, 0.5); /* Dorado más tenue */
+        }
+
+        .pagination span {
+            color: var(--gold); /* Información de página en dorado */
+            padding: 8px 0;
+            font-weight: bold;
         }
 
         /* --- Modal Styles --- */
         .modal {
-            display: none; /* Oculto por defecto */
+            display: none;
             position: fixed;
             z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: var(--modal-bg);
+            background-color: rgba(0, 0, 0, 0.8); /* Fondo de modal más oscuro */
             align-items: center;
             justify-content: center;
+            opacity: 0; /* Para animación de aparición */
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal.show {
+            display: flex;
+            opacity: 1;
         }
 
         .modal-content {
-            background-color: white;
+            background-color: var(--dark-blue-light); /* Fondo del modal azul oscuro */
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7); /* Sombra más profunda */
             width: 90%;
             max-width: 500px;
             position: relative;
+            transform: translateY(-20px); /* Para animación de deslizamiento */
+            transition: transform 0.3s ease-in-out;
         }
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
 
         .close-button {
             position: absolute;
@@ -203,20 +246,22 @@
             right: 20px;
             font-size: 2em;
             font-weight: bold;
-            color: #aaa;
+            color: var(--gold); /* Botón de cerrar en dorado */
             cursor: pointer;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, transform 0.2s ease;
         }
 
         .close-button:hover {
-            color: #333;
+            color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse */
+            transform: rotate(90deg); /* Pequeña rotación al cerrar */
         }
 
         .modal-content h2 {
             margin-top: 0;
             margin-bottom: 25px;
-            color: var(--primary-color);
+            color: var(--gold); /* Título del modal en dorado */
             text-align: center;
+            text-shadow: 0 0 3px rgba(255, 215, 0, 0.3);
         }
 
         .form-group {
@@ -227,7 +272,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: var(--text-color);
+            color: var(--gold); /* Etiquetas de formulario en dorado */
         }
 
         .form-group input[type="text"],
@@ -239,8 +284,27 @@
             border: 1px solid var(--input-border);
             border-radius: 5px;
             font-size: 1em;
-            box-sizing: border-box; /* Incluye padding en el ancho */
+            box-sizing: border-box;
+            background-color: var(--input-bg); /* Fondo de campos en azul oscuro */
+            color: var(--white-text); /* Texto en campos en blanco roto */
+            transition: border-color 0.3s ease;
         }
+        .form-group input::placeholder {
+            color: rgba(255, 215, 0, 0.5);
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--gold); /* Borde dorado al enfocar */
+            outline: none;
+        }
+        .form-group select {
+            appearance: none; /* Elimina estilo nativo de select */
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23FFD700" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+        }
+
 
         .radio-group {
             display: flex;
@@ -249,8 +313,12 @@
             margin-top: 5px;
         }
 
+        .radio-group label {
+            color: var(--white-text); /* Texto de radio buttons en blanco roto */
+        }
         .radio-group input[type="radio"] {
-            margin-right: 5px;
+            /* Estilo básico de radio buttons - personalización avanzada requiere más CSS */
+            accent-color: var(--gold); /* Color del radio button marcado */
         }
 
         .member-search-results {
@@ -259,18 +327,19 @@
             border: 1px solid var(--input-border);
             border-radius: 5px;
             margin-top: 10px;
-            background-color: #f9f9f9;
+            background-color: var(--input-bg);
         }
 
         .member-search-results div {
             padding: 10px;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            color: var(--white-text); /* Texto de resultados en blanco roto */
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         .member-search-results div:hover {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--dark-blue-light); /* Fondo azul oscuro al pasar el mouse */
+            color: var(--gold); /* Texto dorado al pasar el mouse */
         }
 
         .form-actions {
@@ -279,19 +348,21 @@
         }
 
         .form-actions button {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--gold); /* Botón de guardar en dorado */
+            color: var(--dark-blue); /* Texto del botón en azul oscuro */
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 1em;
             font-weight: 700;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .form-actions button:hover {
-            background-color: var(--primary-dark);
+            background-color: var(--gold-dark); /* Dorado más oscuro al pasar el mouse */
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -475,20 +546,21 @@
 
         // --- Funciones del Modal ---
         function openModal() {
-            ofrendaModal.style.display = 'flex';
+            ofrendaModal.classList.add('show'); // Añade clase para mostrar con animación
             ofrendaForm.reset();
             miembroSearchGroup.style.display = 'none';
             nombreNoMiembroGroup.style.display = 'none';
             miembroSearchResults.innerHTML = '';
             selectedMemberCodeInput.value = '';
             selectedMemberNameInput.value = '';
-            // Asegúrate de que los campos obligatorios se establezcan al seleccionar una opción
             document.getElementById('nombreNoMiembro').removeAttribute('required');
             miembroSearchInput.removeAttribute('required');
         }
 
         function closeModal() {
-            ofrendaModal.style.display = 'none';
+            ofrendaModal.classList.remove('show'); // Quita clase para ocultar con animación
+            // Opcional: poner display none después de la transición si es necesario para accesibilidad
+            // setTimeout(() => { ofrendaModal.style.display = 'none'; }, 300);
         }
 
         // --- Manejo del formulario de ofrenda ---
@@ -557,8 +629,7 @@
                     alert('Por favor, ingresa el nombre de la persona.');
                     return;
                 }
-                // Firestore generará un ID único para el documento
-                codigoOfrenda = `NO_MIEMBRO_${Date.now()}`; // Un código único simple
+                codigoOfrenda = `NO_MIEMBRO_${Date.now()}`;
                 nombreOfrenda = nombreNoMiembroValue;
             } else {
                 alert('Por favor, selecciona si es miembro o no.');
@@ -571,7 +642,7 @@
                 cantidad: parseFloat(cantidadInput.value),
                 moneda: monedaSelect.value,
                 fecha: fechaInput.value,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para ordenar por fecha de creación
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
             try {
@@ -668,16 +739,14 @@
         });
 
         // --- Listener de Firestore para MIEMBROS (opcional, si los miembros también están en Firestore) ---
-        // Si tienes una colección 'miembros' en Firestore, puedes cargarla así:
         db.collection('miembros').orderBy('nombre').onSnapshot((snapshot) => {
-            miembros = []; // Limpiamos el array de miembros local
+            miembros = [];
             snapshot.forEach((doc) => {
                 miembros.push({ id: doc.id, ...doc.data() });
             });
             console.log('Miembros cargados desde Firestore:', miembros);
         }, (error) => {
             console.warn("Advertencia: No se pudo cargar la colección 'miembros' de Firestore. Usando datos de ejemplo locales.", error);
-            // Si la colección 'miembros' no existe o hay un error, se usarán los datos de `miembros` locales definidos arriba.
         });
 
 
@@ -692,13 +761,9 @@
         });
 
         function cerrarSesion() {
-            // Aquí iría la lógica para cerrar la sesión, por ejemplo, redirigir a la página de login
             alert('Sesión cerrada. (Simulación)');
-            // window.location.href = 'index.html'; // Descomenta si tienes una página de inicio de sesión
+            // window.location.href = 'index.html';
         }
-
-        // --- Inicialización ---
-        // El listener de Firestore para ofrendas se encarga de llamar a renderTable() al cargar los datos inicialmente.
     </script>
 
 </body>
