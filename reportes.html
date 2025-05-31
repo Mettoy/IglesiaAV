@@ -437,6 +437,26 @@
             gap: 10px;
         }
 
+        /* Member Sheet Specific Styles for PDF */
+        .member-sheet-print-content {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .member-sheet-print-content h2 {
+            text-align: center;
+            color: #000033;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .member-sheet-print-content p {
+            margin-bottom: 8px;
+        }
+        .member-sheet-print-content strong {
+            color: #333;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .sidebar {
@@ -598,21 +618,26 @@
         </div>
     </div>
 
+    <div id="memberSheetContent" style="display: none;"></div>
+
     <script>
         // Firebase Configuration - REPLACE WITH YOUR ACTUAL CONFIG
         const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        // Ensure Firebase app is only initialized once
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
 
         let allMembers = []; // To store all members fetched from Firestore
@@ -622,11 +647,38 @@
             await fetchAllMembers(); // Fetch all members when the page loads
         });
 
+        // Helper to convert YYYY-MM-DD string to Firestore Timestamp
+        const getFirestoreTimestamp = (dateString) => {
+            if (!dateString) return null;
+            const date = new Date(dateString);
+            return firebase.firestore.Timestamp.fromDate(date);
+        };
+
+        // Helper to format Firestore Timestamp to readable date string
+        const formatFirestoreTimestamp = (timestamp) => {
+            if (!timestamp) return 'N/A';
+            // Check if it's a Firestore Timestamp object
+            if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+                return timestamp.toDate().toLocaleDateString('es-ES');
+            }
+            // Fallback for direct string dates if any are stored that way
+            try {
+                const date = new Date(timestamp);
+                if (!isNaN(date.getTime())) { // Check if date is valid
+                    return date.toLocaleDateString('es-ES');
+                }
+            } catch (e) {
+                // Ignore parsing errors for non-date strings
+            }
+            return timestamp; // Return as is if not a recognized date/timestamp
+        };
+
         async function fetchAllMembers() {
             try {
                 const membersSnapshot = await db.collection('miembros').orderBy('nombre').get();
                 allMembers = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 console.log("Members loaded:", allMembers);
+                // No need to display members immediately, they'll be displayed when modal opens
             } catch (error) {
                 console.error("Error loading all members:", error);
                 alert("Error al cargar la lista de miembros: " + error.message);
@@ -682,20 +734,19 @@
                     case 'miembros':
                         title = 'Reporte de Miembros Activos';
                         let miembrosRef = db.collection('miembros');
+                        // Apply date filters if provided
                         if (options.startDate) {
-                            miembrosRef = miembrosRef.where('fecha_ingreso', '>=', options.startDate);
+                            miembrosRef = miembrosRef.where('fecha_ingreso', '>=', getFirestoreTimestamp(options.startDate));
                         }
                         if (options.endDate) {
-                            miembrosRef = miembrosRef.where('fecha_ingreso', '<=', options.endDate);
+                            // To include the entire end day, set time to end of day
+                            const endDate = new Date(options.endDate);
+                            endDate.setHours(23, 59, 59, 999);
+                            miembrosRef = miembrosRef.where('fecha_ingreso', '<=', firebase.firestore.Timestamp.fromDate(endDate));
                         }
-                        const miembrosSnapshot = await miembrosRef.get();
-                        data = miembrosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                        data.sort((a, b) => {
-                             const dateA = a.fecha_ingreso ? new Date(a.fecha_ingreso) : new Date(0);
-                             const dateB = b.fecha_ingreso ? new Date(b.fecha_ingreso) : new Date(0);
-                             return dateA - dateB;
-                        });
+                        const miembrosSnapshot = await miembrosRef.orderBy('nombre').get(); // Order by name for consistency
+                        data = miembrosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
                         reportHtml = `
                             <h3>${title}</h3>
@@ -716,13 +767,13 @@
                                             <td>${m.id}</td>
                                             <td>${m.nombre || 'N/A'}</td>
                                             <td>${m.apellido || 'N/A'}</td>
-                                            <td>${m.fecha_ingreso || 'N/A'}</td>
+                                            <td>${formatFirestoreTimestamp(m.fecha_ingreso)}</td>
                                             <td>${m.estado || 'N/A'}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
                             </table>
-                            <p class="report-footer">Total de miembros activos: ${data.filter(m => m.estado === 'Activo').length}</p>
+                            <p class="report-footer">Total de miembros: ${data.length}</p>
                         `;
                         break;
 
@@ -730,10 +781,12 @@
                         title = 'Reporte de Diezmos Recibidos';
                         let diezmosRef = db.collection('diezmos');
                         if (options.startDate) {
-                            diezmosRef = diezmosRef.where('fecha', '>=', options.startDate);
+                            diezmosRef = diezmosRef.where('fecha', '>=', getFirestoreTimestamp(options.startDate));
                         }
                         if (options.endDate) {
-                            diezmosRef = diezmosRef.where('fecha', '<=', options.endDate);
+                            const endDate = new Date(options.endDate);
+                            endDate.setHours(23, 59, 59, 999);
+                            diezmosRef = diezmosRef.where('fecha', '<=', firebase.firestore.Timestamp.fromDate(endDate));
                         }
                         const diezmosSnapshot = await diezmosRef.orderBy('fecha').get();
                         data = diezmosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -755,7 +808,7 @@
                                 <tbody>
                                     ${data.map(d => `
                                         <tr>
-                                            <td>${d.fecha || 'N/A'}</td>
+                                            <td>${formatFirestoreTimestamp(d.fecha)}</td>
                                             <td>${d.miembro_nombre || 'Desconocido'}</td>
                                             <td>$${parseFloat(d.monto || 0).toFixed(2)}</td>
                                             <td>${d.descripcion || 'N/A'}</td>
@@ -771,10 +824,12 @@
                         title = 'Reporte de Ofrendas Generales';
                         let ofrendasRef = db.collection('ofrendas');
                         if (options.startDate) {
-                            ofrendasRef = ofrendasRef.where('fecha', '>=', options.startDate);
+                            ofrendasRef = ofrendasRef.where('fecha', '>=', getFirestoreTimestamp(options.startDate));
                         }
                         if (options.endDate) {
-                            ofrendasRef = ofrendasRef.where('fecha', '<=', options.endDate);
+                            const endDate = new Date(options.endDate);
+                            endDate.setHours(23, 59, 59, 999);
+                            ofrendasRef = ofrendasRef.where('fecha', '<=', firebase.firestore.Timestamp.fromDate(endDate));
                         }
                         const ofrendasSnapshot = await ofrendasRef.orderBy('fecha').get();
                         data = ofrendasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -795,7 +850,7 @@
                                 <tbody>
                                     ${data.map(o => `
                                         <tr>
-                                            <td>${o.fecha || 'N/A'}</td>
+                                            <td>${formatFirestoreTimestamp(o.fecha)}</td>
                                             <td>$${parseFloat(o.monto || 0).toFixed(2)}</td>
                                             <td>${o.tipo || 'General'}</td>
                                         </tr>
@@ -832,7 +887,7 @@
                                             <td>${d.discipulador || 'N/A'}</td>
                                             <td>${d.discipulo || 'N/A'}</td>
                                             <td>${d.fase_nivel || 'N/A'}</td>
-                                            <td>${d.fecha_inicio || 'N/A'}</td>
+                                            <td>${formatFirestoreTimestamp(d.fecha_inicio)}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -865,172 +920,145 @@
                 options.startDate = document.getElementById('startDate') ? document.getElementById('startDate').value : '';
                 options.endDate = document.getElementById('endDate') ? document.getElementById('endDate').value : '';
             } else if (category === 'discipulado') {
-                options.discipuladoType = document.getElementById('discipuladoType') ? document.getElementById('discipuladoType').value : '';
+                options.discipuladoType = document.getElementById('discipuladoType') ? document.getElementById('discipuladoType').value : 'todos';
             }
-
             cargarDatosReporte(category, options);
-
-            document.getElementById('reportContentToPrint').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- New Functions for Member Sheet Printing ---
+        // --- Member List and Print Functions (for the modal) ---
 
-        function showPrintOptions() {
-            // Check if a report is currently displayed for general PDF printing
-            const currentReportContent = document.getElementById('reportContentToPrint').innerHTML.trim();
-            const isPlaceholder = currentReportContent.includes('placeholder-text-center') || currentReportContent === '';
+        function displayMembersInModal(membersToDisplay) {
+            const memberListDiv = document.getElementById('memberList');
+            memberListDiv.innerHTML = ''; // Clear previous list
 
-            // If a general report is generated, offer to print it directly
-            if (!isPlaceholder) {
-                if (confirm('¿Deseas imprimir el reporte actual o una hoja de miembro específica?')) {
-                    imprimirGeneralReport(); // Function to print the current report
-                    return;
-                }
-            }
-            // If no general report, or if user chooses specific sheet
-            openMemberPrintModal();
-        }
-
-        function imprimirGeneralReport() {
-            const element = document.getElementById('reportContentToPrint');
-            if (element.innerHTML.trim().includes('placeholder-text-center') || element.innerHTML.trim() === '') {
-                alert('No hay contenido de reporte para imprimir.');
+            if (membersToDisplay.length === 0) {
+                memberListDiv.innerHTML = '<p class="placeholder-text-center">No se encontraron miembros con ese criterio.</p>';
                 return;
             }
-            const opt = {
-                margin:        1,
-                filename:      'reporte_general.pdf',
-                image:         { type: 'jpeg', quality: 0.98 },
-                html2canvas:   { scale: 2, logging: true, dpi: 192, letterRendering: true },
-                jsPDF:         { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
-            alert('Generando y descargando su reporte general en PDF...');
+
+            membersToDisplay.forEach(member => {
+                const memberItem = document.createElement('div');
+                memberItem.classList.add('member-list-item');
+                memberItem.textContent = `${member.nombre || ''} ${member.apellido || ''}`.trim();
+                memberItem.dataset.memberId = member.id;
+                memberItem.onclick = () => selectMemberForPrint(member.id);
+                memberListDiv.appendChild(memberItem);
+            });
         }
 
+        function selectMemberForPrint(memberId) {
+            // Remove 'selected' class from previously selected item
+            const currentSelected = document.querySelector('.member-list-item.selected');
+            if (currentSelected) {
+                currentSelected.classList.remove('selected');
+            }
 
-        function openMemberPrintModal() {
+            // Add 'selected' class to the new selected item
+            const newItem = document.querySelector(`[data-member-id="${memberId}"]`);
+            if (newItem) {
+                newItem.classList.add('selected');
+            }
+            selectedMemberId = memberId;
+            console.log("Selected member ID for print:", selectedMemberId);
+        }
+
+        function filterMembers() {
+            const searchInput = document.getElementById('memberSearchInput').value.toLowerCase();
+            const filtered = allMembers.filter(member => {
+                const fullName = `${member.nombre || ''} ${member.apellido || ''}`.toLowerCase();
+                return fullName.includes(searchInput);
+            });
+            displayMembersInModal(filtered);
+        }
+
+        function showMemberPrintModal() {
             document.getElementById('memberPrintModal').style.display = 'flex';
-            document.getElementById('memberSearchInput').value = ''; // Clear search bar
-            selectedMemberId = null; // Clear selected member
-            displayMemberList(allMembers); // Show all members initially
+            // Reset search and display all members when opening
+            document.getElementById('memberSearchInput').value = '';
+            displayMembersInModal(allMembers);
+            selectedMemberId = null; // Clear previous selection
         }
 
         function closeMemberPrintModal() {
             document.getElementById('memberPrintModal').style.display = 'none';
         }
 
-        function displayMemberList(membersToDisplay) {
-            const memberListDiv = document.getElementById('memberList');
-            memberListDiv.innerHTML = ''; // Clear previous list
+        // --- Main Print Functionality ---
 
-            if (membersToDisplay.length === 0) {
-                memberListDiv.innerHTML = '<p style="text-align: center; color: #777;">No se encontraron miembros.</p>';
+        function showPrintOptions() {
+            const category = document.getElementById('reportCategory').value;
+            if (category === 'miembros') {
+                showMemberPrintModal(); // Show modal to select specific member
+            } else if (category === 'diezmos' || category === 'ofrendas' || category === 'discipulado') {
+                printReportContent(); // Directly print the displayed report
+            } else {
+                alert('Por favor, genera un reporte primero antes de intentar imprimir.');
+            }
+        }
+
+        function printReportContent() {
+            const element = document.getElementById('reportContentToPrint');
+            if (!element || element.innerHTML.trim() === '<p class="placeholder-text-center">El contenido del reporte aparecerá aquí. Utiliza el botón "Generar Reporte" para visualizarlo.</p>' || element.innerHTML.trim() === '<p class="placeholder-text-center error-message">Error al cargar el reporte: . Verifica tu conexión o configuración de Firestore.</p>') {
+                alert("No hay contenido de reporte válido para imprimir. Genera un reporte primero.");
                 return;
             }
 
-            membersToDisplay.forEach(member => {
-                const listItem = document.createElement('div');
-                listItem.classList.add('member-list-item');
-                listItem.textContent = `${member.nombre} ${member.apellido} (ID: ${member.id})`;
-                listItem.dataset.memberId = member.id;
-                listItem.onclick = () => selectMember(listItem, member.id);
-                memberListDiv.appendChild(listItem);
-            });
-        }
+            const options = {
+                margin: 10,
+                filename: `reporte_${document.getElementById('reportCategory').value || 'general'}_${new Date().toISOString().slice(0,10)}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
 
-        function filterMembers() {
-            const searchTerm = document.getElementById('memberSearchInput').value.toLowerCase();
-            const filtered = allMembers.filter(member =>
-                (member.nombre && member.nombre.toLowerCase().includes(searchTerm)) ||
-                (member.apellido && member.apellido.toLowerCase().includes(searchTerm))
-            );
-            displayMemberList(filtered);
-        }
-
-        function selectMember(selectedElement, memberId) {
-            // Remove 'selected' class from all other items
-            document.querySelectorAll('.member-list-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-
-            // Add 'selected' class to the clicked item
-            selectedElement.classList.add('selected');
-            selectedMemberId = memberId;
+            html2pdf().from(element).set(options).save();
         }
 
         async function printSelectedMemberSheet() {
             if (!selectedMemberId) {
-                alert('Por favor, selecciona un miembro de la lista.');
+                alert("Por favor, selecciona un miembro de la lista para imprimir su hoja.");
                 return;
             }
 
-            const memberData = allMembers.find(m => m.id === selectedMemberId);
-
-            if (!memberData) {
-                alert('No se encontró la información del miembro seleccionado.');
+            const member = allMembers.find(m => m.id === selectedMemberId);
+            if (!member) {
+                alert("Miembro no encontrado. Por favor, intenta de nuevo.");
                 return;
             }
 
-            // Create a temporary element to hold the member sheet content
-            const tempPrintDiv = document.createElement('div');
-            tempPrintDiv.style.padding = '20px';
-            tempPrintDiv.style.fontFamily = 'Arial, sans-serif';
-            tempPrintDiv.style.fontSize = '12px';
-
-            tempPrintDiv.innerHTML = `
-                <style>
-                    .member-sheet-header { text-align: center; margin-bottom: 20px; }
-                    .member-sheet-header h1 { color: #000033; margin: 0; font-size: 1.8em; }
-                    .member-sheet-header p { margin: 5px 0 0; color: #555; }
-                    .member-details table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    .member-details th, .member-details td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    .member-details th { background-color: #f2f2f2; color: #333; width: 30%; }
-                    .member-details td { background-color: #fff; }
-                    .sheet-footer { text-align: right; margin-top: 30px; font-size: 0.9em; color: #777; }
-                </style>
-                <div class="member-sheet-header">
-                    <h1>Hoja de Registro de Miembro</h1>
-                    <p>Sistema de Gestión Eclesiástica</p>
-                    <p>Fecha de Impresión: ${new Date().toLocaleDateString('es-ES')}</p>
-                </div>
-                <div class="member-details">
-                    <table>
-                        <tr><th>ID del Miembro:</th><td>${memberData.id || 'N/A'}</td></tr>
-                        <tr><th>Nombre Completo:</th><td>${memberData.nombre || 'N/A'} ${memberData.apellido || 'N/A'}</td></tr>
-                        <tr><th>Fecha de Ingreso:</th><td>${memberData.fecha_ingreso || 'N/A'}</td></tr>
-                        <tr><th>Estado:</th><td>${memberData.estado || 'N/A'}</td></tr>
-                        <tr><th>Fecha de Nacimiento:</th><td>${memberData.fecha_nacimiento || 'N/A'}</td></tr>
-                        <tr><th>Teléfono:</th><td>${memberData.telefono || 'N/A'}</td></tr>
-                        <tr><th>Email:</th><td>${memberData.email || 'N/A'}</td></tr>
-                        <tr><th>Dirección:</th><td>${memberData.direccion || 'N/A'}</td></tr>
-                        <tr><th>Ciudad:</th><td>${memberData.ciudad || 'N/A'}</td></tr>
-                        <tr><th>País:</th><td>${memberData.pais || 'N/A'}</td></tr>
-                        <tr><th>Bautizado:</th><td>${memberData.bautizado === true ? 'Sí' : (memberData.bautizado === false ? 'No' : 'N/A')}</td></tr>
-                        <tr><th>Fecha de Bautismo:</th><td>${memberData.fecha_bautismo || 'N/A'}</td></tr>
-                        <tr><th>Discipulador:</th><td>${memberData.discipulador_asignado || 'N/A'}</td></tr>
-                        <tr><th>Notas Adicionales:</th><td>${memberData.notas || 'N/A'}</td></tr>
-                    </table>
-                </div>
-                <div class="sheet-footer">
-                    <p>Generado por el Sistema de Gestión Eclesiástica</p>
+            let memberSheetHtml = `
+                <div class="member-sheet-print-content">
+                    <h2>Hoja de Miembro: ${member.nombre || ''} ${member.apellido || ''}</h2>
+                    <p><strong>ID:</strong> ${member.id}</p>
+                    <p><strong>Fecha de Ingreso:</strong> ${formatFirestoreTimestamp(member.fecha_ingreso)}</p>
+                    <p><strong>Estado:</strong> ${member.estado || 'N/A'}</p>
+                    <p><strong>Teléfono:</strong> ${member.telefono || 'N/A'}</p>
+                    <p><strong>Dirección:</strong> ${member.direccion || 'N/A'}</p>
+                    <p><strong>Email:</strong> ${member.email || 'N/A'}</p>
+                    <p><strong>Fecha de Nacimiento:</strong> ${formatFirestoreTimestamp(member.fecha_nacimiento)}</p>
+                    <p><strong>Género:</strong> ${member.genero || 'N/A'}</p>
+                    <p><strong>Ocupación:</strong> ${member.ocupacion || 'N/A'}</p>
+                    <p><strong>Estado Civil:</strong> ${member.estado_civil || 'N/A'}</p>
+                    <p><strong>Contacto de Emergencia:</strong> ${member.contacto_emergencia || 'N/A'}</p>
+                    <p><strong>Teléfono de Emergencia:</strong> ${member.telefono_emergencia || 'N/A'}</p>
+                    <p><strong>Notas:</strong> ${member.notas || 'N/A'}</p>
                 </div>
             `;
 
-            const opt = {
-                margin:        0.5,
-                filename:      `ficha_miembro_${memberData.nombre}_${memberData.apellido}.pdf`,
-                image:         { type: 'jpeg', quality: 0.98 },
-                html2canvas:   { scale: 2, logging: true, dpi: 192, letterRendering: true },
-                jsPDF:         { unit: 'in', format: 'letter', orientation: 'portrait' }
+            const tempDiv = document.getElementById('memberSheetContent');
+            tempDiv.innerHTML = memberSheetHtml;
+
+            const options = {
+                margin: 10,
+                filename: `hoja_miembro_${member.nombre}_${member.apellido}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Generate and download the PDF
-            html2pdf().set(opt).from(tempPrintDiv).save();
-            alert(`Generando y descargando la hoja de miembro de ${memberData.nombre} ${memberData.apellido} en PDF...`);
-            closeMemberPrintModal();
+            await html2pdf().from(tempDiv).set(options).save();
+            closeMemberPrintModal(); // Close modal after printing
         }
-
     </script>
 </body>
 </html>
