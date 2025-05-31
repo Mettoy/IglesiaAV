@@ -3,84 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Reportes</title>
-    <link rel="stylesheet" href="style.css"> </head>
+    <title>Sistema de Gestión Eclesiástica</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>Mi Sistema</h3>
+            <h3><span class="highlight">S</span>istema</h3>
+            <p>de Gestión</p>
         </div>
-        <a href="inicio.html" class="sidebar-link">Inicio</a>
-        <a href="miembro.html" class="sidebar-link">Miembros</a>
-        <a href="diezmo.html" class="sidebar-link">Diezmos</a>
-        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-        <a href="reportes.html" class="sidebar-link">Reportes</a>
-        <a href="discipulado.html" class="sidebar-link">Discipulado</a>
-        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
+        <nav class="sidebar-nav">
+            <a href="inicio.html" class="sidebar-link active">
+                <span class="icon">🏠</span> Inicio
+            </a>
+            <a href="miembro.html" class="sidebar-link">
+                <span class="icon">👥</span> Miembros
+            </a>
+            <a href="diezmo.html" class="sidebar-link">
+                <span class="icon">💰</span> Diezmos
+            </a>
+            <a href="ofrendas.html" class="sidebar-link">
+                <span class="icon">🤲</span> Ofrendas
+            </a>
+            <a href="reportes.html" class="sidebar-link">
+                <span class="icon">📊</span> Reportes
+            </a>
+            <a href="discipulado.html" class="sidebar-link">
+                <span class="icon">📚</span> Discipulado
+            </a>
+        </nav>
+        <div class="logout" onclick="cerrarSesion()">
+            <span class="icon">🚪</span> Cerrar sesión
+        </div>
     </div>
 
-    <div class="content">
-        <h1>Generador de Reportes</h1>
-        <p>Aquí puedes configurar y generar tus reportes personalizados en formato PDF o imprimible.</p>
+    <div class="main-content">
+        <header class="top-header">
+            <h1>Generador de Reportes <span class="header-icon">📄</span></h1>
+            <div class="user-info">
+                <span>Bienvenido, Admin</span>
+                <img src="https://via.placeholder.com/40/000033/FFFFFF?text=A" alt="Avatar" class="avatar">
+            </div>
+        </header>
 
-        <div class="report-section">
-            <h2>Selecciona una Categoría de Reporte:</h2>
-            <select id="reportCategory">
-                <option value="">-- Selecciona --</option>
-                <option value="miembros">Reporte de Miembros</option>
-                <option value="diezmos">Reporte de Diezmos</option>
-                <option value="ofrendas">Reporte de Ofrendas</option>
-                <option value="discipulado">Reporte de Discipulado</option>
+        <div class="dashboard-section">
+            <h2>Configuración del Reporte</h2>
+            <div class="form-group">
+                <label for="reportCategory">Selecciona el tipo de reporte:</label>
+                <select id="reportCategory" class="form-control">
+                    <option value="">-- Selecciona --</option>
+                    <option value="miembros">Reporte de Miembros</option>
+                    <option value="diezmos">Reporte de Diezmos</option>
+                    <option value="ofrendas">Reporte de Ofrendas</option>
+                    <option value="discipulado">Reporte de Discipulado</option>
                 </select>
-
-            <div id="reportOptions" style="margin-top: 20px;">
-                <p>Opciones para el reporte seleccionado se mostrarán aquí.</p>
             </div>
 
-            <button onclick="generarReporte()">Generar Reporte</button>
-            <button onclick="imprimirDocumento()">Imprimir</button>
+            <div id="reportOptions" class="report-options-container">
+                <p class="placeholder-text">Por favor, selecciona una categoría de reporte para ver las opciones.</p>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="generarReporte()">Generar Reporte</button>
+                <button class="btn btn-secondary" onclick="imprimirDocumento()">Imprimir</button>
+            </div>
         </div>
 
-        <div class="report-preview" style="margin-top: 40px;">
-            <h2>Vista Previa del Reporte:</h2>
-            <div id="pdfViewer" style="width: 100%; height: 500px; border: 1px solid #000055; background-color: #000022;">
-                <p style="text-align: center; padding-top: 100px;">El reporte generado aparecerá aquí.</p>
+        <div class="report-preview-section">
+            <h2>Vista Previa del Reporte <span class="preview-icon">👁️</span></h2>
+            <div id="reportContentToPrint" class="report-content-area">
+                <p class="placeholder-text-center">El contenido del reporte aparecerá aquí. Utiliza el botón "Generar Reporte" para visualizarlo.</p>
             </div>
         </div>
     </div>
 
     <script>
         function cerrarSesion() {
-            alert('Cerrando sesión...');
-            // Aquí puedes redirigir al usuario a la página de login o realizar otras acciones de cierre de sesión.
-            window.location.href = 'login.html'; // Ejemplo de redirección
-        }
-
-        function generarReporte() {
-            const category = document.getElementById('reportCategory').value;
-            if (category) {
-                alert(`Generando reporte de: ${category}. (Esta funcionalidad requerirá lógica de backend)`);
-                // En una aplicación real, aquí harías una llamada a un servidor
-                // para procesar los datos y generar el PDF.
-                // Podrías usar librerías como jsPDF o integración con un backend
-                // que use Puppeteer, FPDF, etc.
-                document.getElementById('pdfViewer').innerHTML = `<p style="text-align: center; padding-top: 100px;">Reporte de ${category} generado. (Simulado)</p>`;
-                // Para mostrar un PDF real, usarías un <iframe> o una librería de visualización de PDF.
-                // Ejemplo: document.getElementById('pdfViewer').innerHTML = '<iframe src="ruta/a/tu/reporte.pdf" style="width:100%; height:100%; border:none;"></iframe>';
-            } else {
-                alert('Por favor, selecciona una categoría de reporte.');
+            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                alert('Cerrando sesión...');
+                // Simulación de redirección a la página de login
+                window.location.href = 'login.html';
             }
         }
 
-        function imprimirDocumento() {
-            // Esta función imprimirá el contenido actual del navegador o un área específica.
-            // Para imprimir un PDF generado, lo ideal sería cargarlo primero y luego usar window.print()
-            // o las funciones de impresión del visor de PDF.
-            alert('Preparando documento para impresión. (Esta función imprimirá el contenido visible o el PDF cargado)');
-            window.print(); // Abre el diálogo de impresión del navegador
-        }
-
-        // Lógica para cargar opciones dinámicas de reportes (ej. rangos de fecha)
         document.getElementById('reportCategory').addEventListener('change', function() {
             const optionsDiv = document.getElementById('reportOptions');
             const selectedCategory = this.value;
@@ -88,23 +94,183 @@
 
             if (selectedCategory === 'miembros' || selectedCategory === 'diezmos' || selectedCategory === 'ofrendas') {
                 optionsDiv.innerHTML = `
-                    <label for="startDate">Fecha Inicio:</label>
-                    <input type="date" id="startDate" style="margin-right: 10px;">
-                    <label for="endDate">Fecha Fin:</label>
-                    <input type="date" id="endDate">
+                    <div class="form-group">
+                        <label for="startDate">Fecha Inicio:</label>
+                        <input type="date" id="startDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Fecha Fin:</label>
+                        <input type="date" id="endDate" class="form-control">
+                    </div>
                 `;
             } else if (selectedCategory === 'discipulado') {
-                 optionsDiv.innerHTML = `
-                    <label for="discipuladoType">Tipo de Discipulado:</label>
-                    <select id="discipuladoType">
-                        <option value="todos">Todos</option>
-                        <option value="bautizados">Bautizados</option>
-                        <option value="nuevos">Nuevos Creyentes</option>
-                    </select>
+                optionsDiv.innerHTML = `
+                    <div class="form-group">
+                        <label for="discipuladoType">Tipo de Discipulado:</label>
+                        <select id="discipuladoType" class="form-control">
+                            <option value="todos">Todos</option>
+                            <option value="bautizados">Bautizados</option>
+                            <option value="nuevos">Nuevos Creyentes</option>
+                        </select>
+                    </div>
                 `;
+            } else {
+                optionsDiv.innerHTML = `<p class="placeholder-text">Por favor, selecciona una categoría de reporte para ver las opciones.</p>`;
             }
-            // Puedes añadir más condiciones para otras categorías
         });
+
+        // Función para simular la carga de datos del reporte
+        function cargarDatosReporte(category, options) {
+            let reportHtml = '';
+            let title = '';
+
+            switch (category) {
+                case 'miembros':
+                    title = 'Reporte de Miembros Activos';
+                    reportHtml = `
+                        <h3>${title}</h3>
+                        <p>Periodo: ${options.startDate || 'N/A'} a ${options.endDate || 'N/A'}</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Apellido</th>
+                                    <th>Fecha Ingreso</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>001</td><td>Juan</td><td>Pérez</td><td>2020-01-15</td><td>Activo</td></tr>
+                                <tr><td>002</td><td>María</td><td>González</td><td>2021-03-20</td><td>Activo</td></tr>
+                                <tr><td>003</td><td>Pedro</td><td>Ramírez</td><td>2022-07-01</td><td>Inactivo</td></tr>
+                                <tr><td>004</td><td>Ana</td><td>López</td><td>2023-09-10</td><td>Activo</td></tr>
+                                </tbody>
+                        </table>
+                        <p class="report-footer">Total de miembros activos: 3</p>
+                    `;
+                    break;
+                case 'diezmos':
+                    title = 'Reporte de Diezmos Recibidos';
+                    reportHtml = `
+                        <h3>${title}</h3>
+                        <p>Periodo: ${options.startDate || 'N/A'} a ${options.endDate || 'N/A'}</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Miembro</th>
+                                    <th>Monto</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>2025-05-01</td><td>Juan Pérez</td><td>$150.00</td><td>Diezmo Mayo</td></tr>
+                                <tr><td>2025-05-08</td><td>María González</td><td>$100.00</td><td>Diezmo Mayo</td></tr>
+                                <tr><td>2025-05-15</td><td>Ana López</td><td>$75.00</td><td>Diezmo Mayo</td></tr>
+                                </tbody>
+                        </table>
+                        <p class="report-footer">Total de diezmos en el periodo: $325.00</p>
+                    `;
+                    break;
+                case 'ofrendas':
+                    title = 'Reporte de Ofrendas Generales';
+                    reportHtml = `
+                        <h3>${title}</h3>
+                        <p>Periodo: ${options.startDate || 'N/A'} a ${options.endDate || 'N/A'}</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Monto</th>
+                                    <th>Tipo de Ofrenda</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>2025-05-05</td><td>$50.00</td><td>General</td></tr>
+                                <tr><td>2025-05-12</td><td>$25.00</td><td>Misiones</td></tr>
+                                <tr><td>2025-05-19</td><td>$120.00</td><td>Acción de Gracias</td></tr>
+                                </tbody>
+                        </table>
+                        <p class="report-footer">Total de ofrendas en el periodo: $195.00</p>
+                    `;
+                    break;
+                case 'discipulado':
+                    title = `Reporte de Discipulado (${options.discipuladoType || 'Todos'})`;
+                    reportHtml = `
+                        <h3>${title}</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nombre del Discipulador</th>
+                                    <th>Nombre del Discípulo</th>
+                                    <th>Fase/Nivel</th>
+                                    <th>Fecha de Inicio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Pastor David</td><td>Juan Pérez</td><td>Nivel 1</td><td>2024-11-01</td></tr>
+                                <tr><td>Líder Marta</td><td>María González</td><td>Nivel 2</td><td>2024-08-15</td></tr>
+                                <tr><td>Pastor David</td><td>Ana López</td><td>Nuevo Creyente</td><td>2025-04-20</td></tr>
+                                </tbody>
+                        </table>
+                        <p class="report-footer">Total de discípulos en la categoría ${options.discipuladoType || 'Todos'}: 3</p>
+                    `;
+                    break;
+                default:
+                    reportHtml = `<p class="placeholder-text-center">Por favor, selecciona una categoría válida para generar un reporte.</p>`;
+                    break;
+            }
+
+            document.getElementById('reportContentToPrint').innerHTML = reportHtml;
+        }
+
+
+        // Función para generar el reporte y previsualizarlo
+        function generarReporte() {
+            const category = document.getElementById('reportCategory').value;
+            if (!category) {
+                alert('Por favor, selecciona una categoría de reporte.');
+                return;
+            }
+
+            let options = {};
+            if (category === 'miembros' || category === 'diezmos' || category === 'ofrendas') {
+                options.startDate = document.getElementById('startDate') ? document.getElementById('startDate').value : '';
+                options.endDate = document.getElementById('endDate') ? document.getElementById('endDate').value : '';
+            } else if (category === 'discipulado') {
+                options.discipuladoType = document.getElementById('discipuladoType') ? document.getElementById('discipuladoType').value : '';
+            }
+
+            // Simula la carga de datos (en un caso real, esto vendría de una API o una base de datos)
+            cargarDatosReporte(category, options);
+
+            // Opcional: Desplazar a la vista previa del reporte
+            document.getElementById('reportContentToPrint').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Función para generar PDF usando html2pdf.js
+        function imprimirDocumento() {
+            const element = document.getElementById('reportContentToPrint');
+
+            if (element.innerHTML.trim() === '<p class="placeholder-text-center">El contenido del reporte aparecerá aquí. Utiliza el botón "Generar Reporte" para visualizarlo.</p>' || element.innerHTML.trim() === '<p class="placeholder-text-center">Por favor, selecciona una categoría válida para generar un reporte.</p>') {
+                alert('No hay contenido de reporte para imprimir. Por favor, genera un reporte primero.');
+                return;
+            }
+
+            const opt = {
+                margin:       1,
+                filename:     'reporte_generado.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, logging: true, dpi: 192, letterRendering: true },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            // New Promise-based usage:
+            html2pdf().set(opt).from(element).save();
+
+            alert('Generando PDF y descargando...');
+        }
     </script>
 </body>
 </html>
