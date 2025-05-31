@@ -3,38 +3,79 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gestión de Miembros</title>
+<title>Gestión de Miembros - Iglesia ICCI Adoración Viva</title>
 <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png"/>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-    /* Estilos azul oscuro con dorado */
+    /* Estilos base (azul oscuro con dorado) */
     body {
-        margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #121B2A; color: #E6C68D;
+        margin:0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #121B2A;
+        color: #E6C68D;
     }
     #menu {
-        width: 220px; height: 100vh; background: #0A1424; position: fixed; top: 0; left: 0;
-        display: flex; flex-direction: column; align-items: center; padding-top: 1rem;
+        width: 220px;
+        height: 100vh;
+        background: #0A1424;
+        position: fixed;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 1rem;
         border-right: 2px solid #E6C68D;
     }
     #menu h1 {
-        font-size: 1.5rem; margin-bottom: 2rem; cursor:pointer;
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        cursor:pointer;
+        text-align: center; /* Centrar el título */
     }
-    #menu button {
-        margin: 0.5rem 0; padding: 0.5rem 1rem;
-        background: #E6C68D; color: #0A1424; border:none; border-radius: 5px;
-        font-weight: bold; cursor: pointer;
+    #menu button, #menu a.sidebar-link {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1rem;
+        background: #E6C68D;
+        color: #0A1424;
+        border:none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
         width: 90%;
+        text-align: center;
+        text-decoration: none; /* Para los enlaces */
+        display: block; /* Para que ocupen todo el ancho definido */
     }
+    #menu a.sidebar-link:hover, #menu button:hover {
+        background: #D9B36B; /* Un tono un poco más oscuro al pasar el ratón */
+    }
+    .logout {
+        margin-top: auto; /* Empuja el botón de cerrar sesión al final */
+        margin-bottom: 1rem;
+        background: #4A0E0E; /* Rojo para cerrar sesión */
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 90%;
+        text-align: center;
+        font-weight: bold;
+    }
+    .logout:hover {
+        background: #6C1E1E;
+    }
+
     #main {
-        margin-left: 230px; padding: 1rem 2rem;
+        margin-left: 230px;
+        padding: 1rem 2rem;
     }
     h2 {
         margin-bottom: 1rem;
+        color: #E6C68D;
     }
     #search-container {
         margin-bottom: 1rem;
@@ -44,20 +85,34 @@
         gap: 10px;
     }
     #search {
-        padding: 0.4rem 0.6rem; font-size: 1rem; border-radius: 5px; border: none;
+        padding: 0.4rem 0.6rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: none;
         flex-grow: 1;
         max-width: 300px;
         color: #0A1424;
     }
     #addMemberBtnMain {
-        background: #E6C68D; color: #0A1424; border: none; padding: 0.5rem 1rem;
-        font-weight: bold; border-radius: 5px; cursor: pointer;
+        background: #E6C68D;
+        color: #0A1424;
+        border: none;
+        padding: 0.5rem 1rem;
+        font-weight: bold;
+        border-radius: 5px;
+        cursor: pointer;
     }
     table {
-        width: 100%; border-collapse: collapse; background: #1F2D45; border-radius: 10px; overflow: hidden;
+        width: 100%;
+        border-collapse: collapse;
+        background: #1F2D45;
+        border-radius: 10px;
+        overflow: hidden;
     }
     th, td {
-        padding: 10px 12px; text-align: left; border-bottom: 1px solid #2E3B5B;
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid #2E3B5B;
         color: #E6C68D;
     }
     th {
@@ -67,22 +122,48 @@
         background-color: #2E3B5B;
     }
     img.photo-cell {
-        width: 50px; height: 50px; object-fit: cover; border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 50%;
     }
     button.action-btn {
-        background-color: #E6C68D; color: #0A1424; border: none; padding: 5px 10px;
-        border-radius: 5px; cursor: pointer; font-weight: bold;
+        background-color: #E6C68D;
+        color: #0A1424;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
         margin-right: 5px;
+        white-space: nowrap; /* Evita que el texto del botón se rompa */
     }
+    button.action-btn:hover {
+        opacity: 0.9;
+    }
+
     /* Modal */
     #modalOverlay {
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.6);
+        display: none; /* Oculto por defecto */
+        justify-content: center;
+        align-items: center;
         z-index: 1000;
     }
     #modal {
-        background: #1B2A46; padding: 20px; border-radius: 10px; width: 95%; max-width: 800px;
-        max-height: 90vh; overflow-y: auto; color: #E6C68D;
+        background: #1B2A46;
+        padding: 20px;
+        border-radius: 10px;
+        width: 95%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        color: #E6C68D;
         box-shadow: 0 0 10px #E6C68D;
         position: relative;
     }
@@ -90,70 +171,140 @@
         margin-top: 0;
     }
     #modalClose {
-        position: absolute; top: 10px; right: 10px; background: #E6C68D; color: #0A1424;
-        border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #E6C68D;
+        color: #0A1424;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1; /* Centrar el 'x' */
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     form > div.section-tabs {
-        display: flex; margin-bottom: 15px;
+        display: flex;
+        margin-bottom: 15px;
     }
     form > div.section-tabs button {
-        flex: 1; padding: 10px; background: #223353; border: none; color: #E6C68D;
-        font-weight: bold; cursor: pointer;
+        flex: 1;
+        padding: 10px;
+        background: #223353;
+        border: none;
+        color: #E6C68D;
+        font-weight: bold;
+        cursor: pointer;
         border-radius: 5px 5px 0 0;
         border-bottom: 3px solid transparent;
+        transition: background 0.3s, color 0.3s, border-bottom-color 0.3s;
     }
     form > div.section-tabs button.active {
-        background: #E6C68D; color: #0A1424;
+        background: #E6C68D;
+        color: #0A1424;
         border-bottom-color: #0A1424;
     }
     form > div.section-content {
-        background: #223353; padding: 15px; border-radius: 0 5px 5px 5px;
+        background: #223353;
+        padding: 15px;
+        border-radius: 0 5px 5px 5px;
     }
     label {
-        display: block; margin: 10px 0 4px;
+        display: block;
+        margin: 10px 0 4px;
+        font-weight: bold;
     }
-    input[type=text], input[type=date], input[type=number], select {
-        width: 100%; padding: 6px; border-radius: 5px; border: none;
-        font-size: 1rem; color: #0A1424;
+    input[type=text], input[type=date], input[type=number], select, input[type=email], textarea {
+        width: calc(100% - 12px); /* Ajuste para padding */
+        padding: 6px;
+        border-radius: 5px;
+        border: none;
+        font-size: 1rem;
+        color: #0A1424;
+        background-color: #E6C68D; /* Color del input */
+    }
+    input[type=file] {
+        color: #E6C68D;
+        padding: 6px 0;
     }
     #fam-list {
-        margin-top: 10px; max-height: 100px; overflow-y: auto;
-        background: #1B2A46; border-radius: 5px; padding: 5px;
+        margin-top: 10px;
+        max-height: 120px; /* Un poco más de altura */
+        overflow-y: auto;
+        background: #1B2A46;
+        border-radius: 5px;
+        padding: 5px;
+        border: 1px solid #2E3B5B;
     }
     #fam-list div {
-        display: flex; justify-content: space-between; align-items: center;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 5px;
-        background: #15203D; padding: 3px 8px; border-radius: 5px;
+        background: #15203D;
+        padding: 3px 8px;
+        border-radius: 5px;
+        border: 1px solid #2E3B5B;
     }
     #fam-list div span {
         word-break: break-word;
+        flex-grow: 1; /* Permite que el texto ocupe el espacio */
     }
     #fam-list button.remove-fam-btn {
-        background: #E64E4E; color: white; border: none; border-radius: 5px;
-        cursor: pointer; padding: 2px 6px; font-weight: bold;
+        background: #E64E4E;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 2px 6px;
+        font-weight: bold;
+        margin-left: 10px;
     }
     #formActions {
-        margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;
+        margin-top: 15px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
     }
     #formActions button {
-        padding: 8px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer;
+        padding: 8px 15px;
+        border-radius: 5px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
     }
     #saveBtn {
-        background: #E6C68D; color: #0A1424;
+        background: #E6C68D;
+        color: #0A1424;
     }
     #cancelBtn {
         background: #555;
         color: #E6C68D;
     }
     #pagination {
-        margin-top: 15px; display: flex; justify-content: center; gap: 10px;
+        margin-top: 15px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        align-items: center;
     }
     #pagination button {
-        background: #E6C68D; border: none; border-radius: 5px;
-        padding: 5px 10px; cursor: pointer; font-weight: bold; color: #0A1424;
+        background: #E6C68D;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-weight: bold;
+        color: #0A1424;
     }
     #pagination button:disabled {
-        background: #999; cursor: not-allowed;
+        background: #999;
+        cursor: not-allowed;
+        opacity: 0.7;
     }
     /* Estilos para las pestañas de estado de miembros */
     #member-status-tabs {
@@ -170,10 +321,175 @@
         border-radius: 5px;
         cursor: pointer;
         font-weight: bold;
+        transition: background 0.3s, color 0.3s;
     }
     #member-status-tabs button.active {
         background: #E6C68D;
         color: #0A1424;
+    }
+
+    /* --- ESTILOS PARA LA HOJA DE IMPRESIÓN --- */
+    @media print {
+        /* Oculta todo excepto el área de impresión */
+        body > *:not(#print-area) {
+            display: none !important;
+        }
+
+        #print-area {
+            display: block !important; /* Muestra el área de impresión */
+            width: 210mm; /* Ancho de una hoja A4 */
+            min-height: 297mm; /* Alto de una hoja A4 */
+            margin: 0;
+            padding: 20mm; /* Margen de impresión */
+            color: #000; /* Texto negro */
+            background-color: #fff; /* Fondo blanco */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 10.5pt; /* Tamaño de fuente ligeramente más pequeño para impresión */
+            box-sizing: border-box; /* Incluye padding en el ancho/alto */
+        }
+        
+        /* Encabezado con logos y título */
+        #print-area .header-print {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ccc; /* Línea separadora */
+            text-align: center;
+        }
+        #print-area .header-print img {
+            max-width: 70px; /* Tamaño de los logos */
+            max-height: 70px;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        #print-area .header-print h1 {
+            font-size: 1.6rem; /* Tamaño del título principal */
+            margin: 0 20px;
+            flex-grow: 1; /* Permite que el título ocupe el espacio central */
+            text-align: center;
+            color: #000;
+        }
+
+        /* Título de la hoja de miembro */
+        #print-area .sheet-title {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Estilos generales para las secciones */
+        #print-area .section-print {
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9; /* Fondo suave para secciones */
+        }
+        #print-area .section-print h2 {
+            font-size: 1.3rem;
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            color: #444;
+            font-weight: 600;
+        }
+        #print-area p {
+            margin-bottom: 8px;
+            line-height: 1.5;
+            color: #333;
+        }
+        #print-area strong {
+            color: #222;
+        }
+
+        /* Estilo para la cuadrícula de información */
+        #print-area .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Dos columnas fluidas */
+            gap: 10px 20px;
+        }
+
+        /* Sección de Información Personal con Foto */
+        #print-area .personal-section {
+            display: flex;
+            flex-wrap: wrap; /* Permite que los elementos se envuelvan si no hay espacio */
+            gap: 20px;
+            align-items: flex-start; /* Alinea los elementos al inicio */
+        }
+        #print-area .personal-info-content {
+            flex: 1; /* Ocupa el espacio restante */
+            min-width: 280px; /* Mínimo para el contenido de texto */
+        }
+        #print-area .personal-section .photo-container {
+            width: 130px; /* Tamaño fijo para la foto de miembro */
+            height: 130px;
+            border: 1px solid #ccc;
+            background-color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border-radius: 5px;
+            flex-shrink: 0; /* Evita que la foto se encoja */
+        }
+        #print-area .personal-section .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Listado de familiares */
+        #print-area .fam-list-print {
+            border: 1px solid #ddd;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            min-height: 40px; /* Espacio visible incluso si no hay familiares */
+        }
+        #print-area .fam-list-print span {
+            display: block;
+            margin-bottom: 3px;
+            color: #333;
+            padding-left: 10px;
+            position: relative;
+        }
+        #print-area .fam-list-print span::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #888;
+        }
+
+        /* Sección de firma */
+        #print-area .signature-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #333;
+            border-top: 1px dashed #ccc; /* Línea discontinua */
+        }
+        #print-area .signature-line {
+            border-bottom: 1px solid #000;
+            width: 70%;
+            margin: 0 auto 15px; /* Más espacio */
+        }
+        #print-area .signature-section p {
+            margin-bottom: 5px;
+        }
+
+        /* Pie de página (opcional, si quieres añadir uno) */
+        /* @page {
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+            }
+        } */
     }
 
     /* Responsive */
@@ -182,13 +498,24 @@
             width: 100%; height: auto; flex-direction: row; padding: 0.5rem;
             border-right: none; border-bottom: 2px solid #E6C68D;
             position: relative;
+            flex-wrap: wrap; /* Permite que los botones se envuelvan */
+            justify-content: center;
         }
         #main {
             margin-left: 0; padding: 1rem;
         }
-        #menu button, #menu h1 {
-            margin: 0 5px;
-            flex: 1;
+        #menu button, #menu a.sidebar-link {
+            margin: 5px; /* Espacio entre botones */
+            flex: 0 0 calc(50% - 10px); /* Dos columnas en móvil */
+            box-sizing: border-box;
+        }
+        #menu h1 {
+            width: 100%; /* Ocupa todo el ancho en móvil */
+            margin: 10px 0;
+        }
+        .logout {
+            width: calc(100% - 20px); /* Ocupa el ancho completo */
+            margin: 10px auto;
         }
         #search-container {
             flex-direction: column;
@@ -200,8 +527,29 @@
         table {
             font-size: 0.8rem;
         }
+        th, td {
+            padding: 8px 10px;
+        }
         img.photo-cell {
             width: 35px; height: 35px;
+        }
+        button.action-btn {
+            padding: 4px 8px;
+            margin-right: 3px;
+        }
+        #modal {
+            padding: 15px;
+        }
+        form > div.section-tabs {
+            flex-wrap: wrap;
+        }
+        form > div.section-tabs button {
+            flex: 0 0 100%; /* Una pestaña por línea en móvil */
+            border-radius: 5px; /* Bordes redondeados en todas las esquinas */
+            margin-bottom: 5px; /* Espacio entre pestañas */
+        }
+        form > div.section-tabs button.active {
+            border-bottom-color: transparent; /* No mostrar la línea inferior en móviles */
         }
     }
 </style>
@@ -209,19 +557,20 @@
 <body>
 
 <div id="menu">
-    <h1 id="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20.png">ADORACION VIVA</h1>
-    <button id="btnInicio">Inicio</button> <a href="miembros.html" class="sidebar-link">Miembros</a>
+    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20(1).png" alt="Logo de la Iglesia" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 1rem;">
+    <h1>ADORACIÓN VIVA</h1>
+    <button id="btnInicio">Inicio</button>
+    <a href="miembros.html" class="sidebar-link">Miembros</a>
     <a href="acceso.html" class="sidebar-link">Dar acceso</a>
     <a href="diezmo.html" class="sidebar-link">Diezmos</a>
     <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-    <a href="reportes.html" class="sidebar-link">Reportess</a>
+    <a href="reportes.html" class="sidebar-link">Reportes</a>
     <a href="discipulado.html" class="sidebar-link">Discipulado</a>
     <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
-  </div>
 </div>
 
 <div id="main">
-    <h2>Miembros</h2>
+    <h2>Gestión de Miembros</h2>
     <div id="search-container">
         <input type="text" id="search" placeholder="Buscar por nombre, código, dirección..." />
         <button id="addMemberBtnMain">Añadir Miembro</button>
@@ -244,7 +593,8 @@
                 <th>Acciones</th>
             </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+            </tbody>
     </table>
     <div id="pagination"></div>
 </div>
@@ -261,9 +611,9 @@
             </div>
             <div class="section-content" tabindex="0">
                 <div id="personales-section" class="form-section" role="tabpanel" aria-labelledby="tab-personales">
-                    <label for="fotoInput">Foto</label>
+                    <label for="fotoInput">Foto del Miembro</label>
                     <input type="file" id="fotoInput" accept="image/*" />
-                    <img id="fotoPreview" src="" alt="Foto previa" style="width:80px; height:80px; border-radius:50%; margin-top: 5px; display:none;" />
+                    <img id="fotoPreview" src="" alt="Foto previa" style="width:100px; height:100px; border-radius:50%; margin-top: 10px; display:none; object-fit: cover; border: 2px solid #E6C68D;" />
                     
                     <label for="nombreInput">Nombre Completo</label>
                     <input type="text" id="nombreInput" required />
@@ -278,10 +628,13 @@
                     <input type="text" id="codigoInput" required />
                     
                     <label for="telefonoInput">Número de Teléfono</label>
-                    <input type="text" id="telefonoInput" />
+                    <input type="text" id="telefonoInput" placeholder="Ej. +505 8888 1234" />
                     
                     <label for="direccionInput">Dirección</label>
-                    <input type="text" id="direccionInput" />
+                    <input type="text" id="direccionInput" placeholder="Calle, número, colonia, ciudad" />
+
+                    <label for="emailInput">Correo Electrónico</label>
+                    <input type="email" id="emailInput" placeholder="correo@ejemplo.com" />
                     
                     <label for="asociacionSelect">Asociación</label>
                     <select id="asociacionSelect" required>
@@ -289,11 +642,31 @@
                         <option value="Damas">Damas</option>
                         <option value="Caballeros">Caballeros</option>
                         <option value="Jóvenes">Jóvenes</option>
+                        <option value="Niños">Niños</option>
+                        <option value="Ministerio Alabanza">Ministerio Alabanza</option>
+                        <option value="Ministerio de Ujieres">Ministerio de Ujieres</option>
+                        <option value="Liderazgo">Liderazgo</option>
+                        <option value="Otros">Otros</option>
                     </select>
+
+                    <label for="fechaMembresiaInput">Fecha de Membresía</label>
+                    <input type="date" id="fechaMembresiaInput" />
                 </div>
                 <div id="familiares-section" class="form-section" style="display:none" role="tabpanel" aria-labelledby="tab-familiares">
-                    <label for="nombreFamiliarInput">Agregar Familiar</label>
-                    <input type="text" id="nombreFamiliarInput" placeholder="Nombre del familiar" />
+                    <label for="estadoCivilSelect">Estado Civil</label>
+                    <select id="estadoCivilSelect">
+                        <option value="" disabled selected>Seleccione</option>
+                        <option value="Soltero/a">Soltero/a</option>
+                        <option value="Casado/a">Casado/a</option>
+                        <option value="Divorciado/a">Divorciado/a</option>
+                        <option value="Viudo/a">Viudo/a</option>
+                    </select>
+
+                    <label for="nombreConyugeInput">Nombre del Cónyuge (si aplica)</label>
+                    <input type="text" id="nombreConyugeInput" placeholder="Nombre completo del cónyuge" />
+
+                    <label for="nombreFamiliarInput">Agregar Hijo/a u Otro Familiar</label>
+                    <input type="text" id="nombreFamiliarInput" placeholder="Ej. Juan Pérez (hijo), María López (madre)" />
                     <button type="button" id="addFamiliarBtn" style="margin-top: 5px; background: #E6C68D; color: #0A1424; border:none; padding: 5px 10px; font-weight: bold; border-radius: 5px; cursor: pointer;">Añadir Familiar</button>
                     <div id="fam-list" aria-live="polite" aria-relevant="additions removals"></div>
                 </div>
@@ -302,25 +675,31 @@
                     <input type="date" id="fechaConversionInput" />
                     
                     <label for="lugarConversionInput">Lugar de Conversión</label>
-                    <input type="text" id="lugarConversionInput" />
+                    <input type="text" id="lugarConversionInput" placeholder="Ej. Hogar, Iglesia, Evento" />
                     
-                    <label for="fechaBautizoInput">Fecha de Bautizo</label>
+                    <label for="fechaBautizoInput">Fecha de Bautizo en Agua</label>
                     <input type="date" id="fechaBautizoInput" />
                     
-                    <label for="lugarBautizoInput">Lugar de Bautizo</label>
-                    <input type="text" id="lugarBautizoInput" />
+                    <label for="lugarBautizoInput">Lugar de Bautizo en Agua</label>
+                    <input type="text" id="lugarBautizoInput" placeholder="Ej. Iglesia Central, Río Jordán" />
                     
                     <label for="fechaBautizoEspInput">Fecha de Bautizo del Espíritu Santo</label>
                     <input type="date" id="fechaBautizoEspInput" />
                     
                     <label for="lugarBautizoEspInput">Lugar de Bautizo del Espíritu Santo</label>
-                    <input type="text" id="lugarBautizoEspInput" />
+                    <input type="text" id="lugarBautizoEspInput" placeholder="Ej. Servicio de adoración, Campamento" />
                     
-                    <label for="cursosBiblicosInput">Cursos Bíblicos</label>
-                    <input type="text" id="cursosBiblicosInput" />
+                    <label for="cursosBiblicosInput">Cursos Bíblicos Realizados</label>
+                    <textarea id="cursosBiblicosInput" rows="3" placeholder="Ej. Discipulado Nivel 1, Fundamentos de la Fe"></textarea>
                     
                     <label for="lugarCursosBiblicosInput">Lugar donde los recibió</label>
-                    <input type="text" id="lugarCursosBiblicosInput" />
+                    <input type="text" id="lugarCursosBiblicosInput" placeholder="Ej. Instituto Bíblico, Célula" />
+
+                    <label for="donesTalentosInput">Dones o Talentos para Servir</label>
+                    <textarea id="donesTalentosInput" rows="3" placeholder="Ej. Canto, Instrumento, Liderazgo, Enseñanza, Organización, Evangelismo"></textarea>
+
+                    <label for="areasServirInput">Áreas donde le gustaría servir</label>
+                    <textarea id="areasServirInput" rows="3" placeholder="Ej. Equipo de Alabanza, Escuela Dominical, Evangelismo, Ujieres, Limpieza"></textarea>
                 </div>
             </div>
             <div id="formActions">
@@ -331,10 +710,74 @@
     </div>
 </div>
 
+<div id="print-area" style="display:none;">
+    <div class="header-print">
+        <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20(1).png" alt="Logo Izquierdo" class="logo-left">
+        <h1>IGLESIA ICCI ADORACIÓN VIVA</h1>
+        <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20(1).png" alt="Logo Derecho" class="logo-right">
+    </div>
+
+    <h2 class="sheet-title">HOJA DE MIEMBRO</h2>
+
+    <div class="section-print personal-section">
+        <div class="personal-info-content">
+            <h2>INFORMACIÓN PERSONAL</h2>
+            <p><strong>Nombre Completo:</strong> <span id="print-nombreCompleto"></span></p>
+            <p><strong>Fecha de Nacimiento:</strong> <span id="print-fechaNacimiento"></span></p>
+            <p><strong>Edad:</strong> <span id="print-edad"></span></p>
+            <p><strong>Código:</strong> <span id="print-codigo"></span></p>
+            <p><strong>Teléfono:</strong> <span id="print-telefono"></span></p>
+            <p><strong>Correo Electrónico:</strong> <span id="print-email"></span></p>
+            <p><strong>Dirección:</strong> <span id="print-direccion"></span></p>
+            <p><strong>Asociación:</strong> <span id="print-asociacion"></span></p>
+            <p><strong>Fecha de Membresía:</strong> <span id="print-fechaMembresia"></span></p>
+        </div>
+        <div class="photo-container">
+            <img id="print-fotoMiembro" src="" alt="Foto del Miembro">
+        </div>
+    </div>
+
+    <div class="section-print">
+        <h2>INFORMACIÓN FAMILIAR</h2>
+        <p><strong>Estado Civil:</strong> <span id="print-estadoCivil"></span></p>
+        <p><strong>Nombre del Cónyuge:</strong> <span id="print-nombreConyuge"></span></p>
+        <p><strong>Familiares Añadidos:</strong></p>
+        <div id="print-familiaresList" class="fam-list-print">
+            </div>
+    </div>
+
+    <div class="section-print">
+        <h2>INFORMACIÓN ESPIRITUAL</h2>
+        <div class="info-grid">
+            <div>
+                <p><strong>Fecha de Conversión:</strong> <span id="print-fechaConversion"></span></p>
+                <p><strong>Lugar de Conversión:</strong> <span id="print-lugarConversion"></span></p>
+                <p><strong>Fecha de Bautizo en Agua:</strong> <span id="print-fechaBautizo"></span></p>
+                <p><strong>Lugar de Bautizo en Agua:</strong> <span id="print-lugarBautizo"></span></p>
+            </div>
+            <div>
+                <p><strong>Fecha Bautizo Espíritu Santo:</strong> <span id="print-fechaBautizoEsp"></span></p>
+                <p><strong>Lugar Bautizo Espíritu Santo:</strong> <span id="print-lugarBautizoEsp"></span></p>
+                <p><strong>Cursos Bíblicos Realizados:</strong> <span id="print-cursosBiblicos"></span></p>
+                <p><strong>Lugar Cursos Bíblicos:</strong> <span id="print-lugarCursosBiblicos"></span></p>
+            </div>
+        </div>
+        <p><strong>Dones o Talentos para Servir:</strong> <span id="print-donesTalentos"></span></p>
+        <p><strong>Áreas donde le gustaría servir:</strong> <span id="print-areasServir"></span></p>
+    </div>
+
+    <div class="section-print signature-section">
+        <h2>FIRMA PASTOR/A</h2>
+        <div class="signature-line"></div>
+        <p>Nombre del Pastor/a: ____________________________________________________</p>
+        <p>Firma del Pastor/a: ____________________________________________________ Fecha: ____/____/____</p>
+    </div>
+</div>
+
 <script>
     // Firebase config (MANTÉN ESTAS CLAVES CORRECTAS DE TU PROYECTO)
     const firebaseConfig = {
-        apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k", 
+        apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
         authDomain: "iglesia-adoracion-viva.firebaseapp.com",
         databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
         projectId: "iglesia-adoracion-viva",
@@ -345,10 +788,11 @@
     };
 
     // Inicializar Firebase
-    let db;
+    let db, firebaseStorage;
     try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
+        firebaseStorage = firebase.storage(); // Inicializar Firebase Storage
         console.log("Firebase inicializado correctamente.");
     } catch (error) {
         console.error("Error al inicializar Firebase:", error);
@@ -357,17 +801,13 @@
 
     // Inicializar Supabase (MANTÉN ESTAS CLAVES CORRECTAS DE TU PROYECTO)
     const SUPABASE_URL = "https://xyptydnouyddzvrffaby.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o"; // Asegúrate que esta key sea correcta
     let supabase;
     try {
-        // Aseguramos que Supabase se inicialice correctamente.
-        // La variable 'supabase' se declara con 'let' arriba.
-        // Aquí le asignamos la instancia creada.
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log("Supabase inicializado correctamente.");
     } catch (error) {
         console.error("Error al inicializar Supabase:", error);
-        // Detalles específicos del error para depuración
         if (error.name === "ReferenceError") {
             console.error("Posible causa: La librería Supabase no se ha cargado correctamente. Verifica el script CDN.");
         } else if (error.message.includes("supabase URL and API key are required")) {
@@ -375,7 +815,7 @@
         }
         alert("Error al inicializar Supabase. Revisa la consola para más detalles.");
     }
-    const SUPABASE_BUCKET = "ftmember";
+    const SUPABASE_BUCKET = "ftmember"; // Nombre de tu bucket en Supabase Storage
 
     // Variables globales
     let members = [];
@@ -391,7 +831,17 @@
         famList, fechaConversionInput, lugarConversionInput, fechaBautizoInput, lugarBautizoInput,
         fechaBautizoEspInput, lugarBautizoEspInput, cursosBiblicosInput, lugarCursosBiblicosInput,
         searchInput, membersTableBody, paginationDiv, addMemberBtnMain, modalClose, cancelBtn, tabButtons,
-        tabActivos, tabDeBaja, btnInicio;
+        tabActivos, tabDeBaja, btnInicio, emailInput, estadoCivilSelect, nombreConyugeInput, donesTalentosInput,
+        areasServirInput, fechaMembresiaInput;
+
+    // Elementos DOM para la plantilla de impresión
+    let printArea, printNombreCompleto, printFechaNacimiento, printEdad, printCodigo,
+        printTelefono, printDireccion, printAsociacion, printFotoMiembro, printEmail,
+        printEstadoCivil, printNombreConyuge, printFamiliaresList, printFechaMembresia,
+        printFechaConversion, printLugarConversion, printFechaBautizo, printLugarBautizo,
+        printFechaBautizoEsp, printLugarBautizoEsp, printCursosBiblicos, printLugarCursosBiblicos,
+        printDonesTalentos, printAreasServir;
+
 
     // Estado del formulario
     let familiares = [];
@@ -437,7 +887,7 @@
     function calcularEdad(fecha) {
         if (!fecha) return '';
         const hoy = new Date();
-        const nac = new Date(fecha + 'T00:00:00');
+        const nac = new Date(fecha + 'T00:00:00'); // Asegura que la hora sea medianoche para evitar problemas de zona horaria
         let edad = hoy.getFullYear() - nac.getFullYear();
         const m = hoy.getMonth() - nac.getMonth();
         if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
@@ -531,8 +981,17 @@
             bajaBtn.style.color = 'white';
             bajaBtn.addEventListener('click', () => toggleEstado(member));
 
+            // Botón de IMPRIMIR
+            const printBtn = document.createElement('button');
+            printBtn.textContent = 'Imprimir';
+            printBtn.className = 'action-btn';
+            printBtn.style.backgroundColor = '#5DADE2'; /* Un color diferente para el botón de imprimir */
+            printBtn.style.color = 'white';
+            printBtn.addEventListener('click', () => printMemberSheet(member)); // Llama a la nueva función de impresión
+
             tdAcciones.appendChild(editBtn);
             tdAcciones.appendChild(bajaBtn);
+            tdAcciones.appendChild(printBtn); // Añadir el botón de imprimir
 
             tr.appendChild(tdFoto);
             tr.appendChild(tdNombre);
@@ -591,7 +1050,9 @@
                 (m.nombreCompleto && m.nombreCompleto.toLowerCase().includes(query)) ||
                 (m.codigo && m.codigo.toLowerCase().includes(query)) ||
                 (m.direccion && m.direccion.toLowerCase().includes(query)) ||
-                (m.asociacion && m.asociacion.toLowerCase().includes(query));
+                (m.asociacion && m.asociacion.toLowerCase().includes(query)) ||
+                (m.email && m.email.toLowerCase().includes(query)) ||
+                (m.telefono && m.telefono.toLowerCase().includes(query));
             const matchesEstado = m.estado === currentMemberStatusFilter;
             return matchesSearch && matchesEstado;
         });
@@ -616,8 +1077,12 @@
                     fechaNacimiento: data.fechaNacimiento || '',
                     edad: calcularEdad(data.fechaNacimiento),
                     telefono: data.telefono || '',
+                    email: data.email || '', // Nuevo campo
                     direccion: data.direccion || '',
                     asociacion: data.asociacion || '',
+                    fechaMembresia: data.fechaMembresia || '', // Nuevo campo
+                    estadoCivil: data.estadoCivil || '', // Nuevo campo
+                    nombreConyuge: data.nombreConyuge || '', // Nuevo campo
                     familiares: data.familiares || [],
                     fechaConversion: data.fechaConversion || '',
                     lugarConversion: data.lugarConversion || '',
@@ -627,6 +1092,8 @@
                     lugarBautizoEsp: data.lugarBautizoEsp || '',
                     cursosBiblicos: data.cursosBiblicos || '',
                     lugarCursosBiblicos: data.lugarCursosBiblicos || '',
+                    donesTalentos: data.donesTalentos || '', // Nuevo campo
+                    areasServir: data.areasServir || '',     // Nuevo campo
                     fotoURL: data.fotoURL || '',
                     fotoPath: data.fotoPath || '',
                     estado: data.estado || 'activo'
@@ -657,7 +1124,6 @@
                 const { error: removeError } = await supabase.storage.from(SUPABASE_BUCKET).remove([oldPath]);
                 if (removeError) {
                     console.warn('Error al eliminar foto antigua:', removeError.message);
-                    // No abortar la subida si la eliminación falló
                 }
             }
 
@@ -703,8 +1169,12 @@
         const fechaNacimiento = fechaNacimientoInput.value;
         const edad = calcularEdad(fechaNacimiento);
         const telefono = telefonoInput.value.trim();
+        const email = emailInput.value.trim(); // Nuevo campo
         const direccion = direccionInput.value.trim();
         const asociacion = asociacionSelect.value;
+        const fechaMembresia = fechaMembresiaInput.value; // Nuevo campo
+        const estadoCivil = estadoCivilSelect.value; // Nuevo campo
+        const nombreConyuge = nombreConyugeInput.value.trim(); // Nuevo campo
         const fechaConversion = fechaConversionInput.value;
         const lugarConversion = lugarConversionInput.value.trim();
         const fechaBautizo = fechaBautizoInput.value;
@@ -713,12 +1183,14 @@
         const lugarBautizoEsp = lugarBautizoEspInput.value.trim();
         const cursosBiblicos = cursosBiblicosInput.value.trim();
         const lugarCursosBiblicos = lugarCursosBiblicosInput.value.trim();
+        const donesTalentos = donesTalentosInput.value.trim(); // Nuevo campo
+        const areasServir = areasServirInput.value.trim();     // Nuevo campo
 
         let fotoURL = '';
         let fotoPath = '';
         let oldFotoPath = null;
-        let currentFotoURL = ''; 
-
+        let currentFotoURL = '';
+        
         if(editingMemberId) {
             const member = members.find(m => m.id === editingMemberId);
             if (member) {
@@ -727,11 +1199,6 @@
             }
         }
 
-        // Determinar qué hacer con la foto:
-        // 1. Si se seleccionó un nuevo archivo: Subir el nuevo archivo
-        // 2. Si no se seleccionó nuevo archivo y la foto previa fue eliminada: Eliminar de Supabase y limpiar URL/Path
-        // 3. Si no se seleccionó nuevo archivo y la foto previa se mantiene: Mantener la URL/Path existente
-        
         if (fotoInput.files.length > 0) { // Caso 1: Nuevo archivo seleccionado
             console.log("Se seleccionó un nuevo archivo de foto.");
             const result = await uploadPhoto(fotoInput.files[0], oldFotoPath);
@@ -751,15 +1218,18 @@
             fotoPath = oldFotoPath;
         }
 
-
         const dataToSave = {
             nombreCompleto,
             codigo,
             fechaNacimiento,
             edad,
             telefono,
+            email, // Guardar
             direccion,
             asociacion,
+            fechaMembresia, // Guardar
+            estadoCivil, // Guardar
+            nombreConyuge, // Guardar
             familiares,
             fechaConversion,
             lugarConversion,
@@ -769,89 +1239,150 @@
             lugarBautizoEsp,
             cursosBiblicos,
             lugarCursosBiblicos,
-            fotoURL: fotoURL,
-            fotoPath: fotoPath,
-            estado: currentMemberStatusFilter,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            donesTalentos, // Guardar
+            areasServir, // Guardar
+            fotoURL,
+            fotoPath,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Para ordenar por fecha de creación/última actualización
+            estado: 'activo' // Por defecto, se añade como activo
         };
 
         try {
-            if(editingMemberId) {
+            if (editingMemberId) {
                 await db.collection('miembros').doc(editingMemberId).update(dataToSave);
-                console.log('Miembro actualizado correctamente.');
                 alert('Miembro actualizado correctamente.');
             } else {
                 await db.collection('miembros').add(dataToSave);
-                console.log('Miembro añadido correctamente.');
                 alert('Miembro añadido correctamente.');
             }
-            await loadMembers();
             closeModal();
+            loadMembers();
         } catch (error) {
-            console.error('Error guardando el miembro: ', error);
-            alert('Error guardando el miembro: ' + error.message);
+            console.error('Error al guardar miembro: ', error);
+            alert('Error al guardar miembro: ' + error.message);
         }
     }
 
-    function openEditMember(member) {
+    async function openEditMember(member) {
         editingMemberId = member.id;
-        if (nombreInput) nombreInput.value = member.nombreCompleto || '';
-        if (codigoInput) codigoInput.value = member.codigo || '';
-        if (fechaNacimientoInput) fechaNacimientoInput.value = member.fechaNacimiento || '';
-        if (edadInput) edadInput.value = calcularEdad(member.fechaNacimiento);
-        if (telefonoInput) telefonoInput.value = member.telefono || '';
-        if (direccionInput) direccionInput.value = member.direccion || '';
-        if (asociacionSelect) asociacionSelect.value = member.asociacion || '';
+        showModal(true);
+
+        nombreInput.value = member.nombreCompleto;
+        fechaNacimientoInput.value = member.fechaNacimiento;
+        edadInput.value = member.edad;
+        codigoInput.value = member.codigo;
+        telefonoInput.value = member.telefono;
+        emailInput.value = member.email || ''; // Cargar
+        direccionInput.value = member.direccion;
+        asociacionSelect.value = member.asociacion;
+        fechaMembresiaInput.value = member.fechaMembresia || ''; // Cargar
+        estadoCivilSelect.value = member.estadoCivil || ''; // Cargar
+        nombreConyugeInput.value = member.nombreConyuge || ''; // Cargar
+
         familiares = member.familiares || [];
         renderFamiliares();
-        if (fechaConversionInput) fechaConversionInput.value = member.fechaConversion || '';
-        if (lugarConversionInput) lugarConversionInput.value = member.lugarConversion || '';
-        if (fechaBautizoInput) fechaBautizoInput.value = member.fechaBautizo || '';
-        if (lugarBautizoInput) lugarBautizoInput.value = member.lugarBautizo || '';
-        if (fechaBautizoEspInput) fechaBautizoEspInput.value = member.fechaBautizoEsp || '';
-        if (lugarBautizoEspInput) lugarBautizoEspInput.value = member.lugarBautizoEsp || '';
-        if (cursosBiblicosInput) cursosBiblicosInput.value = member.cursosBiblicos || '';
-        if (lugarCursosBiblicosInput) lugarCursosBiblicosInput.value = member.lugarCursosBiblicos || '';
-        
-        if (fotoPreview) {
-            if(member.fotoURL){
-                fotoPreview.src = member.fotoURL;
-                fotoPreview.style.display = 'block';
-            } else {
-                fotoPreview.style.display = 'none';
-                fotoPreview.src = '';
-            }
+
+        fechaConversionInput.value = member.fechaConversion || '';
+        lugarConversionInput.value = member.lugarConversion || '';
+        fechaBautizoInput.value = member.fechaBautizo || '';
+        lugarBautizoInput.value = member.lugarBautizo || '';
+        fechaBautizoEspInput.value = member.fechaBautizoEsp || '';
+        lugarBautizoEspInput.value = member.lugarBautizoEsp || '';
+        cursosBiblicosInput.value = member.cursosBiblicos || '';
+        lugarCursosBiblicosInput.value = member.lugarCursosBiblicos || '';
+        donesTalentosInput.value = member.donesTalentos || ''; // Cargar
+        areasServirInput.value = member.areasServir || '';     // Cargar
+
+        if (member.fotoURL) {
+            fotoPreview.src = member.fotoURL;
+            fotoPreview.style.display = 'block';
+        } else {
+            fotoPreview.src = '';
+            fotoPreview.style.display = 'none';
         }
-        showModal(true);
-        setActiveSection('personales');
     }
 
     async function toggleEstado(member) {
         if (!db) {
-            alert("La base de datos no está inicializada. No se puede cambiar el estado.");
+            alert("La base de datos no está inicializada.");
             return;
         }
         const nuevoEstado = member.estado === 'activo' ? 'baja' : 'activo';
-        const confirmMsg = `¿Estás seguro de que quieres ${nuevoEstado === 'baja' ? 'dar de baja' : 'reactivar'} a ${member.nombreCompleto}?`;
-        if (!confirm(confirmMsg)) {
-            return;
-        }
-
-        try {
-            await db.collection('miembros').doc(member.id).update({ estado: nuevoEstado });
-            alert(`Miembro ${member.nombreCompleto} ha sido ${nuevoEstado === 'baja' ? 'dado de baja' : 'reactivado'} correctamente.`);
-            await loadMembers();
-        } catch (error) {
-            console.error('Error al cambiar estado: ', error);
-            alert('Error al cambiar estado: ' + error.message);
+        if (confirm(`¿Estás seguro de que quieres ${nuevoEstado === 'baja' ? 'dar de baja' : 'reactivar'} a ${member.nombreCompleto}?`)) {
+            try {
+                await db.collection('miembros').doc(member.id).update({
+                    estado: nuevoEstado,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp() // Actualiza timestamp
+                });
+                alert(`Miembro ${nuevoEstado === 'baja' ? 'dado de baja' : 'reactivado'} correctamente.`);
+                loadMembers();
+            } catch (error) {
+                console.error('Error al cambiar estado del miembro: ', error);
+                alert('Error al cambiar estado del miembro: ' + error.message);
+            }
         }
     }
 
-    // Eventos (adjuntar después de que el DOM esté cargado)
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOM completamente cargado. Inicializando elementos y adjuntando eventos.");
+    // --- NUEVAS FUNCIONES PARA LA IMPRESIÓN ---
 
-        // Asignar elementos DOM después de que el DOM esté listo
+    // Función para rellenar la plantilla de impresión con los datos del miembro
+    function populatePrintArea(memberData) {
+        if (!printArea) {
+            console.error("Error: Área de impresión no encontrada.");
+            return;
+        }
+
+        // Información Personal
+        printNombreCompleto.textContent = memberData.nombreCompleto || 'N/A';
+        printFechaNacimiento.textContent = memberData.fechaNacimiento || 'N/A';
+        printEdad.textContent = memberData.edad || 'N/A';
+        printCodigo.textContent = memberData.codigo || 'N/A';
+        printTelefono.textContent = memberData.telefono || 'N/A';
+        printEmail.textContent = memberData.email || 'N/A';
+        printDireccion.textContent = memberData.direccion || 'N/A';
+        printAsociacion.textContent = memberData.asociacion || 'N/A';
+        printFechaMembresia.textContent = memberData.fechaMembresia || 'N/A';
+        
+        printFotoMiembro.src = memberData.fotoURL || 'https://via.placeholder.com/150?text=Sin+Foto';
+        printFotoMiembro.alt = 'Foto de ' + (memberData.nombreCompleto || 'Miembro');
+
+        // Información Familiar
+        printEstadoCivil.textContent = memberData.estadoCivil || 'N/A';
+        printNombreConyuge.textContent = memberData.nombreConyuge || 'N/A';
+
+        printFamiliaresList.innerHTML = '';
+        if (memberData.familiares && memberData.familiares.length > 0) {
+            memberData.familiares.forEach(fam => {
+                const span = document.createElement('span');
+                span.textContent = fam;
+                printFamiliaresList.appendChild(span);
+            });
+        } else {
+            printFamiliaresList.innerHTML = '<span style="color: #666;">No hay familiares registrados.</span>';
+        }
+
+        // Información Espiritual
+        printFechaConversion.textContent = memberData.fechaConversion || 'N/A';
+        printLugarConversion.textContent = memberData.lugarConversion || 'N/A';
+        printFechaBautizo.textContent = memberData.fechaBautizo || 'N/A';
+        printLugarBautizo.textContent = memberData.lugarBautizo || 'N/A';
+        printFechaBautizoEsp.textContent = memberData.fechaBautizoEsp || 'N/A';
+        printLugarBautizoEsp.textContent = memberData.lugarBautizoEsp || 'N/A';
+        printCursosBiblicos.textContent = memberData.cursosBiblicos || 'N/A';
+        printLugarCursosBiblicos.textContent = memberData.lugarCursosBiblicos || 'N/A';
+        printDonesTalentos.textContent = memberData.donesTalentos || 'N/A';
+        printAreasServir.textContent = memberData.areasServir || 'N/A';
+    }
+
+    // Función para activar la impresión
+    function printMemberSheet(memberData) {
+        populatePrintArea(memberData); // Rellenar los datos en la plantilla de impresión
+        window.print(); // Disparar el diálogo de impresión
+    }
+
+    // Event Listeners y Asignación de Elementos DOM (se ejecutan cuando la página está lista)
+    document.addEventListener('DOMContentLoaded', () => {
+        // Elementos DOM principales
         modalOverlay = document.getElementById('modalOverlay');
         modal = document.getElementById('modal');
         memberForm = document.getElementById('memberForm');
@@ -862,11 +1393,17 @@
         edadInput = document.getElementById('edadInput');
         codigoInput = document.getElementById('codigoInput');
         telefonoInput = document.getElementById('telefonoInput');
+        emailInput = document.getElementById('emailInput'); // Asignar
         direccionInput = document.getElementById('direccionInput');
         asociacionSelect = document.getElementById('asociacionSelect');
+        fechaMembresiaInput = document.getElementById('fechaMembresiaInput'); // Asignar
+
         nombreFamiliarInput = document.getElementById('nombreFamiliarInput');
         addFamiliarBtn = document.getElementById('addFamiliarBtn');
         famList = document.getElementById('fam-list');
+        estadoCivilSelect = document.getElementById('estadoCivilSelect'); // Asignar
+        nombreConyugeInput = document.getElementById('nombreConyugeInput'); // Asignar
+
         fechaConversionInput = document.getElementById('fechaConversionInput');
         lugarConversionInput = document.getElementById('lugarConversionInput');
         fechaBautizoInput = document.getElementById('fechaBautizoInput');
@@ -875,156 +1412,126 @@
         lugarBautizoEspInput = document.getElementById('lugarBautizoEspInput');
         cursosBiblicosInput = document.getElementById('cursosBiblicosInput');
         lugarCursosBiblicosInput = document.getElementById('lugarCursosBiblicosInput');
+        donesTalentosInput = document.getElementById('donesTalentosInput'); // Asignar
+        areasServirInput = document.getElementById('areasServirInput');     // Asignar
+
         searchInput = document.getElementById('search');
         membersTableBody = document.querySelector('#membersTable tbody');
         paginationDiv = document.getElementById('pagination');
         addMemberBtnMain = document.getElementById('addMemberBtnMain');
         modalClose = document.getElementById('modalClose');
         cancelBtn = document.getElementById('cancelBtn');
-        tabButtons = document.querySelectorAll('.section-tabs .tab-btn');
+        tabButtons = document.querySelectorAll('.tab-btn');
         tabActivos = document.getElementById('tabActivos');
         tabDeBaja = document.getElementById('tabDeBaja');
         btnInicio = document.getElementById('btnInicio');
 
-        // Adjuntar Event Listeners
-        if (addMemberBtnMain) {
-            addMemberBtnMain.addEventListener('click', () => {
-                console.log("Botón 'Añadir Miembro' clickeado.");
-                editingMemberId = null;
-                memberForm.reset();
-                familiares = [];
+        // Asignar los elementos DOM para la impresión
+        printArea = document.getElementById('print-area');
+        printNombreCompleto = document.getElementById('print-nombreCompleto');
+        printFechaNacimiento = document.getElementById('print-fechaNacimiento');
+        printEdad = document.getElementById('print-edad');
+        printCodigo = document.getElementById('print-codigo');
+        printTelefono = document.getElementById('print-telefono');
+        printEmail = document.getElementById('print-email');
+        printDireccion = document.getElementById('print-direccion');
+        printAsociacion = document.getElementById('print-asociacion');
+        printFechaMembresia = document.getElementById('print-fechaMembresia');
+        printFotoMiembro = document.getElementById('print-fotoMiembro');
+        printEstadoCivil = document.getElementById('print-estadoCivil');
+        printNombreConyuge = document.getElementById('print-nombreConyuge');
+        printFamiliaresList = document.getElementById('print-familiaresList');
+        printFechaConversion = document.getElementById('print-fechaConversion');
+        printLugarConversion = document.getElementById('print-lugarConversion');
+        printFechaBautizo = document.getElementById('print-fechaBautizo');
+        printLugarBautizo = document.getElementById('print-lugarBautizo');
+        printFechaBautizoEsp = document.getElementById('print-fechaBautizoEsp');
+        printLugarBautizoEsp = document.getElementById('print-lugarBautizoEsp');
+        printCursosBiblicos = document.getElementById('print-cursosBiblicos');
+        printLugarCursosBiblicos = document.getElementById('print-lugarCursosBiblicos');
+        printDonesTalentos = document.getElementById('print-donesTalentos');
+        printAreasServir = document.getElementById('print-areasServir');
+
+        // Event Listeners
+        addMemberBtnMain.addEventListener('click', () => showModal());
+        modalClose.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        memberForm.addEventListener('submit', saveMember);
+
+        fechaNacimientoInput.addEventListener('change', () => {
+            edadInput.value = calcularEdad(fechaNacimientoInput.value);
+        });
+
+        fotoInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    fotoPreview.src = event.target.result;
+                    fotoPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            } else {
+                fotoPreview.src = '';
+                fotoPreview.style.display = 'none';
+            }
+        });
+
+        addFamiliarBtn.addEventListener('click', () => {
+            const nombre = nombreFamiliarInput.value.trim();
+            if (nombre && !familiares.includes(nombre)) {
+                familiares.push(nombre);
+                nombreFamiliarInput.value = '';
                 renderFamiliares();
-                fotoPreview.style.display = 'none'; // Asegurarse de que la previsualización se oculte
-                fotoPreview.src = ''; // Limpiar la fuente de la imagen
-                showModal(false);
-                setActiveSection('personales');
-            });
-        } else {
-            console.warn("Elemento #addMemberBtnMain no encontrado.");
-        }
+            } else if (nombre) {
+                alert('Ese familiar ya fue añadido.');
+            }
+        });
 
-        if (modalClose) {
-            modalClose.addEventListener('click', closeModal);
-        } else {
-            console.warn("Elemento #modalClose no encontrado.");
-        }
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => setActiveSection(button.dataset.section));
+        });
 
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', closeModal);
-        } else {
-            console.warn("Elemento #cancelBtn no encontrado.");
-        }
+        searchInput.addEventListener('input', () => {
+            filterMembers();
+            renderTable();
+        });
 
-        if (memberForm) {
-            memberForm.addEventListener('submit', saveMember);
-        } else {
-            console.warn("Elemento #memberForm no encontrado.");
-        }
+        tabActivos.addEventListener('click', () => {
+            currentMemberStatusFilter = 'activo';
+            tabActivos.classList.add('active');
+            tabDeBaja.classList.remove('active');
+            filterMembers();
+            renderTable();
+        });
 
-        if (fechaNacimientoInput && edadInput) {
-            fechaNacimientoInput.addEventListener('change', () => {
-                edadInput.value = calcularEdad(fechaNacimientoInput.value);
-            });
-        } else {
-            console.warn("Elementos de fecha de nacimiento/edad no encontrados.");
-        }
+        tabDeBaja.addEventListener('click', () => {
+            currentMemberStatusFilter = 'baja';
+            tabDeBaja.classList.add('active');
+            tabActivos.classList.remove('active');
+            filterMembers();
+            renderTable();
+        });
 
-        if (addFamiliarBtn && nombreFamiliarInput && famList) {
-            addFamiliarBtn.addEventListener('click', () => {
-                const nombreFam = nombreFamiliarInput.value.trim();
-                if(nombreFam && !familiares.includes(nombreFam)) {
-                    familiares.push(nombreFam);
-                    renderFamiliares();
-                    nombreFamiliarInput.value = '';
-                } else if (nombreFam) {
-                    alert('El familiar ya existe en la lista.');
-                }
-            });
-        } else {
-            console.warn("Elementos de familiares no encontrados.");
-        }
-        
-        if (searchInput) {
-            searchInput.addEventListener('input', () => {
-                filterMembers();
-                renderTable();
-            });
-        } else {
-            console.warn("Elemento #search no encontrado.");
-        }
+        btnInicio.addEventListener('click', () => {
+            window.location.href = 'index.html'; // Redirige a la página de inicio
+        });
 
-        if (tabButtons.length > 0) {
-            tabButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    setActiveSection(btn.dataset.section);
-                });
-            });
-        } else {
-            console.warn("Elementos de pestañas de sección no encontrados.");
-        }
-
-        if (tabActivos) {
-            tabActivos.addEventListener('click', () => {
-                currentMemberStatusFilter = 'activo';
-                tabActivos.classList.add('active');
-                tabDeBaja.classList.remove('active');
-                filterMembers();
-                renderTable();
-            });
-        } else {
-            console.warn("Elemento #tabActivos no encontrado.");
-        }
-
-        if (tabDeBaja) {
-            tabDeBaja.addEventListener('click', () => {
-                currentMemberStatusFilter = 'baja';
-                tabDeBaja.classList.add('active');
-                tabActivos.classList.remove('active');
-                filterMembers();
-                renderTable();
-            });
-        } else {
-            console.warn("Elemento #tabDeBaja no encontrado.");
-        }
-        
-        if (fotoInput && fotoPreview) {
-            fotoInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        fotoPreview.src = e.target.result;
-                        fotoPreview.style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    fotoPreview.src = '';
-                    fotoPreview.style.display = 'none';
-                }
-            });
-        } else {
-            console.warn("Elementos de foto no encontrados.");
-        }
-
-        if (btnInicio) {
-            btnInicio.addEventListener('click', () => {
-                searchInput.value = '';
-                currentMemberStatusFilter = 'activo';
-                if (tabActivos) {
-                    tabActivos.classList.add('active');
-                    tabDeBaja.classList.remove('active');
-                }
-                loadMembers();
-            });
-        } else {
-            console.warn("Elemento #btnInicio no encontrado.");
-        }
-
-        // Cargar miembros al cargar el DOM
+        // Cargar miembros al inicio
         loadMembers();
-        setActiveSection('personales');
     });
-</script>
 
+    // Función de cerrar sesión (ejemplo, ajusta según tu autenticación)
+    function cerrarSesion() {
+        if (confirm("¿Estás seguro de que quieres cerrar sesión?")) {
+            // Lógica para cerrar sesión, por ejemplo:
+            // firebase.auth().signOut().then(() => {
+            window.location.href = 'login.html'; // Redirige a la página de login
+            // }).catch((error) => {
+            //     console.error("Error al cerrar sesión:", error);
+            //     alert("No se pudo cerrar sesión. Inténtalo de nuevo.");
+            // });
+        }
+    }
+</script>
 </body>
 </html>
