@@ -30,7 +30,7 @@
             display: flex;
             background-color: var(--ultra-dark-blue); /* Fondo principal ultra oscuro */
             color: var(--gold-light); /* Texto general en dorado claro */
-            overflow-x: hidden; /* Evita scroll horizontal por animaciones */
+            overflow-x: hidden; /* Evita scroll horizontal */
         }
 
         /* --- Sidebar Styles --- */
@@ -120,6 +120,9 @@
             display: flex; /* Usamos flexbox para alinear los elementos */
             flex-direction: column; /* Apilamos en columna por defecto */
             align-items: flex-start; /* Alineamos los elementos al inicio */
+            width: calc(100% - 250px); /* Ocupa el ancho restante, crucial para layout estático */
+            box-sizing: border-box; /* Incluye padding en el ancho */
+            overflow-x: hidden; /* Previene desbordamiento horizontal dentro del main-content */
         }
 
         /* Contenedor para el botón y el resumen */
@@ -142,7 +145,6 @@
             font-weight: 700;
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            /* margin-bottom: 20px; -- Eliminado, ahora el top-section maneja el espaciado */
         }
 
         .add-button:hover {
@@ -246,7 +248,6 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
             border-radius: 8px;
             overflow: hidden;
-            /* margin-top: 20px; -- Eliminado, el top-section maneja el espaciado */
         }
 
         .data-table th, .data-table td {
@@ -465,9 +466,10 @@
             min-height: 400px;
             height: auto;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8); /* Sombra más pronunciada y elegante */
-            width: 100%;
-            background-color: var(--deep-blue); /* Fondo consistente para el contenedor */
+            width: 100%; /* Ocupa el 100% del contenedor padre */
+            background-color: var(--ultra-dark-blue); /* Fondo consistente: Ultra Oscuro */
             transition: box-shadow 0.3s ease; /* Transición para la sombra */
+            position: relative; /* Necesario para el spinner */
         }
 
         #handsontable-container:hover {
@@ -476,7 +478,7 @@
 
         /* Contenedor principal de Handsontable */
         .ht_master .wtHolder, .htCore {
-            background-color: var(--deep-blue); /* Fondo principal de la tabla */
+            background-color: var(--ultra-dark-blue); /* Fondo principal de la tabla: Ultra Oscuro */
             color: var(--white-off); /* Color de texto general */
             font-size: 0.95em; /* Fuente ligeramente más pequeña para más datos */
             line-height: 1.4; /* Espaciado de línea para legibilidad */
@@ -495,8 +497,8 @@
 
         /* Celdas de la tabla */
         .htCore td {
-            border-bottom: 1px solid rgba(58, 58, 90, 0.5); /* Borde inferior más suave */
-            border-right: 1px solid rgba(58, 58, 90, 0.3); /* Borde derecho aún más suave */
+            border-bottom: 1px solid rgba(58, 58, 90, 0.2); /* Borde inferior más suave */
+            border-right: 1px solid rgba(58, 58, 90, 0.1); /* Borde derecho aún más suave */
             padding: 10px 15px; /* Relleno consistente */
             vertical-align: middle; /* Alineación vertical */
             transition: background-color 0.2s ease; /* Transición para el hover */
@@ -505,7 +507,6 @@
         /* Resaltado de celda activa (cuando estás editando o seleccionando) */
         .handsontable .current.highlight, .handsontable .current, .handsontable .area, .handsontable .ht__highlight {
             background-color: rgba(255, 215, 0, 0.15) !important; /* Dorado semi-transparente para selección */
-            /* border: 1px solid var(--gold-vibrant) !important; // Quita el borde si prefieres solo el fondo */
         }
 
         /* Borde de la celda actualmente seleccionada */
@@ -517,7 +518,6 @@
         /* Estilo para las filas al pasar el ratón */
         .handsontable tbody tr:hover td {
             background-color: var(--dark-accent-blue); /* Fondo más oscuro al pasar el ratón por la fila */
-            /* Elimina 'transform: translateX(5px);' de tbody tr:hover si no lo quieres en la tabla */
         }
 
         /* Estilo de los editores dentro de Handsontable (cuando haces doble clic en una celda) */
@@ -1001,6 +1001,7 @@
             let totalDolares = 0;
 
             try {
+                // Fetch data, assuming `fecha` is stored as YYYY-MM-DD string
                 const snapshot = await db.collection('finanzas')
                     .where('fecha', '>=', startDate.toISOString().split('T')[0])
                     .where('fecha', '<=', endDate.toISOString().split('T')[0])
