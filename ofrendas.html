@@ -456,86 +456,122 @@
             transform: translateY(-3px) scale(1.02);
         }
 
-        /* Handsontable Styles Overrides */
+        /* --- Handsontable Styles Overrides (Diseño Elegante) --- */
         #handsontable-container {
             margin-top: 20px; /* Separación con el top-section */
-            border: 1px solid var(--border-line);
-            border-radius: 8px;
-            overflow: hidden;
-            min-height: 400px; /* Altura mínima para el contenedor */
-            height: auto; /* Allow content to dictate height, but maintain minimum */
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7); /* Consistent shadow */
-            width: 100%; /* Ocupa todo el ancho disponible */
-        }
-        .ht_master .wtHolder {
-            background-color: var(--deep-blue);
-        }
-        .htCore {
-            background-color: var(--deep-blue);
-            color: var(--white-off);
-            border-color: var(--border-line);
-        }
-        .htCore th {
-            background-color: var(--ultra-dark-blue);
-            color: var(--gold-vibrant);
-            font-weight: bold;
-            border-bottom: 1px solid var(--border-line); /* Ensure header bottom border */
-            border-right: 1px solid var(--border-line); /* For column dividers */
-        }
-        .htCore td {
-            font-weight: normal;
-            border-bottom: 1px solid var(--border-line);
-            border-right: 1px solid var(--border-line);
-            color: var(--white-off);
-        }
-        /* Specific styling for selected cells or rows */
-        .handsontable .current.highlight, .handsontable .current, .handsontable .area, .handsontable .ht__highlight {
-            background-color: rgba(255, 215, 0, 0.2) !important; /* Semi-transparent gold for selection */
-        }
-        .handsontable .selection.active {
-            background-color: rgba(255, 215, 0, 0.3) !important; /* More opaque gold for active selection */
-        }
-        .handsontable .current.border {
-            border-color: var(--gold-vibrant) !important; /* Gold border for active cell */
-        }
-        .handsontable .rowHeader, .handsontable .colHeader {
-            background-color: var(--dark-accent-blue);
-            color: var(--gold-light);
-            font-weight: bold;
-            border: 1px solid var(--border-line) !important;
-        }
-        .handsontable .wtBorder.current {
-            border-color: var(--gold-vibrant) !important;
-        }
-        .handsontable .form-control { /* For editors within Handsontable */
-            background-color: var(--dark-accent-blue);
-            color: var(--white-off);
-            border: 1px solid var(--gold-vibrant);
+            border: 1px solid var(--border-line); /* Borde sutil */
+            border-radius: 10px; /* Bordes ligeramente más redondeados */
+            overflow: hidden; /* Asegura que los bordes redondeados se apliquen al contenido */
+            min-height: 400px;
+            height: auto;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8); /* Sombra más pronunciada y elegante */
+            width: 100%;
+            background-color: var(--deep-blue); /* Fondo consistente para el contenedor */
+            transition: box-shadow 0.3s ease; /* Transición para la sombra */
         }
 
-        /* Loading spinner */
+        #handsontable-container:hover {
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.9); /* Sombra más intensa al pasar el ratón */
+        }
+
+        /* Contenedor principal de Handsontable */
+        .ht_master .wtHolder, .htCore {
+            background-color: var(--deep-blue); /* Fondo principal de la tabla */
+            color: var(--white-off); /* Color de texto general */
+            font-size: 0.95em; /* Fuente ligeramente más pequeña para más datos */
+            line-height: 1.4; /* Espaciado de línea para legibilidad */
+        }
+
+        /* Cabeceras de columnas y filas */
+        .handsontable .rowHeader, .handsontable .colHeader {
+            background-color: var(--dark-accent-blue); /* Fondo de cabeceras más oscuro */
+            color: var(--gold-vibrant); /* Texto de cabeceras en dorado vibrante */
+            font-weight: 600; /* Menos negrita para un look más moderno */
+            border-color: var(--border-line) !important; /* Borde de cabeceras */
+            padding: 10px 15px; /* Relleno ajustado */
+            text-transform: uppercase; /* Mayúsculas para las cabeceras de columna */
+            font-size: 0.85em; /* Tamaño de fuente ligeramente más pequeño para cabeceras */
+        }
+
+        /* Celdas de la tabla */
+        .htCore td {
+            border-bottom: 1px solid rgba(58, 58, 90, 0.5); /* Borde inferior más suave */
+            border-right: 1px solid rgba(58, 58, 90, 0.3); /* Borde derecho aún más suave */
+            padding: 10px 15px; /* Relleno consistente */
+            vertical-align: middle; /* Alineación vertical */
+            transition: background-color 0.2s ease; /* Transición para el hover */
+        }
+
+        /* Resaltado de celda activa (cuando estás editando o seleccionando) */
+        .handsontable .current.highlight, .handsontable .current, .handsontable .area, .handsontable .ht__highlight {
+            background-color: rgba(255, 215, 0, 0.15) !important; /* Dorado semi-transparente para selección */
+            /* border: 1px solid var(--gold-vibrant) !important; // Quita el borde si prefieres solo el fondo */
+        }
+
+        /* Borde de la celda actualmente seleccionada */
+        .handsontable .current.border {
+            border-color: var(--gold-vibrant) !important; /* Borde dorado vibrante */
+            box-shadow: 0 0 0 1px var(--gold-vibrant); /* Un sutil resplandor para la celda activa */
+        }
+
+        /* Estilo para las filas al pasar el ratón */
+        .handsontable tbody tr:hover td {
+            background-color: var(--dark-accent-blue); /* Fondo más oscuro al pasar el ratón por la fila */
+            /* Elimina 'transform: translateX(5px);' de tbody tr:hover si no lo quieres en la tabla */
+        }
+
+        /* Estilo de los editores dentro de Handsontable (cuando haces doble clic en una celda) */
+        .handsontable .form-control {
+            background-color: var(--dark-accent-blue); /* Fondo oscuro */
+            color: var(--white-off); /* Texto blanco roto */
+            border: 1px solid var(--gold-darker); /* Borde dorado más oscuro */
+            padding: 8px; /* Relleno */
+            font-size: 1em;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5); /* Sutil sombra dorada */
+        }
+
+        /* Estilo de los botones de acción dentro de las celdas (Editar) */
+        .action-button {
+            background-color: var(--gold-vibrant);
+            color: var(--ultra-dark-blue);
+            padding: 6px 12px; /* Relleno ajustado */
+            border: none;
+            border-radius: 6px; /* Bordes más suaves */
+            cursor: pointer;
+            font-size: 0.85em; /* Fuente ligeramente más pequeña */
+            font-weight: 700; /* Un poco más de peso */
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); /* Sombra sutil */
+        }
+        .action-button:hover {
+            background-color: var(--gold-darker);
+            transform: translateY(-2px); /* Un poco más de desplazamiento */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6); /* Sombra más prominente */
+        }
+
+        /* Spinner de carga para la tabla - Visibilidad por JS */
         .loading-spinner {
-            display: flex; /* Cambiado a flex para centrar el spinner */
-            justify-content: center;
-            align-items: center;
-            height: 100px; /* Altura para el spinner de la tabla */
-            width: 100%;
-            /* background-color: rgba(0, 0, 0, 0.5); /* Semi-transparente para indicar carga */
-            position: absolute; /* Para que quede encima de la tabla */
+            position: absolute;
             top: 0;
             left: 0;
-            z-index: 999; /* Asegura que esté por encima de la tabla */
+            right: 0;
+            bottom: 0;
+            background-color: rgba(10, 10, 26, 0.9); /* Fondo semi-transparente del color base */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100; /* Asegura que esté por encima de la tabla */
+            border-radius: 10px; /* Consistente con el contenedor */
         }
-        .loading-spinner::after { /* El spinner real */
+        .loading-spinner::after {
             content: '';
-            border: 4px solid rgba(255, 215, 0, 0.3);
-            border-top: 4px solid var(--gold-vibrant);
+            border: 5px solid rgba(255, 215, 0, 0.4); /* Anillo exterior más grueso y transparente */
+            border-top: 5px solid var(--gold-vibrant); /* Anillo giratorio dorado */
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 40px; /* Tamaño del spinner */
+            height: 40px; /* Tamaño del spinner */
             animation: spin 1s linear infinite;
         }
-
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -545,22 +581,6 @@
         /* Utility class for hiding/showing elements */
         .hidden {
             display: none !important;
-        }
-
-        .action-button {
-            background-color: var(--gold-vibrant);
-            color: var(--ultra-dark-blue);
-            padding: 5px 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 600;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-        .action-button:hover {
-            background-color: var(--gold-darker);
-            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -594,8 +614,10 @@
             </div>
         </div>
 
-        <div id="handsontable-container"></div>
-        <div class="loading-spinner" id="tableLoadingSpinner"></div> <div class="pagination">
+        <div id="handsontable-container">
+            <div class="loading-spinner" id="tableLoadingSpinner"></div>
+        </div>
+        <div class="pagination">
             <button id="prevPageBtn" disabled>&laquo; Anterior</button>
             <span id="pageInfo">Página 1 de 1</span>
             <button id="nextPageBtn" disabled>Siguiente &raquo;</button>
@@ -649,15 +671,15 @@
         // IMPORTANTE: Reemplaza estos valores con la configuración de tu proyecto Firebase.
         // Asegúrate de que tu `projectId` sea el correcto para Firestore.
         const firebaseConfig = {
-  apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-  authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-  databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-  projectId: "iglesia-adoracion-viva",
-  storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-  messagingSenderId: "815332010058",
-  appId: "1:815332010058:web:d2afff616469349d88deb3",
-  measurementId: "G-43MZP6V55D"
-};
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
 
         // Inicializa Firebase si no ha sido inicializado ya
         if (!firebase.apps.length) {
@@ -800,244 +822,240 @@
 
         function closeModal() {
             ofrendaModal.classList.remove('show');
-            ofrendaForm.reset(); // Limpia el formulario
-            currentEditingFinanzaId = null;
+            ofrendaForm.reset(); // Reset the form fields
+            deleteFinanzaBtn.classList.add('hidden'); // Hide delete button for new entries
+            currentEditingFinanzaId = null; // Clear the editing ID
         }
 
-        // --- Manejo de Datos (CRUD) ---
+        // Global function to be called by Handsontable button
+        function editFinanza(id) {
+            openModal(id);
+        }
+        // Make it globally accessible for the Handsontable renderer
+        window.editFinanza = editFinanza;
+
+        // --- Funciones de Datos y Tabla ---
 
         async function loadFinanzas() {
-            tableLoadingSpinner.style.display = 'flex'; // Mostrar spinner de la tabla
+            tableLoadingSpinner.classList.remove('hidden'); // Show spinner
             try {
-                // Obtener datos ordenados por fecha de forma descendente
                 const snapshot = await db.collection('finanzas').orderBy('fecha', 'desc').get();
-                allFinanzas = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return {
-                        id: doc.id,
-                        concepto: data.concepto || 'Sin concepto',
-                        cantidad: parseFloat(data.cantidad) || 0, // Asegurar que sea número
-                        moneda: data.moneda || 'USD',
-                        // Asegurar que la fecha sea un string YYYY-MM-DD
-                        fecha: data.fecha ? (data.fecha.toDate ? data.fecha.toDate().toISOString().split('T')[0] : data.fecha) : ''
-                    };
+                allFinanzas = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                // Convert Firestore Timestamp to Date string if necessary for display and filtering
+                allFinanzas.forEach(item => {
+                    if (item.fecha && item.fecha.toDate) { // Check if it's a Firestore Timestamp
+                        item.fecha = item.fecha.toDate().toISOString().split('T')[0];
+                    }
                 });
-                console.log("Datos cargados de Firestore:", allFinanzas); // Para depuración
-                applyPagination(); // Aplicar paginación y renderizar la tabla
-                actualizarResumen(); // Actualizar el resumen después de cargar los datos
+
+                filterAndPaginateFinanzas(); // Apply initial filter and pagination
+                showToast("Datos financieros cargados correctamente.", "success");
             } catch (error) {
                 console.error("Error al cargar finanzas:", error);
-                showToast("Error al cargar finanzas. Revisa la consola y tus reglas de seguridad.", "error");
+                showToast("Error al cargar datos financieros.", "error");
             } finally {
-                tableLoadingSpinner.style.display = 'none'; // Ocultar spinner de la tabla
+                tableLoadingSpinner.classList.add('hidden'); // Hide spinner
             }
         }
 
-        async function saveFinanza(event) {
-            event.preventDefault();
-
-            // Validación
-            const concepto = conceptoInput.value.trim();
-            const cantidad = parseFloat(cantidadInput.value);
-            const moneda = monedaSelect.value;
-            const fecha = fechaInput.value; // Ya en formato YYYY-MM-DD
-
-            if (!concepto || isNaN(cantidad) || cantidad <= 0 || !moneda || !fecha) {
-                showToast("Por favor, rellena todos los campos correctamente. La cantidad debe ser un número positivo.", "warning");
-                return;
+        function filterAndPaginateFinanzas() {
+            // For now, no complex filters besides date if you add them later
+            filteredFinanzas = [...allFinanzas]; // Start with all data, apply filters here if any
+            
+            totalPages = Math.ceil(filteredFinanzas.length / ITEMS_PER_PAGE);
+            if (currentPage > totalPages && totalPages > 0) {
+                currentPage = totalPages;
+            } else if (totalPages === 0) {
+                currentPage = 0; // No pages if no data
+            } else if (currentPage === 0 && totalPages > 0) {
+                currentPage = 1; // Default to first page if no current page
             }
-
-            const finanzaData = {
-                concepto,
-                cantidad,
-                moneda,
-                fecha
-            };
-
-            try {
-                if (currentEditingFinanzaId) {
-                    // Actualizar entrada existente
-                    await db.collection('finanzas').doc(currentEditingFinanzaId).update(finanzaData);
-                    showToast('Entrada financiera actualizada con éxito.', 'success');
-                } else {
-                    // Añadir nueva entrada
-                    await db.collection('finanzas').add(finanzaData);
-                    showToast('Entrada financiera añadida con éxito.', 'success');
-                }
-                closeModal(); // Cierra el modal
-                await loadFinanzas(); // Recarga los datos y actualiza la tabla
-            } catch (error) {
-                console.error("Error al guardar/actualizar finanza:", error);
-                showToast("Error al guardar la entrada financiera. Revisa la consola.", "error");
-            }
+            renderTable();
+            updatePaginationControls();
         }
 
-        async function deleteFinanza() {
-            if (!currentEditingFinanzaId || !confirm('¿Estás seguro de que quieres eliminar esta entrada financiera?')) {
-                return;
-            }
+        function renderTable() {
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const dataToDisplay = filteredFinanzas.slice(startIndex, endIndex).map(item => ({
+                id: item.id,
+                concepto: item.concepto,
+                cantidad: item.cantidad,
+                moneda: item.moneda,
+                fecha: item.fecha
+            }));
 
-            try {
-                await db.collection('finanzas').doc(currentEditingFinanzaId).delete();
-                showToast('Entrada financiera eliminada con éxito.', 'info');
-                closeModal(); // Cierra el modal
-                await loadFinanzas(); // Recarga los datos y actualiza la tabla
-            } catch (error) {
-                console.error("Error al eliminar finanza:", error);
-                showToast("Error al eliminar la entrada financiera. Revisa la consola.", "error");
-            }
-        }
-
-
-        // --- Handsontable Initialization and Rendering ---
-
-        function renderTable(dataToRender) {
             const container = document.getElementById('handsontable-container');
 
-            // Destruye la instancia existente si ya existe para evitar duplicados
             if (hot) {
-                hot.destroy();
+                hot.destroy(); // Destroy existing instance before creating a new one
             }
 
             hot = new Handsontable(container, {
-                data: dataToRender,
-                rowHeaders: true,
+                data: dataToDisplay,
                 colHeaders: ['Concepto', 'Cantidad', 'Moneda', 'Fecha', 'Acciones'],
                 columns: [
                     { data: 'concepto', readOnly: true },
-                    {
-                        data: 'cantidad',
-                        type: 'numeric',
-                        numericFormat: {
-                            pattern: '0,0.00',
-                            culture: 'es-NI' // Para formato de moneda nicaragüense con coma
-                        },
-                        readOnly: true
-                    },
+                    { data: 'cantidad', type: 'numeric', numericFormat: { pattern: '0,0.00' }, readOnly: true },
                     { data: 'moneda', readOnly: true },
                     { data: 'fecha', type: 'date', dateFormat: 'YYYY-MM-DD', readOnly: true },
-                    { // Columna de acciones
-                        data: 'id', // Usamos el ID para identificar la fila
+                    {
+                        data: 'id', // Use ID to reference the row for actions
                         renderer: function(instance, td, row, col, prop, value, cellProperties) {
-                            // Limpia el contenido actual para evitar duplicados al re-renderizar
-                            td.innerHTML = '';
-                            const editButton = document.createElement('button');
-                            editButton.className = 'action-button';
-                            editButton.textContent = 'Editar';
-                            editButton.onclick = () => openModal(value); // 'value' es el ID de la fila
-                            td.appendChild(editButton);
-                            return td;
+                            Handsontable.renderers.HtmlRenderer.apply(this, arguments);
+                            td.innerHTML = `<button class="action-button" onclick="editFinanza('${value}')">Editar</button>`;
                         },
                         readOnly: true,
-                        width: 100 // Ancho fijo para el botón
+                        width: 100
                     }
                 ],
-                stretchH: 'all', // Estira las columnas para llenar el ancho
+                stretchH: 'all',
                 autoRowSize: true,
-                autoColumnSize: true,
-                height: 'auto', // Ajusta la altura al contenido
-                maxRows: ITEMS_PER_PAGE, // Para que la paginación funcione visualmente
-                licenseKey: 'non-commercial-and-evaluation' // Clave de licencia de Handsontable
+                rowHeaders: true,
+                licenseKey: 'non-commercial-and-evaluation' // Acepta el uso no comercial para evitar el mensaje de licencia
             });
         }
 
+        function updatePaginationControls() {
+            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
+            prevPageBtn.disabled = currentPage <= 1;
+            nextPageBtn.disabled = currentPage >= totalPages;
+        }
 
-        function applyPagination() {
-            totalPages = Math.ceil(allFinanzas.length / ITEMS_PER_PAGE);
-            if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
-            if (currentPage < 1 && totalPages > 0) currentPage = 1;
+        // --- Manejo del Formulario (Guardar/Actualizar) ---
+        ofrendaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-            const start = (currentPage - 1) * ITEMS_PER_PAGE;
-            const end = start + ITEMS_PER_PAGE;
-            filteredFinanzas = allFinanzas.slice(start, end);
+            const finanzaData = {
+                concepto: conceptoInput.value,
+                cantidad: parseFloat(cantidadInput.value),
+                moneda: monedaSelect.value,
+                fecha: fechaInput.value // Stored as YYYY-MM-DD string
+            };
 
-            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages || 1}`;
-            prevPageBtn.disabled = currentPage === 1 || totalPages === 0;
-            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+            saveFinanzaBtn.disabled = true; // Disable button to prevent multiple submissions
 
-            console.log("Datos paginados para la tabla:", filteredFinanzas); // Para depuración
+            try {
+                if (currentEditingFinanzaId) {
+                    await db.collection('finanzas').doc(currentEditingFinanzaId).update(finanzaData);
+                    showToast("Entrada financiera actualizada correctamente.", "success");
+                } else {
+                    await db.collection('finanzas').add(finanzaData);
+                    showToast("Nueva entrada financiera añadida correctamente.", "success");
+                }
+                closeModal();
+                loadFinanzas(); // Reload data after saving
+            } catch (error) {
+                console.error("Error al guardar entrada financiera:", error);
+                showToast("Error al guardar la entrada financiera.", "error");
+            } finally {
+                saveFinanzaBtn.disabled = false;
+            }
+        });
 
-            if (hot) {
-                hot.loadData(filteredFinanzas); // Carga los nuevos datos en la tabla existente
-            } else {
-                renderTable(filteredFinanzas); // Inicializa la tabla si aún no ha sido creada
+        // --- Manejo del Botón de Eliminar ---
+        deleteFinanzaBtn.addEventListener('click', async () => {
+            if (!currentEditingFinanzaId) {
+                showToast("No hay entrada seleccionada para eliminar.", "error");
+                return;
+            }
+
+            if (confirm("¿Estás seguro de que quieres eliminar esta entrada financiera?")) {
+                deleteFinanzaBtn.disabled = true; // Disable button
+
+                try {
+                    await db.collection('finanzas').doc(currentEditingFinanzaId).delete();
+                    showToast("Entrada financiera eliminada correctamente.", "success");
+                    closeModal();
+                    loadFinanzas(); // Reload data after deleting
+                } catch (error) {
+                    console.error("Error al eliminar entrada financiera:", error);
+                    showToast("Error al eliminar la entrada financiera.", "error");
+                } finally {
+                    deleteFinanzaBtn.disabled = false;
+                }
+            }
+        });
+
+        // --- Actualización del Resumen Financiero ---
+        async function actualizarResumen() {
+            const selectedMonth = fechaResumenInput.value; // YYYY-MM
+            if (!selectedMonth) {
+                totalCordobasSpan.textContent = 'C$ 0.00';
+                totalDolaresSpan.textContent = '$ 0.00';
+                return;
+            }
+
+            cordobasSpinner.classList.remove('hidden');
+            dolaresSpinner.classList.remove('hidden');
+
+            const [year, month] = selectedMonth.split('-');
+            const startDate = new Date(year, month - 1, 1);
+            // Use last day of the month for end date filter to include all entries in the month
+            const endDate = new Date(year, month, 0, 23, 59, 59, 999); // Last millisecond of the month
+
+            let totalCordobas = 0;
+            let totalDolares = 0;
+
+            try {
+                const snapshot = await db.collection('finanzas')
+                    .where('fecha', '>=', startDate.toISOString().split('T')[0])
+                    .where('fecha', '<=', endDate.toISOString().split('T')[0])
+                    .get();
+
+                snapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    const cantidad = parseFloat(data.cantidad);
+                    if (data.moneda === 'NIO') {
+                        totalCordobas += cantidad;
+                    } else if (data.moneda === 'USD') {
+                        totalDolares += cantidad;
+                    }
+                });
+
+                totalCordobasSpan.textContent = `C$ ${totalCordobas.toFixed(2)}`;
+                totalDolaresSpan.textContent = `$ ${totalDolares.toFixed(2)}`;
+            } catch (error) {
+                console.error("Error al calcular resumen:", error);
+                showToast("Error al calcular el resumen financiero.", "error");
+                totalCordobasSpan.textContent = 'C$ Error';
+                totalDolaresSpan.textContent = '$ Error';
+            } finally {
+                cordobasSpinner.classList.add('hidden');
+                dolaresSpinner.classList.add('hidden');
             }
         }
 
-        // --- Funciones de Paginación ---
+        // --- Event Listeners ---
+        addFinanzaBtn.addEventListener('click', () => openModal());
+        closeModalBtn.addEventListener('click', closeModal);
+        // Close modal when clicking outside of the modal content
+        ofrendaModal.addEventListener('click', (e) => {
+            if (e.target === ofrendaModal) {
+                closeModal();
+            }
+        });
+
         prevPageBtn.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
-                applyPagination();
+                filterAndPaginateFinanzas(); // Re-filter and paginate
             }
         });
 
         nextPageBtn.addEventListener('click', () => {
             if (currentPage < totalPages) {
                 currentPage++;
-                applyPagination();
+                filterAndPaginateFinanzas(); // Re-filter and paginate
             }
         });
 
-        // --- Funciones de Resumen ---
-        async function actualizarResumen() {
-            cordobasSpinner.style.display = 'inline-block';
-            dolaresSpinner.style.display = 'inline-block';
-            totalCordobasSpan.textContent = 'C$ Calculando...';
-            totalDolaresSpan.textContent = '$ Calculando...';
-
-            const selectedMonth = fechaResumenInput.value; // Formato YYYY-MM
-
-            if (!selectedMonth) {
-                showToast("Por favor, selecciona un mes para el resumen.", "warning");
-                totalCordobasSpan.textContent = 'C$ 0.00';
-                totalDolaresSpan.textContent = '$ 0.00';
-                cordobasSpinner.style.display = 'none';
-                dolaresSpinner.style.display = 'none';
-                return;
-            }
-
-            let totalCordobas = 0;
-            let totalDolares = 0;
-
-            // Filtramos los datos que ya tenemos cargados en `allFinanzas`
-            const finanzasDelMes = allFinanzas.filter(finanza =>
-                finanza.fecha.startsWith(selectedMonth) // Compara 'YYYY-MM-DD' con 'YYYY-MM'
-            );
-
-            finanzasDelMes.forEach(finanza => {
-                if (finanza.moneda === 'NIO') {
-                    totalCordobas += finanza.cantidad;
-                } else if (finanza.moneda === 'USD') {
-                    totalDolares += finanza.cantidad;
-                }
-            });
-
-            totalCordobasSpan.textContent = `C$ ${totalCordobas.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            totalDolaresSpan.textContent = `$ ${totalDolares.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-            cordobasSpinner.style.display = 'none';
-            dolaresSpinner.style.display = 'none';
-        }
-
-
-        // --- Event Listeners ---
-        addFinanzaBtn.addEventListener('click', () => openModal());
-        closeModalBtn.addEventListener('click', closeModal);
-        ofrendaModal.addEventListener('click', (e) => {
-            if (e.target === ofrendaModal) {
-                closeModal();
-            }
-        });
-        ofrendaForm.addEventListener('submit', saveFinanza);
-        deleteFinanzaBtn.addEventListener('click', deleteFinanza);
-
-        // Event listener para actualizar el resumen al cambiar la fecha
         fechaResumenInput.addEventListener('change', actualizarResumen);
 
-        // Al cargar la página, se inicializarán los datos
-        // (gestionado por auth.onAuthStateChanged)
-
+        // Set default month for summary on initial load (handled in auth.onAuthStateChanged)
     </script>
 </body>
 </html>
