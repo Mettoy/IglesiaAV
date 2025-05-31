@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión Eclesiástica</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.X.X/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.X.X/firebase-firestore-compat.js"></script>
     <style>
         /* General Body Styles */
         body {
@@ -339,6 +341,102 @@
             color: #000033;
         }
 
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 80%; /* Could be responsive */
+            max-width: 600px;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal h3 {
+            color: #000033;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .search-input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .member-list {
+            max-height: 250px; /* Scrollable list */
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            padding: 5px;
+        }
+
+        .member-list-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f2f2f2;
+            transition: background-color 0.2s ease;
+        }
+
+        .member-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .member-list-item:hover {
+            background-color: #e6f7ff; /* Light blue on hover */
+        }
+
+        .member-list-item.selected {
+            background-color: #d0eaff; /* Slightly darker blue for selected */
+            font-weight: bold;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .sidebar {
@@ -404,6 +502,11 @@
             .btn {
                 width: 100%;
             }
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -466,7 +569,7 @@
 
             <div class="action-buttons">
                 <button class="btn btn-primary" onclick="generarReporte()">Generar Reporte</button>
-                <button class="btn btn-secondary" onclick="imprimirDocumento()">Imprimir como PDF</button>
+                <button class="btn btn-secondary" onclick="showPrintOptions()">Imprimir como PDF</button>
             </div>
         </div>
 
@@ -478,20 +581,67 @@
         </div>
     </div>
 
+    <div id="memberPrintModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeMemberPrintModal()">&times;</span>
+            <h3>Imprimir Hoja de Miembro</h3>
+            <div class="form-group">
+                <label for="memberSearchInput">Buscar Miembro:</label>
+                <input type="text" id="memberSearchInput" class="search-input" placeholder="Escribe el nombre o apellido..." onkeyup="filterMembers()">
+            </div>
+            <div class="member-list" id="memberList">
+                </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeMemberPrintModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="printSelectedMemberSheet()">Imprimir Hoja</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Firebase Configuration - REPLACE WITH YOUR ACTUAL CONFIG
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let allMembers = []; // To store all members fetched from Firestore
+        let selectedMemberId = null; // To keep track of the currently selected member for printing
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchAllMembers(); // Fetch all members when the page loads
+        });
+
+        async function fetchAllMembers() {
+            try {
+                const membersSnapshot = await db.collection('miembros').orderBy('nombre').get();
+                allMembers = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log("Members loaded:", allMembers);
+            } catch (error) {
+                console.error("Error loading all members:", error);
+                alert("Error al cargar la lista de miembros: " + error.message);
+            }
+        }
+
         function cerrarSesion() {
             if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
                 alert('Cerrando sesión...');
-                // Aquí puedes redirigir al usuario a la página de login
                 window.location.href = 'login.html';
             }
         }
 
-        // Maneja el cambio de selección en el tipo de reporte
         document.getElementById('reportCategory').addEventListener('change', function() {
             const optionsDiv = document.getElementById('reportOptions');
             const selectedCategory = this.value;
-            optionsDiv.innerHTML = ''; // Limpia opciones anteriores
+            optionsDiv.innerHTML = '';
 
             if (selectedCategory === 'miembros' || selectedCategory === 'diezmos' || selectedCategory === 'ofrendas') {
                 optionsDiv.innerHTML = `
@@ -520,113 +670,187 @@
             }
         });
 
-        // Función para simular la carga de datos del reporte (aquí iría tu lógica real)
-        function cargarDatosReporte(category, options) {
+        async function cargarDatosReporte(category, options) {
             let reportHtml = '';
             let title = '';
+            let data = [];
 
-            switch (category) {
-                case 'miembros':
-                    title = 'Reporte de Miembros Activos';
-                    reportHtml = `
-                        <h3>${title}</h3>
-                        <p>Periodo: ${options.startDate || 'N/A'} a ${options.endDate || 'N/A'}</p>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nombre</th>
-                                    <th>Apellido</th>
-                                    <th>Fecha Ingreso</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>001</td><td>Juan</td><td>Pérez</td><td>2020-01-15</td><td>Activo</td></tr>
-                                <tr><td>002</td><td>María</td><td>González</td><td>2021-03-20</td><td>Activo</td></tr>
-                                <tr><td>003</td><td>Pedro</td><td>Ramírez</td><td>2022-07-01</td><td>Inactivo</td></tr>
-                                <tr><td>004</td><td>Ana</td><td>López</td><td>2023-09-10</td><td>Activo</td></tr>
-                            </tbody>
-                        </table>
-                        <p class="report-footer">Total de miembros activos: 3</p>
-                    `;
-                    break;
-                case 'diezmos':
-                    title = 'Reporte de Diezmos Recibidos';
-                    reportHtml = `
-                        <h3>${title}</h3>
-                        <p>Periodo: ${options.startDate || 'N/A'} a ${options.endDate || 'N/A'}</p>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Miembro</th>
-                                    <th>Monto</th>
-                                    <th>Descripción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>2025-05-01</td><td>Juan Pérez</td><td>$150.00</td><td>Diezmo Mayo</td></tr>
-                                <tr><td>2025-05-08</td><td>María González</td><td>$100.00</td><td>Diezmo Mayo</td></tr>
-                                <tr><td>2025-05-15</td><td>Ana López</td><td>$75.00</td><td>Diezmo Mayo</td></tr>
-                            </tbody>
-                        </table>
-                        <p class="report-footer">Total de diezmos en el periodo: $325.00</p>
-                    `;
-                    break;
-                case 'ofrendas':
-                    title = 'Reporte de Ofrendas Generales';
-                    reportHtml = `
-                        <h3>${title}</h3>
-                        <p>Periodo: ${options.startDate || 'N/A'} a ${options.endDate || 'N/A'}</p>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Monto</th>
-                                    <th>Tipo de Ofrenda</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>2025-05-05</td><td>$50.00</td><td>General</td></tr>
-                                <tr><td>2025-05-12</td><td>$25.00</td><td>Misiones</td></tr>
-                                <tr><td>2025-05-19</td><td>$120.00</td><td>Acción de Gracias</td></tr>
-                            </tbody>
-                        </table>
-                        <p class="report-footer">Total de ofrendas en el periodo: $195.00</p>
-                    `;
-                    break;
-                case 'discipulado':
-                    title = `Reporte de Discipulado (${options.discipuladoType || 'Todos'})`;
-                    reportHtml = `
-                        <h3>${title}</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nombre del Discipulador</th>
-                                    <th>Nombre del Discípulo</th>
-                                    <th>Fase/Nivel</th>
-                                    <th>Fecha de Inicio</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>Pastor David</td><td>Juan Pérez</td><td>Nivel 1</td><td>2024-11-01</td></tr>
-                                <tr><td>Líder Marta</td><td>María González</td><td>Nivel 2</td><td>2024-08-15</td></tr>
-                                <tr><td>Pastor David</td><td>Ana López</td><td>Nuevo Creyente</td><td>2025-04-20</td></tr>
-                            </tbody>
-                        </table>
-                        <p class="report-footer">Total de discípulos en la categoría ${options.discipuladoType || 'Todos'}: 3</p>
-                    `;
-                    break;
-                default:
-                    reportHtml = `<p class="placeholder-text-center">Por favor, selecciona una categoría válida para generar un reporte.</p>`;
-                    break;
+            try {
+                switch (category) {
+                    case 'miembros':
+                        title = 'Reporte de Miembros Activos';
+                        let miembrosRef = db.collection('miembros');
+                        if (options.startDate) {
+                            miembrosRef = miembrosRef.where('fecha_ingreso', '>=', options.startDate);
+                        }
+                        if (options.endDate) {
+                            miembrosRef = miembrosRef.where('fecha_ingreso', '<=', options.endDate);
+                        }
+                        const miembrosSnapshot = await miembrosRef.get();
+                        data = miembrosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                        data.sort((a, b) => {
+                             const dateA = a.fecha_ingreso ? new Date(a.fecha_ingreso) : new Date(0);
+                             const dateB = b.fecha_ingreso ? new Date(b.fecha_ingreso) : new Date(0);
+                             return dateA - dateB;
+                        });
+
+                        reportHtml = `
+                            <h3>${title}</h3>
+                            <p>Periodo: ${options.startDate || 'N/A'} a ${options.endDate || 'N/A'}</p>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Apellido</th>
+                                        <th>Fecha Ingreso</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.map(m => `
+                                        <tr>
+                                            <td>${m.id}</td>
+                                            <td>${m.nombre || 'N/A'}</td>
+                                            <td>${m.apellido || 'N/A'}</td>
+                                            <td>${m.fecha_ingreso || 'N/A'}</td>
+                                            <td>${m.estado || 'N/A'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <p class="report-footer">Total de miembros activos: ${data.filter(m => m.estado === 'Activo').length}</p>
+                        `;
+                        break;
+
+                    case 'diezmos':
+                        title = 'Reporte de Diezmos Recibidos';
+                        let diezmosRef = db.collection('diezmos');
+                        if (options.startDate) {
+                            diezmosRef = diezmosRef.where('fecha', '>=', options.startDate);
+                        }
+                        if (options.endDate) {
+                            diezmosRef = diezmosRef.where('fecha', '<=', options.endDate);
+                        }
+                        const diezmosSnapshot = await diezmosRef.orderBy('fecha').get();
+                        data = diezmosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                        const totalDiezmos = data.reduce((sum, d) => sum + parseFloat(d.monto || 0), 0);
+
+                        reportHtml = `
+                            <h3>${title}</h3>
+                            <p>Periodo: ${options.startDate || 'N/A'} a ${options.endDate || 'N/A'}</p>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Miembro</th>
+                                        <th>Monto</th>
+                                        <th>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.map(d => `
+                                        <tr>
+                                            <td>${d.fecha || 'N/A'}</td>
+                                            <td>${d.miembro_nombre || 'Desconocido'}</td>
+                                            <td>$${parseFloat(d.monto || 0).toFixed(2)}</td>
+                                            <td>${d.descripcion || 'N/A'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <p class="report-footer">Total de diezmos en el periodo: $${totalDiezmos.toFixed(2)}</p>
+                        `;
+                        break;
+
+                    case 'ofrendas':
+                        title = 'Reporte de Ofrendas Generales';
+                        let ofrendasRef = db.collection('ofrendas');
+                        if (options.startDate) {
+                            ofrendasRef = ofrendasRef.where('fecha', '>=', options.startDate);
+                        }
+                        if (options.endDate) {
+                            ofrendasRef = ofrendasRef.where('fecha', '<=', options.endDate);
+                        }
+                        const ofrendasSnapshot = await ofrendasRef.orderBy('fecha').get();
+                        data = ofrendasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                        const totalOfrendas = data.reduce((sum, o) => sum + parseFloat(o.monto || 0), 0);
+
+                        reportHtml = `
+                            <h3>${title}</h3>
+                            <p>Periodo: ${options.startDate || 'N/A'} a ${options.endDate || 'N/A'}</p>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Monto</th>
+                                        <th>Tipo de Ofrenda</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.map(o => `
+                                        <tr>
+                                            <td>${o.fecha || 'N/A'}</td>
+                                            <td>$${parseFloat(o.monto || 0).toFixed(2)}</td>
+                                            <td>${o.tipo || 'General'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <p class="report-footer">Total de ofrendas en el periodo: $${totalOfrendas.toFixed(2)}</p>
+                        `;
+                        break;
+
+                    case 'discipulado':
+                        title = `Reporte de Discipulado (${options.discipuladoType || 'Todos'})`;
+                        let discipuladoRef = db.collection('discipulado');
+                        if (options.discipuladoType && options.discipuladoType !== 'todos') {
+                            discipuladoRef = discipuladoRef.where('tipo', '==', options.discipuladoType);
+                        }
+                        const discipuladoSnapshot = await discipuladoRef.orderBy('fecha_inicio').get();
+                        data = discipuladoSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                        reportHtml = `
+                            <h3>${title}</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nombre del Discipulador</th>
+                                        <th>Nombre del Discípulo</th>
+                                        <th>Fase/Nivel</th>
+                                        <th>Fecha de Inicio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.map(d => `
+                                        <tr>
+                                            <td>${d.discipulador || 'N/A'}</td>
+                                            <td>${d.discipulo || 'N/A'}</td>
+                                            <td>${d.fase_nivel || 'N/A'}</td>
+                                            <td>${d.fecha_inicio || 'N/A'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <p class="report-footer">Total de discípulos en la categoría ${options.discipuladoType || 'Todos'}: ${data.length}</p>
+                        `;
+                        break;
+
+                    default:
+                        reportHtml = `<p class="placeholder-text-center">Por favor, selecciona una categoría válida para generar un reporte.</p>`;
+                        break;
+                }
+            } catch (error) {
+                console.error("Error fetching data from Firestore:", error);
+                reportHtml = `<p class="placeholder-text-center error-message">Error al cargar el reporte: ${error.message}. Verifica tu conexión o configuración de Firestore.</p>`;
             }
 
             document.getElementById('reportContentToPrint').innerHTML = reportHtml;
         }
 
-        // Función para generar el reporte y previsualizarlo
         function generarReporte() {
             const category = document.getElementById('reportCategory').value;
             if (!category) {
@@ -642,35 +866,169 @@
                 options.discipuladoType = document.getElementById('discipuladoType') ? document.getElementById('discipuladoType').value : '';
             }
 
-            cargarDatosReporte(category, options); // Simula la carga de datos
+            cargarDatosReporte(category, options);
 
-            // Desplaza a la vista previa del reporte
             document.getElementById('reportContentToPrint').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Función para generar PDF usando html2pdf.js
-        function imprimirDocumento() {
-            const element = document.getElementById('reportContentToPrint');
+        // --- New Functions for Member Sheet Printing ---
 
-            // Verifica si hay contenido real para imprimir
+        function showPrintOptions() {
+            // Check if a report is currently displayed for general PDF printing
+            const currentReportContent = document.getElementById('reportContentToPrint').innerHTML.trim();
+            const isPlaceholder = currentReportContent.includes('placeholder-text-center') || currentReportContent === '';
+
+            // If a general report is generated, offer to print it directly
+            if (!isPlaceholder) {
+                if (confirm('¿Deseas imprimir el reporte actual o una hoja de miembro específica?')) {
+                    imprimirGeneralReport(); // Function to print the current report
+                    return;
+                }
+            }
+            // If no general report, or if user chooses specific sheet
+            openMemberPrintModal();
+        }
+
+        function imprimirGeneralReport() {
+            const element = document.getElementById('reportContentToPrint');
             if (element.innerHTML.trim().includes('placeholder-text-center') || element.innerHTML.trim() === '') {
-                alert('No hay contenido de reporte para imprimir. Por favor, genera un reporte primero.');
+                alert('No hay contenido de reporte para imprimir.');
+                return;
+            }
+            const opt = {
+                margin:        1,
+                filename:      'reporte_general.pdf',
+                image:         { type: 'jpeg', quality: 0.98 },
+                html2canvas:   { scale: 2, logging: true, dpi: 192, letterRendering: true },
+                jsPDF:         { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+            alert('Generando y descargando su reporte general en PDF...');
+        }
+
+
+        function openMemberPrintModal() {
+            document.getElementById('memberPrintModal').style.display = 'flex';
+            document.getElementById('memberSearchInput').value = ''; // Clear search bar
+            selectedMemberId = null; // Clear selected member
+            displayMemberList(allMembers); // Show all members initially
+        }
+
+        function closeMemberPrintModal() {
+            document.getElementById('memberPrintModal').style.display = 'none';
+        }
+
+        function displayMemberList(membersToDisplay) {
+            const memberListDiv = document.getElementById('memberList');
+            memberListDiv.innerHTML = ''; // Clear previous list
+
+            if (membersToDisplay.length === 0) {
+                memberListDiv.innerHTML = '<p style="text-align: center; color: #777;">No se encontraron miembros.</p>';
                 return;
             }
 
+            membersToDisplay.forEach(member => {
+                const listItem = document.createElement('div');
+                listItem.classList.add('member-list-item');
+                listItem.textContent = `${member.nombre} ${member.apellido} (ID: ${member.id})`;
+                listItem.dataset.memberId = member.id;
+                listItem.onclick = () => selectMember(listItem, member.id);
+                memberListDiv.appendChild(listItem);
+            });
+        }
+
+        function filterMembers() {
+            const searchTerm = document.getElementById('memberSearchInput').value.toLowerCase();
+            const filtered = allMembers.filter(member =>
+                (member.nombre && member.nombre.toLowerCase().includes(searchTerm)) ||
+                (member.apellido && member.apellido.toLowerCase().includes(searchTerm))
+            );
+            displayMemberList(filtered);
+        }
+
+        function selectMember(selectedElement, memberId) {
+            // Remove 'selected' class from all other items
+            document.querySelectorAll('.member-list-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // Add 'selected' class to the clicked item
+            selectedElement.classList.add('selected');
+            selectedMemberId = memberId;
+        }
+
+        async function printSelectedMemberSheet() {
+            if (!selectedMemberId) {
+                alert('Por favor, selecciona un miembro de la lista.');
+                return;
+            }
+
+            const memberData = allMembers.find(m => m.id === selectedMemberId);
+
+            if (!memberData) {
+                alert('No se encontró la información del miembro seleccionado.');
+                return;
+            }
+
+            // Create a temporary element to hold the member sheet content
+            const tempPrintDiv = document.createElement('div');
+            tempPrintDiv.style.padding = '20px';
+            tempPrintDiv.style.fontFamily = 'Arial, sans-serif';
+            tempPrintDiv.style.fontSize = '12px';
+
+            tempPrintDiv.innerHTML = `
+                <style>
+                    .member-sheet-header { text-align: center; margin-bottom: 20px; }
+                    .member-sheet-header h1 { color: #000033; margin: 0; font-size: 1.8em; }
+                    .member-sheet-header p { margin: 5px 0 0; color: #555; }
+                    .member-details table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    .member-details th, .member-details td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    .member-details th { background-color: #f2f2f2; color: #333; width: 30%; }
+                    .member-details td { background-color: #fff; }
+                    .sheet-footer { text-align: right; margin-top: 30px; font-size: 0.9em; color: #777; }
+                </style>
+                <div class="member-sheet-header">
+                    <h1>Hoja de Registro de Miembro</h1>
+                    <p>Sistema de Gestión Eclesiástica</p>
+                    <p>Fecha de Impresión: ${new Date().toLocaleDateString('es-ES')}</p>
+                </div>
+                <div class="member-details">
+                    <table>
+                        <tr><th>ID del Miembro:</th><td>${memberData.id || 'N/A'}</td></tr>
+                        <tr><th>Nombre Completo:</th><td>${memberData.nombre || 'N/A'} ${memberData.apellido || 'N/A'}</td></tr>
+                        <tr><th>Fecha de Ingreso:</th><td>${memberData.fecha_ingreso || 'N/A'}</td></tr>
+                        <tr><th>Estado:</th><td>${memberData.estado || 'N/A'}</td></tr>
+                        <tr><th>Fecha de Nacimiento:</th><td>${memberData.fecha_nacimiento || 'N/A'}</td></tr>
+                        <tr><th>Teléfono:</th><td>${memberData.telefono || 'N/A'}</td></tr>
+                        <tr><th>Email:</th><td>${memberData.email || 'N/A'}</td></tr>
+                        <tr><th>Dirección:</th><td>${memberData.direccion || 'N/A'}</td></tr>
+                        <tr><th>Ciudad:</th><td>${memberData.ciudad || 'N/A'}</td></tr>
+                        <tr><th>País:</th><td>${memberData.pais || 'N/A'}</td></tr>
+                        <tr><th>Bautizado:</th><td>${memberData.bautizado === true ? 'Sí' : (memberData.bautizado === false ? 'No' : 'N/A')}</td></tr>
+                        <tr><th>Fecha de Bautismo:</th><td>${memberData.fecha_bautismo || 'N/A'}</td></tr>
+                        <tr><th>Discipulador:</th><td>${memberData.discipulador_asignado || 'N/A'}</td></tr>
+                        <tr><th>Notas Adicionales:</th><td>${memberData.notas || 'N/A'}</td></tr>
+                    </table>
+                </div>
+                <div class="sheet-footer">
+                    <p>Generado por el Sistema de Gestión Eclesiástica</p>
+                </div>
+            `;
+
             const opt = {
-                margin:        1,
-                filename:      'reporte_generado.pdf',
+                margin:        0.5,
+                filename:      `ficha_miembro_${memberData.nombre}_${memberData.apellido}.pdf`,
                 image:         { type: 'jpeg', quality: 0.98 },
                 html2canvas:   { scale: 2, logging: true, dpi: 192, letterRendering: true },
                 jsPDF:         { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
 
-            // Genera y descarga el PDF
-            html2pdf().set(opt).from(element).save();
-
-            alert('Generando y descargando su reporte en PDF...');
+            // Generate and download the PDF
+            html2pdf().set(opt).from(tempPrintDiv).save();
+            alert(`Generando y descargando la hoja de miembro de ${memberData.nombre} ${memberData.apellido} en PDF...`);
+            closeMemberPrintModal();
         }
+
     </script>
 </body>
 </html>
