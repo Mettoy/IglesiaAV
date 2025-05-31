@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Reportes</title>
+    <link rel="stylesheet" href="style.css"> </head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>Mi Sistema</h3>
+        </div>
+        <a href="inicio.html" class="sidebar-link">Inicio</a>
+        <a href="miembro.html" class="sidebar-link">Miembros</a>
+        <a href="diezmo.html" class="sidebar-link">Diezmos</a>
+        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+        <a href="reportes.html" class="sidebar-link">Reportes</a>
+        <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
+    </div>
+
+    <div class="content">
+        <h1>Generador de Reportes</h1>
+        <p>Aquí puedes configurar y generar tus reportes personalizados en formato PDF o imprimible.</p>
+
+        <div class="report-section">
+            <h2>Selecciona una Categoría de Reporte:</h2>
+            <select id="reportCategory">
+                <option value="">-- Selecciona --</option>
+                <option value="miembros">Reporte de Miembros</option>
+                <option value="diezmos">Reporte de Diezmos</option>
+                <option value="ofrendas">Reporte de Ofrendas</option>
+                <option value="discipulado">Reporte de Discipulado</option>
+                </select>
+
+            <div id="reportOptions" style="margin-top: 20px;">
+                <p>Opciones para el reporte seleccionado se mostrarán aquí.</p>
+            </div>
+
+            <button onclick="generarReporte()">Generar Reporte</button>
+            <button onclick="imprimirDocumento()">Imprimir</button>
+        </div>
+
+        <div class="report-preview" style="margin-top: 40px;">
+            <h2>Vista Previa del Reporte:</h2>
+            <div id="pdfViewer" style="width: 100%; height: 500px; border: 1px solid #000055; background-color: #000022;">
+                <p style="text-align: center; padding-top: 100px;">El reporte generado aparecerá aquí.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function cerrarSesion() {
+            alert('Cerrando sesión...');
+            // Aquí puedes redirigir al usuario a la página de login o realizar otras acciones de cierre de sesión.
+            window.location.href = 'login.html'; // Ejemplo de redirección
+        }
+
+        function generarReporte() {
+            const category = document.getElementById('reportCategory').value;
+            if (category) {
+                alert(`Generando reporte de: ${category}. (Esta funcionalidad requerirá lógica de backend)`);
+                // En una aplicación real, aquí harías una llamada a un servidor
+                // para procesar los datos y generar el PDF.
+                // Podrías usar librerías como jsPDF o integración con un backend
+                // que use Puppeteer, FPDF, etc.
+                document.getElementById('pdfViewer').innerHTML = `<p style="text-align: center; padding-top: 100px;">Reporte de ${category} generado. (Simulado)</p>`;
+                // Para mostrar un PDF real, usarías un <iframe> o una librería de visualización de PDF.
+                // Ejemplo: document.getElementById('pdfViewer').innerHTML = '<iframe src="ruta/a/tu/reporte.pdf" style="width:100%; height:100%; border:none;"></iframe>';
+            } else {
+                alert('Por favor, selecciona una categoría de reporte.');
+            }
+        }
+
+        function imprimirDocumento() {
+            // Esta función imprimirá el contenido actual del navegador o un área específica.
+            // Para imprimir un PDF generado, lo ideal sería cargarlo primero y luego usar window.print()
+            // o las funciones de impresión del visor de PDF.
+            alert('Preparando documento para impresión. (Esta función imprimirá el contenido visible o el PDF cargado)');
+            window.print(); // Abre el diálogo de impresión del navegador
+        }
+
+        // Lógica para cargar opciones dinámicas de reportes (ej. rangos de fecha)
+        document.getElementById('reportCategory').addEventListener('change', function() {
+            const optionsDiv = document.getElementById('reportOptions');
+            const selectedCategory = this.value;
+            optionsDiv.innerHTML = ''; // Limpiar opciones anteriores
+
+            if (selectedCategory === 'miembros' || selectedCategory === 'diezmos' || selectedCategory === 'ofrendas') {
+                optionsDiv.innerHTML = `
+                    <label for="startDate">Fecha Inicio:</label>
+                    <input type="date" id="startDate" style="margin-right: 10px;">
+                    <label for="endDate">Fecha Fin:</label>
+                    <input type="date" id="endDate">
+                `;
+            } else if (selectedCategory === 'discipulado') {
+                 optionsDiv.innerHTML = `
+                    <label for="discipuladoType">Tipo de Discipulado:</label>
+                    <select id="discipuladoType">
+                        <option value="todos">Todos</option>
+                        <option value="bautizados">Bautizados</option>
+                        <option value="nuevos">Nuevos Creyentes</option>
+                    </select>
+                `;
+            }
+            // Puedes añadir más condiciones para otras categorías
+        });
+    </script>
+</body>
+</html>
