@@ -1,910 +1,1030 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Miembros - ICCI Adoración Viva</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            min-height: 100vh;
-            background-color: #F0F2F5; /* Fondo claro */
-            color: #333;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gestión de Miembros</title>
+<link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png"/>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
-        /* --- Barra Lateral (Menú) --- */
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+    /* Estilos azul oscuro con dorado */
+    body {
+        margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #121B2A; color: #E6C68D;
+    }
+    #menu {
+        width: 220px; height: 100vh; background: #0A1424; position: fixed; top: 0; left: 0;
+        display: flex; flex-direction: column; align-items: center; padding-top: 1rem;
+        border-right: 2px solid #E6C68D;
+    }
+    #menu h1 {
+        font-size: 1.5rem; margin-bottom: 2rem; cursor:pointer;
+    }
+    #menu button {
+        margin: 0.5rem 0; padding: 0.5rem 1rem;
+        background: #E6C68D; color: #0A1424; border:none; border-radius: 5px;
+        font-weight: bold; cursor: pointer;
+        width: 90%;
+    }
+    #main {
+        margin-left: 230px; padding: 1rem 2rem;
+    }
+    h2 {
+        margin-bottom: 1rem;
+    }
+    #search-container {
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+    #search {
+        padding: 0.4rem 0.6rem; font-size: 1rem; border-radius: 5px; border: none;
+        flex-grow: 1;
+        max-width: 300px;
+        color: #0A1424;
+    }
+    #addMemberBtnMain {
+        background: #E6C68D; color: #0A1424; border: none; padding: 0.5rem 1rem;
+        font-weight: bold; border-radius: 5px; cursor: pointer;
+    }
+    table {
+        width: 100%; border-collapse: collapse; background: #1F2D45; border-radius: 10px; overflow: hidden;
+    }
+    th, td {
+        padding: 10px 12px; text-align: left; border-bottom: 1px solid #2E3B5B;
+        color: #E6C68D;
+    }
+    th {
+        background-color: #223353;
+    }
+    tr:hover {
+        background-color: #2E3B5B;
+    }
+    img.photo-cell {
+        width: 50px; height: 50px; object-fit: cover; border-radius: 50%;
+    }
+    button.action-btn {
+        background-color: #E6C68D; color: #0A1424; border: none; padding: 5px 10px;
+        border-radius: 5px; cursor: pointer; font-weight: bold;
+        margin-right: 5px;
+    }
+    /* Modal */
+    #modalOverlay {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center;
+        z-index: 1000;
+    }
+    #modal {
+        background: #1B2A46; padding: 20px; border-radius: 10px; width: 95%; max-width: 800px;
+        max-height: 90vh; overflow-y: auto; color: #E6C68D;
+        box-shadow: 0 0 10px #E6C68D;
+        position: relative;
+    }
+    #modal h3 {
+        margin-top: 0;
+    }
+    #modalClose {
+        position: absolute; top: 10px; right: 10px; background: #E6C68D; color: #0A1424;
+        border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer;
+    }
+    form > div.section-tabs {
+        display: flex; margin-bottom: 15px;
+    }
+    form > div.section-tabs button {
+        flex: 1; padding: 10px; background: #223353; border: none; color: #E6C68D;
+        font-weight: bold; cursor: pointer;
+        border-radius: 5px 5px 0 0;
+        border-bottom: 3px solid transparent;
+    }
+    form > div.section-tabs button.active {
+        background: #E6C68D; color: #0A1424;
+        border-bottom-color: #0A1424;
+    }
+    form > div.section-content {
+        background: #223353; padding: 15px; border-radius: 0 5px 5px 5px;
+    }
+    label {
+        display: block; margin: 10px 0 4px;
+    }
+    input[type=text], input[type=date], input[type=number], select {
+        width: 100%; padding: 6px; border-radius: 5px; border: none;
+        font-size: 1rem; color: #0A1424;
+    }
+    #fam-list {
+        margin-top: 10px; max-height: 100px; overflow-y: auto;
+        background: #1B2A46; border-radius: 5px; padding: 5px;
+    }
+    #fam-list div {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 5px;
+        background: #15203D; padding: 3px 8px; border-radius: 5px;
+    }
+    #fam-list div span {
+        word-break: break-word;
+    }
+    #fam-list button.remove-fam-btn {
+        background: #E64E4E; color: white; border: none; border-radius: 5px;
+        cursor: pointer; padding: 2px 6px; font-weight: bold;
+    }
+    #formActions {
+        margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;
+    }
+    #formActions button {
+        padding: 8px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer;
+    }
+    #saveBtn {
+        background: #E6C68D; color: #0A1424;
+    }
+    #cancelBtn {
+        background: #555;
+        color: #E6C68D;
+    }
+    #pagination {
+        margin-top: 15px; display: flex; justify-content: center; gap: 10px;
+    }
+    #pagination button {
+        background: #E6C68D; border: none; border-radius: 5px;
+        padding: 5px 10px; cursor: pointer; font-weight: bold; color: #0A1424;
+    }
+    #pagination button:disabled {
+        background: #999; cursor: not-allowed;
+    }
+    /* Estilos para las pestañas de estado de miembros */
+    #member-status-tabs {
+        margin-top: 1rem;
+        display: flex;
+        gap: 10px;
+        margin-bottom: 1rem;
+    }
+    #member-status-tabs button {
+        padding: 0.5rem 1rem;
+        background: #2E3B5B;
+        color: #E6C68D;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    #member-status-tabs button.active {
+        background: #E6C68D;
+        color: #0A1424;
+    }
+
+    /* Responsive */
+    @media(max-width: 700px) {
         #menu {
-            width: 250px;
-            background-color: #0A1424; /* Azul muy oscuro, casi negro */
-            color: #E6C68D; /* Dorado para el texto */
-            padding: 20px 0;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            width: 100%; height: auto; flex-direction: row; padding: 0.5rem;
+            border-right: none; border-bottom: 2px solid #E6C68D;
+            position: relative;
         }
-
-        #menu h1 {
-            font-size: 1.8rem; /* Tamaño de fuente un poco más grande para el título */
-            color: #E6C68D;
-            margin-bottom: 2rem;
-            cursor: default; /* No es un botón, así que no tiene cursor de puntero */
-            padding: 0 10px; /* Pequeño padding para que no se pegue a los lados */
+        #main {
+            margin-left: 0; padding: 1rem;
         }
-
-        /* Estilos para los enlaces/botones del menú */
-        #menu a.sidebar-link,
-        #menu button {
-            display: block; /* Asegura que cada elemento tome su propia línea */
-            width: 90%; /* Ancho uniforme */
-            padding: 10px 15px; /* Más padding para mayor área de clic */
-            margin: 8px auto; /* Centra y da espacio entre ellos */
-            background-color: #2E3B5B; /* Un azul más oscuro que el fondo principal */
-            color: #E6C68D; /* Dorado para el texto */
-            text-decoration: none; /* Quita el subrayado de los enlaces */
-            border: none;
-            border-radius: 8px; /* Bordes más redondeados */
-            font-weight: bold;
-            font-size: 1.05rem; /* Un poco más grande */
-            cursor: pointer;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease; /* Transición suave para el hover */
-            text-align: center; /* Centra el texto */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sutil sombra para profundidad */
+        #menu button, #menu h1 {
+            margin: 0 5px;
+            flex: 1;
         }
-
-        #menu a.sidebar-link:hover,
-        #menu button:hover {
-            background-color: #E6C68D; /* Dorado al pasar el ratón */
-            color: #0A1424; /* Azul oscuro para el texto al pasar el ratón */
-            transform: translateY(-2px); /* Efecto de "levantar" */
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada al pasar el ratón */
-        }
-
-        #menu a.sidebar-link:active,
-        #menu button:active {
-            transform: translateY(0); /* Vuelve a su posición al hacer clic */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra más ligera al hacer clic */
-        }
-
-        /* Estilo para el botón de cerrar sesión */
-        .logout {
-            margin-top: auto; /* Empuja el botón hacia la parte inferior del menú */
-            margin-bottom: 1rem; /* Espacio desde el borde inferior */
-            width: 90%;
-            padding: 10px 15px;
-            background-color: #E64E4E; /* Un rojo para el botón de cerrar sesión */
-            color: white;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .logout:hover {
-            background-color: #C23B3B; /* Rojo más oscuro al pasar el ratón */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        /* --- Contenido Principal --- */
-        #main-content {
-            flex-grow: 1;
-            padding: 30px;
-            background-color: #fff; /* Blanco para el área de contenido */
-            border-radius: 10px;
-            margin: 20px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        h2 {
-            color: #0A1424; /* Azul oscuro para los títulos */
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        /* --- Barra de Búsqueda y Botón --- */
         #search-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 10px;
+            flex-direction: column;
+            align-items: stretch;
         }
-
-        #search-input {
-            flex-grow: 1;
-            padding: 12px 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1rem;
+        #search {
+            max-width: 100%;
         }
-
-        #add-member-btn {
-            padding: 12px 20px;
-            background-color: #4CAF50; /* Verde */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
+        table {
+            font-size: 0.8rem;
         }
-
-        #add-member-btn:hover {
-            background-color: #45a049;
+        img.photo-cell {
+            width: 35px; height: 35px;
         }
-
-        /* --- Tabla de Miembros --- */
-        #members-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        #members-table th, #members-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-
-        #members-table th {
-            background-color: #0A1424; /* Azul oscuro */
-            color: #E6C68D; /* Dorado */
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        #members-table tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        #members-table tbody tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        .action-btn {
-            padding: 8px 12px;
-            margin-right: 5px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .action-btn:active {
-            transform: translateY(0);
-            box-shadow: none;
-        }
-
-        /* Botón de Editar */
-        .action-btn:nth-of-type(1) { /* Primer botón (Editar) */
-            background-color: #007bff; /* Azul estándar */
-            color: white;
-        }
-        .action-btn:nth-of-type(1):hover {
-            background-color: #0056b3;
-        }
-
-        /* Botón de Baja/Reactivar (segundo botón) */
-        .action-btn:nth-of-type(2) {
-            /* Colores definidos en JS */
-            color: white;
-        }
-        .action-btn:nth-of-type(2):hover {
-            opacity: 0.9;
-        }
-
-        /* Botón de Imprimir (tercer botón) */
-        .action-btn:nth-of-type(3) {
-            background-color: #5BC0DE; /* Azul claro para impresora */
-            color: white;
-        }
-        .action-btn:nth-of-type(3):hover {
-            background-color: #31b0d5;
-        }
-
-
-        /* --- Modales --- */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 30px;
-            border: 1px solid #888;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .modal-content h3 {
-            color: #0A1424;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 1.6rem;
-        }
-
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            top: 15px;
-            right: 25px;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-
-        .close-button:hover,
-        .close-button:focus {
-            color: #333;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        .form-group input[type="text"],
-        .form-group input[type="date"],
-        .form-group input[type="tel"],
-        .form-group input[type="email"],
-        .form-group textarea,
-        .form-group select {
-            width: calc(100% - 22px);
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1rem;
-            box-sizing: border-box; /* Incluye padding y borde en el ancho */
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-group input[type="file"] {
-            padding: 5px 0;
-        }
-
-        .modal-buttons {
-            text-align: center;
-            margin-top: 25px;
-        }
-
-        .modal-buttons button {
-            padding: 10px 20px;
-            margin: 0 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
-        }
-
-        #save-member-btn {
-            background-color: #28a745; /* Verde */
-            color: white;
-        }
-
-        #save-member-btn:hover {
-            background-color: #218838;
-        }
-
-        #cancel-edit-btn {
-            background-color: #dc3545; /* Rojo */
-            color: white;
-        }
-
-        #cancel-edit-btn:hover {
-            background-color: #c82333;
-        }
-
-        .form-group input[type="radio"],
-        .form-group input[type="checkbox"] {
-            margin-right: 5px;
-        }
-        .radio-group label {
-            display: inline-block;
-            margin-right: 15px;
-            font-weight: normal;
-        }
-
-        /* Animación para el modal */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-
-            #menu {
-                width: 100%;
-                padding: 15px 0;
-                flex-direction: row;
-                justify-content: space-around;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            }
-
-            #menu h1 {
-                display: none; /* Oculta el título en móviles */
-            }
-
-            #menu a.sidebar-link,
-            #menu button {
-                width: auto;
-                padding: 8px 12px;
-                margin: 5px;
-                font-size: 0.9rem;
-            }
-
-            .logout {
-                margin-top: 0;
-                margin-bottom: 0;
-            }
-
-            #main-content {
-                margin: 15px;
-                padding: 20px;
-            }
-
-            #search-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            #search-input, #add-member-btn {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-
-            .modal-content {
-                width: 95%;
-                padding: 20px;
-            }
-        }
-    </style>
+    }
+</style>
 </head>
 <body>
-    <div id="menu">
-        <h1>Gestión de Miembros</h1>
-        <a href="#" class="sidebar-link" onclick="showSection('dashboard')">Dashboard</a>
-        <a href="#" class="sidebar-link" onclick="showSection('members')">Miembros</a>
-        <a href="#" class="sidebar-link" onclick="showSection('reports')">Reportes</a>
-        <button class="logout">Cerrar Sesión</button>
+
+<div id="menu">
+    <h1 id="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20.png">ADORACION VIVA</h1>
+    <button id="btnInicio">Inicio</button> <a href="miembros.html" class="sidebar-link">Miembros</a>
+    <a href="acceso.html" class="sidebar-link">Dar acceso</a>
+    <a href="diezmo.html" class="sidebar-link">Diezmos</a>
+    <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+    <a href="reportes.html" class="sidebar-link">Reportess</a>
+    <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+    <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
+  </div>
+</div>
+
+<div id="main">
+    <h2>Miembros</h2>
+    <div id="search-container">
+        <input type="text" id="search" placeholder="Buscar por nombre, código, dirección..." />
+        <button id="addMemberBtnMain">Añadir Miembro</button>
     </div>
 
-    <div id="main-content">
-        <div id="members-section" class="content-section">
-            <h2>Gestión de Miembros</h2>
-            <div id="search-container">
-                <input type="text" id="search-input" placeholder="Buscar por nombre, código...">
-                <button id="add-member-btn">Agregar Nuevo Miembro</button>
+    <div id="member-status-tabs">
+        <button id="tabActivos" class="active" data-status="activo">Miembros Activos</button>
+        <button id="tabDeBaja" data-status="baja">Miembros de Baja</button>
+    </div>
+
+    <table id="membersTable" aria-label="Tabla de miembros">
+        <thead>
+            <tr>
+                <th>Foto</th>
+                <th>Nombre Completo</th>
+                <th>Código</th>
+                <th>Edad</th>
+                <th>Dirección</th>
+                <th>Asociación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div id="pagination"></div>
+</div>
+
+<div id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div id="modal">
+        <button id="modalClose" aria-label="Cerrar">&times;</button>
+        <h3 id="modalTitle">Añadir Miembro</h3>
+        <form id="memberForm">
+            <div class="section-tabs" role="tablist">
+                <button type="button" class="tab-btn active" data-section="personales" role="tab" aria-selected="true" aria-controls="personales-section" id="tab-personales">Personales</button>
+                <button type="button" class="tab-btn" data-section="familiares" role="tab" aria-selected="false" aria-controls="familiares-section" id="tab-familiares">Familiares</button>
+                <button type="button" class="tab-btn" data-section="espirituales" role="tab" aria-selected="false" aria-controls="espirituales-section" id="tab-espirituales">Espirituales</button>
             </div>
-            <table id="members-table">
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Nombre Completo</th>
-                        <th>Teléfono</th>
-                        <th>Asociación</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    </tbody>
-            </table>
-        </div>
-
-        <div id="dashboard-section" class="content-section" style="display: none;">
-            <h2>Dashboard</h2>
-            <p>Aquí irá el contenido del Dashboard.</p>
-        </div>
-
-        <div id="reports-section" class="content-section" style="display: none;">
-            <h2>Reportes</h2>
-            <p>Aquí irá el contenido de los Reportes.</p>
-        </div>
+            <div class="section-content" tabindex="0">
+                <div id="personales-section" class="form-section" role="tabpanel" aria-labelledby="tab-personales">
+                    <label for="fotoInput">Foto</label>
+                    <input type="file" id="fotoInput" accept="image/*" />
+                    <img id="fotoPreview" src="" alt="Foto previa" style="width:80px; height:80px; border-radius:50%; margin-top: 5px; display:none;" />
+                    
+                    <label for="nombreInput">Nombre Completo</label>
+                    <input type="text" id="nombreInput" required />
+                    
+                    <label for="fechaNacimientoInput">Fecha de Nacimiento</label>
+                    <input type="date" id="fechaNacimientoInput" required />
+                    
+                    <label for="edadInput">Edad</label>
+                    <input type="number" id="edadInput" readonly />
+                    
+                    <label for="codigoInput">Código</label>
+                    <input type="text" id="codigoInput" required />
+                    
+                    <label for="telefonoInput">Número de Teléfono</label>
+                    <input type="text" id="telefonoInput" />
+                    
+                    <label for="direccionInput">Dirección</label>
+                    <input type="text" id="direccionInput" />
+                    
+                    <label for="asociacionSelect">Asociación</label>
+                    <select id="asociacionSelect" required>
+                        <option value="" disabled selected>Seleccione</option>
+                        <option value="Damas">Damas</option>
+                        <option value="Caballeros">Caballeros</option>
+                        <option value="Jóvenes">Jóvenes</option>
+                    </select>
+                </div>
+                <div id="familiares-section" class="form-section" style="display:none" role="tabpanel" aria-labelledby="tab-familiares">
+                    <label for="nombreFamiliarInput">Agregar Familiar</label>
+                    <input type="text" id="nombreFamiliarInput" placeholder="Nombre del familiar" />
+                    <button type="button" id="addFamiliarBtn" style="margin-top: 5px; background: #E6C68D; color: #0A1424; border:none; padding: 5px 10px; font-weight: bold; border-radius: 5px; cursor: pointer;">Añadir Familiar</button>
+                    <div id="fam-list" aria-live="polite" aria-relevant="additions removals"></div>
+                </div>
+                <div id="espirituales-section" class="form-section" style="display:none" role="tabpanel" aria-labelledby="tab-espirituales">
+                    <label for="fechaConversionInput">Fecha de Conversión</label>
+                    <input type="date" id="fechaConversionInput" />
+                    
+                    <label for="lugarConversionInput">Lugar de Conversión</label>
+                    <input type="text" id="lugarConversionInput" />
+                    
+                    <label for="fechaBautizoInput">Fecha de Bautizo</label>
+                    <input type="date" id="fechaBautizoInput" />
+                    
+                    <label for="lugarBautizoInput">Lugar de Bautizo</label>
+                    <input type="text" id="lugarBautizoInput" />
+                    
+                    <label for="fechaBautizoEspInput">Fecha de Bautizo del Espíritu Santo</label>
+                    <input type="date" id="fechaBautizoEspInput" />
+                    
+                    <label for="lugarBautizoEspInput">Lugar de Bautizo del Espíritu Santo</label>
+                    <input type="text" id="lugarBautizoEspInput" />
+                    
+                    <label for="cursosBiblicosInput">Cursos Bíblicos</label>
+                    <input type="text" id="cursosBiblicosInput" />
+                    
+                    <label for="lugarCursosBiblicosInput">Lugar donde los recibió</label>
+                    <input type="text" id="lugarCursosBiblicosInput" />
+                </div>
+            </div>
+            <div id="formActions">
+                <button type="submit" id="saveBtn">Guardar</button>
+                <button type="button" id="cancelBtn">Cancelar</button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <div id="member-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h3 id="modal-title">Agregar Nuevo Miembro</h3>
-            <form id="member-form">
-                <input type="hidden" id="member-id">
+<script>
+    // Firebase config (MANTÉN ESTAS CLAVES CORRECTAS DE TU PROYECTO)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k", 
+        authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+        databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+        projectId: "iglesia-adoracion-viva",
+        storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+        messagingSenderId: "815332010058",
+        appId: "1:815332010058:web:d2afff616469349d88deb3",
+        measurementId: "G-43MZP6V55D"
+    };
 
-                <div class="form-group">
-                    <label for="nombreCompleto">Nombre Completo:</label>
-                    <input type="text" id="nombreCompleto" required>
-                </div>
-                <div class="form-group">
-                    <label for="codigo">Código:</label>
-                    <input type="text" id="codigo" required>
-                </div>
-                <div class="form-group">
-                    <label for="fechaNacimiento">Fecha de Nacimiento:</label>
-                    <input type="date" id="fechaNacimiento">
-                </div>
-                <div class="form-group">
-                    <label for="edad">Edad:</label>
-                    <input type="text" id="edad" readonly> </div>
-                <div class="form-group">
-                    <label for="telefono">Teléfono:</label>
-                    <input type="tel" id="telefono">
-                </div>
-                <div class="form-group">
-                    <label for="direccion">Dirección:</label>
-                    <textarea id="direccion"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="asociacion">Asociación/Grupo:</label>
-                    <input type="text" id="asociacion">
-                </div>
-                <div class="form-group">
-                    <label>Estado:</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="estado" value="activo" checked> Activo</label>
-                        <label><input type="radio" name="estado" value="inactivo"> Inactivo</label>
-                    </div>
-                </div>
+    // Inicializar Firebase
+    let db;
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        console.log("Firebase inicializado correctamente.");
+    } catch (error) {
+        console.error("Error al inicializar Firebase:", error);
+        alert("Error al inicializar Firebase. Revisa la consola para más detalles.");
+    }
 
-                <hr style="margin: 25px 0; border-top: 1px dashed #ccc;">
-                <h4 style="text-align: center; color: #0A1424;">Información Familiar</h4>
-                <div class="form-group">
-                    <label for="familiares">Familiares (Separar por comas):</label>
-                    <input type="text" id="familiares">
-                </div>
-
-                <hr style="margin: 25px 0; border-top: 1px dashed #ccc;">
-                <h4 style="text-align: center; color: #0A1424;">Información Espiritual</h4>
-                <div class="form-group">
-                    <label for="fechaConversion">Fecha de Conversión:</label>
-                    <input type="date" id="fechaConversion">
-                </div>
-                <div class="form-group">
-                    <label for="lugarConversion">Lugar de Conversión:</label>
-                    <input type="text" id="lugarConversion">
-                </div>
-                <div class="form-group">
-                    <label for="fechaBautizo">Fecha de Bautizo:</label>
-                    <input type="date" id="fechaBautizo">
-                </div>
-                <div class="form-group">
-                    <label for="lugarBautizo">Lugar de Bautizo:</label>
-                    <input type="text" id="lugarBautizo">
-                </div>
-                 <div class="form-group">
-                    <label for="fechaBautizoEsp">Fecha Bautizo Espíritu Santo:</label>
-                    <input type="date" id="fechaBautizoEsp">
-                </div>
-                <div class="form-group">
-                    <label for="lugarBautizoEsp">Lugar Bautizo Espíritu Santo:</label>
-                    <input type="text" id="lugarBautizoEsp">
-                </div>
-                 <div class="form-group">
-                    <label for="cursosBiblicos">Cursos Bíblicos Realizados:</label>
-                    <input type="text" id="cursosBiblicos" placeholder="Ej: Discipulado, Fundamentos de Fe">
-                </div>
-                <div class="form-group">
-                    <label for="lugarCursosBiblicos">Lugar Cursos Bíblicos:</label>
-                    <input type="text" id="lugarCursosBiblicos">
-                </div>
-                <div class="form-group">
-                    <label for="foto">Foto del Miembro:</label>
-                    <input type="file" id="foto" accept="image/*">
-                    <img id="preview-foto" src="" alt="Previsualización de Foto" style="max-width: 100px; max-height: 100px; margin-top: 10px; display: none; border-radius: 5px;">
-                </div>
-
-
-                <div class="modal-buttons">
-                    <button type="submit" id="save-member-btn">Guardar</button>
-                    <button type="button" id="cancel-edit-btn">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        const members = JSON.parse(localStorage.getItem('members')) || [];
-        const membersTableBody = document.querySelector('#members-table tbody');
-        const addMemberBtn = document.getElementById('add-member-btn');
-        const memberModal = document.getElementById('member-modal');
-        const closeModalBtn = memberModal.querySelector('.close-button');
-        const memberForm = document.getElementById('member-form');
-        const searchInput = document.getElementById('search-input');
-        const modalTitle = document.getElementById('modal-title');
-        const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        const memberIdInput = document.getElementById('member-id');
-        const fechaNacimientoInput = document.getElementById('fechaNacimiento');
-        const edadInput = document.getElementById('edad');
-        const fotoInput = document.getElementById('foto');
-        const previewFoto = document.getElementById('preview-foto');
-
-        // --- Navegación de Secciones ---
-        function showSection(sectionId) {
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById(`${sectionId}-section`).style.display = 'block';
+    // Inicializar Supabase (MANTÉN ESTAS CLAVES CORRECTAS DE TU PROYECTO)
+    const SUPABASE_URL = "https://xyptydnouyddzvrffaby.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o";
+    let supabase;
+    try {
+        // Aseguramos que Supabase se inicialice correctamente.
+        // La variable 'supabase' se declara con 'let' arriba.
+        // Aquí le asignamos la instancia creada.
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("Supabase inicializado correctamente.");
+    } catch (error) {
+        console.error("Error al inicializar Supabase:", error);
+        // Detalles específicos del error para depuración
+        if (error.name === "ReferenceError") {
+            console.error("Posible causa: La librería Supabase no se ha cargado correctamente. Verifica el script CDN.");
+        } else if (error.message.includes("supabase URL and API key are required")) {
+            console.error("Posible causa: Las variables SUPABASE_URL o SUPABASE_ANON_KEY están vacías o incorrectas.");
         }
+        alert("Error al inicializar Supabase. Revisa la consola para más detalles.");
+    }
+    const SUPABASE_BUCKET = "ftmember";
 
-        // Mostrar la sección de miembros por defecto al cargar
-        document.addEventListener('DOMContentLoaded', () => {
-            showSection('members');
-            renderTable();
-        });
+    // Variables globales
+    let members = [];
+    let filteredMembers = [];
+    let currentPage = 1;
+    const pageSize = 30;
+    let editingMemberId = null;
+    let currentMemberStatusFilter = 'activo';
 
+    // Elementos DOM (se obtienen dentro de DOMContentLoaded para asegurar que existen)
+    let modalOverlay, modal, memberForm, fotoInput, fotoPreview, nombreInput, fechaNacimientoInput, edadInput,
+        codigoInput, telefonoInput, direccionInput, asociacionSelect, nombreFamiliarInput, addFamiliarBtn,
+        famList, fechaConversionInput, lugarConversionInput, fechaBautizoInput, lugarBautizoInput,
+        fechaBautizoEspInput, lugarBautizoEspInput, cursosBiblicosInput, lugarCursosBiblicosInput,
+        searchInput, membersTableBody, paginationDiv, addMemberBtnMain, modalClose, cancelBtn, tabButtons,
+        tabActivos, tabDeBaja, btnInicio;
 
-        // --- Cálculo de Edad Automático ---
-        fechaNacimientoInput.addEventListener('change', () => {
-            const fechaNac = new Date(fechaNacimientoInput.value);
-            if (isNaN(fechaNac)) {
-                edadInput.value = '';
-                return;
-            }
-            const hoy = new Date();
-            let edad = hoy.getFullYear() - fechaNac.getFullYear();
-            const mes = hoy.getMonth() - fechaNac.getMonth();
-            if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-                edad--;
-            }
-            edadInput.value = edad;
-        });
+    // Estado del formulario
+    let familiares = [];
 
-        // --- Previsualización de Foto ---
-        fotoInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewFoto.src = e.target.result;
-                    previewFoto.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                previewFoto.src = '';
-                previewFoto.style.display = 'none';
-            }
-        });
+    // Funciones
+    function showModal(edit = false) {
+        if (modalOverlay) {
+            modalOverlay.style.display = 'flex';
+            document.getElementById('modalTitle').textContent = edit ? 'Editar Miembro' : 'Añadir Miembro';
+        } else {
+            console.error("Error: modalOverlay no encontrado.");
+        }
+    }
 
-
-        // --- Abrir Modal para Agregar Miembro ---
-        addMemberBtn.addEventListener('click', () => {
+    function closeModal() {
+        if (modalOverlay && memberForm && fotoPreview && famList) {
+            modalOverlay.style.display = 'none';
             memberForm.reset();
-            memberIdInput.value = ''; // Limpiar ID para nuevo miembro
-            modalTitle.textContent = 'Agregar Nuevo Miembro';
-            previewFoto.src = ''; // Limpiar previsualización
-            previewFoto.style.display = 'none';
-            memberModal.style.display = 'flex'; // Usar flex para centrar
-            document.querySelector('input[name="estado"][value="activo"]').checked = true; // Estado por defecto
-        });
+            fotoPreview.style.display = 'none';
+            fotoPreview.src = '';
+            familiares = [];
+            renderFamiliares();
+            editingMemberId = null;
+            setActiveSection('personales');
+        } else {
+            console.error("Error: Elementos del modal no encontrados para cerrar.");
+        }
+    }
 
-        // --- Cerrar Modal ---
-        closeModalBtn.addEventListener('click', () => {
-            memberModal.style.display = 'none';
-        });
-
-        cancelEditBtn.addEventListener('click', () => {
-            memberModal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === memberModal) {
-                memberModal.style.display = 'none';
-            }
-        });
-
-        // --- Guardar Miembro (Agregar/Editar) ---
-        memberForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-
-            const fotoFile = fotoInput.files[0];
-            let fotoURL = '';
-
-            const saveMember = (url) => {
-                const memberData = {
-                    id: memberIdInput.value || Date.now().toString(), // Genera un ID único si es nuevo
-                    nombreCompleto: document.getElementById('nombreCompleto').value,
-                    codigo: document.getElementById('codigo').value,
-                    fechaNacimiento: document.getElementById('fechaNacimiento').value,
-                    edad: document.getElementById('edad').value,
-                    telefono: document.getElementById('telefono').value,
-                    direccion: document.getElementById('direccion').value,
-                    asociacion: document.getElementById('asociacion').value,
-                    estado: document.querySelector('input[name="estado"]:checked').value,
-                    familiares: document.getElementById('familiares').value.split(',').map(f => f.trim()).filter(f => f),
-                    fechaConversion: document.getElementById('fechaConversion').value,
-                    lugarConversion: document.getElementById('lugarConversion').value,
-                    fechaBautizo: document.getElementById('fechaBautizo').value,
-                    lugarBautizo: document.getElementById('lugarBautizo').value,
-                    fechaBautizoEsp: document.getElementById('fechaBautizoEsp').value,
-                    lugarBautizoEsp: document.getElementById('lugarBautizoEsp').value,
-                    cursosBiblicos: document.getElementById('cursosBiblicos').value,
-                    lugarCursosBiblicos: document.getElementById('lugarCursosBiblicos').value,
-                    fotoURL: url || (memberIdInput.value ? members.find(m => m.id === memberIdInput.value)?.fotoURL : '') // Conserva la URL existente si no se sube nueva
-                };
-
-                const existingIndex = members.findIndex(m => m.id === memberData.id);
-
-                if (existingIndex > -1) {
-                    // Editar miembro existente
-                    members[existingIndex] = memberData;
-                } else {
-                    // Agregar nuevo miembro
-                    members.push(memberData);
+    function setActiveSection(section) {
+        if (tabButtons) {
+            tabButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.section === section);
+                btn.setAttribute('aria-selected', btn.dataset.section === section);
+                const sectionElement = document.getElementById(btn.dataset.section + '-section');
+                if (sectionElement) {
+                    sectionElement.style.display = btn.dataset.section === section ? 'block' : 'none';
                 }
-
-                localStorage.setItem('members', JSON.stringify(members));
-                renderTable();
-                memberModal.style.display = 'none';
-            };
-
-            if (fotoFile) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    saveMember(e.target.result);
-                };
-                reader.readAsDataURL(fotoFile);
-            } else {
-                saveMember(null); // Pasa null si no hay nueva foto
-            }
-        });
-
-        // --- Renderizar Tabla de Miembros ---
-        function renderTable(filter = '') {
-            membersTableBody.innerHTML = ''; // Limpiar tabla antes de renderizar
-            const filteredMembers = members.filter(member =>
-                member.nombreCompleto.toLowerCase().includes(filter.toLowerCase()) ||
-                member.codigo.toLowerCase().includes(filter.toLowerCase())
-            );
-
-            filteredMembers.forEach(member => {
-                const row = membersTableBody.insertRow();
-
-                row.insertCell().textContent = member.codigo;
-                row.insertCell().textContent = member.nombreCompleto;
-                row.insertCell().textContent = member.telefono || 'N/A';
-                row.insertCell().textContent = member.asociacion || 'N/A';
-
-                const estadoCell = row.insertCell();
-                estadoCell.textContent = member.estado === 'activo' ? 'Activo' : 'De Baja';
-                estadoCell.style.color = member.estado === 'activo' ? 'green' : 'red';
-                estadoCell.style.fontWeight = 'bold';
-
-                const tdAcciones = document.createElement('td');
-                const editBtn = document.createElement('button');
-                editBtn.textContent = 'Editar';
-                editBtn.className = 'action-btn';
-                editBtn.addEventListener('click', () => openEditMember(member));
-
-                const bajaBtn = document.createElement('button');
-                bajaBtn.textContent = member.estado === 'activo' ? 'Dar de Baja' : 'Reactivar';
-                bajaBtn.className = 'action-btn';
-                bajaBtn.style.backgroundColor = member.estado === 'activo' ? '#E64E4E' : '#4CAF50';
-                bajaBtn.style.color = 'white';
-                bajaBtn.addEventListener('click', () => toggleEstado(member));
-
-                // Nuevo botón de imprimir
-                const printBtn = document.createElement('button');
-                printBtn.innerHTML = '&#128437;'; // Icono de impresora (unicode)
-                printBtn.title = 'Imprimir información del miembro';
-                printBtn.className = 'action-btn';
-                printBtn.style.backgroundColor = '#5BC0DE'; // Un azul claro
-                printBtn.style.color = 'white';
-                printBtn.addEventListener('click', () => printMemberInfo(member)); // Llama a la nueva función
-
-                tdAcciones.appendChild(editBtn);
-                tdAcciones.appendChild(bajaBtn);
-                tdAcciones.appendChild(printBtn); // Añadir el botón de imprimir
-
-                row.insertCell().appendChild(tdAcciones);
             });
         }
+    }
 
-        // --- Abrir Modal para Editar Miembro ---
-        function openEditMember(member) {
-            memberIdInput.value = member.id;
-            document.getElementById('nombreCompleto').value = member.nombreCompleto;
-            document.getElementById('codigo').value = member.codigo;
-            document.getElementById('fechaNacimiento').value = member.fechaNacimiento;
-            document.getElementById('edad').value = member.edad || '';
-            document.getElementById('telefono').value = member.telefono;
-            document.getElementById('direccion').value = member.direccion;
-            document.getElementById('asociacion').value = member.asociacion;
-            document.querySelector(`input[name="estado"][value="${member.estado}"]`).checked = true;
-            document.getElementById('familiares').value = member.familiares ? member.familiares.join(', ') : '';
-            document.getElementById('fechaConversion').value = member.fechaConversion;
-            document.getElementById('lugarConversion').value = member.lugarConversion;
-            document.getElementById('fechaBautizo').value = member.fechaBautizo;
-            document.getElementById('lugarBautizo').value = member.lugarBautizo;
-            document.getElementById('fechaBautizoEsp').value = member.fechaBautizoEsp;
-            document.getElementById('lugarBautizoEsp').value = member.lugarBautizoEsp;
-            document.getElementById('cursosBiblicos').value = member.cursosBiblicos;
-            document.getElementById('lugarCursosBiblicos').value = member.lugarCursosBiblicos;
+    function calcularEdad(fecha) {
+        if (!fecha) return '';
+        const hoy = new Date();
+        const nac = new Date(fecha + 'T00:00:00');
+        let edad = hoy.getFullYear() - nac.getFullYear();
+        const m = hoy.getMonth() - nac.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+        return edad >= 0 ? edad : '';
+    }
 
-            if (member.fotoURL) {
-                previewFoto.src = member.fotoURL;
-                previewFoto.style.display = 'block';
-            } else {
-                previewFoto.src = '';
-                previewFoto.style.display = 'none';
-            }
+    function renderFamiliares() {
+        if (!famList) {
+            console.error("Error: famList no encontrado.");
+            return;
+        }
+        famList.innerHTML = '';
+        if (familiares.length === 0) {
+            famList.innerHTML = '<div style="color: #ccc; text-align: center; padding: 10px;">No hay familiares añadidos.</div>';
+            return;
+        }
+        familiares.forEach((familiar, idx) => {
+            const div = document.createElement('div');
+            const span = document.createElement('span');
+            span.textContent = familiar;
+            const btn = document.createElement('button');
+            btn.textContent = 'X';
+            btn.className = 'remove-fam-btn';
+            btn.addEventListener('click', () => {
+                familiares.splice(idx, 1);
+                renderFamiliares();
+            });
+            div.appendChild(span);
+            div.appendChild(btn);
+            famList.appendChild(div);
+        });
+    }
 
-            modalTitle.textContent = 'Editar Miembro';
-            memberModal.style.display = 'flex';
+    function renderTable() {
+        if (!membersTableBody) {
+            console.error("Error: membersTableBody no encontrado.");
+            return;
+        }
+        membersTableBody.innerHTML = '';
+        const start = (currentPage - 1) * pageSize;
+        const pageItems = filteredMembers.slice(start, start + pageSize);
+
+        if (pageItems.length === 0) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 7;
+            td.textContent = 'No se encontraron miembros para mostrar.';
+            td.style.textAlign = 'center';
+            td.style.padding = '20px';
+            tr.appendChild(td);
+            membersTableBody.appendChild(tr);
+            if (paginationDiv) paginationDiv.innerHTML = '';
+            return;
         }
 
-        // --- Cambiar Estado de Miembro (Activo/Inactivo) ---
-        function toggleEstado(member) {
-            const confirmAction = member.estado === 'activo'
-                ? confirm(`¿Estás seguro de que quieres dar de baja a ${member.nombreCompleto}?`)
-                : confirm(`¿Estás seguro de que quieres reactivar a ${member.nombreCompleto}?`);
+        pageItems.forEach(member => {
+            const tr = document.createElement('tr');
 
-            if (confirmAction) {
-                member.estado = member.estado === 'activo' ? 'inactivo' : 'activo';
-                localStorage.setItem('members', JSON.stringify(members));
+            const tdFoto = document.createElement('td');
+            const img = document.createElement('img');
+            img.className = 'photo-cell';
+            img.alt = 'Foto de ' + member.nombreCompleto;
+            img.src = member.fotoURL || 'https://via.placeholder.com/50?text=No+Foto';
+            tdFoto.appendChild(img);
+
+            const tdNombre = document.createElement('td');
+            tdNombre.textContent = member.nombreCompleto;
+
+            const tdCodigo = document.createElement('td');
+            tdCodigo.textContent = member.codigo;
+
+            const tdEdad = document.createElement('td');
+            tdEdad.textContent = member.edad || '';
+
+            const tdDireccion = document.createElement('td');
+            tdDireccion.textContent = member.direccion || '';
+
+            const tdAsociacion = document.createElement('td');
+            tdAsociacion.textContent = member.asociacion || '';
+
+            const tdAcciones = document.createElement('td');
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'Editar';
+            editBtn.className = 'action-btn';
+            editBtn.addEventListener('click', () => openEditMember(member));
+
+            const bajaBtn = document.createElement('button');
+            bajaBtn.textContent = member.estado === 'activo' ? 'Dar de Baja' : 'Reactivar';
+            bajaBtn.className = 'action-btn';
+            bajaBtn.style.backgroundColor = member.estado === 'activo' ? '#E64E4E' : '#4CAF50';
+            bajaBtn.style.color = 'white';
+            bajaBtn.addEventListener('click', () => toggleEstado(member));
+
+            tdAcciones.appendChild(editBtn);
+            tdAcciones.appendChild(bajaBtn);
+
+            tr.appendChild(tdFoto);
+            tr.appendChild(tdNombre);
+            tr.appendChild(tdCodigo);
+            tr.appendChild(tdEdad);
+            tr.appendChild(tdDireccion);
+            tr.appendChild(tdAsociacion);
+            tr.appendChild(tdAcciones);
+
+            membersTableBody.appendChild(tr);
+        });
+        renderPagination();
+    }
+
+    function renderPagination() {
+        if (!paginationDiv) {
+            console.error("Error: paginationDiv no encontrado.");
+            return;
+        }
+        paginationDiv.innerHTML = '';
+        const totalPages = Math.ceil(filteredMembers.length / pageSize);
+        if(totalPages <= 1) return;
+
+        const prevBtn = document.createElement('button');
+        prevBtn.textContent = 'Anterior';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.addEventListener('click', () => {
+            if(currentPage > 1) {
+                currentPage--;
                 renderTable();
             }
-        }
-
-        // --- Búsqueda de Miembros ---
-        searchInput.addEventListener('input', (event) => {
-            renderTable(event.target.value);
         });
 
-        // --- Función de Impresión de Miembro ---
-        function printMemberInfo(member) {
-            const logoURL = 'https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20(1).png';
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = 'Siguiente';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.addEventListener('click', () => {
+            if(currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
 
-            let printContent = `
-                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; margin: 0 auto; max-width: 800px;">
-                    <header style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #E6C68D; padding-bottom: 15px;">
-                        <img src="${logoURL}" alt="Logo Iglesia" style="max-width: 150px; height: auto; margin-bottom: 10px;">
-                        <h1 style="color: #0A1424; margin: 0; font-size: 2em;">IGLESIA ICCI ADORACION VIVA</h1>
-                        <h2 style="color: #0A1424; margin: 5px 0 0; font-size: 1.5em;">HOJA DE MEMBRESÍA</h2>
-                    </header>
+        paginationDiv.appendChild(prevBtn);
+        const pageInfo = document.createElement('span');
+        pageInfo.textContent = ` Página ${currentPage} de ${totalPages} `;
+        pageInfo.style.color = '#E6C68D';
+        paginationDiv.appendChild(pageInfo);
+        paginationDiv.appendChild(nextBtn);
+    }
 
-                    <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 30px;">
-                        <div style="flex-grow: 1;">
-                            <h3 style="color: #0A1424; margin-top: 0; margin-bottom: 15px; font-size: 1.3em; border-bottom: 1px solid #eee; padding-bottom: 5px;">Datos Personales</h3>
-                            <table style="width: 100%; border-collapse: collapse;">
-                                <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2; width: 40%;"><strong>Nombre Completo:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.nombreCompleto || 'N/A'}</td></tr>
-                                <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Código:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.codigo || 'N/A'}</td></tr>
-                                <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Fecha de Nacimiento:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.fechaNacimiento || 'N/A'}</td></tr>
-                                <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Edad:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.edad || 'N/A'}</td></tr>
-                                <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Teléfono:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.telefono || 'N/A'}</td></tr>
-                                <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Dirección:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.direccion || 'N/A'}</td></tr>
-                                <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Asociación:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.asociacion || 'N/A'}</td></tr>
-                                <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Estado:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.estado === 'activo' ? 'Activo' : 'De Baja'}</td></tr>
-                            </table>
-                        </div>
-                        <div style="flex-shrink: 0;">
-                            ${member.fotoURL ? `<img src="${member.fotoURL}" alt="Foto de ${member.nombreCompleto}" style="width: 100px; height: 100px; border-radius: 5px; object-fit: cover; border: 2px solid #E6C68D; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">` : '<div style="width: 100px; height: 100px; border-radius: 5px; background-color: #ccc; display: flex; align-items: center; justify-content: center; font-size: 0.8em; text-align: center; color: #666;">Sin Foto</div>'}
-                        </div>
-                    </div>
+    function filterMembers() {
+        const query = searchInput ? searchInput.value.toLowerCase() : '';
+        filteredMembers = members.filter(m => {
+            const matchesSearch =
+                (m.nombreCompleto && m.nombreCompleto.toLowerCase().includes(query)) ||
+                (m.codigo && m.codigo.toLowerCase().includes(query)) ||
+                (m.direccion && m.direccion.toLowerCase().includes(query)) ||
+                (m.asociacion && m.asociacion.toLowerCase().includes(query));
+            const matchesEstado = m.estado === currentMemberStatusFilter;
+            return matchesSearch && matchesEstado;
+        });
+        currentPage = 1;
+    }
 
-                    <h3 style="color: #0A1424; margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 1px solid #eee; padding-bottom: 5px;">Información Familiar</h3>
-                    ${member.familiares && member.familiares.length > 0 ? `
-                        <ul style="list-style-type: disc; padding-left: 25px; margin-bottom: 30px;">
-                            ${member.familiares.map(fam => `<li style="padding: 5px 0; border-bottom: 1px dashed #eee;">${fam}</li>`).join('')}
-                        </ul>
-                    ` : '<p style="margin-bottom: 30px;">No hay familiares registrados.</p>'}
+    async function loadMembers() {
+        if (!db) {
+            console.error("Firestore no está inicializado. No se pueden cargar los miembros.");
+            return;
+        }
+        try {
+            console.log("Cargando miembros de Firestore...");
+            const snapshot = await db.collection('miembros').orderBy('timestamp', 'desc').get();
+            members = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                members.push({
+                    id: doc.id,
+                    nombreCompleto: data.nombreCompleto || '',
+                    codigo: data.codigo || '',
+                    fechaNacimiento: data.fechaNacimiento || '',
+                    edad: calcularEdad(data.fechaNacimiento),
+                    telefono: data.telefono || '',
+                    direccion: data.direccion || '',
+                    asociacion: data.asociacion || '',
+                    familiares: data.familiares || [],
+                    fechaConversion: data.fechaConversion || '',
+                    lugarConversion: data.lugarConversion || '',
+                    fechaBautizo: data.fechaBautizo || '',
+                    lugarBautizo: data.lugarBautizo || '',
+                    fechaBautizoEsp: data.fechaBautizoEsp || '',
+                    lugarBautizoEsp: data.lugarBautizoEsp || '',
+                    cursosBiblicos: data.cursosBiblicos || '',
+                    lugarCursosBiblicos: data.lugarCursosBiblicos || '',
+                    fotoURL: data.fotoURL || '',
+                    fotoPath: data.fotoPath || '',
+                    estado: data.estado || 'activo'
+                });
+            });
+            console.log("Miembros cargados:", members);
+            filterMembers();
+            renderTable();
+        } catch (error) {
+            console.error('Error al cargar miembros: ', error);
+            alert('Error al cargar miembros: ' + error.message);
+        }
+    }
 
-                    <h3 style="color: #0A1424; margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 1px solid #eee; padding-bottom: 5px;">Información Espiritual</h3>
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2; width: 40%;"><strong>Fecha de Conversión:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.fechaConversion || 'N/A'}</td></tr>
-                        <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Lugar de Conversión:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.lugarConversion || 'N/A'}</td></tr>
-                        <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Fecha de Bautizo:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.fechaBautizo || 'N/A'}</td></tr>
-                        <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Lugar de Bautizo:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.lugarBautizo || 'N/A'}</td></tr>
-                        <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Fecha Bautizo Espíritu Santo:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.fechaBautizoEsp || 'N/A'}</td></tr>
-                        <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Lugar Bautizo Espíritu Santo:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.lugarBautizoEsp || 'N/A'}</td></tr>
-                        <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Cursos Bíblicos:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.cursosBiblicos || 'N/A'}</td></tr>
-                        <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #f2f2f2;"><strong>Lugar Cursos Bíblicos:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${member.lugarCursosBiblicos || 'N/A'}</td></tr>
-                    </table>
-                    <footer style="text-align: center; margin-top: 40px; font-size: 0.9em; color: #666; border-top: 1px dashed #ccc; padding-top: 15px;">
-                        <p>Reporte generado el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')}</p>
-                        <p>IGLESIA ICCI ADORACION VIVA</p>
-                    </footer>
-                </div>
-            `;
+    async function uploadPhoto(file, oldPath = null) {
+        if (!file) {
+            console.log("No se seleccionó ningún archivo para subir.");
+            return { url: null, path: null };
+        }
+        if (!supabase) {
+            console.error("Supabase no está inicializado. No se puede subir la foto.");
+            return { url: null, path: null };
+        }
+        try {
+            // Eliminar foto anterior si existe y se ha proporcionado una nueva
+            if (oldPath) {
+                console.log("Intentando eliminar foto antigua:", oldPath);
+                const { error: removeError } = await supabase.storage.from(SUPABASE_BUCKET).remove([oldPath]);
+                if (removeError) {
+                    console.warn('Error al eliminar foto antigua:', removeError.message);
+                    // No abortar la subida si la eliminación falló
+                }
+            }
 
-            const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html lang="es">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Hoja de Membresía - ${member.nombreCompleto}</title>
-                    <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; color: #333; line-height: 1.6; }
-                        header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #E6C68D; padding-bottom: 15px; }
-                        header img { max-width: 150px; height: auto; margin-bottom: 10px; }
-                        h1 { color: #0A1424; margin: 0; font-size: 2em; }
-                        h2 { color: #0A1424; margin: 5px 0 0; font-size: 1.5em; }
-                        h3 { color: #0A1424; margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-                        .flex-container { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 30px; }
-                        img { width: 100px; height: 100px; border-radius: 5px; object-fit: cover; border: 2px solid #E6C68D; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                        td { padding: 8px; border: 1px solid #ddd; vertical-align: top; }
-                        td:first-child { background-color: #f2f2f2; font-weight: bold; width: 40%; }
-                        ul { list-style-type: disc; padding-left: 25px; margin-bottom: 30px; }
-                        li { padding: 5px 0; border-bottom: 1px dashed #eee; }
-                        footer { text-align: center; margin-top: 40px; font-size: 0.9em; color: #666; border-top: 1px dashed #ccc; padding-top: 15px; }
+            const fileExt = file.name.split('.').pop();
+            const fileName = `foto_${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+            console.log("Subiendo nueva foto:", fileName);
+            
+            const { data, error } = await supabase.storage.from(SUPABASE_BUCKET).upload(fileName, file, {
+                cacheControl: '3600',
+                upsert: false // No sobrescribir, ya manejamos la eliminación explícitamente
+            });
 
-                        @media print {
-                            body { -webkit-print-color-adjust: exact !important; margin: 0; padding: 10mm; }
-                            h1, h2, h3 { color: #0A1424 !important; print-color-adjust: exact !important; }
-                            table, td { border-color: #bbb !important; }
-                            td:first-child { background-color: #f2f2f2 !important; print-color-adjust: exact !important; }
-                            header, footer { border-color: #E6C68D !important; print-color-adjust: exact !important; }
-                            img { border-color: #E6C68D !important; }
-                            a[href]:after { content: none !important; }
-                            button { display: none !important; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    ${printContent}
-                    <script>
-                        window.onload = function() {
-                            window.print();
-                            window.onafterprint = function() {
-                                window.close();
-                            };
-                        }
-                    </script>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
+            if (error) {
+                throw error;
+            }
+
+            const { data: publicData, error: urlError } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(fileName);
+            if (urlError) {
+                throw urlError;
+            }
+            console.log("Foto subida. URL:", publicData.publicUrl, "Path:", fileName);
+            return { url: publicData.publicUrl, path: fileName };
+        } catch (err) {
+            console.error('Error al subir la foto: ', err);
+            alert('Error al subir la foto: ' + err.message);
+            return { url: null, path: null };
+        }
+    }
+
+    async function saveMember(e) {
+        e.preventDefault();
+        if (!db) {
+            alert("La base de datos no está inicializada. No se puede guardar el miembro.");
+            return;
         }
 
-    </script>
+        const nombreCompleto = nombreInput.value.trim();
+        const codigo = codigoInput.value.trim();
+        if(!nombreCompleto || !codigo) {
+            alert('Nombre completo y código son obligatorios.');
+            return;
+        }
+        const fechaNacimiento = fechaNacimientoInput.value;
+        const edad = calcularEdad(fechaNacimiento);
+        const telefono = telefonoInput.value.trim();
+        const direccion = direccionInput.value.trim();
+        const asociacion = asociacionSelect.value;
+        const fechaConversion = fechaConversionInput.value;
+        const lugarConversion = lugarConversionInput.value.trim();
+        const fechaBautizo = fechaBautizoInput.value;
+        const lugarBautizo = lugarBautizoInput.value.trim();
+        const fechaBautizoEsp = fechaBautizoEspInput.value;
+        const lugarBautizoEsp = lugarBautizoEspInput.value.trim();
+        const cursosBiblicos = cursosBiblicosInput.value.trim();
+        const lugarCursosBiblicos = lugarCursosBiblicosInput.value.trim();
+
+        let fotoURL = '';
+        let fotoPath = '';
+        let oldFotoPath = null;
+        let currentFotoURL = ''; 
+
+        if(editingMemberId) {
+            const member = members.find(m => m.id === editingMemberId);
+            if (member) {
+                oldFotoPath = member.fotoPath || null;
+                currentFotoURL = member.fotoURL || '';
+            }
+        }
+
+        // Determinar qué hacer con la foto:
+        // 1. Si se seleccionó un nuevo archivo: Subir el nuevo archivo
+        // 2. Si no se seleccionó nuevo archivo y la foto previa fue eliminada: Eliminar de Supabase y limpiar URL/Path
+        // 3. Si no se seleccionó nuevo archivo y la foto previa se mantiene: Mantener la URL/Path existente
+        
+        if (fotoInput.files.length > 0) { // Caso 1: Nuevo archivo seleccionado
+            console.log("Se seleccionó un nuevo archivo de foto.");
+            const result = await uploadPhoto(fotoInput.files[0], oldFotoPath);
+            fotoURL = result.url || '';
+            fotoPath = result.path || '';
+        } else if (editingMemberId && fotoPreview.src === '' && oldFotoPath) { // Caso 2: Editando, no hay foto en preview, y había una antigua
+            console.log("Editando: Foto eliminada del formulario.");
+            if (supabase) {
+                const { error: removeError } = await supabase.storage.from(SUPABASE_BUCKET).remove([oldFotoPath]);
+                if (removeError) console.warn('Error al eliminar foto antigua (al borrar del formulario):', removeError.message);
+            }
+            fotoURL = '';
+            fotoPath = '';
+        } else { // Caso 3: No se seleccionó nuevo archivo, y se mantiene la foto existente o no había antes
+            console.log("No se seleccionó nueva foto. Manteniendo la existente o ninguna.");
+            fotoURL = currentFotoURL;
+            fotoPath = oldFotoPath;
+        }
+
+
+        const dataToSave = {
+            nombreCompleto,
+            codigo,
+            fechaNacimiento,
+            edad,
+            telefono,
+            direccion,
+            asociacion,
+            familiares,
+            fechaConversion,
+            lugarConversion,
+            fechaBautizo,
+            lugarBautizo,
+            fechaBautizoEsp,
+            lugarBautizoEsp,
+            cursosBiblicos,
+            lugarCursosBiblicos,
+            fotoURL: fotoURL,
+            fotoPath: fotoPath,
+            estado: currentMemberStatusFilter,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        try {
+            if(editingMemberId) {
+                await db.collection('miembros').doc(editingMemberId).update(dataToSave);
+                console.log('Miembro actualizado correctamente.');
+                alert('Miembro actualizado correctamente.');
+            } else {
+                await db.collection('miembros').add(dataToSave);
+                console.log('Miembro añadido correctamente.');
+                alert('Miembro añadido correctamente.');
+            }
+            await loadMembers();
+            closeModal();
+        } catch (error) {
+            console.error('Error guardando el miembro: ', error);
+            alert('Error guardando el miembro: ' + error.message);
+        }
+    }
+
+    function openEditMember(member) {
+        editingMemberId = member.id;
+        if (nombreInput) nombreInput.value = member.nombreCompleto || '';
+        if (codigoInput) codigoInput.value = member.codigo || '';
+        if (fechaNacimientoInput) fechaNacimientoInput.value = member.fechaNacimiento || '';
+        if (edadInput) edadInput.value = calcularEdad(member.fechaNacimiento);
+        if (telefonoInput) telefonoInput.value = member.telefono || '';
+        if (direccionInput) direccionInput.value = member.direccion || '';
+        if (asociacionSelect) asociacionSelect.value = member.asociacion || '';
+        familiares = member.familiares || [];
+        renderFamiliares();
+        if (fechaConversionInput) fechaConversionInput.value = member.fechaConversion || '';
+        if (lugarConversionInput) lugarConversionInput.value = member.lugarConversion || '';
+        if (fechaBautizoInput) fechaBautizoInput.value = member.fechaBautizo || '';
+        if (lugarBautizoInput) lugarBautizoInput.value = member.lugarBautizo || '';
+        if (fechaBautizoEspInput) fechaBautizoEspInput.value = member.fechaBautizoEsp || '';
+        if (lugarBautizoEspInput) lugarBautizoEspInput.value = member.lugarBautizoEsp || '';
+        if (cursosBiblicosInput) cursosBiblicosInput.value = member.cursosBiblicos || '';
+        if (lugarCursosBiblicosInput) lugarCursosBiblicosInput.value = member.lugarCursosBiblicos || '';
+        
+        if (fotoPreview) {
+            if(member.fotoURL){
+                fotoPreview.src = member.fotoURL;
+                fotoPreview.style.display = 'block';
+            } else {
+                fotoPreview.style.display = 'none';
+                fotoPreview.src = '';
+            }
+        }
+        showModal(true);
+        setActiveSection('personales');
+    }
+
+    async function toggleEstado(member) {
+        if (!db) {
+            alert("La base de datos no está inicializada. No se puede cambiar el estado.");
+            return;
+        }
+        const nuevoEstado = member.estado === 'activo' ? 'baja' : 'activo';
+        const confirmMsg = `¿Estás seguro de que quieres ${nuevoEstado === 'baja' ? 'dar de baja' : 'reactivar'} a ${member.nombreCompleto}?`;
+        if (!confirm(confirmMsg)) {
+            return;
+        }
+
+        try {
+            await db.collection('miembros').doc(member.id).update({ estado: nuevoEstado });
+            alert(`Miembro ${member.nombreCompleto} ha sido ${nuevoEstado === 'baja' ? 'dado de baja' : 'reactivado'} correctamente.`);
+            await loadMembers();
+        } catch (error) {
+            console.error('Error al cambiar estado: ', error);
+            alert('Error al cambiar estado: ' + error.message);
+        }
+    }
+
+    // Eventos (adjuntar después de que el DOM esté cargado)
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOM completamente cargado. Inicializando elementos y adjuntando eventos.");
+
+        // Asignar elementos DOM después de que el DOM esté listo
+        modalOverlay = document.getElementById('modalOverlay');
+        modal = document.getElementById('modal');
+        memberForm = document.getElementById('memberForm');
+        fotoInput = document.getElementById('fotoInput');
+        fotoPreview = document.getElementById('fotoPreview');
+        nombreInput = document.getElementById('nombreInput');
+        fechaNacimientoInput = document.getElementById('fechaNacimientoInput');
+        edadInput = document.getElementById('edadInput');
+        codigoInput = document.getElementById('codigoInput');
+        telefonoInput = document.getElementById('telefonoInput');
+        direccionInput = document.getElementById('direccionInput');
+        asociacionSelect = document.getElementById('asociacionSelect');
+        nombreFamiliarInput = document.getElementById('nombreFamiliarInput');
+        addFamiliarBtn = document.getElementById('addFamiliarBtn');
+        famList = document.getElementById('fam-list');
+        fechaConversionInput = document.getElementById('fechaConversionInput');
+        lugarConversionInput = document.getElementById('lugarConversionInput');
+        fechaBautizoInput = document.getElementById('fechaBautizoInput');
+        lugarBautizoInput = document.getElementById('lugarBautizoInput');
+        fechaBautizoEspInput = document.getElementById('fechaBautizoEspInput');
+        lugarBautizoEspInput = document.getElementById('lugarBautizoEspInput');
+        cursosBiblicosInput = document.getElementById('cursosBiblicosInput');
+        lugarCursosBiblicosInput = document.getElementById('lugarCursosBiblicosInput');
+        searchInput = document.getElementById('search');
+        membersTableBody = document.querySelector('#membersTable tbody');
+        paginationDiv = document.getElementById('pagination');
+        addMemberBtnMain = document.getElementById('addMemberBtnMain');
+        modalClose = document.getElementById('modalClose');
+        cancelBtn = document.getElementById('cancelBtn');
+        tabButtons = document.querySelectorAll('.section-tabs .tab-btn');
+        tabActivos = document.getElementById('tabActivos');
+        tabDeBaja = document.getElementById('tabDeBaja');
+        btnInicio = document.getElementById('btnInicio');
+
+        // Adjuntar Event Listeners
+        if (addMemberBtnMain) {
+            addMemberBtnMain.addEventListener('click', () => {
+                console.log("Botón 'Añadir Miembro' clickeado.");
+                editingMemberId = null;
+                memberForm.reset();
+                familiares = [];
+                renderFamiliares();
+                fotoPreview.style.display = 'none'; // Asegurarse de que la previsualización se oculte
+                fotoPreview.src = ''; // Limpiar la fuente de la imagen
+                showModal(false);
+                setActiveSection('personales');
+            });
+        } else {
+            console.warn("Elemento #addMemberBtnMain no encontrado.");
+        }
+
+        if (modalClose) {
+            modalClose.addEventListener('click', closeModal);
+        } else {
+            console.warn("Elemento #modalClose no encontrado.");
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeModal);
+        } else {
+            console.warn("Elemento #cancelBtn no encontrado.");
+        }
+
+        if (memberForm) {
+            memberForm.addEventListener('submit', saveMember);
+        } else {
+            console.warn("Elemento #memberForm no encontrado.");
+        }
+
+        if (fechaNacimientoInput && edadInput) {
+            fechaNacimientoInput.addEventListener('change', () => {
+                edadInput.value = calcularEdad(fechaNacimientoInput.value);
+            });
+        } else {
+            console.warn("Elementos de fecha de nacimiento/edad no encontrados.");
+        }
+
+        if (addFamiliarBtn && nombreFamiliarInput && famList) {
+            addFamiliarBtn.addEventListener('click', () => {
+                const nombreFam = nombreFamiliarInput.value.trim();
+                if(nombreFam && !familiares.includes(nombreFam)) {
+                    familiares.push(nombreFam);
+                    renderFamiliares();
+                    nombreFamiliarInput.value = '';
+                } else if (nombreFam) {
+                    alert('El familiar ya existe en la lista.');
+                }
+            });
+        } else {
+            console.warn("Elementos de familiares no encontrados.");
+        }
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                filterMembers();
+                renderTable();
+            });
+        } else {
+            console.warn("Elemento #search no encontrado.");
+        }
+
+        if (tabButtons.length > 0) {
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    setActiveSection(btn.dataset.section);
+                });
+            });
+        } else {
+            console.warn("Elementos de pestañas de sección no encontrados.");
+        }
+
+        if (tabActivos) {
+            tabActivos.addEventListener('click', () => {
+                currentMemberStatusFilter = 'activo';
+                tabActivos.classList.add('active');
+                tabDeBaja.classList.remove('active');
+                filterMembers();
+                renderTable();
+            });
+        } else {
+            console.warn("Elemento #tabActivos no encontrado.");
+        }
+
+        if (tabDeBaja) {
+            tabDeBaja.addEventListener('click', () => {
+                currentMemberStatusFilter = 'baja';
+                tabDeBaja.classList.add('active');
+                tabActivos.classList.remove('active');
+                filterMembers();
+                renderTable();
+            });
+        } else {
+            console.warn("Elemento #tabDeBaja no encontrado.");
+        }
+        
+        if (fotoInput && fotoPreview) {
+            fotoInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        fotoPreview.src = e.target.result;
+                        fotoPreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    fotoPreview.src = '';
+                    fotoPreview.style.display = 'none';
+                }
+            });
+        } else {
+            console.warn("Elementos de foto no encontrados.");
+        }
+
+        if (btnInicio) {
+            btnInicio.addEventListener('click', () => {
+                searchInput.value = '';
+                currentMemberStatusFilter = 'activo';
+                if (tabActivos) {
+                    tabActivos.classList.add('active');
+                    tabDeBaja.classList.remove('active');
+                }
+                loadMembers();
+            });
+        } else {
+            console.warn("Elemento #btnInicio no encontrado.");
+        }
+
+        // Cargar miembros al cargar el DOM
+        loadMembers();
+        setActiveSection('personales');
+    });
+</script>
+
 </body>
 </html>
