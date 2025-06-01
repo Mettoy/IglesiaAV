@@ -1,306 +1,875 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Votaciones con Menú Plegable</title>
-  <style>
-    /* Reset básico */
-    * {
-      box-sizing: border-box;
-      margin: 0; padding: 0;
-      font-family: Arial, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Actividades y Votación</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Variables CSS --- */
+        :root {
+            --dark-blue: #000033; /* Ultra Dark Blue */
+            --gold: #FFD700;
+            --light-gold: #FFECB3;
+            --white: #FFFFFF;
+            --gray: #CCCCCC;
+            --dark-gray: #333333;
+            --modal-bg: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente para modales */
+        }
 
-    body {
-      display: flex;
-      min-height: 100vh;
-      background: #f5f6fa;
-      color: #333;
-    }
+        /* --- Estilos Generales --- */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--dark-gray);
+            color: var(--white);
+            overflow-x: hidden; /* Evita desbordamiento horizontal */
+        }
 
-    /* Sidebar */
-    .sidebar {
-      width: 250px;
-      background: #2c3e50;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      transition: width 0.3s ease;
-      overflow: hidden;
-    }
+        /* --- Sidebar CSS --- */
+        .sidebar {
+            width: 250px;
+            background-color: var(--dark-blue);
+            padding-top: 20px;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centra los elementos horizontalmente */
+            position: fixed; /* Mantiene la barra lateral fija */
+            height: 100%;
+            z-index: 1000; /* Asegura que esté por encima de otros elementos */
+        }
 
-    .sidebar.collapsed {
-      width: 60px;
-    }
+        .sidebar a {
+            display: block;
+            color: var(--light-gold);
+            padding: 15px 20px;
+            text-decoration: none;
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            box-sizing: border-box; /* Incluye padding en el ancho */
+        }
 
-    /* Logo */
-    #logo {
-      width: 180px;
-      margin: 20px auto;
-      cursor: pointer;
-      transition: width 0.3s ease;
-    }
+        .sidebar a:hover {
+            background-color: rgba(255, 215, 0, 0.15);
+            color: var(--gold);
+        }
 
-    .sidebar.collapsed #logo {
-      width: 40px;
-      margin: 10px auto;
-    }
+        .logout {
+            color: var(--gold);
+            padding: 15px 20px;
+            text-decoration: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: color 0.3s ease, background-color 0.3s ease;
+            margin-top: auto; /* Empuja el botón "Cerrar sesión" al final */
+            box-sizing: border-box;
+        }
 
-    /* User info y menu */
-    .user-info {
-      padding: 10px 20px;
-      font-size: 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-      text-align: center;
-    }
+        .logout:hover {
+            color: var(--light-gold);
+            background-color: rgba(255, 215, 0, 0.1);
+        }
 
-    #menuLinks {
-      flex-grow: 1;
-    }
+        /* --- Contenido Principal CSS --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centra el contenido en el área principal */
+            margin-left: 250px; /* Deja espacio para la barra lateral fija */
+            width: calc(100% - 250px); /* Ajusta el ancho del contenido */
+            box-sizing: border-box;
+        }
 
-    /* Links */
-    .sidebar-link {
-      display: block;
-      padding: 12px 20px;
-      color: white;
-      text-decoration: none;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      transition: background 0.2s ease;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+        /* --- Formulario de Actividad CSS --- */
+        .activity-form {
+            background-color: var(--dark-blue);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--gold);
+        }
 
-    .sidebar-link:hover {
-      background: #34495e;
-    }
+        .activity-form h2 {
+            color: var(--gold);
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.8em;
+            letter-spacing: 1px;
+        }
 
-    /* Logout */
-    .logout {
-      padding: 12px 20px;
-      cursor: pointer;
-      background: #e74c3c;
-      text-align: center;
-      margin: 15px 10px;
-      border-radius: 5px;
-      user-select: none;
-    }
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-    .logout:hover {
-      background: #c0392b;
-    }
+        .form-group label {
+            display: block;
+            color: var(--light-gold);
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
 
-    /* Toggle botón */
-    .toggle-btn {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 1.5rem;
-      cursor: pointer;
-      margin: 10px auto 20px;
-      user-select: none;
-      outline: none;
-      transition: transform 0.3s ease;
-    }
+        .form-group input,
+        .form-group textarea {
+            width: calc(100% - 24px); /* Ajusta por padding y borde */
+            padding: 12px;
+            border: 1px solid var(--gray);
+            border-radius: 6px;
+            background-color: var(--dark-gray);
+            color: var(--white);
+            box-sizing: border-box;
+            font-size: 1em;
+        }
 
-    .sidebar.collapsed .toggle-btn {
-      transform: rotate(180deg);
-    }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--gold);
+            outline: none;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+        }
 
-    /* Contenido principal */
-    main {
-      flex-grow: 1;
-      padding: 20px;
-    }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
 
-    /* Botón votar */
-    #btnVotar {
-      padding: 10px 20px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      border: none;
-      background: #3498db;
-      color: white;
-      border-radius: 5px;
-      transition: background 0.3s ease;
-    }
+        .form-group button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--gold);
+            color: var(--dark-blue);
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
 
-    #btnVotar:hover {
-      background: #2980b9;
-    }
+        .form-group button:hover {
+            background-color: var(--light-gold);
+            color: var(--dark-blue);
+            transform: translateY(-2px); /* Pequeño efecto al pasar el mouse */
+        }
 
-    /* Modal */
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
+        /* --- Lista de Actividades Pendientes CSS --- */
+        .activity-list, .past-activities-table-container {
+            width: 90%;
+            max-width: 900px;
+            margin-bottom: 30px;
+        }
 
-    .modal.active {
-      display: flex;
-    }
+        .activity-list h2, .past-activities-table-container h2 {
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 2em;
+            letter-spacing: 1px;
+        }
 
-    .modal-content {
-      background: white;
-      padding: 20px 30px;
-      border-radius: 10px;
-      width: 320px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      position: relative;
-    }
+        .activity-card {
+            background-color: var(--dark-blue);
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+        }
 
-    .modal-content h2 {
-      margin-bottom: 15px;
-      font-weight: 600;
-      font-size: 1.3rem;
-      text-align: center;
-    }
+        .activity-card h3 {
+            color: var(--gold);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
 
-    .modal-content label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-    }
+        .activity-details {
+            color: var(--light-gold);
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
 
-    .modal-content input[type="number"] {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-    }
+        .activity-details p {
+            margin: 5px 0;
+        }
 
-    .modal-content input[readonly] {
-      background: #eee;
-      font-weight: bold;
-      text-align: center;
-    }
+        .activity-buttons button {
+            background-color: var(--gold);
+            color: var(--dark-blue);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 15px;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
 
-    .modal-content button {
-      background: #27ae60;
-      border: none;
-      color: white;
-      padding: 10px;
-      width: 100%;
-      border-radius: 5px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
+        .activity-buttons button:hover {
+            background-color: var(--light-gold);
+            transform: translateY(-2px);
+        }
 
-    .modal-content button:hover {
-      background: #1e8449;
-    }
+        .activity-buttons button:last-child {
+            margin-right: 0;
+        }
 
-    /* Cerrar botón modal */
-    .close-btn {
-      position: absolute;
-      right: 15px;
-      top: 10px;
-      font-size: 1.5rem;
-      font-weight: bold;
-      cursor: pointer;
-      color: #888;
-      user-select: none;
-    }
+        /* --- Modales (Votación y Resultados) CSS --- */
+        .modal {
+            display: none; /* Oculto por defecto */
+            position: fixed; /* Posición fija en la pantalla */
+            z-index: 2000; /* Siempre por encima de todo */
+            left: 0;
+            top: 0;
+            width: 100%; /* Ancho completo */
+            height: 100%; /* Alto completo */
+            overflow: auto; /* Permite scroll si el contenido es muy grande */
+            background-color: var(--modal-bg); /* Fondo semi-transparente */
+            display: flex; /* Para centrar el contenido */
+            align-items: center; /* Centrado vertical */
+            justify-content: center; /* Centrado horizontal */
+            animation: fadeIn 0.3s ease-out; /* Animación de aparición */
+        }
 
-    .close-btn:hover {
-      color: #333;
-    }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
-  </style>
+        .modal-content, .results-modal-content {
+            background-color: var(--dark-blue);
+            padding: 30px;
+            border: 1px solid var(--gold);
+            width: 90%;
+            max-width: 800px; /* Ancho máximo para modales */
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.7);
+            animation: slideIn 0.4s ease-out; /* Animación de entrada */
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-button {
+            color: var(--gold);
+            float: right;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--light-gold);
+        }
+
+        .modal-content h3, .results-modal-content h3 {
+            color: var(--gold);
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.8em;
+            letter-spacing: 1px;
+        }
+
+        /* --- Tabla de Votación (dentro del modal) CSS --- */
+        .voting-table-container {
+            overflow-x: auto; /* Permite scroll horizontal si la tabla es muy ancha */
+            margin-bottom: 20px;
+        }
+
+        .voting-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* Asegura un ancho mínimo para la tabla */
+        }
+
+        .voting-table th,
+        .voting-table td {
+            border: 1px solid var(--gray);
+            padding: 12px;
+            text-align: center;
+            color: var(--light-gold);
+            vertical-align: middle; /* Centra el contenido verticalmente */
+        }
+
+        .voting-table th {
+            background-color: var(--dark-gray);
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 1.1em;
+            white-space: nowrap; /* Evita que el texto del encabezado se rompa */
+        }
+
+        .voting-table input[type="number"] {
+            width: 60px; /* Ancho más pequeño para el input de votos */
+            padding: 8px;
+            border: 1px solid var(--gray);
+            border-radius: 4px;
+            background-color: var(--dark-gray);
+            color: var(--white);
+            text-align: center;
+            font-size: 1em;
+            -moz-appearance: textfield; /* Elimina flechas en Firefox */
+        }
+
+        .voting-table input[type="number"]::-webkit-outer-spin-button,
+        .voting-table input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none; /* Elimina flechas en Chrome/Safari */
+            margin: 0;
+        }
+
+        .voting-table button {
+            background-color: var(--gold);
+            color: var(--dark-blue);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .voting-table button:hover {
+            background-color: var(--light-gold);
+        }
+
+        .vote-buttons {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .vote-buttons button {
+            background-color: var(--gold);
+            color: var(--dark-blue);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .vote-buttons button:hover {
+            background-color: var(--light-gold);
+            transform: translateY(-2px);
+        }
+
+        /* --- Tabla de Resultados (dentro del modal) CSS --- */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .results-table th,
+        .results-table td {
+            border: 1px solid var(--gray);
+            padding: 12px;
+            text-align: left;
+            color: var(--light-gold);
+        }
+
+        .results-table th {
+            background-color: var(--dark-gray);
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* --- Tabla de Actividades Realizadas CSS --- */
+        .past-activities-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+            background-color: var(--dark-blue); /* Fondo para la tabla */
+            border-radius: 10px;
+            overflow: hidden; /* Asegura que los bordes redondeados funcionen */
+        }
+
+        .past-activities-table thead {
+            background-color: var(--dark-gray);
+        }
+
+        .past-activities-table th,
+        .past-activities-table td {
+            border: 1px solid var(--gray);
+            padding: 12px;
+            text-align: left;
+            color: var(--light-gold);
+        }
+
+        .past-activities-table th {
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .past-activities-table tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 51, 0.5); /* Ligeramente más claro para filas pares */
+        }
+
+        .past-activities-table button {
+            background-color: var(--gold);
+            color: var(--dark-blue);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .past-activities-table button:hover {
+            background-color: var(--light-gold);
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
-
-  <div class="sidebar" id="sidebar">
-    <button class="toggle-btn" id="toggleBtn">&#9776;</button>
-    <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" />
-    <div class="user-info" id="userInfo">Usuario</div>
-    <div id="menuLinks"></div>
-    <a href="miembros.html" class="sidebar-link">Miembros</a>
-    <a href="registrar.html" class="sidebar-link">Dar acceso</a>
-    <a href="diezmó.html" class="sidebar-link">Diezmos</a>
-    <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-    <a href="reportes.html" class="sidebar-link">Reportess</a>
-    <a href="discipulado.html" class="sidebar-link">Discipulado</a>
-    <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
-  </div>
-
-  <main>
-    <button id="btnVotar">Votar (0)</button>
-  </main>
-
-  <!-- Modal votos -->
-  <div class="modal" id="modalVotos">
-    <div class="modal-content">
-      <span class="close-btn" id="closeModal">&times;</span>
-      <h2>Votar (0)</h2>
-      <label for="voto1">Votos 1</label>
-      <input type="number" id="voto1" min="0" value="0" />
-      <label for="voto2">Votos 2</label>
-      <input type="number" id="voto2" min="0" value="0" />
-      <label for="total">Total</label>
-      <input type="number" id="total" value="0" readonly />
-      <button id="guardarVotosBtn">Guardar</button>
+    <div class="sidebar">
+        <a href="acceso.html" class="sidebar-link">Dar acceso</a>
+        <a href="diezmo.html" class="sidebar-link">Diezmos</a>
+        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+        <a href="reportes.html" class="sidebar-link">Reportes</a>
+        <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
     </div>
-  </div>
 
-  <script>
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('toggleBtn');
+    <div class="main-content">
+        <div class="activity-form">
+            <h2>Añadir Nueva Actividad</h2>
+            <div class="form-group">
+                <label for="activity-title">Título de la Actividad:</label>
+                <input type="text" id="activity-title" required>
+            </div>
+            <div class="form-group">
+                <label for="candidates">Candidatos (separados por coma):</label>
+                <textarea id="candidates" rows="3" placeholder="Ej: Candidato 1, Candidato 2, Otro Candidato"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="activity-date">Fecha de la Actividad:</label>
+                <input type="date" id="activity-date" required>
+            </div>
+            <div class="form-group">
+                <button onclick="guardarActividad()">Guardar Actividad</button>
+            </div>
+        </div>
 
-    toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
-    });
+        <div class="activity-list">
+            <h2>Actividades Pendientes</h2>
+            </div>
 
-    function cerrarSesion() {
-      alert('Sesión cerrada'); // Aquí va tu lógica real
-    }
+        <div class="past-activities-table-container">
+            <h2>Actividades Realizadas</h2>
+            <table class="past-activities-table" id="past-activities">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Fecha</th>
+                        <th>Resultados</th>
+                    </tr>
+                </thead>
+                <tbody id="past-activities-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
 
-    // Modal y votación
-    const btnVotar = document.getElementById('btnVotar');
-    const modalVotos = document.getElementById('modalVotos');
-    const closeModal = document.getElementById('closeModal');
-    const voto1 = document.getElementById('voto1');
-    const voto2 = document.getElementById('voto2');
-    const total = document.getElementById('total');
-    const guardarVotosBtn = document.getElementById('guardarVotosBtn');
+    <div id="votingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeVotingModal()">&times;</span>
+            <h3>Votación para <span id="voting-activity-title"></span></h3>
+            <div class="voting-table-container">
+                <table class="voting-table" id="voting-table">
+                    <thead>
+                        <tr>
+                            <th>Candidato</th>
+                            <th>Votos a Añadir/Quitar</th>
+                            <th>Añadir</th>
+                            <th>Quitar</th>
+                            <th>Total Votos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="voting-table-body">
+                        </tbody>
+                </table>
+            </div>
+            <div class="vote-buttons">
+                <button onclick="registrarVotos()">Registrar Votos</button>
+                <button onclick="closeVotingModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
-    // Función para actualizar total
-    function actualizarTotal() {
-      const val1 = parseInt(voto1.value) || 0;
-      const val2 = parseInt(voto2.value) || 0;
-      total.value = val1 + val2;
-      btnVotar.textContent = `Votar (${total.value})`;
-    }
+    <div id="resultsModal" class="modal">
+        <div class="results-modal-content">
+            <span class="close-button" onclick="closeResultsModal()">&times;</span>
+            <h3>Resultados de <span id="results-activity-title"></span></h3>
+            <table class="results-table" id="results-table">
+                <thead>
+                    <tr>
+                        <th>Candidato</th>
+                        <th>Total Votos</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
 
-    voto1.addEventListener('input', actualizarTotal);
-    voto2.addEventListener('input', actualizarTotal);
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    btnVotar.addEventListener('click', () => {
-      // Reiniciamos los campos
-      voto1.value = 0;
-      voto2.value = 0;
-      total.value = 0;
-      modalVotos.querySelector('h2').textContent = `Votar (0)`;
-      modalVotos.classList.add('active');
-    });
+    <script>
+        // --- Configuración de Firebase ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U", // ¡Reemplaza con tu propia apiKey!
+            authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
+            projectId: "iglesia-adoracion-viva-182e6",
+            storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
+            messagingSenderId: "152824399391",
+            appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
+            measurementId: "G-GXV53CPPBT"
+        };
 
-    closeModal.addEventListener('click', () => {
-      modalVotos.classList.remove('active');
-    });
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const activitiesCollection = db.collection('activities');
 
-    guardarVotosBtn.addEventListener('click', () => {
-      alert(`Votos guardados:\nVotos 1: ${voto1.value}\nVotos 2: ${voto2.value}\nTotal: ${total.value}`);
-      modalVotos.classList.remove('active');
-      btnVotar.textContent = `Votar (${total.value})`;
-    });
-  </script>
+        let activities = []; // Almacena actividades pendientes
+        let pastActivitiesData = []; // Almacena actividades realizadas
+        let currentActivityId = null; // ID de la actividad actualmente en votación
+
+        // --- Funciones de Gestión de Actividades ---
+
+        /**
+         * Guarda una nueva actividad en Firestore y actualiza la UI.
+         */
+        function guardarActividad() {
+            const title = document.getElementById('activity-title').value.trim();
+            const candidatesInput = document.getElementById('candidates').value.trim();
+            const date = document.getElementById('activity-date').value;
+            const candidates = candidatesInput.split(',').map(c => c.trim()).filter(c => c !== '');
+
+            if (title && candidates.length > 0 && date) {
+                const newActivity = {
+                    title: title,
+                    candidates: candidates,
+                    date: date,
+                    status: 'pending', // 'pending' o 'completed'
+                    votes: {} // Objeto para almacenar votos por candidato: { "Candidato A": 0, "Candidato B": 0 }
+                };
+
+                // Inicializar votos para cada candidato a 0
+                candidates.forEach(candidate => {
+                    newActivity.votes[candidate] = 0;
+                });
+
+                activitiesCollection.add(newActivity)
+                    .then((docRef) => {
+                        console.log("Actividad guardada con ID: ", docRef.id);
+                        newActivity.id = docRef.id; // Asigna el ID de Firestore al objeto local
+                        activities.push(newActivity);
+                        renderActivities(); // Vuelve a renderizar las actividades pendientes
+                        // Limpiar el formulario
+                        document.getElementById('activity-title').value = '';
+                        document.getElementById('candidates').value = '';
+                        document.getElementById('activity-date').value = '';
+                        alert('Actividad guardada con éxito.');
+                    })
+                    .catch((error) => {
+                        console.error("Error al añadir la actividad: ", error);
+                        alert("Error al guardar la actividad. Por favor, inténtelo de nuevo.");
+                    });
+            } else {
+                alert('Por favor, complete todos los campos (Título, Candidatos y Fecha).');
+            }
+        }
+
+        /**
+         * Renderiza las actividades pendientes en la sección correspondiente.
+         */
+        function renderActivities() {
+            const activityListDiv = document.querySelector('.activity-list');
+            // Filtrar solo las actividades pendientes
+            const pendingActivities = activities.filter(activity => activity.status === 'pending');
+            
+            activityListDiv.innerHTML = '<h2>Actividades Pendientes</h2>'; // Reinicia el contenido
+
+            if (pendingActivities.length === 0) {
+                activityListDiv.innerHTML += '<p style="text-align: center; color: var(--gray);">No hay actividades pendientes.</p>';
+                return;
+            }
+
+            pendingActivities.forEach(activity => {
+                const activityCard = document.createElement('div');
+                activityCard.classList.add('activity-card');
+                activityCard.innerHTML = `
+                    <h3>${activity.title}</h3>
+                    <div class="activity-details">
+                        <p><strong>Candidatos:</strong> ${activity.candidates.join(', ')}</p>
+                        <p><strong>Fecha:</strong> ${activity.date}</p>
+                    </div>
+                    <div class="activity-buttons" id="buttons-${activity.id}">
+                        <button onclick="iniciarVotacion('${activity.id}', '${activity.title}', ['${activity.candidates.join("','")}'])">Realizar Votación</button>
+                        <button onclick="cancelarActividad('${activity.id}')">Cancelar</button>
+                    </div>
+                `;
+                activityListDiv.appendChild(activityCard);
+            });
+        }
+
+        /**
+         * Cancela (elimina) una actividad de Firestore y de la UI.
+         * @param {string} id - El ID de la actividad a cancelar.
+         */
+        function cancelarActividad(id) {
+            if (confirm('¿Estás seguro de que quieres cancelar esta actividad? Esta acción no se puede deshacer.')) {
+                activitiesCollection.doc(id).delete()
+                    .then(() => {
+                        console.log("Actividad cancelada exitosamente!");
+                        // Eliminar la actividad del array local
+                        activities = activities.filter(activity => activity.id !== id);
+                        renderActivities(); // Vuelve a renderizar las actividades pendientes
+                        alert('Actividad cancelada.');
+                    }).catch((error) => {
+                        console.error("Error al cancelar la actividad: ", error);
+                        alert("Error al cancelar la actividad. Por favor, inténtelo de nuevo.");
+                    });
+            }
+        }
+
+        /**
+         * Renderiza las actividades realizadas en la tabla correspondiente.
+         */
+        function renderPastActivities() {
+            const pastActivitiesBody = document.getElementById('past-activities-body');
+            pastActivitiesBody.innerHTML = ''; // Limpiar la tabla antes de renderizar
+
+            // Filtrar solo las actividades completadas
+            const completedActivities = activities.filter(activity => activity.status === 'completed');
+
+            if (completedActivities.length === 0) {
+                pastActivitiesBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--gray);">No hay actividades realizadas.</td></tr>';
+                return;
+            }
+
+            completedActivities.forEach(activity => {
+                const row = pastActivitiesBody.insertRow();
+                row.innerHTML = `
+                    <td>${activity.title}</td>
+                    <td>${activity.date}</td>
+                    <td><button onclick="mostrarResultados('${activity.id}', '${activity.title}', '${JSON.stringify(activity.votes).replace(/"/g, '&quot;')}')">Resultados</button></td>
+                `;
+            });
+        }
+
+        // --- Funciones del Modal de Votación ---
+
+        /**
+         * Abre el modal de votación y lo prepara con los candidatos de la actividad.
+         * @param {string} activityId - El ID de la actividad.
+         * @param {string} activityTitle - El título de la actividad.
+         * @param {string[]} candidates - Un array de nombres de candidatos.
+         */
+        function iniciarVotacion(activityId, activityTitle, candidates) {
+            currentActivityId = activityId;
+            document.getElementById('voting-activity-title').textContent = activityTitle;
+            const votingTableBody = document.getElementById('voting-table-body');
+            votingTableBody.innerHTML = ''; // Limpiar filas anteriores
+
+            // Obtener la actividad actual para inicializar los votos existentes
+            const currentActivity = activities.find(act => act.id === activityId);
+            const initialVotes = currentActivity ? currentActivity.votes : {};
+
+            candidates.forEach(candidate => {
+                const row = votingTableBody.insertRow();
+                const currentTotalVotes = initialVotes[candidate] || 0; // Obtener votos actuales, o 0 si no existen
+                row.innerHTML = `
+                    <td>${candidate}</td>
+                    <td><input type="number" id="votes-input-${candidate}" value="0" min="0"></td>
+                    <td><button onclick="incrementVote('${candidate}')">+</button></td>
+                    <td><button onclick="decrementVote('${candidate}')">-</button></td>
+                    <td id="total-votes-${candidate}">${currentTotalVotes}</td>
+                `;
+            });
+
+            document.getElementById('votingModal').style.display = 'flex'; // Usar flex para centrar
+        }
+
+        /**
+         * Incrementa la cantidad de votos a añadir/quitar para un candidato.
+         * @param {string} candidate - El nombre del candidato.
+         */
+        function incrementVote(candidate) {
+            const inputElement = document.getElementById(`votes-input-${candidate}`);
+            inputElement.value = parseInt(inputElement.value) + 1;
+            // No se actualiza el total de votos del candidato en tiempo real con este input,
+            // solo cuando se registran los votos finales.
+        }
+
+        /**
+         * Decrementa la cantidad de votos a añadir/quitar para un candidato.
+         * @param {string} candidate - El nombre del candidato.
+         */
+        function decrementVote(candidate) {
+            const inputElement = document.getElementById(`votes-input-${candidate}`);
+            const currentValue = parseInt(inputElement.value);
+            if (currentValue > 0) {
+                inputElement.value = currentValue - 1;
+            }
+        }
+
+        /**
+         * Registra los votos de la votación actual en Firestore y actualiza el estado de la actividad.
+         */
+        function registrarVotos() {
+            if (!currentActivityId) {
+                alert("No hay una actividad seleccionada para registrar votos.");
+                return;
+            }
+
+            const activityToUpdate = activities.find(act => act.id === currentActivityId);
+            if (!activityToUpdate) {
+                console.error("Actividad no encontrada:", currentActivityId);
+                alert("Error: La actividad no se encontró.");
+                return;
+            }
+
+            const newVotes = {};
+            activityToUpdate.candidates.forEach(candidate => {
+                const inputElement = document.getElementById(`votes-input-${candidate}`);
+                const votesToAdd = parseInt(inputElement.value) || 0;
+                newVotes[candidate] = (activityToUpdate.votes[candidate] || 0) + votesToAdd;
+            });
+
+            // Actualizar la actividad en Firestore
+            activitiesCollection.doc(currentActivityId).update({
+                votes: newVotes,
+                status: 'completed' // Marca la actividad como completada
+            })
+            .then(() => {
+                console.log("Votos registrados y actividad actualizada!");
+                // Actualizar el objeto local de la actividad
+                activityToUpdate.votes = newVotes;
+                activityToUpdate.status = 'completed';
+
+                // Recargar las listas para reflejar los cambios
+                fetchActivities(); // Esto recargará y renderizará ambas listas
+
+                closeVotingModal();
+                alert('Votación registrada con éxito. La actividad ha sido marcada como realizada.');
+            })
+            .catch((error) => {
+                console.error("Error al registrar los votos: ", error);
+                alert("Error al registrar los votos. Por favor, inténtelo de nuevo.");
+            });
+        }
+
+        /**
+         * Cierra el modal de votación.
+         */
+        function closeVotingModal() {
+            document.getElementById('votingModal').style.display = 'none';
+            currentActivityId = null;
+        }
+
+        // --- Funciones del Modal de Resultados ---
+
+        /**
+         * Abre el modal de resultados y muestra los votos de una actividad.
+         * @param {string} activityId - El ID de la actividad.
+         * @param {string} activityTitle - El título de la actividad.
+         * @param {string} votesJson - Un string JSON de los votos.
+         */
+        function mostrarResultados(activityId, activityTitle, votesJson) {
+            const votes = JSON.parse(votesJson); // Parsea el string JSON a un objeto
+            document.getElementById('results-activity-title').textContent = activityTitle;
+            const resultsTableBody = document.getElementById('results-table-body');
+            resultsTableBody.innerHTML = ''; // Limpiar filas anteriores
+
+            // Convertir el objeto de votos en un array y ordenar por votos (opcional)
+            const sortedCandidates = Object.keys(votes).sort((a, b) => votes[b] - votes[a]);
+
+            sortedCandidates.forEach(candidate => {
+                const row = resultsTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${candidate}</td>
+                    <td>${votes[candidate]}</td>
+                `;
+            });
+
+            document.getElementById('resultsModal').style.display = 'flex'; // Usar flex para centrar
+        }
+
+        /**
+         * Cierra el modal de resultados.
+         */
+        function closeResultsModal() {
+            document.getElementById('resultsModal').style.display = 'none';
+        }
+
+        // --- Funciones de Carga Inicial y Logout ---
+
+        /**
+         * Carga todas las actividades desde Firestore al iniciar la página.
+         */
+        async function fetchActivities() {
+            try {
+                const snapshot = await activitiesCollection.get();
+                activities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderActivities();
+                renderPastActivities();
+            } catch (error) {
+                console.error("Error al cargar las actividades: ", error);
+                alert("Error al cargar las actividades. Por favor, recargue la página.");
+            }
+        }
+
+        /**
+         * Simula el cierre de sesión (en un entorno real, esto manejaría la autenticación).
+         */
+        function cerrarSesion() {
+            alert('Sesión cerrada. (Aquí iría la lógica de cierre de sesión de Firebase Auth)');
+            // Por ejemplo, para Firebase Authentication:
+            // firebase.auth().signOut().then(() => {
+            //   window.location.href = 'login.html'; // Redirigir a la página de login
+            // }).catch((error) => {
+            //   console.error("Error al cerrar sesión:", error);
+            // });
+        }
+
+        // Cargar actividades cuando la página se carga
+        document.addEventListener('DOMContentLoaded', fetchActivities);
+    </script>
 </body>
 </html>
