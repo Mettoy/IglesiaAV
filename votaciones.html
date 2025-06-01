@@ -282,7 +282,7 @@
 
         /* --- Modales (Votación y Resultados) CSS --- */
         .modal {
-            display: none;
+            display: none; /* Changed from flex to none */
             position: fixed;
             z-index: 2000;
             left: 0;
@@ -291,7 +291,6 @@
             height: 100%;
             overflow: auto;
             background-color: var(--modal-bg);
-            display: flex;
             align-items: center;
             justify-content: center;
             animation: fadeIn 0.4s ease-out;
@@ -558,7 +557,7 @@
 
         <div class="activity-list">
             <h2>Actividades Pendientes</h2>
-            </div>
+        </div>
 
         <div class="past-activities-table-container">
             <h2>Actividades Realizadas</h2>
@@ -571,7 +570,7 @@
                     </tr>
                 </thead>
                 <tbody id="past-activities-body">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
@@ -592,7 +591,7 @@
                         </tr>
                     </thead>
                     <tbody id="voting-table-body">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
             <div class="vote-buttons">
@@ -614,7 +613,7 @@
                     </tr>
                 </thead>
                 <tbody id="results-table-body">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
@@ -670,10 +669,8 @@
                 activitiesCollection.add(newActivity)
                     .then((docRef) => {
                         console.log("Actividad guardada con ID: ", docRef.id);
-                        newActivity.id = docRef.id; // Asigna el ID de Firestore al objeto local
-                        activities.push(newActivity);
-                        renderActivities(); // Vuelve a renderizar las actividades pendientes
-                        renderPastActivities(); // Vuelve a renderizar las actividades realizadas (aunque no haya cambios aquí, es buena práctica)
+                        // The `onSnapshot` listener will handle updating the `activities` array and rendering.
+                        // No need to push here manually if onSnapshot is always active.
                         // Limpiar el formulario
                         document.getElementById('activity-title').value = '';
                         document.getElementById('candidates').value = '';
@@ -733,10 +730,7 @@
                 activitiesCollection.doc(id).delete()
                     .then(() => {
                         console.log("Actividad cancelada exitosamente!");
-                        // Eliminar la actividad del array local
-                        activities = activities.filter(activity => activity.id !== id);
-                        renderActivities(); // Vuelve a renderizar las actividades pendientes
-                        renderPastActivities(); // Actualiza la tabla de realizadas por si acaso
+                        // The `onSnapshot` listener will handle updating the `activities` array and rendering.
                         alert('Actividad cancelada.');
                     }).catch((error) => {
                         console.error("Error al cancelar la actividad: ", error);
@@ -804,7 +798,7 @@
                 `;
             });
 
-            document.getElementById('votingModal').style.display = 'flex'; // Usar flex para centrar
+            document.getElementById('votingModal').style.display = 'flex'; // Mostrar el modal
         }
 
         /**
@@ -823,69 +817,56 @@
         function decrementVote(candidateIdSafe) {
             const inputElement = document.getElementById(`votes-input-${candidateIdSafe}`);
             const currentValue = parseInt(inputElement.value);
-            if (currentValue > 0) {
+            if (currentValue > 0) { // Prevent negative votes
                 inputElement.value = currentValue - 1;
             }
         }
 
         /**
-         * Registra los votos de la votación actual en Firestore y actualiza el estado de la actividad.
+         * Registra los votos de la actividad actual en Firestore y marca la actividad como completada.
          */
-        function registrarVotos() {
+        async function registrarVotos() {
             if (!currentActivityId) {
-                alert("No hay una actividad seleccionada para registrar votos.");
+                alert('No hay actividad seleccionada para registrar votos.');
                 return;
             }
 
             const activityToUpdate = activities.find(act => act.id === currentActivityId);
             if (!activityToUpdate) {
-                console.error("Actividad no encontrada:", currentActivityId);
-                alert("Error: La actividad no se encontró.");
+                alert('Actividad no encontrada.');
                 return;
             }
 
-            const newVotes = { ...activityToUpdate.votes }; // Copia los votos existentes
-            let totalVotesAdded = 0; // Para verificar si se añadió algo
+            const newVotes = { ...activityToUpdate.votes }; // Clonar los votos existentes
 
-            activityToUpdate.candidates.forEach(candidate => {
-                // Generar el ID seguro para el DOM, que es como se guardó en el HTML
-                const candidateIdSafe = candidate.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
-                const inputElement = document.getElementById(`votes-input-${candidateIdSafe}`);
-                const votesToAdd = parseInt(inputElement.value) || 0;
+            // Recorrer las filas de la tabla de votación para obtener los votos ingresados
+            const votingTableBody = document.getElementById('voting-table-body');
+            for (const row of votingTableBody.rows) {
+                const candidateName = row.cells[0].textContent;
+                const inputElement = row.querySelector('input[type="number"]');
+                const votesToAdd = parseInt(inputElement.value);
 
-                if (votesToAdd > 0) {
-                    newVotes[candidate] = (newVotes[candidate] || 0) + votesToAdd;
-                    totalVotesAdded += votesToAdd;
+                if (!isNaN(votesToAdd) && votesToAdd > 0) {
+                    newVotes[candidateName] = (newVotes[candidateName] || 0) + votesToAdd;
                 }
-            });
-
-            if (totalVotesAdded === 0 && !confirm('No se han añadido nuevos votos. ¿Desea marcar la actividad como completada sin votos?')) {
-                return; // Si el usuario cancela, no hacer nada
             }
 
-            // Actualizar la actividad en Firestore
-            activitiesCollection.doc(currentActivityId).update({
-                votes: newVotes,
-                status: 'completed' // Marca la actividad como completada
-            })
-            .then(() => {
-                console.log("Votos registrados y actividad actualizada!");
-                // Actualizar el objeto local de la actividad
-                activityToUpdate.votes = newVotes;
-                activityToUpdate.status = 'completed';
+            try {
+                await activitiesCollection.doc(currentActivityId).update({
+                    votes: newVotes,
+                    status: 'completed'
+                });
+                console.log("Votos registrados y actividad marcada como completada.");
 
-                // Recargar las listas para reflejar los cambios
-                renderActivities(); // Esto actualizará las pendientes
-                renderPastActivities(); // Esto actualizará las realizadas
-
+                // The `onSnapshot` listener will handle updating the `activities` array and rendering.
                 closeVotingModal();
-                alert('Votación registrada con éxito. La actividad ha sido marcada como realizada.');
-            })
-            .catch((error) => {
-                console.error("Error al registrar los votos: ", error);
+                alert('Votación registrada exitosamente.');
+            } catch (error) {
+                console.error("Error al registrar votos: ", error);
                 alert("Error al registrar los votos. Por favor, inténtelo de nuevo.");
-            });
+            }
         }
+
 
         /**
          * Cierra el modal de votación.
@@ -898,33 +879,34 @@
         // --- Funciones del Modal de Resultados ---
 
         /**
-         * Abre el modal de resultados y muestra los votos de una actividad.
+         * Muestra los resultados de una actividad en el modal de resultados.
          * @param {string} activityId - El ID de la actividad.
          * @param {string} activityTitle - El título de la actividad.
-         * @param {string} votesJson - Un string JSON de los votos.
+         * @param {string} votesJsonString - String JSON de los votos.
          */
-        function mostrarResultados(activityId, activityTitle, votesJson) {
-            const votes = JSON.parse(votesJson); // Parsea el string JSON a un objeto
+        function mostrarResultados(activityId, activityTitle, votesJsonString) {
             document.getElementById('results-activity-title').textContent = activityTitle;
             const resultsTableBody = document.getElementById('results-table-body');
             resultsTableBody.innerHTML = ''; // Limpiar filas anteriores
 
-            // Convertir el objeto de votos en un array y ordenar por votos de mayor a menor
-            const sortedCandidates = Object.keys(votes).sort((a, b) => votes[b] - votes[a]);
+            const votes = JSON.parse(votesJsonString);
 
-            if (sortedCandidates.length === 0 || Object.values(votes).every(v => v === 0)) {
-                resultsTableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--gray); padding: 20px;">Aún no hay resultados de votación para esta actividad.</td></tr>';
+            if (Object.keys(votes).length === 0) {
+                resultsTableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--gray); padding: 20px;">No hay resultados de votación disponibles.</td></tr>';
             } else {
-                sortedCandidates.forEach(candidate => {
+                // Convertir el objeto de votos a un array de pares [candidato, votos] y ordenar por votos descendente
+                const sortedVotes = Object.entries(votes).sort(([, votesA], [, votesB]) => votesB - votesA);
+
+                sortedVotes.forEach(([candidate, totalVotes]) => {
                     const row = resultsTableBody.insertRow();
                     row.innerHTML = `
                         <td>${candidate}</td>
-                        <td>${votes[candidate]}</td>
+                        <td>${totalVotes}</td>
                     `;
                 });
             }
 
-            document.getElementById('resultsModal').style.display = 'flex'; // Usar flex para centrar
+            document.getElementById('resultsModal').style.display = 'flex'; // Mostrar el modal
         }
 
         /**
@@ -934,38 +916,43 @@
             document.getElementById('resultsModal').style.display = 'none';
         }
 
-        // --- Funciones de Carga Inicial y Logout ---
+        // --- Funciones de Carga Inicial y Escucha de Firebase ---
 
         /**
-         * Carga todas las actividades desde Firestore al iniciar la página.
-         * Escucha cambios en la colección 'activities' para actualizaciones en tiempo real.
+         * Carga las actividades desde Firestore al iniciar la página.
          */
-        function fetchActivities() {
+        function loadActivities() {
+            // Listen for real-time updates from Firestore
             activitiesCollection.onSnapshot(snapshot => {
                 activities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log("Actividades cargadas:", activities); // For debugging
                 renderActivities();
                 renderPastActivities();
-            }, error => {
+            }, (error) => {
                 console.error("Error al cargar las actividades: ", error);
-                alert("Error al cargar las actividades. Por favor, recargue la página.");
+                alert("Error al cargar las actividades. Por favor, intente recargar la página.");
             });
         }
 
-        /**
-         * Simula el cierre de sesión (en un entorno real, esto manejaría la autenticación).
-         */
-        function cerrarSesion() {
-            alert('Sesión cerrada. (Aquí iría la lógica de cierre de sesión de Firebase Auth)');
-            // Por ejemplo, para Firebase Authentication:
-            // firebase.auth().signOut().then(() => {
-            //   window.location.href = 'login.html'; // Redirigir a la página de login
-            // }).catch((error) => {
-            //   console.error("Error al cerrar sesión:", error);
-            // });
-        }
+        // Llamar a la función para cargar actividades cuando se cargue el DOM
+        document.addEventListener('DOMContentLoaded', loadActivities);
 
-        // Cargar actividades cuando la página se carga
-        document.addEventListener('DOMContentLoaded', fetchActivities);
+        // --- Función para Cerrar Sesión (ejemplo, se necesita Firebase Auth para una implementación completa) ---
+        function cerrarSesion() {
+            if (confirm('¿Estás seguro de que quieres cerrar tu sesión?')) {
+                // Aquí iría la lógica de Firebase Authentication para cerrar sesión:
+                // firebase.auth().signOut().then(() => {
+                //     alert('Sesión cerrada.');
+                //     window.location.href = 'login.html'; // Redirige a la página de login
+                // }).catch((error) => {
+                //     console.error("Error al cerrar sesión: ", error);
+                //     alert("Error al cerrar sesión. Por favor, inténtelo de nuevo.");
+                // });
+                alert('Funcionalidad de cerrar sesión no implementada en este demo.');
+                // Para este demo, simplemente redirigiremos o haremos algo simple si no hay autenticación.
+                // window.location.href = 'login.html'; // Ejemplo: Redirigir a una página de inicio de sesión
+            }
+        }
     </script>
 </body>
 </html>
