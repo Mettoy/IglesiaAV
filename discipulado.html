@@ -90,7 +90,8 @@
         }
         .form-group input[type="text"],
         .form-group input[type="date"],
-        .form-group select {
+        .form-group select,
+        .form-group textarea { /* Added textarea style */
             width: calc(100% - 22px);
             padding: 10px;
             border: 1px solid #ddd;
@@ -156,6 +157,10 @@
         }
 
         /* Status button styles */
+        .status-container {
+            position: relative; /* For dropdown positioning */
+            display: inline-block;
+        }
         .status-button {
             padding: 8px 12px;
             border: none;
@@ -240,6 +245,80 @@
             font-weight: bold;
             margin: 0 10px;
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 80%; /* Could be responsive */
+            max-width: 500px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .modal-content textarea {
+            width: calc(100% - 20px);
+            min-height: 100px;
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+        .modal-content ul {
+            list-style: none;
+            padding: 0;
+            max-height: 300px; /* Limit height for scrollable observations */
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .modal-content ul li {
+            background-color: #e9e9e9;
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+        .modal-content ul li span {
+            display: block;
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -267,10 +346,6 @@
                 <input type="date" id="fechaInicio" required>
             </div>
             <div class="form-group">
-                <label for="observaciones">Observaciones:</label>
-                <input type="text" id="observaciones">
-            </div>
-            <div class="form-group">
                 <button type="submit">Registrar Discipulado</button>
             </div>
         </form>
@@ -295,13 +370,30 @@
                         <th>Nombre del Discípulo</th>
                         <th>Fecha de Inicio</th>
                         <th>Estado</th>
-                        <th>Observaciones</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     </tbody>
             </table>
+        </div>
+    </div>
+
+    <div id="addObservationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('addObservationModal')">&times;</span>
+            <h3>Añadir Nueva Observación</h3>
+            <textarea id="newObservationText" placeholder="Escribe tu observación aquí..."></textarea>
+            <button onclick="saveObservation()">Guardar Observación</button>
+        </div>
+    </div>
+
+    <div id="viewObservationsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('viewObservationsModal')">&times;</span>
+            <h3>Observaciones Anteriores</h3>
+            <ul id="observationsList">
+                </ul>
         </div>
     </div>
 
@@ -326,7 +418,6 @@
         const discipuladoForm = document.getElementById('discipuladoForm');
         const nombreDiscipuloInput = document.getElementById('nombreDiscipulo');
         const fechaInicioInput = document.getElementById('fechaInicio');
-        const observacionesInput = document.getElementById('observaciones');
         const messageDiv = document.getElementById('message');
         const btnInicio = document.getElementById('btnInicio');
         const discipulosTableBody = document.querySelector('#discipulosTable tbody');
@@ -334,6 +425,14 @@
         const prevPageBtn = document.getElementById('prevPage');
         const nextPageBtn = document.getElementById('nextPage');
         const currentPageInfoSpan = document.getElementById('currentPageInfo');
+
+        // Modal Elements
+        const addObservationModal = document.getElementById('addObservationModal');
+        const viewObservationsModal = document.getElementById('viewObservationsModal');
+        const newObservationText = document.getElementById('newObservationText');
+        const observationsList = document.getElementById('observationsList');
+
+        let currentDiscipuloId = null; // To store the ID of the disciple being edited/viewed
 
         // Pagination variables
         const pageSize = 20;
@@ -356,6 +455,25 @@
                 messageDiv.style.display = 'none';
             }, 3000); // Hide after 3 seconds
         }
+
+        // Functions to open and close modals
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Click outside modal to close
+        window.addEventListener('click', (event) => {
+            if (event.target == addObservationModal) {
+                closeModal('addObservationModal');
+            }
+            if (event.target == viewObservationsModal) {
+                closeModal('viewObservationsModal');
+            }
+        });
 
         // Function to render disciple data in the table
         async function renderDiscipulosTable(querySnapshot) {
@@ -380,9 +498,9 @@
                                 </div>
                             </div>
                         </td>
-                        <td>${data.observaciones || ''}</td>
                         <td>
-                            <button onclick="deleteDiscipulo('${doc.id}')">Eliminar</button>
+                            <button onclick="openAddObservationModal('${doc.id}')">Añadir Observación</button>
+                            <button onclick="viewObservations('${doc.id}')">Ver Observaciones</button>
                         </td>
                     </tr>
                 `;
@@ -407,11 +525,6 @@
             let query = db.collection('discipulados').orderBy('timestamp', 'desc');
 
             if (searchTerm) {
-                // For search, we need to adapt the query.
-                // Firestore doesn't support full-text search.
-                // We'll do a basic "starts with" search.
-                // This requires an exact match for the beginning of the string.
-                // For more advanced search, consider a third-party solution like Algolia or ElasticSearch.
                 query = query.where('nombreDiscipulo', '>=', searchTerm)
                              .where('nombreDiscipulo', '<=', searchTerm + '\uf8ff');
                 currentPage = 1; // Reset pagination for new search
@@ -439,11 +552,7 @@
 
         // Update pagination button states
         function updatePaginationButtons(currentResultsCount) {
-            // Disable 'Previous' if on the first page
             prevPageBtn.disabled = currentPage === 1;
-
-            // Disable 'Next' if there are fewer results than the page size,
-            // indicating it's the last page or no more results.
             nextPageBtn.disabled = currentResultsCount < pageSize;
         }
 
@@ -474,14 +583,13 @@
 
             const nombreDiscipulo = nombreDiscipuloInput.value;
             const fechaInicio = fechaInicioInput.value;
-            const observaciones = observacionesInput.value;
 
             try {
                 await db.collection("discipulados").add({
                     nombreDiscipulo: nombreDiscipulo,
                     fechaInicio: firebase.firestore.Timestamp.fromDate(new Date(fechaInicio)),
                     estado: 'discipulando', // Default status when registering
-                    observaciones: observaciones,
+                    observaciones: [], // Initialize with an empty array for observations
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 showMessage('Discipulado registrado exitosamente!', 'success');
@@ -543,17 +651,72 @@
             }
         });
 
-        // Function to delete a disciple
-        async function deleteDiscipulo(id) {
-            if (confirm('¿Está seguro de que desea eliminar este discipulado?')) {
-                try {
-                    await db.collection('discipulados').doc(id).delete();
-                    showMessage('Discipulado eliminado exitosamente!', 'success');
-                    fetchDiscipulos(); // Reload data after deletion
-                } catch (error) {
-                    console.error("Error al eliminar discipulado: ", error);
-                    showMessage('Error al eliminar discipulado: ' + error.message, 'error');
+        // --- New Observation Functions ---
+
+        function openAddObservationModal(discipuloId) {
+            currentDiscipuloId = discipuloId;
+            newObservationText.value = ''; // Clear previous text
+            openModal('addObservationModal');
+        }
+
+        async function saveObservation() {
+            const observationText = newObservationText.value.trim();
+            if (!observationText) {
+                showMessage('La observación no puede estar vacía.', 'error');
+                return;
+            }
+            if (!currentDiscipuloId) {
+                showMessage('No se ha seleccionado ningún discípulo.', 'error');
+                return;
+            }
+
+            try {
+                const docRef = db.collection('discipulados').doc(currentDiscipuloId);
+                await docRef.update({
+                    observaciones: firebase.firestore.FieldValue.arrayUnion({
+                        text: observationText,
+                        date: firebase.firestore.Timestamp.now()
+                    })
+                });
+                showMessage('Observación añadida exitosamente!', 'success');
+                closeModal('addObservationModal');
+                // Optionally re-fetch if needed, or just let the user know it's saved
+            } catch (error) {
+                console.error("Error al añadir observación: ", error);
+                showMessage('Error al añadir observación: ' + error.message, 'error');
+            }
+        }
+
+        async function viewObservations(discipuloId) {
+            currentDiscipuloId = discipuloId;
+            observationsList.innerHTML = ''; // Clear previous observations
+
+            try {
+                const docSnap = await db.collection('discipulados').doc(discipuloId).get();
+                if (docSnap.exists) {
+                    const data = docSnap.data();
+                    const observations = data.observaciones || [];
+
+                    if (observations.length > 0) {
+                        // Sort observations by date (most recent first)
+                        observations.sort((a, b) => b.date.toDate() - a.date.toDate());
+
+                        observations.forEach(obs => {
+                            const li = document.createElement('li');
+                            const obsDate = obs.date ? new Date(obs.date.toDate()).toLocaleString() : 'Fecha desconocida';
+                            li.innerHTML = `${obs.text}<span>(${obsDate})</span>`;
+                            observationsList.appendChild(li);
+                        });
+                    } else {
+                        observationsList.innerHTML = '<li>No hay observaciones para este discípulo.</li>';
+                    }
+                } else {
+                    observationsList.innerHTML = '<li>Discípulo no encontrado.</li>';
                 }
+                openModal('viewObservationsModal');
+            } catch (error) {
+                console.error("Error al cargar observaciones: ", error);
+                showMessage('Error al cargar observaciones: ' + error.message, 'error');
             }
         }
 
