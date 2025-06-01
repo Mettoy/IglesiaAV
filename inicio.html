@@ -177,6 +177,7 @@
         .summary-item {
             display: flex; /* Para poner etiqueta y valor en la misma línea */
             justify-content: space-between; /* Etiqueta a la izquierda, valor a la derecha */
+            align-items: baseline; /* Alinea las etiquetas y valores por su línea base */
             padding: 10px 0;
             border-bottom: 1px dashed #1f214d; /* Línea discontinua sutil */
         }
@@ -185,16 +186,16 @@
         }
 
         .summary-item .label {
-            color: #ccc; /* Un gris más suave para las etiquetas */
+            color: #ccc;
             font-weight: normal;
-            flex-basis: 60%; /* Ajusta el ancho de la etiqueta */
+            flex-basis: 60%;
         }
 
         .summary-item .value {
-            color: #f7c948; /* Dorado para los valores */
+            color: #f7c948;
             font-weight: bold;
-            text-align: right; /* Alinea el valor a la derecha */
-            flex-basis: 40%; /* Ajusta el ancho del valor */
+            text-align: right;
+            flex-basis: 40%;
         }
 
         /* Estilo para el mensaje de "Cargando..." o "Error" */
@@ -204,6 +205,7 @@
             padding: 20px;
             text-align: center;
             width: 100%; /* Ocupa todo el ancho del card */
+            box-sizing: border-box; /* Incluir padding en el ancho */
         }
         .error-message {
             color: #ff6347; /* Tomate para errores */
@@ -246,12 +248,12 @@
                 margin-bottom: 20px;
             }
             .summary-item {
-                flex-direction: column; /* Apila etiqueta y valor en pantallas pequeñas */
+                flex-direction: column;
                 align-items: flex-start;
-                gap: 5px; /* Menos espacio entre etiqueta y valor apilados */
+                gap: 5px;
             }
             .summary-item .label, .summary-item .value {
-                flex-basis: auto; /* Dejar que tomen el ancho necesario */
+                flex-basis: auto;
                 width: 100%;
                 text-align: left;
             }
@@ -325,7 +327,7 @@
         };
 
         const firebaseConfigSecondary = {
-            apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
+            apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPqWPqkxb3U", // Asegúrate que esta API Key es correcta para el segundo proyecto
             authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
             projectId: "iglesia-adoracion-viva-182e6",
             storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
@@ -340,8 +342,10 @@
         const auth = firebase.auth(mainApp);
         const storage = firebase.storage(mainApp);
 
+        // Inicialización de la aplicación secundaria (si es realmente necesaria para este dashboard)
+        // Solo inicialízala si realmente necesitas datos o funcionalidades de este segundo proyecto aquí.
         const secondaryApp = firebase.initializeApp(firebaseConfigSecondary, "secondaryAdoracionApp");
-        const dbSecondary = firebase.firestore(secondaryApp);
+        const dbSecondary = firebase.firestore(secondaryApp); // Firestore del proyecto secundario
 
         // --- 3. Funciones de Interfaz de Usuario (UI) ---
 
@@ -359,12 +363,14 @@
 
         async function cargarLogo() {
             try {
+                // Asumiendo que el logo se guarda en 'logos/current-logo.png' en Firebase Storage del proyecto principal
                 const logoRef = storage.ref('logos/current-logo.png');
                 const url = await logoRef.getDownloadURL();
                 document.getElementById("logo").src = url;
             } catch (error) {
                 console.error("Error al cargar el logo de Firebase Storage:", error.message);
-                document.getElementById("logo").src = "https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png";
+                // Si falla, usa un logo por defecto para no dejarlo vacío
+                document.getElementById("logo").src = "https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png"; 
             }
         }
 
@@ -386,10 +392,10 @@
                     reader.readAsDataURL(file);
 
                     try {
-                        const storageRef = storage.ref('logos/current-logo.png');
+                        const storageRef = storage.ref('logos/current-logo.png'); // Sobreescribe el logo actual
                         await storageRef.put(file);
                         alert("Logo actualizado exitosamente.");
-                        cargarLogo();
+                        cargarLogo(); // Refrescar logo para asegurar que se muestre la URL actualizada
                     } catch (error) {
                         console.error("Error al subir el logo a Firebase Storage:", error.message);
                         alert("Error al subir el logo: " + error.message);
@@ -529,7 +535,7 @@
 
         async function cargarResumenMiembros() {
             const container = document.getElementById('miembrosSummaryData');
-            container.innerHTML = `<div class="loading-message">Cargando miembros...</div>`; // Resetear a cargando
+            container.innerHTML = `<div class="loading-message">Cargando miembros...</div>`;
 
             try {
                 const miembrosRef = db.collection('miembros');
@@ -667,7 +673,8 @@
                 const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
                 const currentMonthName = monthNames[now.getMonth()];
 
-                const discipulosRef = db.collection('discipulado');
+                // ASUMIDO: que la colección es 'discipulado' (singular) y no 'discipulados' (plural)
+                const discipulosRef = db.collection('discipulado'); 
                 const snapshot = await discipulosRef.get();
                 
                 const conteo = { Activo: 0, Pendiente: 0, 'De Baja': 0 };
@@ -686,7 +693,7 @@
                 });
 
                 let htmlContent = '';
-                htmlContent += createSummaryItem('Mes', currentMonthName);
+                htmlContent += createSummaryItem('Mes', currentMonthName); // Podría ser el total general, no solo del mes
                 htmlContent += createSummaryItem('Activos', conteo.Activo);
                 htmlContent += createSummaryItem('Pendientes', conteo.Pendiente);
                 htmlContent += createSummaryItem('De Baja', conteo['De Baja']);
@@ -702,12 +709,22 @@
         // --- 6. Inicialización del Dashboard ---
 
         async function initDashboard() {
-            await actualizarMenu();
-            await cargarLogo();
-            await cargarResumenMiembros();
-            await cargarResumenAsistencia();
-            await cargarResumenOfrendas();
-            await cargarResumenDiscipulado();
+            // Asegúrate que el usuario y el menú carguen primero
+            await actualizarMenu(); 
+            await cargarLogo(); // También podría ir en Promise.all si no afecta nada más
+
+            // Ejecutar todas las funciones de carga de datos de los resúmenes en paralelo
+            console.log("Iniciando carga de resúmenes en paralelo...");
+            await Promise.all([
+                cargarResumenMiembros(),
+                cargarResumenAsistencia(),
+                cargarResumenOfrendas(),
+                cargarResumenDiscipulado()
+            ]).then(() => {
+                console.log("Todas las cargas de resúmenes de datos han finalizado.");
+            }).catch(error => {
+                console.error("Una o más cargas de resúmenes fallaron:", error);
+            });
         }
 
         document.addEventListener('DOMContentLoaded', initDashboard);
