@@ -25,8 +25,11 @@
             top: 0;
             transition: transform 0.3s ease;
             overflow-y: auto; /* Enable scrolling for many links */
+            z-index: 9; /* Ensure sidebar is above content but below toggle */
         }
         .sidebar.hide { transform: translateX(-100%); }
+        .sidebar.show { transform: translateX(0); } /* Added for explicit show state */
+
         .sidebar img {
             width: 120px;
             height: 120px;
@@ -46,6 +49,12 @@
         .sidebar a:hover, .sidebar .logout:hover {
             background-color: #1f214d;
             cursor: pointer;
+        }
+        /* Style for active link */
+        .sidebar a.active {
+            background-color: #1f214d;
+            border-left: 5px solid #f7c948;
+            padding-left: 25px; /* Adjust padding due to border */
         }
         .content {
             margin-left: 250px;
@@ -84,7 +93,25 @@
             width: 380px !important; /* Increased size for better readability */
             height: 380px !important; /* Increased size */
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
         }
+        /* Message for no data */
+        .no-data-message {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            width: 380px;
+            height: 380px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #0b0c2a;
+            font-size: 1.1em;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+
         /* Media query for responsiveness */
         @media (max-width: 768px) {
             .sidebar {
@@ -99,8 +126,7 @@
             .menu-toggle {
                 left: 15px; /* Adjust position for small screens */
             }
-            /* Keep chart sizes fixed or adjust if needed */
-            canvas {
+            canvas, .no-data-message {
                 width: 90vw !important; /* Adjust for smaller screens */
                 height: 90vw !important;
                 max-width: 380px !important;
@@ -117,76 +143,111 @@
         <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
         <div class="user-info" id="userInfo"></div>
         <div id="menuLinks">
-            </div>
+            <a href="inicio.html" class="sidebar-link">Inicio</a>
+            <a href="miembros.html" class="sidebar-link">Miembros</a>
+            <a href="acceso.html" class="sidebar-link">Dar acceso</a>
+            <a href="diezmo.html" class="sidebar-link">Diezmos</a>
+            <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+            <a href="reportes.html" class="sidebar-link">Reportes</a>
+            <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+            <a href="actividades.html" class="sidebar-link">Actividades</a>
+            <a href="configuracion.html" class="sidebar-link">Configuración</a>
+            <a href="auditoria.html" class="sidebar-link">Auditoría</a>
+        </div>
         <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
     </div>
 
     <div class="content" id="mainContent">
         <h2>Estadísticas Generales</h2>
         <div class="charts">
-            <canvas id="sociedadChart"></canvas>
-            <canvas id="asistenciaMiembrosChart"></canvas> <canvas id="actividadesAsistenciaChart"></canvas> </div>
+            <div class="chart-container">
+                <canvas id="sociedadChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="asistenciaMiembrosChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="actividadesAsistenciaChart"></canvas>
+            </div>
+        </div>
     </div>
 
     <script>
-        // REPLACE WITH YOUR ACTUAL SUPABASE CREDENTIALS
-        const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co'; 
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';
+        // --- CRUCIAL SETUP: REPLACE THESE WITH YOUR ACTUAL SUPABASE CREDENTIALS ---
+        const supabaseUrl = 'YOUR_SUPABASE_URL'; // Example: https://abcde12345.supabase.co
+        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Global chart instances to destroy them before re-rendering
+        let sociedadChartInstance = null;
+        let asistenciaMiembrosChartInstance = null;
+        let actividadesAsistenciaChartInstance = null;
 
         // Sidebar toggle functionality
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('mainContent');
             sidebar.classList.toggle('show');
-            mainContent.classList.toggle('full-width'); // Adjust content margin
+            mainContent.classList.toggle('full-width');
         }
 
-        // Function to get active user from Supabase
+        // Function to get active user from Supabase (assuming email in localStorage for simplicity)
         async function obtenerUsuarioActivo() {
-            // In a real application, you'd use Supabase Auth session for this.
-            // For now, assuming email stored in localStorage is used to fetch user details.
             const userEmail = localStorage.getItem('usuarioActivo');
             if (!userEmail) {
+                console.log("No active user found, redirecting to login.");
                 window.location.href = "index.html"; // Redirect to login if no user is active
                 return null;
             }
 
-            const { data: usuarioActivo, error } = await supabase
-                .from('usuarios')
-                .select('*')
-                .eq('email', userEmail)
-                .single();
-            
-            if (error) {
-                console.error("Error fetching user:", error.message);
-                window.location.href = "index.html"; // Redirect on error
-                return null;
-            }
-            
-            if (usuarioActivo) {
-                return usuarioActivo;
-            } else {
-                window.location.href = "index.html"; // If user not found, redirect to login
+            try {
+                const { data: usuarioActivo, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('email', userEmail)
+                    .single();
+                
+                if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found (not necessarily an error)
+                    console.error("Error fetching user:", error.message);
+                    window.location.href = "index.html"; // Redirect on actual error
+                    return null;
+                }
+                
+                if (usuarioActivo) {
+                    return usuarioActivo;
+                } else {
+                    console.log("User not found in DB, redirecting to login.");
+                    window.location.href = "index.html"; // If user not found, redirect to login
+                    return null;
+                }
+            } catch (e) {
+                console.error("Exception fetching user:", e.message);
+                window.location.href = "index.html";
                 return null;
             }
         }
 
         // Function to load the logo
         async function cargarLogo() {
-            const { data, error } = await supabase
-                .from('configuracion')
-                .select('logo')
-                .single();
+            try {
+                const { data, error } = await supabase
+                    .from('configuracion')
+                    .select('logo')
+                    .single();
 
-            if (data && data.logo) {
-                document.getElementById("logo").src = data.logo;
-            } else if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found (table empty)
-                console.error("Error loading logo:", error.message);
+                if (data && data.logo) {
+                    document.getElementById("logo").src = data.logo;
+                } else if (error && error.code !== 'PGRST116') {
+                    console.error("Error loading logo:", error.message);
+                } else {
+                    console.log("No custom logo found, using default.");
+                }
+            } catch (e) {
+                console.error("Exception loading logo:", e.message);
             }
         }
 
-        // Function to change the logo (Insecure for production - client-side password)
+        // Function to change the logo (INSECURE FOR PRODUCTION - HARDCODED PASSWORD)
         async function cambiarLogo() {
             const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
             if (!clave || clave.trim().toLowerCase() !== "adoración viva") {
@@ -200,51 +261,63 @@
             input.onchange = async function () {
                 const file = this.files[0];
                 if (file && file.type.startsWith('image/')) {
-                    // Show temporarily
                     const reader = new FileReader();
                     reader.onload = e => document.getElementById('logo').src = e.target.result;
                     reader.readAsDataURL(file);
 
-                    // Generate a unique filename or use a fixed one like 'church_logo.png'
-                    const fileName = `church_logo_${Date.now()}.png`; // Better for caching
-                    const { error: uploadError } = await supabase.storage
-                        .from('logos')
-                        .upload(fileName, file, { upsert: true }); // upsert true will overwrite if filename exists
+                    const fileName = `church_logo_${Date.now()}_${file.name}`; // Unique filename for safety
+                    try {
+                        const { error: uploadError } = await supabase.storage
+                            .from('logos')
+                            .upload(fileName, file, { upsert: false }); // Do not upsert if filename is unique
 
-                    if (uploadError) {
-                        alert("Error al subir el logo: " + uploadError.message);
-                        console.error("Supabase Storage Upload Error:", uploadError);
-                        return;
+                        if (uploadError) {
+                            alert("Error al subir el logo: " + uploadError.message);
+                            console.error("Supabase Storage Upload Error:", uploadError);
+                            return;
+                        }
+
+                        const { data: publicUrlData } = supabase.storage
+                            .from('logos')
+                            .getPublicUrl(fileName);
+
+                        if (!publicUrlData || !publicUrlData.publicUrl) {
+                            alert("Error al obtener la URL pública del logo.");
+                            return;
+                        }
+
+                        const logoUrl = publicUrlData.publicUrl;
+
+                        // Check if a config row exists, if not, insert, otherwise update
+                        const { data: existingConfig, error: fetchConfigError } = await supabase
+                            .from('configuracion')
+                            .select('id')
+                            .limit(1)
+                            .single();
+                        
+                        let configId = '1'; // Default ID if no config exists or it's empty
+                        if(existingConfig) {
+                            configId = existingConfig.id; // Use existing ID if present
+                        }
+                        
+                        const { error: updateError } = await supabase
+                            .from('configuracion')
+                            .upsert({ id: configId, logo: logoUrl }, { onConflict: 'id' });
+
+                        if (updateError) {
+                            alert("Error al guardar la URL del logo en la base de datos: " + updateError.message);
+                            console.error("Supabase DB Update Error:", updateError);
+                            return;
+                        }
+
+                        alert("Logo actualizado con éxito.");
+                        cargarLogo(); // Refresh logo to ensure latest is shown
+                    } catch (e) {
+                        console.error("Exception in cambiarLogo:", e.message);
+                        alert("Ocurrió un error inesperado al cambiar el logo.");
                     }
-
-                    // Get public URL
-                    const { data: publicUrlData } = supabase.storage
-                        .from('logos')
-                        .getPublicUrl(fileName);
-
-                    if (!publicUrlData || !publicUrlData.publicUrl) {
-                        alert("Error al obtener la URL pública del logo.");
-                        return;
-                    }
-
-                    const logoUrl = publicUrlData.publicUrl;
-
-                    // Update the 'configuracion' table with the new logo URL
-                    // Assuming there's a single config row, you can update based on a fixed ID or similar
-                    const { error: updateError } = await supabase
-                        .from('configuracion')
-                        .upsert({ id: '1', logo: logoUrl }, { onConflict: 'id' }); // Use a fixed ID like '1' for the single config row
-
-                    if (updateError) {
-                        alert("Error al guardar la URL del logo en la base de datos: " + updateError.message);
-                        console.error("Supabase DB Update Error:", updateError);
-                        return;
-                    }
-
-                    alert("Logo actualizado con éxito.");
-                    cargarLogo(); // Refresh logo to ensure latest is shown
                 } else {
-                    alert("Por favor, seleccione un archivo de imagen.");
+                    alert("Por favor, seleccione un archivo de imagen válido.");
                 }
             };
             input.click();
@@ -253,261 +326,234 @@
         // Function to update the menu based on role
         async function actualizarMenu() {
             const usuario = await obtenerUsuarioActivo();
-            if (!usuario) return; // Stop if no user or error
-
             const menuLinksDiv = document.getElementById('menuLinks');
             const userInfoDiv = document.getElementById('userInfo');
-            menuLinksDiv.innerHTML = ''; // Clear current links
+            
+            // Clear current links, but keep static links for default fallback
+            // menuLinksDiv.innerHTML = ''; 
+            
+            if (!usuario) {
+                userInfoDiv.textContent = "Usuario Desconocido";
+                // Show a default set of links or none if not authenticated
+                return; 
+            }
+            
             userInfoDiv.textContent = `${usuario.nombre} - ${usuario.rol}`;
 
-            const enlaces = [];
+            // Hide all static links first
+            document.querySelectorAll('.sidebar-link').forEach(link => link.style.display = 'none');
+
+            const allowedLinks = [];
 
             // Add 'Inicio' for all roles
-            enlaces.push({ href: "inicio.html", texto: "Inicio" });
+            allowedLinks.push("inicio.html");
 
             if (usuario.rol === "Administrador") {
-                enlaces.push(
-                    { href: "miembros.html", texto: "Miembros" },
-                    { href: "diezmo.html", texto: "Diezmos" },
-                    { href: "ofrendas.html", texto: "Ofrendas" }, // Admin also sees offerings
-                    { href: "acceso.html", texto: "Dar acceso" },
-                    { href: "estadisticas.html", texto: "Estadísticas" },
-                    { href: "reportes.html", texto: "Reportes" },
-                    { href: "discipulado.html", texto: "Discipulado" }, // Admin also sees discipulado
-                    { href: "actividades.html", texto: "Actividades" }, // New link for activities
-                    { href: "configuracion.html", texto: "Configuración" },
-                    { href: "auditoria.html", texto: "Auditoría" }
+                allowedLinks.push(
+                    "miembros.html", "diezmo.html", "ofrendas.html", "acceso.html",
+                    "estadisticas.html", "reportes.html", "discipulado.html",
+                    "actividades.html", "configuracion.html", "auditoria.html"
                 );
             } else if (usuario.rol === "Tesorero") {
-                enlaces.push(
-                    { href: "diezmo.html", texto: "Diezmos" },
-                    { href: "ofrendas.html", texto: "Ofrendas" }
+                allowedLinks.push(
+                    "diezmo.html", "ofrendas.html"
                 );
             } else if (usuario.rol === "Discipulador") {
-                enlaces.push(
-                    { href: "discipulado.html", texto: "Discipulado" }
+                allowedLinks.push(
+                    "discipulado.html"
                 );
             } else if (usuario.rol === "Preadministrador") {
-                enlaces.push(
-                    { href: "miembros.html", texto: "Miembros" },
-                    { href: "acceso.html", texto: "Dar acceso" }
+                allowedLinks.push(
+                    "miembros.html", "acceso.html"
                 );
             }
 
-            // Create and append menu links
-            enlaces.forEach(link => {
-                const a = document.createElement('a');
-                a.href = link.href;
-                a.textContent = link.texto;
-                // Add an active class if the current page matches the link (optional but good for UX)
-                if (window.location.pathname.includes(link.href.split('/').pop())) {
-                    a.classList.add('active');
+            // Show allowed links and add active class
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                const href = link.getAttribute('href');
+                if (allowedLinks.includes(href)) {
+                    link.style.display = 'block'; // Show the link
+                    if (window.location.pathname.includes(href.split('/').pop())) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
                 }
-                menuLinksDiv.appendChild(a);
             });
         }
+
+        // Function to render or update a chart
+        function renderChart(chartId, type, data, options, chartInstance) {
+            const ctx = document.getElementById(chartId);
+            if (!ctx) {
+                console.error(`Canvas element with ID '${chartId}' not found.`);
+                return null;
+            }
+
+            if (chartInstance) {
+                chartInstance.destroy(); // Destroy existing chart instance to prevent overlaps
+            }
+
+            if (data.datasets[0].data.every(val => val === 0) && data.labels.length === 0) {
+                // If all data is zero or empty, show a message instead of an empty chart
+                const parent = ctx.parentElement;
+                parent.innerHTML = `<div class="no-data-message">No hay datos suficientes para mostrar este gráfico.</div>`;
+                return null; // No chart instance to return
+            } else {
+                // If there was a 'no-data-message', remove it and re-add canvas
+                if (ctx.tagName !== 'CANVAS') {
+                    const newCanvas = document.createElement('canvas');
+                    newCanvas.id = chartId;
+                    ctx.parentElement.replaceChild(newCanvas, ctx);
+                    ctx = newCanvas; // Update ctx to the new canvas
+                }
+            }
+            return new Chart(ctx, { type, data, options });
+        }
+
 
         // Function to load member statistics (Sociedad and Miembro Asistencia)
         async function cargarEstadisticasMiembros() {
-            const { data: miembros, error } = await supabase
-                .from('miembros')
-                .select('nombre, sociedad, asistencia'); // Select only relevant columns
+            try {
+                const { data: miembros, error } = await supabase
+                    .from('miembros')
+                    .select('nombre, sociedad, asistencia');
 
-            if (error) {
-                console.error("Error fetching miembros data:", error.message);
-                return;
-            }
-
-            // --- Sociedad Chart (Pie) ---
-            const conteoSociedad = { "Jóvenes": 0, "Damas": 0, "Caballeros": 0, "Niños": 0, "General": 0 }; // Added "Niños" and "General" for broader categories
-            miembros.forEach(m => {
-                const sociedadKey = m.sociedad || "General"; // Default to "General" if null/empty
-                if (conteoSociedad[sociedadKey] !== undefined) {
-                    conteoSociedad[sociedadKey]++;
-                } else {
-                    // If a society not defined, add it to "General" or log it
-                    conteoSociedad["General"]++;
+                if (error) {
+                    console.error("Error fetching miembros data:", error.message);
+                    return;
                 }
-            });
 
-            // Filter out societies with 0 members if desired
-            const filteredSociedadLabels = Object.keys(conteoSociedad).filter(key => conteoSociedad[key] > 0);
-            const filteredSociedadData = filteredSociedadLabels.map(key => conteoSociedad[key]);
-
-            if (filteredSociedadData.length > 0) {
-                 new Chart(document.getElementById('sociedadChart'), {
-                    type: 'pie',
-                    data: {
-                        labels: filteredSociedadLabels,
-                        datasets: [{
-                            data: filteredSociedadData,
-                            backgroundColor: [
-                                '#f7c948', '#36a2eb', '#ff6384', '#9966ff', '#4bc0c0', '#ff9f40', '#c9cbcf'
-                            ], // More colors for more societies
-                            borderColor: '#14153a',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom', // Move legend to bottom for better chart space
-                                labels: {
-                                    color: '#0b0c2a' // Chart labels color should contrast with white canvas
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Miembros por Sociedad',
-                                color: '#0b0c2a',
-                                font: {
-                                    size: 16
-                                }
-                            }
-                        }
+                // --- Sociedad Chart (Pie) ---
+                const conteoSociedad = { "Jóvenes": 0, "Damas": 0, "Caballeros": 0, "Niños": 0, "General": 0 };
+                miembros.forEach(m => {
+                    const sociedadKey = m.sociedad || "General";
+                    if (conteoSociedad[sociedadKey] !== undefined) {
+                        conteoSociedad[sociedadKey]++;
+                    } else {
+                        // If a society not defined, add it to "General"
+                        conteoSociedad["General"]++;
                     }
                 });
-            } else {
-                document.getElementById('sociedadChart').parentElement.innerHTML = '<p style="color: #0b0c2a; text-align: center;">No hay datos para el gráfico de Sociedades.</p>';
-            }
 
+                const filteredSociedadLabels = Object.keys(conteoSociedad).filter(key => conteoSociedad[key] > 0);
+                const filteredSociedadData = filteredSociedadLabels.map(key => conteoSociedad[key]);
 
-            // --- Miembro Asistencia Chart (Bar) ---
-            // Sort members by attendance for a more meaningful chart
-            miembros.sort((a, b) => b.asistencia - a.asistencia); // Descending attendance
-
-            const topMiembros = miembros.slice(0, 10); // Show top 10 for readability
-
-            if (topMiembros.length > 0) {
-                new Chart(document.getElementById('asistenciaMiembrosChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: topMiembros.map(m => m.nombre.split(' ')[0]), // Use first name for labels
-                        datasets: [{
-                            label: 'Asistencia Total',
-                            data: topMiembros.map(m => m.asistencia || 0),
-                            backgroundColor: '#36a2eb', // Blue
-                            borderColor: '#14153a',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { color: '#0b0c2a' },
-                                title: {
-                                    display: true,
-                                    text: 'Número de Asistencias',
-                                    color: '#0b0c2a'
-                                }
-                            },
-                            x: {
-                                ticks: { color: '#0b0c2a', autoSkip: false, maxRotation: 45, minRotation: 45 },
-                                title: {
-                                    display: true,
-                                    text: 'Miembros',
-                                    color: '#0b0c2a'
-                                }
+                sociedadChartInstance = renderChart('sociedadChart', 'pie', {
+                    labels: filteredSociedadLabels,
+                    datasets: [{
+                        data: filteredSociedadData,
+                        backgroundColor: ['#f7c948', '#36a2eb', '#ff6384', '#9966ff', '#4bc0c0', '#ff9f40', '#c9cbcf'],
+                        borderColor: '#14153a',
+                        borderWidth: 2
+                    }]
+                }, {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#0b0c2a'
                             }
                         },
-                        plugins: {
-                            legend: {
-                                display: false // No need for legend if only one dataset
-                            },
-                            title: {
-                                display: true,
-                                text: 'Top Asistencia de Miembros',
-                                color: '#0b0c2a',
-                                font: {
-                                    size: 16
-                                }
-                            }
+                        title: {
+                            display: true,
+                            text: 'Miembros por Sociedad',
+                            color: '#0b0c2a',
+                            font: { size: 16 }
                         }
                     }
-                });
-            } else {
-                document.getElementById('asistenciaMiembrosChart').parentElement.innerHTML = '<p style="color: #0b0c2a; text-align: center;">No hay datos para el gráfico de Asistencia de Miembros.</p>';
+                }, sociedadChartInstance);
+
+                // --- Miembro Asistencia Chart (Bar) ---
+                miembros.sort((a, b) => (b.asistencia || 0) - (a.asistencia || 0));
+                const topMiembros = miembros.slice(0, 10);
+
+                asistenciaMiembrosChartInstance = renderChart('asistenciaMiembrosChart', 'bar', {
+                    labels: topMiembros.map(m => m.nombre.split(' ')[0]),
+                    datasets: [{
+                        label: 'Asistencia Total',
+                        data: topMiembros.map(m => m.asistencia || 0),
+                        backgroundColor: '#36a2eb',
+                        borderColor: '#14153a',
+                        borderWidth: 1
+                    }]
+                }, {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#0b0c2a' },
+                            title: { display: true, text: 'Número de Asistencias', color: '#0b0c2a' }
+                        },
+                        x: {
+                            ticks: { color: '#0b0c2a', autoSkip: false, maxRotation: 45, minRotation: 45 },
+                            title: { display: true, text: 'Miembros', color: '#0b0c2a' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Top Asistencia de Miembros', color: '#0b0c2a', font: { size: 16 } }
+                    }
+                }, asistenciaMiembrosChartInstance);
+
+            } catch (e) {
+                console.error("Exception in cargarEstadisticasMiembros:", e.message);
             }
         }
 
-        // Function to load and display activity attendance statistics (NEW)
+        // Function to load and display activity attendance statistics
         async function cargarEstadisticasActividades() {
-            // Fetch activities, ordered by date descending to get "latest"
-            const { data: actividades, error } = await supabase
-                .from('actividades')
-                .select('nombre_actividad, fecha, asistencia_total')
-                .order('fecha', { ascending: false })
-                .limit(7); // Get the last 7 activities
+            try {
+                const { data: actividades, error } = await supabase
+                    .from('actividades')
+                    .select('nombre_actividad, fecha, asistencia_total')
+                    .order('fecha', { ascending: false })
+                    .limit(7);
 
-            if (error) {
-                console.error("Error fetching actividades data:", error.message);
-                return;
-            }
+                if (error) {
+                    console.error("Error fetching actividades data:", error.message);
+                    return;
+                }
 
-            if (actividades.length > 0) {
-                // Prepare data for the chart
-                const labels = actividades.map(a => `${a.nombre_actividad} (${new Date(a.fecha).toLocaleDateString()})`);
+                const labels = actividades.map(a => `${a.nombre_actividad} (${new Date(a.fecha).toLocaleDateString('es-ES')})`);
                 const data = actividades.map(a => a.asistencia_total || 0);
 
-                new Chart(document.getElementById('actividadesAsistenciaChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Asistencia Total',
-                            data: data,
-                            backgroundColor: '#ff9f40', // Orange color
-                            borderColor: '#14153a',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { color: '#0b0c2a' },
-                                title: {
-                                    display: true,
-                                    text: 'Número de Asistentes',
-                                    color: '#0b0c2a'
-                                }
-                            },
-                            x: {
-                                ticks: { color: '#0b0c2a', autoSkip: false, maxRotation: 45, minRotation: 45 },
-                                title: {
-                                    display: true,
-                                    text: 'Actividad',
-                                    color: '#0b0c2a'
-                                }
-                            }
+                actividadesAsistenciaChartInstance = renderChart('actividadesAsistenciaChart', 'bar', {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Asistencia Total',
+                        data: data,
+                        backgroundColor: '#ff9f40',
+                        borderColor: '#14153a',
+                        borderWidth: 1
+                    }]
+                }, {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#0b0c2a' },
+                            title: { display: true, text: 'Número de Asistentes', color: '#0b0c2a' }
                         },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            title: {
-                                display: true,
-                                text: 'Asistencia Últimas Actividades',
-                                color: '#0b0c2a',
-                                font: {
-                                    size: 16
-                                }
-                            }
+                        x: {
+                            ticks: { color: '#0b0c2a', autoSkip: false, maxRotation: 45, minRotation: 45 },
+                            title: { display: true, text: 'Actividad', color: '#0b0c2a' }
                         }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Asistencia Últimas Actividades', color: '#0b0c2a', font: { size: 16 } }
                     }
-                });
-            } else {
-                document.getElementById('actividadesAsistenciaChart').parentElement.innerHTML = '<p style="color: #0b0c2a; text-align: center;">No hay datos para el gráfico de Asistencia de Actividades.</p>';
+                }, actividadesAsistenciaChartInstance);
+
+            } catch (e) {
+                console.error("Exception in cargarEstadisticasActividades:", e.message);
             }
         }
-
 
         // Function to close session
         function cerrarSesion() {
@@ -517,10 +563,13 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async () => {
-            await actualizarMenu();
+            // First, load basic UI elements and user info
             await cargarLogo();
-            await cargarEstadisticasMiembros(); // Load member charts
-            await cargarEstadisticasActividades(); // Load new activities chart
+            await actualizarMenu();
+            
+            // Then, load charts, which depend on data from Supabase
+            await cargarEstadisticasMiembros();
+            await cargarEstadisticasActividades();
         });
     </script>
 </body>
