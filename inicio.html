@@ -1,603 +1,552 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <title>Adoracion viva Inicio</title>
-    <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" />
-    
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc, setDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
-            authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
-            projectId: "iglesia-adoracion-viva-182e6",
-            storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
-            messagingSenderId: "152824399391",
-            appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
-            measurementId: "G-GXV53CPPBT"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        const auth = getAuth(app);
-
-        // Make Firebase instances globally accessible (for convenience in this project structure)
-        window.db = db;
-        window.storage = storage;
-        window.auth = auth;
-        window.collection = collection;
-        window.getDocs = getDocs;
-        window.query = query;
-        window.orderBy = orderBy;
-        window.limit = limit;
-        window.doc = doc;
-        window.getDoc = getDoc;
-        window.setDoc = setDoc;
-        window.ref = ref;
-        window.uploadBytes = uploadBytes;
-        window.getDownloadURL = getDownloadURL;
-        window.onAuthStateChanged = onAuthStateChanged;
-        window.signOut = signOut;
-        window.where = where; // Added where for Firestore queries
-
-        let currentUser = null; // Global variable to store the authenticated user's data
-
-        // Listen for authentication state changes
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                console.log("Firebase Auth User detected:", user.email);
-                try {
-                    // Fetch user's role and data from Firestore based on authenticated email
-                    const q = query(collection(db, "usuarios"), where("email", "==", user.email), limit(1));
-                    const querySnapshot = await getDocs(q);
-                    if (!querySnapshot.empty) {
-                        currentUser = querySnapshot.docs[0].data();
-                        localStorage.setItem('usuarioActivo', JSON.stringify(currentUser)); // Store full user object
-                        console.log("Firestore user data loaded:", currentUser);
-                    } else {
-                        console.log("User email found in Firebase Auth but no matching document in 'usuarios' collection. Treating as unauthenticated.");
-                        // If Firebase Auth user exists but no Firestore doc, sign them out of Auth
-                        signOut(auth);
-                        currentUser = null; // Clear currentUser
-                        localStorage.removeItem('usuarioActivo'); // Clear localStorage
-                    }
-                } catch (e) {
-                    console.error("Error fetching user data from Firestore:", e.message);
-                    // On error, treat as unauthenticated
-                    signOut(auth);
-                    currentUser = null;
-                    localStorage.removeItem('usuarioActivo');
-                }
-            } else {
-                console.log("No Firebase Auth user is logged in.");
-                currentUser = null; // Ensure currentUser is null if no one is logged in
-                localStorage.removeItem('usuarioActivo'); // Clear any stale user data
-                // IMPORTANT: Do NOT redirect to index.html here. Allow access to inicio.html.
-            }
-            // Update UI components after auth state is determined
-            await cargarLogo();
-            await actualizarMenu();
-            await cargarEstadisticasMiembros(); // Load charts, they will handle 'no data' for unauthenticated users
-            await cargarEstadisticasActividades();
-        });
-    </script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Iglesia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
     <style>
+        /* Estilos específicos para este dashboard */
         body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #0b0c2a;
-            color: #f7c948;
             display: flex;
+            min-height: 100vh;
+            background-color: #f8f9fa;
         }
-        .sidebar {
+        #sidebar {
             width: 250px;
-            background-color: #14153a;
-            height: 100vh;
-            padding-top: 30px;
-            box-shadow: 5px 0 5px rgba(0,0,0,0.3);
-            position: fixed;
-            left: 0;
-            top: 0;
-            transition: transform 0.3s ease;
-            overflow-y: auto;
-            z-index: 9;
+            background-color: #343a40;
+            color: white;
+            padding-top: 20px;
+            flex-shrink: 0;
+            transition: all 0.3s;
         }
-        .sidebar.hide { transform: translateX(-100%); }
-        .sidebar.show { transform: translateX(0); }
-
-        .sidebar img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            display: block;
-            margin: 0 auto 20px;
-            cursor: pointer;
+        #sidebar.collapsed {
+            width: 80px;
         }
-        .sidebar a, .sidebar .user-info, .sidebar .logout {
-            display: block;
-            padding: 20px 30px;
-            color: #f7c948;
-            text-decoration: none;
-            font-size: 18px;
-            transition: background-color 0.2s ease;
+        #sidebar.collapsed .sidebar-header h3,
+        #sidebar.collapsed .sidebar-header img {
+            display: none;
         }
-        .sidebar a:hover, .sidebar .logout:hover {
-            background-color: #1f214d;
-            cursor: pointer;
+        #sidebar.collapsed .list-unstyled.components li a span {
+            display: none;
         }
-        .sidebar a.active {
-            background-color: #1f214d;
-            border-left: 5px solid #f7c948;
-            padding-left: 25px;
+        #sidebar.collapsed .list-unstyled.components li a i {
+            margin-right: 0;
+            font-size: 1.5em;
         }
-        .content {
-            margin-left: 250px;
-            padding: 20px;
-            flex-grow: 1;
-            transition: margin-left 0.3s ease;
-        }
-        .content.full-width {
-            margin-left: 0;
-        }
-        .menu-toggle {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            background-color: #f7c948;
-            color: #0b0c2a;
-            border: none;
-            padding: 8px 12px;
-            cursor: pointer;
-            border-radius: 5px;
-            z-index: 10;
-            font-size: 20px;
-            line-height: 1;
-        }
-        .charts {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 60px;
-        }
-        canvas {
-            background-color: #fff;
-            border-radius: 8px;
+        #sidebar.collapsed .sidebar-header {
             padding: 10px;
-            width: 380px !important;
-            height: 380px !important;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            box-sizing: border-box;
-        }
-        .no-data-message {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            width: 380px;
-            height: 380px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             text-align: center;
-            color: #0b0c2a;
-            font-size: 1.1em;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            box-sizing: border-box;
         }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.show {
-                transform: translateX(0);
-            }
-            .content {
-                margin-left: 0;
-            }
-            .menu-toggle {
-                left: 15px;
-            }
-            canvas, .no-data-message {
-                width: 90vw !important;
-                height: 90vw !important;
-                max-width: 380px !important;
-                max-height: 380px !important;
-            }
+        #content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .sidebar-header h3 {
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        .sidebar-header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+        .list-unstyled.components {
+            padding: 20px 0;
+            border-bottom: 1px solid #47748b;
+        }
+        .list-unstyled.components li a {
+            padding: 10px 15px;
+            font-size: 1.1em;
+            display: block;
+            color: #dee2e6;
+            text-decoration: none;
+        }
+        .list-unstyled.components li a:hover {
+            color: #fff;
+            background: #495057;
+        }
+        .list-unstyled.components li.active > a,
+        a[aria-expanded="true"] {
+            color: #fff;
+            background: #007bff; /* Color primario de Bootstrap */
+        }
+        .navbar {
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+            padding: 10px 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            border-radius: 0.5rem 0.5rem 0 0;
+            padding: 1rem 1.5rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px; /* Altura fija para los gráficos */
+            width: 100%;
         }
     </style>
 </head>
 <body>
-
-    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-
-    <div class="sidebar" id="sidebar">
-        <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
-        <div class="user-info" id="userInfo"></div>
-        <div id="menuLinks">
-            <a href="inicio.html" class="sidebar-link">Inicio</a>
-            <a href="miembros.html" class="sidebar-link">Miembros</a>
-            <a href="acceso.html" class="sidebar-link">Dar acceso</a>
-            <a href="diezmo.html" class="sidebar-link">Diezmos</a>
-            <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-            <a href="reportes.html" class="sidebar-link">Reportes</a>
-            <a href="discipulado.html" class="sidebar-link">Discipulado</a>
-            <a href="actividades.html" class="sidebar-link">Actividades</a>
-            <a href="configuracion.html" class="sidebar-link">Configuración</a>
-            <a href="auditoria.html" class="sidebar-link">Auditoría</a>
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <img id="appLogo" src="img/default_logo.png" alt="Logo">
+            <h3>Dashboard Iglesia</h3>
         </div>
-        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
+        <ul class="list-unstyled components">
+            <li>
+                <a href="inicio.html"><i class="fas fa-home"></i> <span>Inicio</span></a>
+            </li>
+            <li id="menuMiembros" style="display: none;">
+                <a href="miembros.html"><i class="fas fa-users"></i> <span>Miembros</span></a>
+            </li>
+            <li id="menuFinanzas" style="display: none;">
+                <a href="finanzas.html"><i class="fas fa-dollar-sign"></i> <span>Finanzas</span></a>
+            </li>
+            <li id="menuActividades" style="display: none;">
+                <a href="actividades.html"><i class="fas fa-calendar-alt"></i> <span>Actividades</span></a>
+            </li>
+            <li id="menuReportes" style="display: none;">
+                <a href="reportes.html"><i class="fas fa-chart-line"></i> <span>Reportes</span></a>
+            </li>
+            <li id="menuUsuarios" style="display: none;">
+                <a href="usuarios.html"><i class="fas fa-user-shield"></i> <span>Usuarios</span></a>
+            </li>
+            <li id="menuConfiguracion" style="display: none;">
+                <a href="configuracion.html"><i class="fas fa-cogs"></i> <span>Configuración</span></a>
+            </li>
+            <li>
+                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></a>
+            </li>
+        </ul>
+    </nav>
+
+    <div id="content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <button type="button" id="sidebarCollapse" class="btn btn-info">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <span class="navbar-text me-3" id="userNameDisplay"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <h2>Dashboard de la Iglesia</h2>
+        <p class="lead">Bienvenido al panel de control. Aquí puedes ver un resumen rápido de las estadísticas importantes.</p>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        Distribución de Miembros por Sociedad
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="sociedadChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        Top 7 Miembros con Más Asistencia
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="asistenciaMiembrosChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        Asistencia en las Últimas 7 Actividades
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="actividadesAsistenciaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="content" id="mainContent">
-        <h2>Estadísticas Generales</h2>
-        <div class="charts">
-            <div class="chart-container">
-                <canvas id="sociedadChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <canvas id="asistenciaMiembrosChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <canvas id="actividadesAsistenciaChart"></canvas>
-            </div>
-        </div>
-    </div>
+    <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.8.0/firebase-firestore-compat.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="js/config.js"></script>
     <script>
-        // Global chart instances to destroy them before re-rendering
-        let sociedadChartInstance = null;
-        let asistenciaMiembrosChartInstance = null;
-        let actividadesAsistenciaChartInstance = null;
-
-        // Sidebar toggle functionality
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            sidebar.classList.toggle('show');
-            mainContent.classList.toggle('full-width');
+        // Inicializa Firebase usando la configuración de config.js
+        try {
+            const app = firebase.initializeApp(firebaseConfig);
+            window.auth = app.auth();
+            window.db = app.firestore();
+            console.log('Firebase inicializado correctamente.');
+        } catch (error) {
+            console.error('Error al inicializar Firebase:', error);
+            alert('Error al conectar con Firebase. Por favor, revisa la consola para más detalles.');
         }
 
-        // Function to load the logo from Firebase Firestore and Storage
-        async function cargarLogo() {
-            console.log("Attempting to load logo from 'configuracion' collection.");
+        // Definiciones de funciones de Chart.js y carga de datos
+        let sociedadChartInstance;
+        let asistenciaMiembrosChartInstance;
+        let actividadesAsistenciaChartInstance;
+
+        async function cargarEstadisticasSociedad() {
             try {
-                const configDoc = await window.getDoc(window.doc(window.db, "configuracion", "appConfig"));
+                const miembrosRef = window.db.collection('miembros');
+                const snapshot = await miembrosRef.get();
+                const sociedades = {};
 
-                if (configDoc.exists() && configDoc.data().logo) {
-                    document.getElementById("logo").src = configDoc.data().logo;
-                    console.log("Logo loaded:", configDoc.data().logo);
-                } else {
-                    console.log("No custom logo found in 'configuracion/appConfig', using default.");
-                    document.getElementById("logo").src = "https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png";
-                }
-            } catch (e) {
-                console.error("Exception loading logo:", e.message);
-                document.getElementById("logo").src = "https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png";
-            }
-        }
-
-        // Function to change the logo (requires Administrator role)
-        async function cambiarLogo() {
-            // Check if there's an authenticated user and if they are an Administrator
-            if (!currentUser || currentUser.rol !== "Administrador") {
-                alert("Acceso denegado. Solo los administradores pueden cambiar el logo.");
-                return;
-            }
-
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = async function () {
-                const file = this.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = e => document.getElementById('logo').src = e.target.result;
-                    reader.readAsDataURL(file);
-
-                    const fileName = `logos/church_logo_${Date.now()}_${file.name}`; // Path in Storage bucket
-                    const storageRef = window.ref(window.storage, fileName);
-                    try {
-                        console.log("Uploading logo to Firebase Storage...");
-                        await window.uploadBytes(storageRef, file);
-                        const logoUrl = await window.getDownloadURL(storageRef);
-                        console.log("New logo public URL:", logoUrl);
-
-                        // Update the 'configuracion' collection in Firestore
-                        console.log("Updating 'configuracion/appConfig' document with new logo URL.");
-                        await window.setDoc(window.doc(window.db, "configuracion", "appConfig"), { logo: logoUrl }, { merge: true });
-
-                        alert("Logo actualizado con éxito.");
-                        cargarLogo(); // Reload logo to ensure it's the latest
-                    } catch (e) {
-                        console.error("Exception in cambiarLogo (Firebase):", e.message);
-                        alert("Ocurrió un error inesperado al cambiar el logo.");
-                    }
-                } else {
-                    alert("Por favor, seleccione un archivo de imagen válido.");
-                }
-            };
-            input.click();
-        }
-
-        // Function to update the menu based on role
-        async function actualizarMenu() {
-            const menuLinksDiv = document.getElementById('menuLinks');
-            const userInfoDiv = document.getElementById('userInfo');
-            
-            // If no user is logged in
-            if (!currentUser) {
-                userInfoDiv.textContent = "Usuario Desconocido (Inicie Sesión)";
-                // Hide all links except 'Inicio'
-                document.querySelectorAll('.sidebar-link').forEach(link => {
-                    if (link.getAttribute('href') === "inicio.html") {
-                        link.style.display = 'block';
-                        // Keep 'Inicio' active if on this page
-                        if (window.location.pathname.includes("inicio.html")) {
-                            link.classList.add('active');
-                        } else {
-                            link.classList.remove('active');
-                        }
-                    } else {
-                        link.style.display = 'none';
-                    }
-                });
-                document.querySelector('.logout').style.display = 'none'; // Hide logout button
-                return; // Exit the function
-            }
-            
-            // If a user is logged in, display their info
-            userInfoDiv.textContent = `${currentUser.nombre} - ${currentUser.rol}`;
-            console.log("Updating menu for user role:", currentUser.rol);
-
-            // Show logout button for any logged-in user
-            document.querySelector('.logout').style.display = 'block';
-
-            const allowedLinks = [];
-            allowedLinks.push("inicio.html"); // Everyone (logged in or not) can see Inicio
-
-            // Determine allowed links based on user role
-            if (currentUser.rol === "Administrador") {
-                allowedLinks.push(
-                    "miembros.html", "diezmo.html", "ofrendas.html", "acceso.html",
-                    "reportes.html", "discipulado.html",
-                    "actividades.html", "configuracion.html", "auditoria.html"
-                );
-            } else if (currentUser.rol === "Tesorero") {
-                allowedLinks.push(
-                    "diezmo.html", "ofrendas.html"
-                );
-            } else if (currentUser.rol === "Discipulador") {
-                allowedLinks.push(
-                    "discipulado.html"
-                );
-            } else if (currentUser.rol === "Preadministrador") {
-                allowedLinks.push(
-                    "miembros.html", "acceso.html"
-                );
-            }
-
-            // Display or hide menu links based on allowedLinks array
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                const href = link.getAttribute('href');
-                if (allowedLinks.includes(href)) {
-                    link.style.display = 'block';
-                    // Set active class for the current page
-                    if (window.location.pathname.includes(href.split('/').pop())) {
-                        link.classList.add('active');
-                    } else {
-                        link.classList.remove('active');
-                    }
-                } else {
-                    link.style.display = 'none'; // Hide links not allowed for the role
-                }
-            });
-        }
-
-        // Function to render or update a chart
-        function renderChart(chartId, type, data, options, chartInstance) {
-            let ctx = document.getElementById(chartId);
-            const parentContainer = ctx ? ctx.parentElement : null;
-
-            if (!ctx || !parentContainer) {
-                console.error(`Canvas element or its container with ID '${chartId}' not found.`);
-                return null;
-            }
-
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            // Check if there's any data to display (at least one value > 0)
-            const hasData = data.datasets && data.datasets.length > 0 && 
-                                data.datasets[0].data && data.datasets[0].data.some(val => val > 0);
-            
-            if (!hasData) {
-                // If no data, display a message instead of the chart
-                parentContainer.innerHTML = `<div class="no-data-message">No hay datos suficientes para mostrar este gráfico.</div>`;
-                return null;
-            } else {
-                // If there was a 'no-data-message' previously, remove it and re-add the canvas
-                if (parentContainer.querySelector('.no-data-message')) {
-                    parentContainer.innerHTML = `<canvas id="${chartId}"></canvas>`;
-                    ctx = document.getElementById(chartId);
-                }
-            }
-            
-            return new Chart(ctx, { type, data, options });
-        }
-
-        // Function to load member statistics from Firestore
-        async function cargarEstadisticasMiembros() {
-            console.log("Attempting to fetch 'miembros' data from Firestore for charts.");
-            try {
-                // Note: Ensure your Firebase Security Rules allow read access to 'miembros' for relevant users (or unauthenticated if desired)
-                const miembrosSnapshot = await window.getDocs(window.collection(window.db, "miembros"));
-                const miembros = miembrosSnapshot.docs.map(doc => doc.data());
-                console.log("'miembros' data fetched from Firestore:", miembros);
-
-                // --- Sociedad Chart (Pie) ---
-                const conteoSociedad = { "Jóvenes": 0, "Damas": 0, "Caballeros": 0, "Niños": 0, "General": 0 };
-                miembros.forEach(m => {
-                    const sociedadKey = m.sociedad || "General";
-                    if (conteoSociedad[sociedadKey] !== undefined) {
-                        conteoSociedad[sociedadKey]++;
-                    } else {
-                        conteoSociedad["General"]++; // Catch-all for undefined or new societies
-                    }
+                snapshot.forEach(doc => {
+                    const miembro = doc.data();
+                    const sociedad = miembro.sociedad || 'Sin Sociedad';
+                    sociedades[sociedad] = (sociedades[sociedad] || 0) + 1;
                 });
 
-                const filteredSociedadLabels = Object.keys(conteoSociedad).filter(key => conteoSociedad[key] > 0);
-                const filteredSociedadData = filteredSociedadLabels.map(key => conteoSociedad[key]);
+                const labels = Object.keys(sociedades);
+                const data = Object.values(sociedades);
 
-                sociedadChartInstance = renderChart('sociedadChart', 'pie', {
-                    labels: filteredSociedadLabels,
-                    datasets: [{
-                        data: filteredSociedadData,
-                        backgroundColor: ['#f7c948', '#36a2eb', '#ff6384', '#9966ff', '#4bc0c0', '#ff9f40', '#c9cbcf'],
-                        borderColor: '#14153a',
-                        borderWidth: 2
-                    }]
-                }, {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { color: '#0b0c2a' }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Miembros por Sociedad',
-                            color: '#0b0c2a',
-                            font: { size: 16 }
-                        }
-                    }
-                }, sociedadChartInstance);
+                const ctx = document.getElementById('sociedadChart').getContext('2d');
 
-                // --- Miembro Asistencia Chart (Bar) ---
-                miembros.sort((a, b) => (b.asistencia || 0) - (a.asistencia || 0)); // Sort by attendance descending
-                const topMiembros = miembros.slice(0, 10); // Get top 10 members
-
-                asistenciaMiembrosChartInstance = renderChart('asistenciaMiembrosChart', 'bar', {
-                    labels: topMiembros.map(m => m.nombre.split(' ')[0]), // Use first name for labels
-                    datasets: [{
-                        label: 'Asistencia Total',
-                        data: topMiembros.map(m => m.asistencia || 0),
-                        backgroundColor: '#36a2eb',
-                        borderColor: '#14153a',
-                        borderWidth: 1
-                    }]
-                }, {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: '#0b0c2a' },
-                            title: { display: true, text: 'Número de Asistencias', color: '#0b0c2a' }
-                        },
-                        x: {
-                            ticks: { color: '#0b0c2a', autoSkip: false, maxRotation: 45, minRotation: 45 },
-                            title: { display: true, text: 'Miembros', color: '#0b0c2a' }
-                        }
+                if (sociedadChartInstance) {
+                    sociedadChartInstance.destroy();
+                }
+                sociedadChartInstance = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: [
+                                '#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6610f2', '#fd7e14'
+                            ],
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
                     },
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: 'Top Asistencia de Miembros', color: '#0b0c2a', font: { size: 16 } }
-                    }
-                }, asistenciaMiembrosChartInstance);
-
-            } catch (e) {
-                console.error("Exception in cargarEstadisticasMiembros (Firebase):", e.message);
-                // Render empty charts with no data messages on error
-                renderChart('sociedadChart', 'pie', { labels: [], datasets: [{ data: [] }] }, {}, sociedadChartInstance);
-                renderChart('asistenciaMiembrosChart', 'bar', { labels: [], datasets: [{ data: [] }] }, {}, asistenciaMiembrosChartInstance);
-            }
-        }
-
-        // Function to load and display activity attendance statistics from Firestore
-        async function cargarEstadisticasActividades() {
-            console.log("Attempting to fetch 'actividades' data from Firestore for charts.");
-            try {
-                // Query for recent activities, ordered by date descending
-                // Note: Ensure your Firebase Security Rules allow read access to 'actividades' for relevant users (or unauthenticated if desired)
-                const q = query(collection(window.db, "actividades"), orderBy("fecha", "desc"), limit(7));
-                const actividadesSnapshot = await window.getDocs(q);
-                const actividades = actividadesSnapshot.docs.map(doc => doc.data());
-                console.log("'actividades' data fetched from Firestore:", actividades);
-
-                // Format labels for activities
-                const labels = actividades.map(a => `${a.nombre_actividad} (${new Date(a.fecha.toDate()).toLocaleDateString('es-ES')})`);
-                const data = actividades.map(a => a.asistencia_total || 0);
-
-                actividadesAsistenciaChartInstance = renderChart('actividadesAsistenciaChart', 'bar', {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Asistencia Total',
-                        data: data,
-                        backgroundColor: '#ff9f40',
-                        borderColor: '#14153a',
-                        borderWidth: 1
-                    }]
-                }, {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: '#0b0c2a' },
-                            title: { display: true, text: 'Número de Asistentes', color: '#0b0c2a' }
-                        },
-                        x: {
-                            ticks: { color: '#0b0c2a', autoSkip: false, maxRotation: 45, minRotation: 45 },
-                            title: { display: true, text: 'Actividad', color: '#0b0c2a' }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Distribución de Miembros por Sociedad'
+                            }
                         }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: 'Asistencia Últimas Actividades', color: '#0b0c2a', font: { size: 16 } }
                     }
-                }, actividadesAsistenciaChartInstance);
-
-            } catch (e) {
-                console.error("Exception in cargarEstadisticasActividades (Firebase):", e.message);
-                // Render empty chart with no data message on error
-                renderChart('actividadesAsistenciaChart', 'bar', { labels: [], datasets: [{ data: [] }] }, {}, actividadesAsistenciaChartInstance);
-            }
-        }
-
-        // Function to close session (using Firebase Auth signOut)
-        async function cerrarSesion() {
-            try {
-                await window.signOut(window.auth);
-                localStorage.removeItem("usuarioActivo"); // Clean up localStorage as well
-                window.location.href = "index.html"; // Redirect to login page after sign out
+                });
+                console.log("'miembros' data fetched from Firestore:", sociedades);
             } catch (error) {
-                console.error("Error signing out:", error);
-                alert("Hubo un error al cerrar sesión.");
+                console.error("Error al cargar estadísticas de sociedad:", error);
             }
         }
 
-        // Initial page load logic
-        document.addEventListener('DOMContentLoaded', async () => {
-            // No need for a setTimeout here. The onAuthStateChanged listener handles the flow
-            // of loading user data and then updating the UI and charts.
-            // cargarLogo() is called directly as it's generally independent of auth state.
-            await cargarLogo();
-            // The rest will be triggered by onAuthStateChanged
+        async function cargarEstadisticasAsistenciaMiembros() {
+            try {
+                const miembrosRef = window.db.collection('miembros');
+                const snapshot = await miembrosRef.get();
+                const asistenciaData = [];
+
+                snapshot.forEach(doc => {
+                    const miembro = doc.data();
+                    if (miembro.nombre && miembro.asistencia) {
+                        asistenciaData.push({
+                            nombre: miembro.nombre,
+                            asistencia: miembro.asistencia
+                        });
+                    }
+                });
+
+                // Ordenar por asistencia de mayor a menor y tomar el top 7
+                asistenciaData.sort((a, b) => b.asistencia - a.asistencia);
+                const top7 = asistenciaData.slice(0, 7);
+
+                const labels = top7.map(m => m.nombre);
+                const data = top7.map(m => m.asistencia);
+
+                const ctx = document.getElementById('asistenciaMiembrosChart').getContext('2d');
+
+                if (asistenciaMiembrosChartInstance) {
+                    asistenciaMiembrosChartInstance.destroy();
+                }
+                asistenciaMiembrosChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Número de Asistencias',
+                            data: data,
+                            backgroundColor: '#17a2b8',
+                            borderColor: '#17a2b8',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Top 7 Miembros con Más Asistencia'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                console.log("'miembros' (asistencia) data fetched from Firestore:", top7);
+            } catch (error) {
+                console.error("Error al cargar estadísticas de asistencia de miembros:", error);
+            }
+        }
+
+        async function cargarEstadisticasActividades() {
+            try {
+                // Asegúrate que esta es la colección correcta: 'actividades' (en español)
+                const actividadesRef = window.db.collection('actividades');
+                const q = actividadesRef.orderBy("fecha", "desc").limit(7);
+                const snapshot = await q.get();
+                const actividadesData = [];
+
+                snapshot.forEach(doc => {
+                    const actividad = doc.data();
+                    if (actividad.nombre && actividad.asistencia) {
+                        // Formatear la fecha si existe
+                        let fechaStr = actividad.fecha ? new Date(actividad.fecha.toDate()).toLocaleDateString() : 'Sin Fecha';
+                        actividadesData.push({
+                            nombre: actividad.nombre,
+                            fecha: fechaStr,
+                            asistencia: actividad.asistencia
+                        });
+                    }
+                });
+
+                // Invertir el orden para que el gráfico muestre la actividad más antigua a la izquierda
+                actividadesData.reverse();
+
+                const labels = actividadesData.map(a => `${a.nombre} (${a.fecha})`);
+                const data = actividadesData.map(a => a.asistencia);
+
+                const ctx = document.getElementById('actividadesAsistenciaChart').getContext('2d');
+
+                if (actividadesAsistenciaChartInstance) {
+                    actividadesAsistenciaChartInstance.destroy();
+                }
+                actividadesAsistenciaChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Número de Asistentes',
+                            data: data,
+                            backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                            borderColor: '#007bff',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Asistencia en las Últimas 7 Actividades'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Asistencia'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Actividad'
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log("'actividades' data fetched from Firestore:", actividadesData);
+            } catch (error) {
+                console.error("Error al cargar estadísticas de actividades:", error);
+            }
+        }
+
+        async function cargarLogo() {
+            try {
+                const configDocRef = window.db.collection('configuracion').doc('appConfig');
+                const docSnap = await configDocRef.get();
+
+                if (docSnap.exists) {
+                    const config = docSnap.data();
+                    if (config.logoUrl) {
+                        document.getElementById('appLogo').src = config.logoUrl;
+                    }
+                }
+            } catch (error) {
+                console.error("Error al cargar el logo:", error);
+            }
+        }
+
+        // Función para ocultar todos los elementos del menú
+        function ocultarTodosLosMenus() {
+            document.getElementById('menuMiembros').style.display = 'none';
+            document.getElementById('menuFinanzas').style.display = 'none';
+            document.getElementById('menuActividades').style.display = 'none';
+            document.getElementById('menuReportes').style.display = 'none';
+            document.getElementById('menuUsuarios').style.display = 'none';
+            document.getElementById('menuConfiguracion').style.display = 'none';
+        }
+
+        // Manejar el estado de autenticación
+        window.auth.onAuthStateChanged(async (user) => {
+            ocultarTodosLosMenus(); // Oculta todos los menús por defecto
+
+            if (user) {
+                console.log('Usuario autenticado:', user.email);
+                document.getElementById('userNameDisplay').textContent = `Bienvenido, ${user.email}`;
+
+                try {
+                    const userDocRef = window.db.collection('usuarios').doc(user.uid);
+                    const docSnap = await userDocRef.get();
+
+                    if (docSnap.exists) {
+                        const userData = docSnap.data();
+                        console.log('Datos del usuario:', userData);
+
+                        if (userData.rol) {
+                            switch (userData.rol) {
+                                case 'Administrador':
+                                    document.getElementById('menuMiembros').style.display = 'block';
+                                    document.getElementById('menuFinanzas').style.display = 'block';
+                                    document.getElementById('menuActividades').style.display = 'block';
+                                    document.getElementById('menuReportes').style.display = 'block';
+                                    document.getElementById('menuUsuarios').style.display = 'block';
+                                    document.getElementById('menuConfiguracion').style.display = 'block';
+                                    break;
+                                case 'Pastor':
+                                    document.getElementById('menuMiembros').style.display = 'block';
+                                    document.getElementById('menuActividades').style.display = 'block';
+                                    document.getElementById('menuReportes').style.display = 'block';
+                                    break;
+                                case 'Secretario':
+                                    document.getElementById('menuMiembros').style.display = 'block';
+                                    document.getElementById('menuActividades').style.display = 'block';
+                                    break;
+                                case 'Tesorero':
+                                    document.getElementById('menuFinanzas').style.display = 'block';
+                                    document.getElementById('menuReportes').style.display = 'block';
+                                    break;
+                                default:
+                                    console.log('Rol no reconocido o sin permisos específicos para el menú.');
+                                    // Podrías dejar algunos menús básicos aquí si lo deseas para roles no reconocidos.
+                                    break;
+                            }
+                        } else {
+                            console.log('Usuario sin rol definido.');
+                        }
+                    } else {
+                        console.log('No hay datos de rol para este usuario en Firestore.');
+                        // Podrías redirigir a una página de perfil o pedirle que complete su información
+                        // O simplemente mostrar un menú muy limitado.
+                    }
+                } catch (error) {
+                    console.error("Error al obtener el rol del usuario:", error);
+                    alert("Error al cargar el rol del usuario. Por favor, intenta de nuevo.");
+                }
+
+                // Cargar estadísticas y logo una vez que el usuario está autenticado
+                cargarEstadisticasSociedad();
+                cargarEstadisticasAsistenciaMiembros();
+                cargarEstadisticasActividades();
+                cargarLogo();
+
+            } else {
+                console.log('Usuario no autenticado. Redirigiendo a login.html');
+                window.location.href = 'login.html'; // Redirige si no está autenticado
+            }
         });
+
+        // Botón de cerrar sesión
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await window.auth.signOut();
+                console.log('Sesión cerrada exitosamente.');
+                // onAuthStateChanged se encargará de la redirección a login.html
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                alert('Error al cerrar sesión. Por favor, intenta de nuevo.');
+            }
+        });
+
+        // Toggle sidebar
+        document.getElementById('sidebarCollapse').addEventListener('click', function () {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('content').classList.toggle('active');
+        });
+
+        // Asegurarse de que el contenido se ajuste si la sidebar se colapsa/expande
+        window.addEventListener('resize', function() {
+            // Puedes añadir lógica aquí si necesitas ajustar algo al redimensionar
+        });
+
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
