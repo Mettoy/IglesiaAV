@@ -1,301 +1,527 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Adoracion viva Inicio</title>
-   <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #0b0c2a;
-      color: #f7c948;
-      display: flex;
-    }
-    .sidebar {
-      width: 250px;
-      background-color: #14153a;
-      height: 100vh;
-      padding-top: 30px;
-      box-shadow: 5px 0 5px rgba(0,0,0,0.3);
-      position: fixed;
-      left: 0;
-      top: 0;
-      transition: transform 0.3s ease;
-    }
-    .sidebar.hide { transform: translateX(-100%); }
-    .sidebar img {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      display: block;
-      margin: 0 auto 20px;
-      cursor: pointer;
-    }
-    .sidebar a, .sidebar .user-info, .sidebar .logout {
-      display: block;
-      padding: 20px 30px;
-      color: #f7c948;
-      text-decoration: none;
-      font-size: 18px;
-    }
-    .sidebar a:hover, .sidebar .logout:hover {
-      background-color: #1f214d;
-      cursor: pointer;
-    }
-    .content {
-      margin-left: 250px;
-      padding: 20px;
-      flex-grow: 1;
-    }
-    .menu-toggle {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      background-color: #f7c948;
-      color: #0b0c2a;
-      border: none;
-      padding: 8px 12px;
-      cursor: pointer;
-      border-radius: 5px;
-      z-index: 10;
-    }
-    .charts {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      margin-top: 60px;
-    }
-    canvas {
-      background-color: #fff;
-      border-radius: 8px;
-      padding: 10px;
-      width: 300px !important;
-      height: 300px !important;
-    }
-    @media (max-width: 768px) {
-      .content { margin-left: 0; }
-      .sidebar { position: absolute; z-index: 5; }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <title>Adoracion viva Inicio</title>
+    <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #0b0c2a;
+            color: #f7c948;
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #14153a;
+            height: 100vh;
+            padding-top: 30px;
+            box-shadow: 5px 0 5px rgba(0,0,0,0.3);
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: transform 0.3s ease;
+            overflow-y: auto; /* Enable scrolling for many links */
+        }
+        .sidebar.hide { transform: translateX(-100%); }
+        .sidebar img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto 20px;
+            cursor: pointer;
+        }
+        .sidebar a, .sidebar .user-info, .sidebar .logout {
+            display: block;
+            padding: 20px 30px;
+            color: #f7c948;
+            text-decoration: none;
+            font-size: 18px;
+            transition: background-color 0.2s ease;
+        }
+        .sidebar a:hover, .sidebar .logout:hover {
+            background-color: #1f214d;
+            cursor: pointer;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            flex-grow: 1;
+            transition: margin-left 0.3s ease; /* Smooth transition for content */
+        }
+        .content.full-width {
+            margin-left: 0;
+        }
+        .menu-toggle {
+            position: fixed; /* Fixed position for toggle button */
+            top: 15px;
+            left: 15px;
+            background-color: #f7c948;
+            color: #0b0c2a;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 10;
+            font-size: 20px;
+            line-height: 1;
+        }
+        .charts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 60px; /* Space for the menu toggle */
+        }
+        canvas {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 10px;
+            width: 380px !important; /* Increased size for better readability */
+            height: 380px !important; /* Increased size */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        /* Media query for responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .content {
+                margin-left: 0;
+            }
+            .menu-toggle {
+                left: 15px; /* Adjust position for small screens */
+            }
+            /* Keep chart sizes fixed or adjust if needed */
+            canvas {
+                width: 90vw !important; /* Adjust for smaller screens */
+                height: 90vw !important;
+                max-width: 380px !important;
+                max-height: 380px !important;
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
-  <div class="sidebar" id="sidebar">
-    <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
-    <div class="user-info" id="userInfo"></div>
-    <div id="menuLinks"></div>
-    <a href="miembros.html" class="sidebar-link">Miembros</a>
-    <a href="acceso.html" class="sidebar-link">Dar acceso</a>
-    <a href="diezmo.html" class="sidebar-link">Diezmos</a>
-    <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-    <a href="reportes.html" class="sidebar-link">Reportess</a>
-    <a href="discipulado.html" class="sidebar-link">Discipulado</a>
-    <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
-  </div>
-
-  <div class="content">
-    <h2>Estadísticas Generales</h2>
-    <div class="charts">
-      <canvas id="sociedadChart"></canvas>
-      <canvas id="asistenciaChart"></canvas>
+    <div class="sidebar" id="sidebar">
+        <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
+        <div class="user-info" id="userInfo"></div>
+        <div id="menuLinks">
+            </div>
+        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
     </div>
-  </div>
 
-  <script>
-    const supabaseUrl = 'TU_SUPABASE_URL'; // Reemplaza con tu URL de Supabase
-    const supabaseKey = 'TU_SUPABASE_ANON_KEY'; // Reemplaza con tu clave pública
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    <div class="content" id="mainContent">
+        <h2>Estadísticas Generales</h2>
+        <div class="charts">
+            <canvas id="sociedadChart"></canvas>
+            <canvas id="asistenciaMiembrosChart"></canvas> <canvas id="actividadesAsistenciaChart"></canvas> </div>
+    </div>
 
-    // Función para obtener el usuario activo desde Supabase
-    async function obtenerUsuarioActivo() {
-      const usuarioActivo = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('email', localStorage.getItem('usuarioActivo'))
-        .single();
-      
-      if (usuarioActivo.data) {
-        return usuarioActivo.data;
-      } else {
-        window.location.href = "index.html"; // Si no está registrado, redirigir al login
-      }
-    }
+    <script>
+        // REPLACE WITH YOUR ACTUAL SUPABASE CREDENTIALS
+        const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Función para cargar el logo
-    async function cargarLogo() {
-      const { data, error } = await supabase
-        .from('configuracion')
-        .select('logo')
-        .single();
-
-      if (data?.logo) {
-        document.getElementById("logo").src = data.logo;
-      }
-    }
-
-    // Función para cambiar el logo
-    async function cambiarLogo() {
-      const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
-      if (!clave || clave.trim().toLowerCase() !== "adoración viva") {
-        alert("Acceso denegado.");
-        return;
-      }
-
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.onchange = async function () {
-        const file = this.files[0];
-        if (file && file.type.startsWith('image/')) {
-          // Mostrar temporalmente
-          const reader = new FileReader();
-          reader.onload = e => document.getElementById('logo').src = e.target.result;
-          reader.readAsDataURL(file);
-
-          const { error: uploadError } = await supabase.storage
-            .from('logos')
-            .upload('new-logo.png', file, { upsert: true });
-
-          if (uploadError) {
-            alert("Error al subir: " + uploadError.message);
-            return;
-          }
-
-          const logoUrl = await supabase
-            .storage
-            .from('logos')
-            .getPublicUrl('new-logo.png');
-
-          await supabase
-            .from('configuracion')
-            .upsert({ logo: logoUrl.data.publicUrl });
-
-          cargarLogo(); // Refrescar logo
+        // Sidebar toggle functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            sidebar.classList.toggle('show');
+            mainContent.classList.toggle('full-width'); // Adjust content margin
         }
-      };
-      input.click();
-    }
 
-    // Función para actualizar el menú según el rol
-    async function actualizarMenu() {
-      const usuario = await obtenerUsuarioActivo();
-      const menuLinks = document.getElementById('menuLinks');
-      const userInfo = document.getElementById('userInfo');
-      menuLinks.innerHTML = ''; // Limpiar los enlaces actuales
-      const rol = usuario.rol;
-      userInfo.textContent = `${usuario.nombre} - ${rol}`;
+        // Function to get active user from Supabase
+        async function obtenerUsuarioActivo() {
+            // In a real application, you'd use Supabase Auth session for this.
+            // For now, assuming email stored in localStorage is used to fetch user details.
+            const userEmail = localStorage.getItem('usuarioActivo');
+            if (!userEmail) {
+                window.location.href = "index.html"; // Redirect to login if no user is active
+                return null;
+            }
 
-      const enlaces = [];
-
-      if (rol === "Administrador") {
-        enlaces.push(
-          { href: "inicio.html", texto: "Inicio" },
-          { href: "miembros.html", texto: "Miembros" },
-          { href: "diezmo.html", texto: "Diezmos" },
-          { href: "acceso.html", texto: "Dar acceso" },
-          { href: "estadisticas.html", texto: "Estadísticas" },
-          { href: "reportes.html", texto: "Reportes" },  // Nueva opción
-          { href: "configuracion.html", texto: "Configuración" },  // Nueva opción
-          { href: "auditoria.html", texto: "Auditoría" }  // Nueva opción
-        );
-      } else if (rol === "Tesorero") {
-        enlaces.push(
-          { href: "inicio.html", texto: "Inicio" },
-          { href: "diezmo.html", texto: "Diezmos" },
-          { href: "ofrendas.html", texto: "Ofrendas" }
-        );
-      } else if (rol === "Discipulador") {
-        enlaces.push(
-          { href: "inicio.html", texto: "Inicio" },
-          { href: "discipulado.html", texto: "Discipulado" }
-        );
-      } else if (rol === "Preadministrador") {
-        enlaces.push(
-          { href: "inicio.html", texto: "Inicio" },
-          { href: "miembros.html", texto: "Miembros" },
-          { href: "acceso.html", texto: "Dar acceso" }
-        );
-      }
-
-      // Crear los enlaces del menú
-      enlaces.forEach(link => {
-        const a = document.createElement('a');
-        a.href = link.href;
-        a.textContent = link.texto;
-        menuLinks.appendChild(a);
-      });
-    }
-
-    // Función para cargar los miembros y mostrar estadísticas
-    async function cargarEstadisticas() {
-      const { data: miembros, error } = await supabase
-        .from('miembros')
-        .select('*');
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      const conteoSociedad = { Sociedad: 0, Jóvenes: 0, Damas: 0, Caballeros: 0 };
-      miembros.forEach(m => {
-        if (conteoSociedad[m.sociedad] !== undefined) {
-          conteoSociedad[m.sociedad]++;
+            const { data: usuarioActivo, error } = await supabase
+                .from('usuarios')
+                .select('*')
+                .eq('email', userEmail)
+                .single();
+            
+            if (error) {
+                console.error("Error fetching user:", error.message);
+                window.location.href = "index.html"; // Redirect on error
+                return null;
+            }
+            
+            if (usuarioActivo) {
+                return usuarioActivo;
+            } else {
+                window.location.href = "index.html"; // If user not found, redirect to login
+                return null;
+            }
         }
-      });
 
-      new Chart(document.getElementById('sociedadChart'), {
-        type: 'pie',
-        data: {
-          labels: Object.keys(conteoSociedad),
-          datasets: [{
-            data: Object.values(conteoSociedad),
-            backgroundColor: ['#f7c948', '#36a2eb', '#ff6384', '#9966ff'],
-            borderColor: '#14153a',
-            borderWidth: 2
-          }]
-        },
-        options: {
-          plugins: { legend: { display: false } }
+        // Function to load the logo
+        async function cargarLogo() {
+            const { data, error } = await supabase
+                .from('configuracion')
+                .select('logo')
+                .single();
+
+            if (data && data.logo) {
+                document.getElementById("logo").src = data.logo;
+            } else if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found (table empty)
+                console.error("Error loading logo:", error.message);
+            }
         }
-      });
 
-      new Chart(document.getElementById('asistenciaChart'), {
-        type: 'bar',
-        data: {
-          labels: miembros.map(m => m.nombre),
-          datasets: [{
-            label: 'Asistencia',
-            data: miembros.map(m => m.asistencia || 0),
-            backgroundColor: '#36a2eb'
-          }]
-        },
-        options: {
-          scales: {
-            y: { ticks: { color: '#f7c948' }, beginAtZero: true },
-            x: { ticks: { color: '#f7c948' } }
-          },
-          plugins: { legend: { display: false } }
+        // Function to change the logo (Insecure for production - client-side password)
+        async function cambiarLogo() {
+            const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
+            if (!clave || clave.trim().toLowerCase() !== "adoración viva") {
+                alert("Acceso denegado.");
+                return;
+            }
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async function () {
+                const file = this.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    // Show temporarily
+                    const reader = new FileReader();
+                    reader.onload = e => document.getElementById('logo').src = e.target.result;
+                    reader.readAsDataURL(file);
+
+                    // Generate a unique filename or use a fixed one like 'church_logo.png'
+                    const fileName = `church_logo_${Date.now()}.png`; // Better for caching
+                    const { error: uploadError } = await supabase.storage
+                        .from('logos')
+                        .upload(fileName, file, { upsert: true }); // upsert true will overwrite if filename exists
+
+                    if (uploadError) {
+                        alert("Error al subir el logo: " + uploadError.message);
+                        console.error("Supabase Storage Upload Error:", uploadError);
+                        return;
+                    }
+
+                    // Get public URL
+                    const { data: publicUrlData } = supabase.storage
+                        .from('logos')
+                        .getPublicUrl(fileName);
+
+                    if (!publicUrlData || !publicUrlData.publicUrl) {
+                        alert("Error al obtener la URL pública del logo.");
+                        return;
+                    }
+
+                    const logoUrl = publicUrlData.publicUrl;
+
+                    // Update the 'configuracion' table with the new logo URL
+                    // Assuming there's a single config row, you can update based on a fixed ID or similar
+                    const { error: updateError } = await supabase
+                        .from('configuracion')
+                        .upsert({ id: '1', logo: logoUrl }, { onConflict: 'id' }); // Use a fixed ID like '1' for the single config row
+
+                    if (updateError) {
+                        alert("Error al guardar la URL del logo en la base de datos: " + updateError.message);
+                        console.error("Supabase DB Update Error:", updateError);
+                        return;
+                    }
+
+                    alert("Logo actualizado con éxito.");
+                    cargarLogo(); // Refresh logo to ensure latest is shown
+                } else {
+                    alert("Por favor, seleccione un archivo de imagen.");
+                }
+            };
+            input.click();
         }
-      });
-    }
 
-    // Función para cerrar sesión
-    function cerrarSesion() {
-      localStorage.removeItem("usuarioActivo");
-      window.location.href = "index.html";
-    }
+        // Function to update the menu based on role
+        async function actualizarMenu() {
+            const usuario = await obtenerUsuarioActivo();
+            if (!usuario) return; // Stop if no user or error
 
-    // Funciones iniciales
-    actualizarMenu();
-    cargarLogo();
-    cargarEstadisticas();
-  </script>
+            const menuLinksDiv = document.getElementById('menuLinks');
+            const userInfoDiv = document.getElementById('userInfo');
+            menuLinksDiv.innerHTML = ''; // Clear current links
+            userInfoDiv.textContent = `${usuario.nombre} - ${usuario.rol}`;
+
+            const enlaces = [];
+
+            // Add 'Inicio' for all roles
+            enlaces.push({ href: "inicio.html", texto: "Inicio" });
+
+            if (usuario.rol === "Administrador") {
+                enlaces.push(
+                    { href: "miembros.html", texto: "Miembros" },
+                    { href: "diezmo.html", texto: "Diezmos" },
+                    { href: "ofrendas.html", texto: "Ofrendas" }, // Admin also sees offerings
+                    { href: "acceso.html", texto: "Dar acceso" },
+                    { href: "estadisticas.html", texto: "Estadísticas" },
+                    { href: "reportes.html", texto: "Reportes" },
+                    { href: "discipulado.html", texto: "Discipulado" }, // Admin also sees discipulado
+                    { href: "actividades.html", texto: "Actividades" }, // New link for activities
+                    { href: "configuracion.html", texto: "Configuración" },
+                    { href: "auditoria.html", texto: "Auditoría" }
+                );
+            } else if (usuario.rol === "Tesorero") {
+                enlaces.push(
+                    { href: "diezmo.html", texto: "Diezmos" },
+                    { href: "ofrendas.html", texto: "Ofrendas" }
+                );
+            } else if (usuario.rol === "Discipulador") {
+                enlaces.push(
+                    { href: "discipulado.html", texto: "Discipulado" }
+                );
+            } else if (usuario.rol === "Preadministrador") {
+                enlaces.push(
+                    { href: "miembros.html", texto: "Miembros" },
+                    { href: "acceso.html", texto: "Dar acceso" }
+                );
+            }
+
+            // Create and append menu links
+            enlaces.forEach(link => {
+                const a = document.createElement('a');
+                a.href = link.href;
+                a.textContent = link.texto;
+                // Add an active class if the current page matches the link (optional but good for UX)
+                if (window.location.pathname.includes(link.href.split('/').pop())) {
+                    a.classList.add('active');
+                }
+                menuLinksDiv.appendChild(a);
+            });
+        }
+
+        // Function to load member statistics (Sociedad and Miembro Asistencia)
+        async function cargarEstadisticasMiembros() {
+            const { data: miembros, error } = await supabase
+                .from('miembros')
+                .select('nombre, sociedad, asistencia'); // Select only relevant columns
+
+            if (error) {
+                console.error("Error fetching miembros data:", error.message);
+                return;
+            }
+
+            // --- Sociedad Chart (Pie) ---
+            const conteoSociedad = { "Jóvenes": 0, "Damas": 0, "Caballeros": 0, "Niños": 0, "General": 0 }; // Added "Niños" and "General" for broader categories
+            miembros.forEach(m => {
+                const sociedadKey = m.sociedad || "General"; // Default to "General" if null/empty
+                if (conteoSociedad[sociedadKey] !== undefined) {
+                    conteoSociedad[sociedadKey]++;
+                } else {
+                    // If a society not defined, add it to "General" or log it
+                    conteoSociedad["General"]++;
+                }
+            });
+
+            // Filter out societies with 0 members if desired
+            const filteredSociedadLabels = Object.keys(conteoSociedad).filter(key => conteoSociedad[key] > 0);
+            const filteredSociedadData = filteredSociedadLabels.map(key => conteoSociedad[key]);
+
+            if (filteredSociedadData.length > 0) {
+                 new Chart(document.getElementById('sociedadChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: filteredSociedadLabels,
+                        datasets: [{
+                            data: filteredSociedadData,
+                            backgroundColor: [
+                                '#f7c948', '#36a2eb', '#ff6384', '#9966ff', '#4bc0c0', '#ff9f40', '#c9cbcf'
+                            ], // More colors for more societies
+                            borderColor: '#14153a',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom', // Move legend to bottom for better chart space
+                                labels: {
+                                    color: '#0b0c2a' // Chart labels color should contrast with white canvas
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Miembros por Sociedad',
+                                color: '#0b0c2a',
+                                font: {
+                                    size: 16
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                document.getElementById('sociedadChart').parentElement.innerHTML = '<p style="color: #0b0c2a; text-align: center;">No hay datos para el gráfico de Sociedades.</p>';
+            }
+
+
+            // --- Miembro Asistencia Chart (Bar) ---
+            // Sort members by attendance for a more meaningful chart
+            miembros.sort((a, b) => b.asistencia - a.asistencia); // Descending attendance
+
+            const topMiembros = miembros.slice(0, 10); // Show top 10 for readability
+
+            if (topMiembros.length > 0) {
+                new Chart(document.getElementById('asistenciaMiembrosChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: topMiembros.map(m => m.nombre.split(' ')[0]), // Use first name for labels
+                        datasets: [{
+                            label: 'Asistencia Total',
+                            data: topMiembros.map(m => m.asistencia || 0),
+                            backgroundColor: '#36a2eb', // Blue
+                            borderColor: '#14153a',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: '#0b0c2a' },
+                                title: {
+                                    display: true,
+                                    text: 'Número de Asistencias',
+                                    color: '#0b0c2a'
+                                }
+                            },
+                            x: {
+                                ticks: { color: '#0b0c2a', autoSkip: false, maxRotation: 45, minRotation: 45 },
+                                title: {
+                                    display: true,
+                                    text: 'Miembros',
+                                    color: '#0b0c2a'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false // No need for legend if only one dataset
+                            },
+                            title: {
+                                display: true,
+                                text: 'Top Asistencia de Miembros',
+                                color: '#0b0c2a',
+                                font: {
+                                    size: 16
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                document.getElementById('asistenciaMiembrosChart').parentElement.innerHTML = '<p style="color: #0b0c2a; text-align: center;">No hay datos para el gráfico de Asistencia de Miembros.</p>';
+            }
+        }
+
+        // Function to load and display activity attendance statistics (NEW)
+        async function cargarEstadisticasActividades() {
+            // Fetch activities, ordered by date descending to get "latest"
+            const { data: actividades, error } = await supabase
+                .from('actividades')
+                .select('nombre_actividad, fecha, asistencia_total')
+                .order('fecha', { ascending: false })
+                .limit(7); // Get the last 7 activities
+
+            if (error) {
+                console.error("Error fetching actividades data:", error.message);
+                return;
+            }
+
+            if (actividades.length > 0) {
+                // Prepare data for the chart
+                const labels = actividades.map(a => `${a.nombre_actividad} (${new Date(a.fecha).toLocaleDateString()})`);
+                const data = actividades.map(a => a.asistencia_total || 0);
+
+                new Chart(document.getElementById('actividadesAsistenciaChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Asistencia Total',
+                            data: data,
+                            backgroundColor: '#ff9f40', // Orange color
+                            borderColor: '#14153a',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: '#0b0c2a' },
+                                title: {
+                                    display: true,
+                                    text: 'Número de Asistentes',
+                                    color: '#0b0c2a'
+                                }
+                            },
+                            x: {
+                                ticks: { color: '#0b0c2a', autoSkip: false, maxRotation: 45, minRotation: 45 },
+                                title: {
+                                    display: true,
+                                    text: 'Actividad',
+                                    color: '#0b0c2a'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Asistencia Últimas Actividades',
+                                color: '#0b0c2a',
+                                font: {
+                                    size: 16
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                document.getElementById('actividadesAsistenciaChart').parentElement.innerHTML = '<p style="color: #0b0c2a; text-align: center;">No hay datos para el gráfico de Asistencia de Actividades.</p>';
+            }
+        }
+
+
+        // Function to close session
+        function cerrarSesion() {
+            localStorage.removeItem("usuarioActivo");
+            window.location.href = "index.html";
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await actualizarMenu();
+            await cargarLogo();
+            await cargarEstadisticasMiembros(); // Load member charts
+            await cargarEstadisticasActividades(); // Load new activities chart
+        });
+    </script>
 </body>
 </html>
