@@ -1,605 +1,751 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Adoracion viva Inicio</title>
-   <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" />
-  
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adoración Viva - Dashboard</title>
+    <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" />
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #0b0c2a; /* Azul ultra oscuro */
-      color: #f7c948; /* Dorado */
-      display: flex;
-      min-height: 100vh;
-    }
-    .sidebar {
-      width: 250px;
-      background-color: #14153a; /* Un tono un poco más claro de azul oscuro para la barra lateral */
-      height: 100vh;
-      padding-top: 30px;
-      box-shadow: 5px 0 5px rgba(0,0,0,0.3);
-      position: fixed;
-      left: 0;
-      top: 0;
-      transition: transform 0.3s ease;
-      z-index: 20; /* Asegura que esté por encima del contenido principal */
-    }
-    .sidebar.hide { transform: translateX(-100%); }
-    .sidebar img {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      display: block;
-      margin: 0 auto 20px;
-      cursor: pointer;
-      border: 3px solid #f7c948; /* Borde dorado para el logo */
-    }
-    .sidebar a, .sidebar .user-info, .sidebar .logout {
-      display: block;
-      padding: 20px 30px;
-      color: #f7c948;
-      text-decoration: none;
-      font-size: 18px;
-      transition: background-color 0.2s ease;
-    }
-    .sidebar a:hover, .sidebar .logout:hover {
-      background-color: #1f214d; /* Tono de azul oscuro para el hover */
-      cursor: pointer;
-    }
-    .content {
-      margin-left: 250px;
-      padding: 20px;
-      flex-grow: 1;
-      transition: margin-left 0.3s ease; /* Para la transición del contenido al ocultar el sidebar */
-      width: calc(100% - 250px); /* Para que el contenido se ajuste */
-    }
-    .content.shifted { margin-left: 0; } /* Para cuando el sidebar se oculte */
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
 
-    .menu-toggle {
-      position: fixed; /* Fixed para que siempre esté visible */
-      top: 15px;
-      left: 15px;
-      background-color: #f7c948;
-      color: #0b0c2a;
-      border: none;
-      padding: 8px 12px;
-      cursor: pointer;
-      border-radius: 5px;
-      z-index: 30; /* Más alto que el sidebar */
-    }
+    <style>
+        /* --- Estilos Generales y Reseteos --- */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente más moderna */
+            background-color: #0b0c2a; /* Azul ultra oscuro */
+            color: #f7c948; /* Dorado */
+            display: flex;
+            min-height: 100vh;
+            flex-direction: row; /* Asegura el layout de la barra lateral y el contenido */
+            overflow-x: hidden; /* Evita scroll horizontal indeseado */
+        }
 
-    /* --- Estilos de las Tablas Futuristas y Elegantes --- */
-    .summaries-container {
-      display: grid; /* Usamos grid para organizar las tablas */
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Columnas responsivas */
-      gap: 25px; /* Espacio entre las tablas */
-      justify-content: center;
-      margin-top: 60px;
-      padding: 0 15px; /* Padding para que no se peguen a los bordes */
-    }
+        /* --- Sidebar (Barra Lateral) --- */
+        .sidebar {
+            width: 250px;
+            background-color: #14153a; /* Un tono un poco más claro de azul oscuro para la barra lateral */
+            height: 100vh;
+            padding-top: 30px;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5); /* Sombra más pronunciada */
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: transform 0.3s ease, width 0.3s ease; /* Transición para ocultar/mostrar y width */
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar.hide {
+            transform: translateX(-100%);
+        }
+        .sidebar.show { /* Para móviles */
+            transform: translateX(0%);
+        }
 
-    .summary-card {
-      background-color: #14153a; /* Fondo de la tarjeta/tabla */
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Sombra elegante */
-      padding: 20px;
-      text-align: center;
-      border: 1px solid #1f214d; /* Borde sutil */
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        .sidebar img#logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto 20px;
+            cursor: pointer;
+            border: 3px solid #f7c948; /* Borde dorado para el logo */
+            object-fit: cover; /* Asegura que la imagen no se distorsione */
+            transition: transform 0.2s ease;
+        }
+        .sidebar img#logo:hover {
+            transform: scale(1.05);
+        }
 
-    .summary-card h3 {
-      color: #f7c948; /* Dorado para los títulos de tabla */
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-size: 1.5em;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
+        .sidebar .user-info {
+            padding: 15px 25px;
+            color: #ccc;
+            font-size: 1.1em;
+            text-align: center;
+            border-bottom: 1px solid #1f214d;
+            margin-bottom: 15px;
+        }
 
-    .summary-table {
-      width: 100%;
-      border-collapse: collapse; /* Para que los bordes de las celdas se unan */
-      color: #f7c948; /* Texto dorado dentro de la tabla */
-    }
+        .sidebar a, .sidebar .logout {
+            display: block;
+            padding: 18px 30px;
+            color: #f7c948;
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            border-left: 5px solid transparent; /* Borde para el hover */
+        }
+        .sidebar a:hover, .sidebar .logout:hover {
+            background-color: #1f214d; /* Tono de azul oscuro para el hover */
+            color: #fff; /* Blanco al pasar el mouse */
+            border-left-color: #f7c948; /* Borde dorado al pasar el mouse */
+            cursor: pointer;
+        }
 
-    .summary-table th, .summary-table td {
-      padding: 12px 15px;
-      border: 1px solid #1f214d; /* Bordes de celdas */
-      text-align: left;
-    }
+        /* --- Contenido Principal --- */
+        .content {
+            margin-left: 250px; /* Margen para dejar espacio al sidebar */
+            padding: 25px;
+            flex-grow: 1;
+            transition: margin-left 0.3s ease;
+            width: calc(100% - 250px); /* Ajuste de ancho */
+            box-sizing: border-box; /* Incluye padding en el width */
+        }
+        .content.shifted { /* Cuando el sidebar está oculto */
+            margin-left: 0;
+            width: 100%;
+        }
 
-    .summary-table thead th {
-      background-color: #0b0c2a; /* Fondo oscuro para los encabezados */
-      color: #f7c948; /* Texto dorado */
-      text-transform: uppercase;
-      font-weight: bold;
-      letter-spacing: 0.5px;
-    }
+        h2 {
+            color: #f7c948;
+            text-align: center;
+            font-size: 2.2em;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid #1f214d;
+            padding-bottom: 15px;
+        }
 
-    .summary-table tbody tr:nth-child(even) {
-      background-color: #1a1c42; /* Fondo ligeramente diferente para filas pares */
-    }
+        /* --- Botón de Menú Toggle --- */
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #f7c948;
+            color: #0b0c2a;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1.5em;
+            z-index: 30;
+            transition: background-color 0.2s ease;
+        }
+        .menu-toggle:hover {
+            background-color: #e6b837; /* Dorado más oscuro al hover */
+        }
 
-    .summary-table tbody tr:hover {
-      background-color: #2a2d5e; /* Efecto hover para las filas */
-      cursor: default;
-    }
+        /* --- Contenedor de Resúmenes (Grid) --- */
+        .summaries-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Más espacio mínimo para tarjetas */
+            gap: 30px; /* Más espacio entre tarjetas */
+            justify-content: center;
+            padding: 0 10px;
+        }
 
-    @media (max-width: 768px) {
-      .content { margin-left: 0; width: 100%; }
-      .sidebar { transform: translateX(-100%); } /* Oculto por defecto en móviles */
-      .sidebar.show { transform: translateX(0); } /* Mostrar en móviles */
-      .menu-toggle { left: 15px; } /* Ajuste en móviles */
-      .summaries-container {
-        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
-        padding: 0 10px;
-      }
-    }
-  </style>
+        /* --- Tarjetas de Resumen (Tablas) --- */
+        .summary-card {
+            background-color: #14153a;
+            border-radius: 12px; /* Bordes más suaves */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6); /* Sombra más profunda */
+            padding: 25px;
+            text-align: center;
+            border: 1px solid #1f214d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .summary-card:hover {
+            transform: translateY(-5px); /* Pequeño efecto de elevación al hover */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+        }
+
+        .summary-card h3 {
+            color: #f7c948;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.8em; /* Títulos más grandes */
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            position: relative;
+        }
+        .summary-card h3::after { /* Línea decorativa bajo el título */
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: #f7c948;
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: separate; /* Permite border-radius en celdas */
+            border-spacing: 0; /* Elimina espacio entre celdas */
+            color: #f7c948;
+            font-size: 1.05em;
+        }
+
+        .summary-table th, .summary-table td {
+            padding: 15px 20px; /* Más padding para legibilidad */
+            text-align: left;
+            border-bottom: 1px solid #1f214d; /* Solo borde inferior */
+        }
+        .summary-table td:last-child {
+            text-align: right; /* Alinea el número a la derecha */
+            font-weight: bold;
+        }
+
+        .summary-table thead th {
+            background-color: #0b0c2a;
+            color: #f7c948;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.8px;
+            border-bottom: 2px solid #f7c948; /* Borde más prominente en encabezado */
+        }
+
+        .summary-table tbody tr:last-child td {
+            border-bottom: none; /* Elimina borde inferior de la última fila */
+        }
+
+        .summary-table tbody tr:nth-child(even) {
+            background-color: #1a1c42;
+        }
+
+        .summary-table tbody tr:hover {
+            background-color: #2a2d5e;
+            cursor: default;
+        }
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .content {
+                margin-left: 0;
+                width: 100%;
+                padding-top: 80px; /* Espacio para el botón de menú */
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                box-shadow: none;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+                box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+            }
+            .menu-toggle {
+                left: 20px;
+                top: 20px;
+            }
+            .summaries-container {
+                grid-template-columns: 1fr;
+                padding: 0 15px;
+            }
+            h2 {
+                font-size: 1.8em;
+                margin-top: 20px;
+                margin-bottom: 30px;
+            }
+            .summary-card {
+                padding: 20px;
+            }
+            .summary-card h3 {
+                font-size: 1.4em;
+                margin-bottom: 20px;
+            }
+            .summary-table th, .summary-table td {
+                padding: 10px 15px;
+                font-size: 0.95em;
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 
-  <div class="sidebar" id="sidebar">
-    <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
-    <div class="user-info" id="userInfo"></div>
-    <div id="menuLinks"></div>
-    <a href="miembros.html" class="sidebar-link">Miembros</a>
-    <a href="registrar.html" class="sidebar-link">Dar acceso</a>
-    <a href="diezmo.html" class="sidebar-link">Diezmos</a>
-    <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-    <a href="reportes.html" class="sidebar-link">Reportes</a>
-    <a href="discipulado.html" class="sidebar-link">Discipulado</a>
-    <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
-  </div>
+    <div class="sidebar" id="sidebar">
+        <img id="logo" src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png" alt="Logo" onclick="cambiarLogo()" />
+        <div class="user-info" id="userInfo">Cargando usuario...</div>
+        <div id="menuLinks">
+            </div>
+        <a href="miembros.html" class="sidebar-link">Miembros</a>
+        <a href="registrar.html" class="sidebar-link">Dar acceso</a>
+        <a href="diezmo.html" class="sidebar-link">Diezmos</a>
+        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+        <a href="reportes.html" class="sidebar-link">Reportes</a>
+        <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
+    </div>
 
-  <div class="content" id="mainContent">
-    <h2>Resúmenes Generales</h2>
-    <div class="summaries-container">
-      
-            <div class="summary-card">
-        <h3>Resumen de Miembros</h3>
-        <table class="summary-table" id="miembrosSummaryTable">
-          <thead>
-            <tr>
-              <th>Categoría</th>
-              <th>Cantidad</th>
-            </tr>
-          </thead>
-          <tbody>
-                      </tbody>
-        </table>
-      </div>
+    <div class="content" id="mainContent">
+        <h2>Resúmenes Generales</h2>
+        <div class="summaries-container">
+            
+            <div class="summary-card">
+                <h3>Resumen de Miembros</h3>
+                <table class="summary-table" id="miembrosSummaryTable">
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="2">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="summary-card">
-        <h3>Asistencia Mensual</h3>
-        <table class="summary-table" id="asistenciaSummaryTable">
-          <thead>
-            <tr>
-              <th>Mes</th>
-              <th>Damas</th>
-              <th>Caballeros</th>
-              <th>Niños</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-                      </tbody>
-        </table>
-      </div>
+            <div class="summary-card">
+                <h3>Asistencia Mensual</h3>
+                <table class="summary-table" id="asistenciaSummaryTable">
+                    <thead>
+                        <tr>
+                            <th>Mes</th>
+                            <th>Damas</th>
+                            <th>Caballeros</th>
+                            <th>Niños</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="5">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="summary-card">
-        <h3>Ofrendas Mensuales</h3>
-        <table class="summary-table" id="ofrendasSummaryTable">
-          <thead>
-            <tr>
-              <th>Mes</th>
-              <th>C$</th>
-              <th>$</th>
-              <th>Transacciones</th>
-            </tr>
-          </thead>
-          <tbody>
-                      </tbody>
-        </table>
-      </div>
+            <div class="summary-card">
+                <h3>Ofrendas Mensuales</h3>
+                <table class="summary-table" id="ofrendasSummaryTable">
+                    <thead>
+                        <tr>
+                            <th>Mes</th>
+                            <th>C$</th>
+                            <th>$</th>
+                            <th>Transacciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="4">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="summary-card">
-        <h3>Discipulado Mensual</h3>
-        <table class="summary-table" id="discipuladoSummaryTable">
-          <thead>
-            <tr>
-              <th>Mes</th>
-              <th>Activos</th>
-              <th>Pendientes</th>
-              <th>De Baja</th>
-            </tr>
-          </thead>
-          <tbody>
-                      </tbody>
-        </table>
-      </div>
+            <div class="summary-card">
+                <h3>Discipulado Mensual</h3>
+                <table class="summary-table" id="discipuladoSummaryTable">
+                    <thead>
+                        <tr>
+                            <th>Mes</th>
+                            <th>Activos</th>
+                            <th>Pendientes</th>
+                            <th>De Baja</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="4">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
 
-    </div>
-  </div>
+        </div>
+    </div>
 
-  <script>
-    // Configuración para el proyecto principal (conf. 1: iglesia-adoracion-viva)
-    const firebaseConfigMain = {
-      apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
-      authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-      databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
-      projectId: "iglesia-adoracion-viva",
-      storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
-      messagingSenderId: "815332010058",
-      appId: "1:815332010058:web:d2afff616469349d88deb3",
-      measurementId: "G-43MZP6V55D"
-    };
+    <script>
+        // --- 1. Configuraciones de Firebase ---
+        const firebaseConfigMain = {
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
 
-    // Configuración para el proyecto secundario (conf. 2: iglesia-adoracion-viva-182e6)
-    const firebaseConfigSecondary = {
-      apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
-      authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
-      projectId: "iglesia-adoracion-viva-182e6",
-      storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
-      messagingSenderId: "152824399391",
-      appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
-      measurementId: "G-GXV53CPPBT"
-    };
+        const firebaseConfigSecondary = {
+            apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
+            authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
+            projectId: "iglesia-adoracion-viva-182e6",
+            storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
+            messagingSenderId: "152824399391",
+            appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
+            measurementId: "G-GXV53CPPBT"
+        };
 
-    // Inicializar la aplicación Firebase principal (por defecto)
-    const mainApp = firebase.initializeApp(firebaseConfigMain);
-    const db = firebase.firestore(mainApp); // Firestore del proyecto principal
-    const auth = firebase.auth(mainApp); // Auth del proyecto principal
-    const storage = firebase.storage(mainApp); // Storage del proyecto principal
+        // --- 2. Inicialización de Apps Firebase y Servicios ---
+        const mainApp = firebase.initializeApp(firebaseConfigMain);
+        const db = firebase.firestore(mainApp); // Firestore del proyecto principal
+        const auth = firebase.auth(mainApp); // Auth del proyecto principal
+        const storage = firebase.storage(mainApp); // Storage del proyecto principal
 
-    // Inicializar la aplicación Firebase secundaria con un nombre único
-    const secondaryApp = firebase.initializeApp(firebaseConfigSecondary, "secondaryAdoracionApp");
-    const dbSecondary = firebase.firestore(secondaryApp); // Firestore del proyecto secundario
+        // Si necesitas servicios del proyecto secundario, inicialízalos aquí
+        const secondaryApp = firebase.initializeApp(firebaseConfigSecondary, "secondaryAdoracionApp");
+        const dbSecondary = firebase.firestore(secondaryApp); // Firestore del proyecto secundario
+        // Puedes agregar: const authSecondary = firebase.auth(secondaryApp); etc.
 
-    // Función para alternar la visibilidad del sidebar
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const content = document.getElementById('mainContent');
-      sidebar.classList.toggle('hide');
-      if (window.innerWidth <= 768) {
-        sidebar.classList.toggle('show');
-      } else {
-        content.classList.toggle('shifted');
-      }
-    }
+        // --- 3. Funciones de Interfaz de Usuario (UI) ---
 
-    // Función para obtener el usuario activo (simplificada para pruebas)
-    async function obtenerUsuarioActivo() {
-      return new Promise(resolve => {
-        auth.onAuthStateChanged(async (user) => {
-          if (user) {
-            // Si hay un usuario autenticado con Firebase Auth
-            localStorage.setItem('usuarioActivo', user.email);
-            try {
-              // Intentamos obtener el rol del usuario desde la colección 'usuarios'
-              const userDoc = await db.collection('usuarios').doc(user.uid).get();
-              if (userDoc.exists) {
-                resolve(userDoc.data());
-              } else {
-                console.warn("Documento de usuario no encontrado en Firestore para UID:", user.uid);
-                // Si no se encuentra en Firestore, asumimos un rol básico o redirigimos
-                resolve({ nombre: user.email, rol: "Miembro" }); // Rol por defecto
-              }
-            } catch (error) {
-              console.error("Error al obtener datos de usuario de Firestore:", error.message);
-              resolve({ nombre: user.email, rol: "Miembro" }); // Fallback
-            }
-          } else {
-            // Si no hay usuario autenticado, intenta con localStorage (para la compatibilidad anterior)
-            const userEmailLocal = localStorage.getItem('usuarioActivo');
-            if (userEmailLocal) {
-              try {
-                const userRef = db.collection('usuarios').where('email', '==', userEmailLocal);
-                const snapshot = await userRef.get();
-                if (!snapshot.empty) {
-                  resolve(snapshot.docs[0].data());
-                } else {
-                  console.error("Usuario de localStorage no encontrado en Firestore.");
-                  window.location.href = "index.html"; // Redirigir si no se encuentra
-                  resolve(null);
-                }
-              } catch (error) {
-                console.error("Error al obtener usuario de Firestore con localStorage:", error.message);
-                window.location.href = "index.html";
-                resolve(null);
-              }
-            } else {
-              window.location.href = "index.html"; // Si no hay nada, redirigir
-              resolve(null);
-            }
-          }
-        });
-      });
-    }
+        // Función para alternar la visibilidad del sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('mainContent');
+            const isHidden = sidebar.classList.toggle('hide');
 
-    // Función para cargar el logo desde Firebase Storage (del proyecto principal)
-    async function cargarLogo() {
-      try {
-        const logoRef = storage.ref('logos/current-logo.png');
-        const url = await logoRef.getDownloadURL();
-        document.getElementById("logo").src = url;
-      } catch (error) {
-        console.error("Error al cargar el logo de Firebase Storage:", error.message);
-        // Si falla, usa un logo por defecto para no dejarlo vacío
-        document.getElementById("logo").src = "https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png"; 
-      }
-    }
+            if (window.innerWidth <= 768) {
+                // En móviles, 'show' controla la visibilidad
+                sidebar.classList.toggle('show', !isHidden);
+                // No se desplaza el contenido en móvil, el sidebar es overlay
+            } else {
+                // En escritorio, 'shifted' desplaza el contenido
+                content.classList.toggle('shifted', isHidden);
+            }
+        }
 
-    // Función para cambiar el logo y subirlo a Firebase Storage (del proyecto principal)
-    async function cambiarLogo() {
-      const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
-      if (!clave || clave.trim().toLowerCase() !== "adoración viva") {
-        alert("Acceso denegado.");
-        return;
-      }
+        // Función para cargar el logo desde Firebase Storage
+        async function cargarLogo() {
+            try {
+                // Asumiendo que el logo se guarda en 'logos/current-logo.png' en Firebase Storage del proyecto principal
+                const logoRef = storage.ref('logos/current-logo.png');
+                const url = await logoRef.getDownloadURL();
+                document.getElementById("logo").src = url;
+            } catch (error) {
+                console.error("Error al cargar el logo de Firebase Storage:", error.message);
+                // Si falla, usa un logo por defecto para no dejarlo vacío
+                document.getElementById("logo").src = "https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png"; 
+            }
+        }
 
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.onchange = async function () {
-        const file = this.files[0];
-        if (file && file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = e => document.getElementById('logo').src = e.target.result;
-          reader.readAsDataURL(file);
+        // Función para cambiar el logo y subirlo a Firebase Storage
+        async function cambiarLogo() {
+            const clave = prompt("Solo el administrador puede cambiar el logo. Ingrese la contraseña:");
+            if (!clave || clave.trim().toLowerCase() !== "adoración viva") {
+                alert("Acceso denegado.");
+                return;
+            }
 
-          try {
-            const storageRef = storage.ref('logos/current-logo.png');
-            await storageRef.put(file);
-            alert("Logo actualizado exitosamente.");
-            cargarLogo(); 
-          } catch (error) {
-            console.error("Error al subir el logo a Firebase Storage:", error.message);
-            alert("Error al subir el logo: " + error.message);
-          }
-        } else {
-          alert("Por favor, selecciona un archivo de imagen.");
-        }
-      };
-      input.click();
-    }
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async function () {
+                const file = this.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = e => document.getElementById('logo').src = e.target.result;
+                    reader.readAsDataURL(file);
 
-    // Función para actualizar el menú según el rol
-    async function actualizarMenu() {
-      const usuario = await obtenerUsuarioActivo();
-      if (!usuario) return;
-      
-      const menuLinks = document.getElementById('menuLinks');
-      const userInfo = document.getElementById('userInfo');
-      menuLinks.innerHTML = '';
-      const rol = usuario.rol;
-      userInfo.textContent = `${usuario.nombre} - ${rol}`;
+                    try {
+                        const storageRef = storage.ref('logos/current-logo.png'); // Sobreescribe el logo actual
+                        await storageRef.put(file);
+                        alert("Logo actualizado exitosamente.");
+                        cargarLogo(); // Refrescar logo para asegurar que se muestre la URL actualizada
+                    } catch (error) {
+                        console.error("Error al subir el logo a Firebase Storage:", error.message);
+                        alert("Error al subir el logo: " + error.message);
+                    }
+                } else {
+                    alert("Por favor, selecciona un archivo de imagen.");
+                }
+            };
+            input.click();
+        }
 
-      const enlaces = [];
+        // Función para cerrar sesión (usando Firebase Auth del proyecto principal)
+        async function cerrarSesion() {
+            try {
+                await auth.signOut(); // Cierra sesión de Firebase Authentication
+                localStorage.removeItem("usuarioActivo"); // Elimina la sesión del almacenamiento local
+                window.location.href = "index.html"; // Redirige a la página de inicio de sesión
+            } catch (error) {
+                console.error("Error al cerrar sesión:", error.message);
+                alert("Hubo un error al cerrar sesión. Por favor, inténtalo de nuevo.");
+                // Aunque haya un error en Firebase Auth, asegúrate de redirigir para limpiar el estado
+                localStorage.removeItem("usuarioActivo");
+                window.location.href = "index.html";
+            }
+        }
 
-      if (rol === "Administrador") {
-        enlaces.push(
-          { href: "inicio.html", texto: "Inicio" },
-          { href: "miembros.html", texto: "Miembros" },
-          { href: "diezmo.html", texto: "Diezmos" },
-          { href: "ofrendas.html", texto: "Ofrendas" },
-          { href: "registrar.html", texto: "Dar acceso" },
-          { href: "discipulado.html", texto: "Discipulado" },
-          { href: "reportes.html", texto: "Reportes" },
-          { href: "configuracion.html", texto: "Configuración" },
-          { href: "auditoria.html", texto: "Auditoría" }
-        );
-      } else if (rol === "Tesorero") {
-        enlaces.push(
-          { href: "inicio.html", texto: "Inicio" },
-          { href: "diezmo.html", texto: "Diezmos" },
-          { href: "ofrendas.html", texto: "Ofrendas" }
-        );
-      } else if (rol === "Discipulador") {
-        enlaces.push(
-          { href: "inicio.html", texto: "Inicio" },
-          { href: "discipulado.html", texto: "Discipulado" }
-        );
-      } else if (rol === "Preadministrador") {
-        enlaces.push(
-          { href: "inicio.html", texto: "Inicio" },
-          { href: "miembros.html", texto: "Miembros" },
-          { href: "registrar.html", texto: "Dar acceso" }
-        );
-      }
+        // --- 4. Lógica de Autenticación y Carga de Menú ---
 
-      enlaces.forEach(link => {
-        const a = document.createElement('a');
-        a.href = link.href;
-        a.textContent = link.texto;
-        a.classList.add('sidebar-link');
-        menuLinks.appendChild(a);
-      });
-    }
+        // Función para obtener el usuario activo y sus datos (incluyendo el rol)
+        async function obtenerUsuarioActivo() {
+            return new Promise(resolve => {
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        // Usuario autenticado con Firebase Auth
+                        localStorage.setItem('usuarioActivo', user.email); // Mantener por compatibilidad o respaldo
+                        try {
+                            // Intentamos obtener el rol del usuario desde la colección 'usuarios' usando el UID
+                            const userDoc = await db.collection('usuarios').doc(user.uid).get();
+                            if (userDoc.exists) {
+                                resolve(userDoc.data()); // Retorna los datos del documento (nombre, rol, etc.)
+                            } else {
+                                console.warn("Documento de usuario no encontrado en Firestore para UID:", user.uid);
+                                // Si no se encuentra en Firestore, asumimos un rol básico o redirigimos
+                                resolve({ nombre: user.email, rol: "Miembro" }); // Rol por defecto si no hay doc en Firestore
+                            }
+                        } catch (error) {
+                            console.error("Error al obtener datos de usuario de Firestore:", error.message);
+                            resolve({ nombre: user.email, rol: "Miembro" }); // Fallback en caso de error
+                        }
+                    } else {
+                        // No hay usuario autenticado por Firebase Auth
+                        const userEmailLocal = localStorage.getItem('usuarioActivo');
+                        if (userEmailLocal) {
+                            // Si hay un usuario en localStorage, intenta buscarlo en Firestore
+                            try {
+                                const userRef = db.collection('usuarios').where('email', '==', userEmailLocal);
+                                const snapshot = await userRef.get();
+                                if (!snapshot.empty) {
+                                    resolve(snapshot.docs[0].data());
+                                } else {
+                                    console.error("Usuario de localStorage no encontrado en Firestore. Redirigiendo...");
+                                    window.location.href = "index.html";
+                                    resolve(null);
+                                }
+                            } catch (error) {
+                                console.error("Error al obtener usuario de Firestore con localStorage:", error.message);
+                                window.location.href = "index.html";
+                                resolve(null);
+                            }
+                        } else {
+                            // No hay usuario ni en Auth ni en localStorage
+                            window.location.href = "index.html"; // Redirigir al login
+                            resolve(null);
+                        }
+                    }
+                });
+            });
+        }
 
-    // --- Funciones para cargar los resúmenes en las tablas (con Firestore principal) ---
+        // Función para actualizar el menú lateral y la información del usuario
+        async function actualizarMenu() {
+            const usuario = await obtenerUsuarioActivo();
+            if (!usuario) {
+                document.getElementById('userInfo').textContent = "No logueado";
+                document.getElementById('menuLinks').innerHTML = '';
+                return;
+            }
+            
+            const menuLinks = document.getElementById('menuLinks');
+            const userInfo = document.getElementById('userInfo');
+            menuLinks.innerHTML = ''; // Limpiar enlaces existentes
+            const rol = usuario.rol || "Miembro"; // Asegura un rol por defecto si no está definido
+            userInfo.textContent = `${usuario.nombre || usuario.email} - ${rol}`;
 
-    async function cargarResumenMiembros() {
-      try {
-        const miembrosRef = db.collection('miembros'); // Usamos db del proyecto principal
-        const snapshot = await miembrosRef.get();
-        const conteo = { Jovenes: 0, Damas: 0, Caballeros: 0, Total: 0 };
+            // Define los enlaces para cada rol
+            const enlaces = [];
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          // Asegúrate de que el campo 'sociedad' exista y tenga los valores esperados
-          if (data.sociedad === 'Jóvenes') conteo.Jovenes++;
-          else if (data.sociedad === 'Damas') conteo.Damas++;
-          else if (data.sociedad === 'Caballeros') conteo.Caballeros++;
-          conteo.Total++;
-        });
+            if (rol === "Administrador") {
+                enlaces.push(
+                    { href: "inicio.html", texto: "Inicio" },
+                    { href: "miembros.html", texto: "Miembros" },
+                    { href: "diezmo.html", texto: "Diezmos" },
+                    { href: "ofrendas.html", texto: "Ofrendas" },
+                    { href: "registrar.html", texto: "Dar acceso" },
+                    { href: "discipulado.html", texto: "Discipulado" },
+                    { href: "reportes.html", texto: "Reportes" },
+                    { href: "configuracion.html", texto: "Configuración" },
+                    { href: "auditoria.html", texto: "Auditoría" }
+                );
+            } else if (rol === "Tesorero") {
+                enlaces.push(
+                    { href: "inicio.html", texto: "Inicio" },
+                    { href: "diezmo.html", texto: "Diezmos" },
+                    { href: "ofrendas.html", texto: "Ofrendas" }
+                );
+            } else if (rol === "Discipulador") {
+                enlaces.push(
+                    { href: "inicio.html", texto: "Inicio" },
+                    { href: "discipulado.html", texto: "Discipulado" }
+                );
+            } else if (rol === "Preadministrador") {
+                enlaces.push(
+                    { href: "inicio.html", texto: "Inicio" },
+                    { href: "miembros.html", texto: "Miembros" },
+                    { href: "registrar.html", texto: "Dar acceso" }
+                );
+            } else {
+                // Rol por defecto o "Miembro"
+                enlaces.push(
+                    { href: "inicio.html", texto: "Inicio" }
+                    // Puedes añadir otros enlaces para miembros generales si existen
+                );
+            }
 
-        const tbody = document.querySelector('#miembrosSummaryTable tbody');
-        tbody.innerHTML = `
-          <tr><td>Jóvenes</td><td>${conteo.Jovenes}</td></tr>
-          <tr><td>Damas</td><td>${conteo.Damas}</td></tr>
-          <tr><td>Caballeros</td><td>${conteo.Caballeros}</td></tr>
-          <tr><td>Total</td><td>${conteo.Total}</td></tr>
-        `;
-        console.log("Datos de Miembros cargados:", conteo); // Para depuración
-      } catch (error) {
-        console.error("Error al cargar resumen de miembros:", error.message);
-      }
-    }
+            // Agrega los enlaces al menú
+            enlaces.forEach(link => {
+                const a = document.createElement('a');
+                a.href = link.href;
+                a.textContent = link.texto;
+                a.classList.add('sidebar-link');
+                menuLinks.appendChild(a);
+            });
+        }
 
-    async function cargarResumenAsistencia() {
-      try {
-        const now = new Date();
-        // Establecer el inicio y fin del mes actual como objetos Date de JavaScript
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        // --- 5. Funciones para Cargar los Resúmenes en las Tablas (Firestore Principal) ---
 
-        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        const currentMonthName = monthNames[now.getMonth()];
+        async function cargarResumenMiembros() {
+            try {
+                const miembrosRef = db.collection('miembros');
+                const snapshot = await miembrosRef.get();
+                const conteo = { Jovenes: 0, Damas: 0, Caballeros: 0, Total: 0 };
 
-        const asistenciaRef = db.collection('asistencia') // Usamos db del proyecto principal
-          .where('fecha', '>=', startOfMonth)
-          .where('fecha', '<=', endOfMonth);
-        
-        const snapshot = await asistenciaRef.get();
-        const conteo = { Damas: 0, Caballeros: 0, Niños: 0, Total: 0 };
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Importante: Asegúrate de que el campo 'sociedad' exista y los valores coincidan exactamente
+                    if (data.sociedad === 'Jóvenes') conteo.Jovenes++;
+                    else if (data.sociedad === 'Damas') conteo.Damas++;
+                    else if (data.sociedad === 'Caballeros') conteo.Caballeros++;
+                    conteo.Total++;
+                });
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          // Asegúrate de que 'tipo_persona' exista y los valores coincidan
-          if (data.tipo_persona === 'Dama') conteo.Damas++;
-          else if (data.tipo_persona === 'Caballero') conteo.Caballeros++;
-          else if (data.tipo_persona === 'Niño') conteo.Niños++;
-          conteo.Total++;
-        });
+                const tbody = document.querySelector('#miembrosSummaryTable tbody');
+                tbody.innerHTML = `
+                    <tr><td>Jóvenes</td><td>${conteo.Jovenes}</td></tr>
+                    <tr><td>Damas</td><td>${conteo.Damas}</td></tr>
+                    <tr><td>Caballeros</td><td>${conteo.Caballeros}</td></tr>
+                    <tr><td>Total</td><td>${conteo.Total}</td></tr>
+                `;
+                console.log("Datos de Miembros cargados:", conteo); // Para depuración
+            } catch (error) {
+                console.error("Error al cargar resumen de miembros:", error.message);
+                document.querySelector('#miembrosSummaryTable tbody').innerHTML = '<tr><td colspan="2">Error al cargar datos.</td></tr>';
+            }
+        }
 
-        const tbody = document.querySelector('#asistenciaSummaryTable tbody');
-        tbody.innerHTML = `
-          <tr>
-            <td>${currentMonthName}</td>
-            <td>${conteo.Damas}</td>
-            <td>${conteo.Caballeros}</td>
-            <td>${conteo.Niños}</td>
-            <td>${conteo.Total}</td>
-          </tr>
-        `;
-        console.log("Datos de Asistencia cargados:", conteo); // Para depuración
-      } catch (error) {
-        console.error("Error al cargar resumen de asistencia:", error.message);
-      }
-    }
+        async function cargarResumenAsistencia() {
+            try {
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    async function cargarResumenOfrendas() {
-      try {
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                const currentMonthName = monthNames[now.getMonth()];
 
-        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        const currentMonthName = monthNames[now.getMonth()];
+                const asistenciaRef = db.collection('asistencia')
+                    .where('fecha', '>=', startOfMonth)
+                    .where('fecha', '<=', endOfMonth);
+                
+                const snapshot = await asistenciaRef.get();
+                const conteo = { Damas: 0, Caballeros: 0, Niños: 0, Total: 0 };
 
-        const ofrendasRef = db.collection('ofrendas') // Usamos db del proyecto principal
-          .where('fecha', '>=', startOfMonth)
-          .where('fecha', '<=', endOfMonth);
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Importante: Asegúrate de que 'tipo_persona' exista y los valores coincidan
+                    if (data.tipo_persona === 'Dama') conteo.Damas++;
+                    else if (data.tipo_persona === 'Caballero') conteo.Caballeros++;
+                    else if (data.tipo_persona === 'Niño') conteo.Niños++;
+                    conteo.Total++;
+                });
 
-        const snapshot = await ofrendasRef.get();
-        let totalCordobas = 0;
-        let totalDolares = 0;
+                const tbody = document.querySelector('#asistenciaSummaryTable tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td>${currentMonthName}</td>
+                        <td>${conteo.Damas}</td>
+                        <td>${conteo.Caballeros}</td>
+                        <td>${conteo.Niños}</td>
+                        <td>${conteo.Total}</td>
+                    </tr>
+                `;
+                console.log("Datos de Asistencia cargados:", conteo); // Para depuración
+            } catch (error) {
+                console.error("Error al cargar resumen de asistencia:", error.message);
+                document.querySelector('#asistenciaSummaryTable tbody').innerHTML = '<tr><td colspan="5">Error al cargar datos.</td></tr>';
+            }
+        }
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          // Asegúrate de que 'monto' y 'moneda' existan
-          if (data.moneda === 'C$') totalCordobas += (data.monto || 0); // Sumar 0 si es undefined
-          else if (data.moneda === '$') totalDolares += (data.monto || 0);
-        });
+        async function cargarResumenOfrendas() {
+            try {
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-        const tbody = document.querySelector('#ofrendasSummaryTable tbody');
-        tbody.innerHTML = `
-          <tr>
-            <td>${currentMonthName}</td>
-            <td>${totalCordobas.toFixed(2)}</td>
-            <td>${totalDolares.toFixed(2)}</td>
-            <td>${snapshot.size}</td>
-          </tr>
-        `;
-        console.log("Datos de Ofrendas cargados:", { totalCordobas, totalDolares, transacciones: snapshot.size }); // Para depuración
-      } catch (error) {
-        console.error("Error al cargar resumen de ofrendas:", error.message);
-      }
-    }
+                const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                const currentMonthName = monthNames[now.getMonth()];
 
-    async function cargarResumenDiscipulado() {
-      try {
-        const now = new Date();
-        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        const currentMonthName = monthNames[now.getMonth()];
+                const ofrendasRef = db.collection('ofrendas')
+                    .where('fecha', '>=', startOfMonth)
+                    .where('fecha', '<=', endOfMonth);
 
-        const discipulosRef = db.collection('discipulado'); // Usamos db del proyecto principal
-        const snapshot = await discipulosRef.get();
-        
-        const conteo = { Activo: 0, Pendiente: 0, 'De Baja': 0 };
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          // Asegúrate de que 'estado' exista y los valores coincidan
-          if (conteo[data.estado] !== undefined) {
-            conteo[data.estado]++;
-          }
-        });
+                const snapshot = await ofrendasRef.get();
+                let totalCordobas = 0;
+                let totalDolares = 0;
 
-        const tbody = document.querySelector('#discipuladoSummaryTable tbody');
-        tbody.innerHTML = `
-          <tr>
-            <td>${currentMonthName}</td>
-            <td>${conteo.Activo}</td>
-            <td>${conteo.Pendiente}</td>
-            <td>${conteo['De Baja']}</td>
-          </tr>
-        `;
-        console.log("Datos de Discipulado cargados:", conteo); // Para depuración
-      } catch (error) {
-        console.error("Error al cargar resumen de discipulado:", error.message);
-      }
-    }
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Importante: Asegúrate de que 'monto' y 'moneda' existan y sean del tipo correcto
+                    if (data.moneda === 'C$') totalCordobas += (data.monto || 0);
+                    else if (data.moneda === '$') totalDolares += (data.monto || 0);
+                });
 
-    // Función para cerrar sesión (usando Firebase Auth del proyecto principal)
-    async function cerrarSesion() {
-      try {
-        await auth.signOut(); // Si usas Firebase Authentication
-        localStorage.removeItem("usuarioActivo");
-        window.location.href = "index.html";
-      } catch (error) {
-        console.error("Error al cerrar sesión:", error.message);
-        // Aunque haya un error en Firebase Auth, asegúrate de redirigir
-        localStorage.removeItem("usuarioActivo");
-        window.location.href = "index.html";
-      }
-    }
+                const tbody = document.querySelector('#ofrendasSummaryTable tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td>${currentMonthName}</td>
+                        <td>${totalCordobas.toFixed(2)}</td>
+                        <td>${totalDolares.toFixed(2)}</td>
+                        <td>${snapshot.size}</td>
+                    </tr>
+                `;
+                console.log("Datos de Ofrendas cargados:", { totalCordobas, totalDolares, transacciones: snapshot.size }); // Para depuración
+            } catch (error) {
+                console.error("Error al cargar resumen de ofrendas:", error.message);
+                document.querySelector('#ofrendasSummaryTable tbody').innerHTML = '<tr><td colspan="4">Error al cargar datos.</td></tr>';
+            }
+        }
 
-    // Funciones iniciales para cargar todo al iniciar
-    async function initDashboard() {
-      await actualizarMenu();
-      await cargarLogo();
-      await cargarResumenMiembros();
-      await cargarResumenAsistencia();
-      await cargarResumenOfrendas();
-      await cargarResumenDiscipulado();
-    }
+        async function cargarResumenDiscipulado() {
+            try {
+                const now = new Date();
+                const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                const currentMonthName = monthNames[now.getMonth()];
 
-    // Llamada inicial para cargar el dashboard
-    // Agregamos un listener para asegurarnos de que el DOM esté completamente cargado
-    document.addEventListener('DOMContentLoaded', initDashboard);
-  </script>
+                const discipulosRef = db.collection('discipulado');
+                const snapshot = await discipulosRef.get();
+                
+                const conteo = { Activo: 0, Pendiente: 0, 'De Baja': 0 };
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Importante: Asegúrate de que 'estado' exista y los valores coincidan
+                    if (conteo[data.estado] !== undefined) {
+                        conteo[data.estado]++;
+                    }
+                });
+
+                const tbody = document.querySelector('#discipuladoSummaryTable tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td>${currentMonthName}</td>
+                        <td>${conteo.Activo}</td>
+                        <td>${conteo.Pendiente}</td>
+                        <td>${conteo['De Baja']}</td>
+                    </tr>
+                `;
+                console.log("Datos de Discipulado cargados:", conteo); // Para depuración
+            } catch (error) {
+                console.error("Error al cargar resumen de discipulado:", error.message);
+                document.querySelector('#discipuladoSummaryTable tbody').innerHTML = '<tr><td colspan="4">Error al cargar datos.</td></tr>';
+            }
+        }
+
+        // --- 6. Inicialización del Dashboard ---
+
+        async function initDashboard() {
+            // Asegúrate de que el usuario esté autenticado antes de intentar cargar datos sensibles
+            // obtenerUsuarioActivo() se encarga de redirigir si no hay usuario
+            await actualizarMenu(); // Esto también verifica el usuario
+
+            // Si el usuario no fue redirigido, procedemos a cargar los demás elementos
+            await cargarLogo();
+            await cargarResumenMiembros();
+            await cargarResumenAsistencia();
+            await cargarResumenOfrendas();
+            await cargarResumenDiscipulado();
+        }
+
+        // Asegurarse de que el DOM esté completamente cargado antes de inicializar el dashboard
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
 </body>
 </html>
