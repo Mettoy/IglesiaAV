@@ -4,8 +4,64 @@
     <meta charset="UTF-8" />
     <title>Adoracion viva Inicio</title>
     <link rel="icon" type="image/png" href="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos/images%20(1).png" />
+    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // Your web app's Firebase configuration (USING THE FIRST CONFIGURATION PROVIDED)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
+            authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
+            projectId: "iglesia-adoracion-viva-182e6",
+            storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
+            messagingSenderId: "152824399391",
+            appId: "1:152824399391:web:a4fc0937f35935b9b5f72a",
+            measurementId: "G-GXV53CPPBT"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const auth = getAuth(app);
+
+        // Make Firebase instances globally accessible for the script section
+        window.db = db;
+        window.storage = storage;
+        window.auth = auth;
+        window.collection = collection; // For easier use in functions
+        window.getDocs = getDocs;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.limit = limit;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+        window.ref = ref;
+        window.uploadBytes = uploadBytes;
+        window.getDownloadURL = getDownloadURL;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.signOut = signOut;
+
+        // You might want to handle initial auth state here if needed
+        // onAuthStateChanged(auth, (user) => {
+        //     if (user) {
+        //         console.log("Firebase Auth User:", user.email);
+        //         // Potentially store user email in localStorage here
+        //         // localStorage.setItem('usuarioActivo', user.email);
+        //     } else {
+        //         console.log("No Firebase Auth user.");
+        //         // localStorage.removeItem('usuarioActivo');
+        //     }
+        // });
+    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    
     <style>
         body {
             margin: 0;
@@ -170,11 +226,6 @@
     </div>
 
     <script>
-        // SUPABASE CREDENTIALS - NOW PROVIDED!
-        const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
         // Global chart instances to destroy them before re-rendering
         let sociedadChartInstance = null;
         let asistenciaMiembrosChartInstance = null;
@@ -188,10 +239,10 @@
             mainContent.classList.toggle('full-width');
         }
 
-        // Function to get active user from Supabase (assuming email in localStorage for simplicity)
+        // Function to get active user from Firebase Firestore (using email from localStorage)
         async function obtenerUsuarioActivo() {
             const userEmail = localStorage.getItem('usuarioActivo');
-            console.log("Attempting to get active user. Email from localStorage:", userEmail); // Debugging
+            console.log("Attempting to get active user. Email from localStorage:", userEmail);
             if (!userEmail) {
                 console.log("No active user found in localStorage, redirecting to index.html.");
                 window.location.href = "index.html"; // Redirect to login if no user is active
@@ -199,51 +250,46 @@
             }
 
             try {
-                const { data: usuarioActivo, error } = await supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('email', userEmail)
-                    .single();
-                
-                if (error) {
-                    // PGRST116 means no rows found, which is not an error in this context
-                    if (error.code !== 'PGRST116') {
-                        console.error("Error fetching user from 'usuarios' table:", error.message);
-                    } else {
-                        console.log("User email found in localStorage but not in 'usuarios' table.");
-                    }
-                    window.location.href = "index.html"; // Redirect on any error or if user not found
+                // In Firestore, you'd typically query by email or user ID
+                // Assuming 'usuarios' collection and documents are structured by email or contain an email field
+                const q = query(collection(window.db, "usuarios"), where("email", "==", userEmail), limit(1));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    console.log("User email found in localStorage but not in 'usuarios' collection.");
+                    window.location.href = "index.html";
                     return null;
                 }
                 
-                console.log("Active user fetched successfully:", usuarioActivo); // Debugging
+                const usuarioActivo = querySnapshot.docs[0].data();
+                console.log("Active user fetched successfully from Firestore:", usuarioActivo);
                 return usuarioActivo;
             } catch (e) {
-                console.error("Exception fetching user:", e.message); // Catch network or other JS errors
+                console.error("Exception fetching user from Firestore:", e.message);
                 window.location.href = "index.html";
                 return null;
             }
         }
 
-        // Function to load the logo
+        // Function to load the logo from Firebase Firestore and Storage
         async function cargarLogo() {
-            console.log("Attempting to load logo from 'configuracion' table."); // Debugging
+            console.log("Attempting to load logo from 'configuracion' collection.");
             try {
-                const { data, error } = await supabase
-                    .from('configuracion')
-                    .select('logo')
-                    .single();
+                // Assuming a single document named 'appConfig' in 'configuracion' collection
+                const configDoc = await window.getDoc(window.doc(window.db, "configuracion", "appConfig"));
 
-                if (data && data.logo) {
-                    document.getElementById("logo").src = data.logo;
-                    console.log("Logo loaded:", data.logo); // Debugging
-                } else if (error && error.code !== 'PGRST116') {
-                    console.error("Error loading logo from 'configuracion' table:", error.message);
+                if (configDoc.exists() && configDoc.data().logo) {
+                    document.getElementById("logo").src = configDoc.data().logo;
+                    console.log("Logo loaded:", configDoc.data().logo);
                 } else {
-                    console.log("No custom logo found in 'configuracion' table, using default."); // Debugging
+                    console.log("No custom logo found in 'configuracion/appConfig', using default.");
+                    // Fallback to a default logo URL if needed, or keep the initial one
+                    document.getElementById("logo").src = "https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png";
                 }
             } catch (e) {
                 console.error("Exception loading logo:", e.message);
+                // Fallback to a default logo URL on error
+                document.getElementById("logo").src = "https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png";
             }
         }
 
@@ -265,57 +311,23 @@
                     reader.onload = e => document.getElementById('logo').src = e.target.result;
                     reader.readAsDataURL(file);
 
-                    const fileName = `church_logo_${Date.now()}_${file.name}`;
+                    const fileName = `logos/church_logo_${Date.now()}_${file.name}`; // Path in Storage bucket
+                    const storageRef = window.ref(window.storage, fileName);
                     try {
-                        console.log("Uploading logo to Supabase storage..."); // Debugging
-                        const { error: uploadError } = await supabase.storage
-                            .from('logos')
-                            .upload(fileName, file, { upsert: false });
+                        console.log("Uploading logo to Firebase Storage...");
+                        await window.uploadBytes(storageRef, file);
+                        const logoUrl = await window.getDownloadURL(storageRef);
+                        console.log("New logo public URL:", logoUrl);
 
-                        if (uploadError) {
-                            alert("Error al subir el logo: " + uploadError.message);
-                            console.error("Supabase Storage Upload Error:", uploadError);
-                            return;
-                        }
-
-                        const { data: publicUrlData } = supabase.storage
-                            .from('logos')
-                            .getPublicUrl(fileName);
-
-                        if (!publicUrlData || !publicUrlData.publicUrl) {
-                            alert("Error al obtener la URL pública del logo.");
-                            return;
-                        }
-
-                        const logoUrl = publicUrlData.publicUrl;
-                        console.log("New logo public URL:", logoUrl); // Debugging
-
-                        const { data: existingConfig, error: fetchConfigError } = await supabase
-                            .from('configuracion')
-                            .select('id')
-                            .limit(1)
-                            .single();
-                        
-                        let configId = '1';
-                        if(existingConfig) {
-                            configId = existingConfig.id;
-                        }
-                        
-                        console.log("Updating 'configuracion' table with new logo URL. Config ID:", configId); // Debugging
-                        const { error: updateError } = await supabase
-                            .from('configuracion')
-                            .upsert({ id: configId, logo: logoUrl }, { onConflict: 'id' });
-
-                        if (updateError) {
-                            alert("Error al guardar la URL del logo en la base de datos: " + updateError.message);
-                            console.error("Supabase DB Update Error:", updateError);
-                            return;
-                        }
+                        // Update the 'configuracion' collection in Firestore
+                        // Assuming a single document named 'appConfig'
+                        console.log("Updating 'configuracion/appConfig' document with new logo URL.");
+                        await window.setDoc(window.doc(window.db, "configuracion", "appConfig"), { logo: logoUrl }, { merge: true });
 
                         alert("Logo actualizado con éxito.");
                         cargarLogo();
                     } catch (e) {
-                        console.error("Exception in cambiarLogo:", e.message);
+                        console.error("Exception in cambiarLogo (Firebase):", e.message);
                         alert("Ocurrió un error inesperado al cambiar el logo.");
                     }
                 } else {
@@ -333,21 +345,18 @@
             
             if (!usuario) {
                 userInfoDiv.textContent = "Usuario Desconocido (Inicie Sesión)";
-                // All static links will be hidden by default if no user or user not found
                 document.querySelectorAll('.sidebar-link').forEach(link => link.style.display = 'none');
-                document.querySelector('.logout').style.display = 'none'; // Hide logout if no user
+                document.querySelector('.logout').style.display = 'none';
                 return;
             }
             
             userInfoDiv.textContent = `${usuario.nombre} - ${usuario.rol}`;
-            console.log("Updating menu for user role:", usuario.rol); // Debugging
+            console.log("Updating menu for user role:", usuario.rol);
 
             document.querySelectorAll('.sidebar-link').forEach(link => link.style.display = 'none');
-            document.querySelector('.logout').style.display = 'block'; // Ensure logout is visible if authenticated
+            document.querySelector('.logout').style.display = 'block';
 
             const allowedLinks = [];
-
-            // Add 'Inicio' for all roles
             allowedLinks.push("inicio.html");
 
             if (usuario.rol === "Administrador") {
@@ -393,49 +402,33 @@
                 return null;
             }
 
-            // Destroy existing chart instance if it exists
             if (chartInstance) {
                 chartInstance.destroy();
             }
 
-            // Check if there is data to render a chart
-            // For pie chart, check if any data point is > 0
             const hasData = data.datasets && data.datasets.length > 0 && 
                             data.datasets[0].data && data.datasets[0].data.some(val => val > 0);
             
             if (!hasData) {
-                // If no data, display a message
                 parentContainer.innerHTML = `<div class="no-data-message">No hay datos suficientes para mostrar este gráfico.</div>`;
-                return null; // No chart instance to return
+                return null;
             } else {
-                // If there was a 'no-data-message', replace it with a new canvas
                 if (parentContainer.querySelector('.no-data-message')) {
                     parentContainer.innerHTML = `<canvas id="${chartId}"></canvas>`;
-                    ctx = document.getElementById(chartId); // Get reference to the newly created canvas
+                    ctx = document.getElementById(chartId);
                 }
             }
             
-            // Create and return the new chart instance
             return new Chart(ctx, { type, data, options });
         }
 
-
-        // Function to load member statistics (Sociedad and Miembro Asistencia)
+        // Function to load member statistics from Firestore
         async function cargarEstadisticasMiembros() {
-            console.log("Attempting to fetch 'miembros' data for charts."); // Debugging
+            console.log("Attempting to fetch 'miembros' data from Firestore for charts.");
             try {
-                const { data: miembros, error } = await supabase
-                    .from('miembros')
-                    .select('nombre, sociedad, asistencia');
-
-                if (error) {
-                    console.error("Error fetching 'miembros' data:", error.message);
-                    // Force display of "no data" message for charts if error
-                    renderChart('sociedadChart', 'pie', { labels: [], datasets: [{ data: [] }] }, {}, sociedadChartInstance);
-                    renderChart('asistenciaMiembrosChart', 'bar', { labels: [], datasets: [{ data: [] }] }, {}, asistenciaMiembrosChartInstance);
-                    return;
-                }
-                console.log("'miembros' data fetched:", miembros); // Debugging
+                const miembrosSnapshot = await window.getDocs(window.collection(window.db, "miembros"));
+                const miembros = miembrosSnapshot.docs.map(doc => doc.data());
+                console.log("'miembros' data fetched from Firestore:", miembros);
 
                 // --- Sociedad Chart (Pie) ---
                 const conteoSociedad = { "Jóvenes": 0, "Damas": 0, "Caballeros": 0, "Niños": 0, "General": 0 };
@@ -444,7 +437,7 @@
                     if (conteoSociedad[sociedadKey] !== undefined) {
                         conteoSociedad[sociedadKey]++;
                     } else {
-                        conteoSociedad["General"]++; // If a society not defined, add it to "General"
+                        conteoSociedad["General"]++;
                     }
                 });
 
@@ -478,7 +471,7 @@
 
                 // --- Miembro Asistencia Chart (Bar) ---
                 miembros.sort((a, b) => (b.asistencia || 0) - (a.asistencia || 0));
-                const topMiembros = miembros.slice(0, 10); // Show top 10 for readability
+                const topMiembros = miembros.slice(0, 10);
 
                 asistenciaMiembrosChartInstance = renderChart('asistenciaMiembrosChart', 'bar', {
                     labels: topMiembros.map(m => m.nombre.split(' ')[0]),
@@ -510,32 +503,23 @@
                 }, asistenciaMiembrosChartInstance);
 
             } catch (e) {
-                console.error("Exception in cargarEstadisticasMiembros:", e.message);
-                // Also force "no data" messages if a major exception occurs
+                console.error("Exception in cargarEstadisticasMiembros (Firebase):", e.message);
                 renderChart('sociedadChart', 'pie', { labels: [], datasets: [{ data: [] }] }, {}, sociedadChartInstance);
                 renderChart('asistenciaMiembrosChart', 'bar', { labels: [], datasets: [{ data: [] }] }, {}, asistenciaMiembrosChartInstance);
             }
         }
 
-        // Function to load and display activity attendance statistics
+        // Function to load and display activity attendance statistics from Firestore
         async function cargarEstadisticasActividades() {
-            console.log("Attempting to fetch 'actividades' data for charts."); // Debugging
+            console.log("Attempting to fetch 'actividades' data from Firestore for charts.");
             try {
-                const { data: actividades, error } = await supabase
-                    .from('actividades')
-                    .select('nombre_actividad, fecha, asistencia_total')
-                    .order('fecha', { ascending: false })
-                    .limit(7);
+                // Order by 'fecha' descending and limit to 7
+                const q = query(collection(window.db, "actividades"), orderBy("fecha", "desc"), limit(7));
+                const actividadesSnapshot = await window.getDocs(q);
+                const actividades = actividadesSnapshot.docs.map(doc => doc.data());
+                console.log("'actividades' data fetched from Firestore:", actividades);
 
-                if (error) {
-                    console.error("Error fetching 'actividades' data:", error.message);
-                    // Force display of "no data" message for charts if error
-                    renderChart('actividadesAsistenciaChart', 'bar', { labels: [], datasets: [{ data: [] }] }, {}, actividadesAsistenciaChartInstance);
-                    return;
-                }
-                console.log("'actividades' data fetched:", actividades); // Debugging
-
-                const labels = actividades.map(a => `${a.nombre_actividad} (${new Date(a.fecha).toLocaleDateString('es-ES')})`);
+                const labels = actividades.map(a => `${a.nombre_actividad} (${new Date(a.fecha.toDate()).toLocaleDateString('es-ES')})`);
                 const data = actividades.map(a => a.asistencia_total || 0);
 
                 actividadesAsistenciaChartInstance = renderChart('actividadesAsistenciaChart', 'bar', {
@@ -568,26 +552,38 @@
                 }, actividadesAsistenciaChartInstance);
 
             } catch (e) {
-                console.error("Exception in cargarEstadisticasActividades:", e.message);
-                // Also force "no data" message if a major exception occurs
+                console.error("Exception in cargarEstadisticasActividades (Firebase):", e.message);
                 renderChart('actividadesAsistenciaChart', 'bar', { labels: [], datasets: [{ data: [] }] }, {}, actividadesAsistenciaChartInstance);
             }
         }
 
-        // Function to close session
-        function cerrarSesion() {
-            localStorage.removeItem("usuarioActivo");
-            window.location.href = "index.html";
+        // Function to close session (using Firebase Auth signOut)
+        async function cerrarSesion() {
+            try {
+                await window.signOut(window.auth);
+                localStorage.removeItem("usuarioActivo"); // Clean up localStorage as well
+                window.location.href = "index.html";
+            } catch (error) {
+                console.error("Error signing out:", error);
+                alert("Hubo un error al cerrar sesión.");
+            }
         }
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async () => {
-            // It's good practice to ensure a user is "logged in" before trying to fetch sensitive data
-            // For now, `obtenerUsuarioActivo` handles redirection if no user is found.
+            // Delay initialization slightly to ensure Firebase is fully loaded
+            // (due to type="module" import and making globals available)
+            await new Promise(resolve => setTimeout(resolve, 500)); 
+            
+            // Check if Firebase instances are available
+            if (!window.db || !window.auth || !window.storage) {
+                console.error("Firebase not initialized correctly. Check your module import.");
+                return;
+            }
+
             await cargarLogo();
             await actualizarMenu();
             
-            // Load charts
             await cargarEstadisticasMiembros();
             await cargarEstadisticasActividades();
         });
