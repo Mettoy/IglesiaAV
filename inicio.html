@@ -235,7 +235,7 @@
   </div>
 
   <script>
-    // Configuración para el proyecto principal (conf. 1)
+    // Configuración para el proyecto principal (conf. 1: iglesia-adoracion-viva)
     const firebaseConfigMain = {
       apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
       authDomain: "iglesia-adoracion-viva.firebaseapp.com",
@@ -247,7 +247,7 @@
       measurementId: "G-43MZP6V55D"
     };
 
-    // Configuración para el proyecto secundario (conf. 2)
+    // Configuración para el proyecto secundario (conf. 2: iglesia-adoracion-viva-182e6)
     const firebaseConfigSecondary = {
       apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U",
       authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
@@ -265,12 +265,8 @@
     const storage = firebase.storage(mainApp); // Storage del proyecto principal
 
     // Inicializar la aplicación Firebase secundaria con un nombre único
-    // Puedes usar 'adminApp', 'logsApp', etc., dependiendo de su propósito
     const secondaryApp = firebase.initializeApp(firebaseConfigSecondary, "secondaryAdoracionApp");
     const dbSecondary = firebase.firestore(secondaryApp); // Firestore del proyecto secundario
-    // Puedes obtener otros servicios de secondaryApp si los necesitas:
-    // const authSecondary = firebase.auth(secondaryApp);
-    // const storageSecondary = firebase.storage(secondaryApp);
 
     // Función para alternar la visibilidad del sidebar
     function toggleSidebar() {
@@ -284,41 +280,64 @@
       }
     }
 
-    // Función para obtener el usuario activo desde Firestore (asumiendo que los usuarios se guardan en una colección 'usuarios' en el proyecto principal)
+    // Función para obtener el usuario activo (simplificada para pruebas)
     async function obtenerUsuarioActivo() {
-      const userEmail = localStorage.getItem('usuarioActivo');
-      if (!userEmail) {
-        window.location.href = "index.html"; // Si no hay usuario, redirigir al login
-        return null;
-      }
-      try {
-        // Usamos db (Firestore del proyecto principal)
-        const userRef = db.collection('usuarios').where('email', '==', userEmail);
-        const snapshot = await userRef.get();
-        if (!snapshot.empty) {
-          return snapshot.docs[0].data();
-        } else {
-          console.error("Usuario no encontrado en Firestore.");
-          window.location.href = "index.html";
-          return null;
-        }
-      } catch (error) {
-        console.error("Error al obtener usuario activo de Firestore:", error.message);
-        window.location.href = "index.html";
-        return null;
-      }
+      return new Promise(resolve => {
+        auth.onAuthStateChanged(async (user) => {
+          if (user) {
+            // Si hay un usuario autenticado con Firebase Auth
+            localStorage.setItem('usuarioActivo', user.email);
+            try {
+              // Intentamos obtener el rol del usuario desde la colección 'usuarios'
+              const userDoc = await db.collection('usuarios').doc(user.uid).get();
+              if (userDoc.exists) {
+                resolve(userDoc.data());
+              } else {
+                console.warn("Documento de usuario no encontrado en Firestore para UID:", user.uid);
+                // Si no se encuentra en Firestore, asumimos un rol básico o redirigimos
+                resolve({ nombre: user.email, rol: "Miembro" }); // Rol por defecto
+              }
+            } catch (error) {
+              console.error("Error al obtener datos de usuario de Firestore:", error.message);
+              resolve({ nombre: user.email, rol: "Miembro" }); // Fallback
+            }
+          } else {
+            // Si no hay usuario autenticado, intenta con localStorage (para la compatibilidad anterior)
+            const userEmailLocal = localStorage.getItem('usuarioActivo');
+            if (userEmailLocal) {
+              try {
+                const userRef = db.collection('usuarios').where('email', '==', userEmailLocal);
+                const snapshot = await userRef.get();
+                if (!snapshot.empty) {
+                  resolve(snapshot.docs[0].data());
+                } else {
+                  console.error("Usuario de localStorage no encontrado en Firestore.");
+                  window.location.href = "index.html"; // Redirigir si no se encuentra
+                  resolve(null);
+                }
+              } catch (error) {
+                console.error("Error al obtener usuario de Firestore con localStorage:", error.message);
+                window.location.href = "index.html";
+                resolve(null);
+              }
+            } else {
+              window.location.href = "index.html"; // Si no hay nada, redirigir
+              resolve(null);
+            }
+          }
+        });
+      });
     }
 
     // Función para cargar el logo desde Firebase Storage (del proyecto principal)
     async function cargarLogo() {
       try {
-        // Asumiendo que el logo se guarda en 'logos/current-logo.png' en Firebase Storage del proyecto principal
         const logoRef = storage.ref('logos/current-logo.png');
         const url = await logoRef.getDownloadURL();
         document.getElementById("logo").src = url;
       } catch (error) {
         console.error("Error al cargar el logo de Firebase Storage:", error.message);
-        // Puedes dejar un logo por defecto si falla
+        // Si falla, usa un logo por defecto para no dejarlo vacío
         document.getElementById("logo").src = "https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//images%20(1).png"; 
       }
     }
@@ -342,11 +361,10 @@
           reader.readAsDataURL(file);
 
           try {
-            // Subir el archivo a Firebase Storage del proyecto principal
-            const storageRef = storage.ref('logos/current-logo.png'); // Sobreescribe el logo actual
+            const storageRef = storage.ref('logos/current-logo.png');
             await storageRef.put(file);
             alert("Logo actualizado exitosamente.");
-            cargarLogo(); // Refrescar logo para asegurar que se muestre la URL actualizada
+            cargarLogo(); 
           } catch (error) {
             console.error("Error al subir el logo a Firebase Storage:", error.message);
             alert("Error al subir el logo: " + error.message);
@@ -421,6 +439,7 @@
 
         snapshot.forEach(doc => {
           const data = doc.data();
+          // Asegúrate de que el campo 'sociedad' exista y tenga los valores esperados
           if (data.sociedad === 'Jóvenes') conteo.Jovenes++;
           else if (data.sociedad === 'Damas') conteo.Damas++;
           else if (data.sociedad === 'Caballeros') conteo.Caballeros++;
@@ -434,6 +453,7 @@
           <tr><td>Caballeros</td><td>${conteo.Caballeros}</td></tr>
           <tr><td>Total</td><td>${conteo.Total}</td></tr>
         `;
+        console.log("Datos de Miembros cargados:", conteo); // Para depuración
       } catch (error) {
         console.error("Error al cargar resumen de miembros:", error.message);
       }
@@ -442,6 +462,7 @@
     async function cargarResumenAsistencia() {
       try {
         const now = new Date();
+        // Establecer el inicio y fin del mes actual como objetos Date de JavaScript
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
@@ -457,6 +478,7 @@
 
         snapshot.forEach(doc => {
           const data = doc.data();
+          // Asegúrate de que 'tipo_persona' exista y los valores coincidan
           if (data.tipo_persona === 'Dama') conteo.Damas++;
           else if (data.tipo_persona === 'Caballero') conteo.Caballeros++;
           else if (data.tipo_persona === 'Niño') conteo.Niños++;
@@ -473,6 +495,7 @@
             <td>${conteo.Total}</td>
           </tr>
         `;
+        console.log("Datos de Asistencia cargados:", conteo); // Para depuración
       } catch (error) {
         console.error("Error al cargar resumen de asistencia:", error.message);
       }
@@ -497,8 +520,9 @@
 
         snapshot.forEach(doc => {
           const data = doc.data();
-          if (data.moneda === 'C$') totalCordobas += data.monto;
-          else if (data.moneda === '$') totalDolares += data.monto;
+          // Asegúrate de que 'monto' y 'moneda' existan
+          if (data.moneda === 'C$') totalCordobas += (data.monto || 0); // Sumar 0 si es undefined
+          else if (data.moneda === '$') totalDolares += (data.monto || 0);
         });
 
         const tbody = document.querySelector('#ofrendasSummaryTable tbody');
@@ -510,6 +534,7 @@
             <td>${snapshot.size}</td>
           </tr>
         `;
+        console.log("Datos de Ofrendas cargados:", { totalCordobas, totalDolares, transacciones: snapshot.size }); // Para depuración
       } catch (error) {
         console.error("Error al cargar resumen de ofrendas:", error.message);
       }
@@ -521,13 +546,13 @@
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const currentMonthName = monthNames[now.getMonth()];
 
-        // Para discipulado, se cuenta el estado actual de cada discípulo sin filtro de fecha para el mes.
         const discipulosRef = db.collection('discipulado'); // Usamos db del proyecto principal
         const snapshot = await discipulosRef.get();
         
         const conteo = { Activo: 0, Pendiente: 0, 'De Baja': 0 };
         snapshot.forEach(doc => {
           const data = doc.data();
+          // Asegúrate de que 'estado' exista y los valores coincidan
           if (conteo[data.estado] !== undefined) {
             conteo[data.estado]++;
           }
@@ -542,6 +567,7 @@
             <td>${conteo['De Baja']}</td>
           </tr>
         `;
+        console.log("Datos de Discipulado cargados:", conteo); // Para depuración
       } catch (error) {
         console.error("Error al cargar resumen de discipulado:", error.message);
       }
@@ -572,7 +598,8 @@
     }
 
     // Llamada inicial para cargar el dashboard
-    initDashboard();
+    // Agregamos un listener para asegurarnos de que el DOM esté completamente cargado
+    document.addEventListener('DOMContentLoaded', initDashboard);
   </script>
 </body>
 </html>
