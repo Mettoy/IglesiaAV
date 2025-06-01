@@ -4,262 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Actividades y Votación</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* --- Variables CSS --- */
         :root {
-            --dark-blue: #000033; /* Ultra Dark Blue */
+            --dark-blue: #000022; /* Ultra Dark Blue */
             --gold: #FFD700;
             --light-gold: #FFECB3;
-            --white: #FFFFFF;
-            --gray: #CCCCCC;
-            --dark-gray: #333333;
-            --modal-bg: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente para modales */
+            --white: #F0F0F0;
+            --gray: #666688;
+            --dark-gray: #1a1a33; /* Más oscuro para el fondo */
+            --modal-bg: rgba(0, 0, 0, 0.8); /* Fondo de modal más opaco */
+            --gradient-start: #000011;
+            --gradient-end: #000033;
         }
 
-        /* --- Estilos Generales --- */
+        /* --- Estilos Generales y Animaciones Keyframes --- */
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Montserrat', sans-serif; /* Fuente principal */
             margin: 0;
             display: flex;
             min-height: 100vh;
-            background-color: var(--dark-gray);
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: var(--white);
-            overflow-x: hidden; /* Evita desbordamiento horizontal */
+            overflow-x: hidden;
+            animation: fadeIn 1s ease-in-out;
         }
 
-        /* --- Sidebar CSS --- */
-        .sidebar {
-            width: 250px;
-            background-color: var(--dark-blue);
-            padding-top: 20px;
-            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.7);
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Centra los elementos horizontalmente */
-            position: fixed; /* Mantiene la barra lateral fija */
-            height: 100%;
-            z-index: 1000; /* Asegura que esté por encima de otros elementos */
-        }
-
-        .sidebar a {
-            display: block;
-            color: var(--light-gold);
-            padding: 15px 20px;
-            text-decoration: none;
-            width: 100%;
-            text-align: left;
-            transition: background-color 0.3s ease, color 0.3s ease;
-            box-sizing: border-box; /* Incluye padding en el ancho */
-        }
-
-        .sidebar a:hover {
-            background-color: rgba(255, 215, 0, 0.15);
-            color: var(--gold);
-        }
-
-        .logout {
-            color: var(--gold);
-            padding: 15px 20px;
-            text-decoration: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-            transition: color 0.3s ease, background-color 0.3s ease;
-            margin-top: auto; /* Empuja el botón "Cerrar sesión" al final */
-            box-sizing: border-box;
-        }
-
-        .logout:hover {
-            color: var(--light-gold);
-            background-color: rgba(255, 215, 0, 0.1);
-        }
-
-        /* --- Contenido Principal CSS --- */
-        .main-content {
-            flex-grow: 1;
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Centra el contenido en el área principal */
-            margin-left: 250px; /* Deja espacio para la barra lateral fija */
-            width: calc(100% - 250px); /* Ajusta el ancho del contenido */
-            box-sizing: border-box;
-        }
-
-        /* --- Formulario de Actividad CSS --- */
-        .activity-form {
-            background-color: var(--dark-blue);
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            width: 90%;
-            max-width: 700px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--gold);
-        }
-
-        .activity-form h2 {
-            color: var(--gold);
-            margin-top: 0;
-            margin-bottom: 25px;
-            text-align: center;
-            font-size: 1.8em;
-            letter-spacing: 1px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            color: var(--light-gold);
-            margin-bottom: 8px;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: calc(100% - 24px); /* Ajusta por padding y borde */
-            padding: 12px;
-            border: 1px solid var(--gray);
-            border-radius: 6px;
-            background-color: var(--dark-gray);
-            color: var(--white);
-            box-sizing: border-box;
-            font-size: 1em;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: var(--gold);
-            outline: none;
-            box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-group button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            background-color: var(--gold);
-            color: var(--dark-blue);
-            cursor: pointer;
-            font-size: 1.1em;
-            font-weight: bold;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .form-group button:hover {
-            background-color: var(--light-gold);
-            color: var(--dark-blue);
-            transform: translateY(-2px); /* Pequeño efecto al pasar el mouse */
-        }
-
-        /* --- Lista de Actividades Pendientes CSS --- */
-        .activity-list, .past-activities-table-container {
-            width: 90%;
-            max-width: 900px;
-            margin-bottom: 30px;
-        }
-
-        .activity-list h2, .past-activities-table-container h2 {
-            color: var(--gold);
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 2em;
-            letter-spacing: 1px;
-        }
-
-        .activity-card {
-            background-color: var(--dark-blue);
-            border: 1px solid var(--gold);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .activity-card h3 {
-            color: var(--gold);
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.5em;
-        }
-
-        .activity-details {
-            color: var(--light-gold);
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
-
-        .activity-details p {
-            margin: 5px 0;
-        }
-
-        .activity-buttons button {
-            background-color: var(--gold);
-            color: var(--dark-blue);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 15px;
-            font-size: 1em;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .activity-buttons button:hover {
-            background-color: var(--light-gold);
-            transform: translateY(-2px);
-        }
-
-        .activity-buttons button:last-child {
-            margin-right: 0;
-        }
-
-        /* --- Modales (Votación y Resultados) CSS --- */
-        .modal {
-            display: none; /* Oculto por defecto */
-            position: fixed; /* Posición fija en la pantalla */
-            z-index: 2000; /* Siempre por encima de todo */
-            left: 0;
-            top: 0;
-            width: 100%; /* Ancho completo */
-            height: 100%; /* Alto completo */
-            overflow: auto; /* Permite scroll si el contenido es muy grande */
-            background-color: var(--modal-bg); /* Fondo semi-transparente */
-            display: flex; /* Para centrar el contenido */
-            align-items: center; /* Centrado vertical */
-            justify-content: center; /* Centrado horizontal */
-            animation: fadeIn 0.3s ease-out; /* Animación de aparición */
-        }
-
+        /* Keyframes para animaciones */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
-        }
-
-        .modal-content, .results-modal-content {
-            background-color: var(--dark-blue);
-            padding: 30px;
-            border: 1px solid var(--gold);
-            width: 90%;
-            max-width: 800px; /* Ancho máximo para modales */
-            border-radius: 12px;
-            position: relative;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.7);
-            animation: slideIn 0.4s ease-out; /* Animación de entrada */
         }
 
         @keyframes slideIn {
@@ -267,76 +42,355 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- Sidebar CSS --- */
+        .sidebar {
+            width: 280px; /* Un poco más ancho */
+            background-color: var(--dark-blue);
+            padding-top: 40px; /* Más espacio arriba */
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: fixed;
+            height: 100%;
+            z-index: 1000;
+            border-right: 2px solid var(--gold); /* Borde dorado */
+        }
+
+        .sidebar a {
+            display: block;
+            color: var(--light-gold);
+            padding: 20px 30px; /* Más padding */
+            text-decoration: none;
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.4s ease, color 0.4s ease, transform 0.3s ease;
+            box-sizing: border-box;
+            font-size: 1.1em;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.05); /* Separador sutil */
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 215, 0, 0.15);
+            color: var(--gold);
+            transform: translateX(10px); /* Deslizamiento al pasar el mouse */
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+        }
+
+        .logout {
+            color: var(--gold);
+            padding: 20px 30px;
+            text-decoration: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: color 0.4s ease, background-color 0.4s ease, transform 0.3s ease;
+            margin-top: auto;
+            box-sizing: border-box;
+            font-size: 1.1em;
+            letter-spacing: 0.5px;
+            border-top: 1px solid rgba(255, 215, 0, 0.05); /* Separador sutil */
+        }
+
+        .logout:hover {
+            color: var(--light-gold);
+            background-color: rgba(255, 215, 0, 0.1);
+            transform: translateX(10px);
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+        }
+
+        /* --- Contenido Principal CSS --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 50px; /* Más padding */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-left: 280px; /* Ajusta por el nuevo ancho del sidebar */
+            width: calc(100% - 280px);
+            box-sizing: border-box;
+            animation: fadeIn 1.2s ease-in-out;
+        }
+
+        /* --- Formulario de Actividad CSS --- */
+        .activity-form {
+            background-color: var(--dark-blue);
+            padding: 40px; /* Más padding */
+            border-radius: 15px; /* Bordes más redondeados */
+            margin-bottom: 40px;
+            width: 90%;
+            max-width: 800px; /* Más ancho */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--gold); /* Borde más pronunciado */
+            background: linear-gradient(160deg, #000033, #00001a); /* Gradiente de fondo */
+        }
+
+        .activity-form h2 {
+            font-family: 'Orbitron', sans-serif; /* Fuente futurista */
+            color: var(--gold);
+            margin-top: 0;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.2em; /* Más grande */
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--light-gold);
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 1.2em;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: calc(100% - 28px); /* Ajusta por padding y borde */
+            padding: 14px; /* Más padding */
+            border: 2px solid var(--gray); /* Borde más pronunciado */
+            border-radius: 8px; /* Bordes más redondeados */
+            background-color: #0d0d1a; /* Fondo más oscuro */
+            color: var(--white);
+            box-sizing: border-box;
+            font-size: 1.1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--gold);
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            background-color: #1a1a33;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px; /* Más alto */
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 15px; /* Más padding */
+            border: none;
+            border-radius: 8px;
+            background-color: var(--gold);
+            color: var(--dark-blue);
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .form-group button:hover {
+            background-color: var(--light-gold);
+            color: var(--dark-blue);
+            transform: translateY(-5px); /* Efecto de elevación */
+            box-shadow: 0 6px 15px rgba(255, 215, 0, 0.6);
+            animation: pulse 0.8s infinite alternate; /* Animación de pulso */
+        }
+
+        /* --- Lista de Actividades Pendientes y Realizadas CSS --- */
+        .activity-list, .past-activities-table-container {
+            width: 90%;
+            max-width: 1000px; /* Más ancho para las listas/tablas */
+            margin-bottom: 40px;
+        }
+
+        .activity-list h2, .past-activities-table-container h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+
+        .activity-card {
+            background-color: var(--dark-blue);
+            border: 2px solid var(--gold);
+            border-radius: 15px;
+            padding: 25px; /* Más padding */
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: linear-gradient(160deg, #000033, #00001a);
+        }
+
+        .activity-card:hover {
+            transform: translateY(-8px); /* Efecto de elevación */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+        }
+
+        .activity-card h3 {
+            color: var(--gold);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        }
+
+        .activity-details {
+            color: var(--light-gold);
+            margin-bottom: 20px;
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+
+        .activity-details p {
+            margin: 8px 0;
+        }
+
+        .activity-buttons button {
+            background-color: var(--gold);
+            color: var(--dark-blue);
+            border: none;
+            padding: 12px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 20px; /* Más espacio entre botones */
+            font-size: 1.05em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 3px 8px rgba(255, 215, 0, 0.4);
+        }
+
+        .activity-buttons button:hover {
+            background-color: var(--light-gold);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 12px rgba(255, 215, 0, 0.6);
+        }
+
+        /* --- Modales (Votación y Resultados) CSS --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: var(--modal-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .modal-content, .results-modal-content {
+            background-color: var(--dark-blue);
+            padding: 40px;
+            border: 2px solid var(--gold);
+            width: 90%;
+            max-width: 900px; /* Más ancho para modales */
+            border-radius: 15px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            animation: slideIn 0.5s ease-out;
+            background: linear-gradient(160deg, #000033, #00001a);
+        }
+
         .close-button {
             color: var(--gold);
-            float: right;
-            font-size: 35px;
+            font-size: 40px; /* Más grande */
             font-weight: bold;
             cursor: pointer;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, transform 0.2s ease;
             position: absolute;
-            top: 15px;
-            right: 25px;
+            top: 20px;
+            right: 30px;
         }
 
         .close-button:hover,
         .close-button:focus {
             color: var(--light-gold);
+            transform: rotate(90deg); /* Animación de rotación */
         }
 
         .modal-content h3, .results-modal-content h3 {
+            font-family: 'Orbitron', sans-serif;
             color: var(--gold);
             margin-top: 0;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             text-align: center;
-            font-size: 1.8em;
-            letter-spacing: 1px;
+            font-size: 2em;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
         }
 
         /* --- Tabla de Votación (dentro del modal) CSS --- */
         .voting-table-container {
-            overflow-x: auto; /* Permite scroll horizontal si la tabla es muy ancha */
-            margin-bottom: 20px;
+            overflow-x: auto;
+            margin-bottom: 30px;
         }
 
         .voting-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 600px; /* Asegura un ancho mínimo para la tabla */
+            min-width: 700px; /* Asegura un ancho mínimo para la tabla */
         }
 
         .voting-table th,
         .voting-table td {
             border: 1px solid var(--gray);
-            padding: 12px;
+            padding: 15px; /* Más padding */
             text-align: center;
             color: var(--light-gold);
-            vertical-align: middle; /* Centra el contenido verticalmente */
+            vertical-align: middle;
+            font-size: 1.05em;
         }
 
         .voting-table th {
             background-color: var(--dark-gray);
             color: var(--gold);
             font-weight: bold;
-            font-size: 1.1em;
-            white-space: nowrap; /* Evita que el texto del encabezado se rompa */
+            font-size: 1.15em;
+            white-space: nowrap;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
         }
 
         .voting-table input[type="number"] {
-            width: 60px; /* Ancho más pequeño para el input de votos */
-            padding: 8px;
+            width: 70px;
+            padding: 10px;
             border: 1px solid var(--gray);
-            border-radius: 4px;
-            background-color: var(--dark-gray);
+            border-radius: 5px;
+            background-color: #0d0d1a;
             color: var(--white);
             text-align: center;
-            font-size: 1em;
-            -moz-appearance: textfield; /* Elimina flechas en Firefox */
+            font-size: 1.1em;
+            -moz-appearance: textfield;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .voting-table input[type="number"]:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+            outline: none;
         }
 
         .voting-table input[type="number"]::-webkit-outer-spin-button,
         .voting-table input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none; /* Elimina flechas en Chrome/Safari */
+            -webkit-appearance: none;
             margin: 0;
         }
 
@@ -344,72 +398,82 @@
             background-color: var(--gold);
             color: var(--dark-blue);
             border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
+            padding: 10px 18px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 1em;
+            font-size: 1.1em;
             font-weight: bold;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 5px rgba(255, 215, 0, 0.3);
         }
 
         .voting-table button:hover {
             background-color: var(--light-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 215, 0, 0.5);
         }
 
         .vote-buttons {
             text-align: center;
-            margin-top: 25px;
+            margin-top: 30px;
         }
 
         .vote-buttons button {
             background-color: var(--gold);
             color: var(--dark-blue);
             border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
+            padding: 14px 30px;
+            border-radius: 8px;
             cursor: pointer;
-            margin: 0 10px;
-            font-size: 1.1em;
+            margin: 0 15px;
+            font-size: 1.2em;
             font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            letter-spacing: 1px;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4);
         }
 
         .vote-buttons button:hover {
             background-color: var(--light-gold);
-            transform: translateY(-2px);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(255, 215, 0, 0.6);
+            animation: pulse 0.8s infinite alternate;
         }
 
         /* --- Tabla de Resultados (dentro del modal) CSS --- */
         .results-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 20px;
         }
 
         .results-table th,
         .results-table td {
             border: 1px solid var(--gray);
-            padding: 12px;
+            padding: 15px;
             text-align: left;
             color: var(--light-gold);
+            font-size: 1.05em;
         }
 
         .results-table th {
             background-color: var(--dark-gray);
             color: var(--gold);
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1.15em;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
         }
 
         /* --- Tabla de Actividades Realizadas CSS --- */
         .past-activities-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
-            background-color: var(--dark-blue); /* Fondo para la tabla */
-            border-radius: 10px;
-            overflow: hidden; /* Asegura que los bordes redondeados funcionen */
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            background-color: var(--dark-blue);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid var(--gold);
         }
 
         .past-activities-table thead {
@@ -419,36 +483,46 @@
         .past-activities-table th,
         .past-activities-table td {
             border: 1px solid var(--gray);
-            padding: 12px;
+            padding: 15px;
             text-align: left;
             color: var(--light-gold);
+            font-size: 1.05em;
         }
 
         .past-activities-table th {
             color: var(--gold);
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1.15em;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
         }
 
         .past-activities-table tbody tr:nth-child(even) {
-            background-color: rgba(0, 0, 51, 0.5); /* Ligeramente más claro para filas pares */
+            background-color: rgba(0, 0, 51, 0.3); /* Ligeramente más claro para filas pares */
+        }
+
+        .past-activities-table tbody tr:hover {
+            background-color: rgba(255, 215, 0, 0.05); /* Efecto hover en filas */
+            color: var(--gold);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .past-activities-table button {
             background-color: var(--gold);
             color: var(--dark-blue);
             border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 0.95em;
             font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 5px rgba(255, 215, 0, 0.3);
         }
 
         .past-activities-table button:hover {
             background-color: var(--light-gold);
             transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 215, 0, 0.5);
         }
     </style>
 </head>
@@ -471,7 +545,7 @@
             </div>
             <div class="form-group">
                 <label for="candidates">Candidatos (separados por coma):</label>
-                <textarea id="candidates" rows="3" placeholder="Ej: Candidato 1, Candidato 2, Otro Candidato"></textarea>
+                <textarea id="candidates" rows="3" placeholder="Ej: Candidato A, Candidato B, Candidato C"></textarea>
             </div>
             <div class="form-group">
                 <label for="activity-date">Fecha de la Actividad:</label>
@@ -565,8 +639,7 @@
         const db = firebase.firestore();
         const activitiesCollection = db.collection('activities');
 
-        let activities = []; // Almacena actividades pendientes
-        let pastActivitiesData = []; // Almacena actividades realizadas
+        let activities = []; // Almacena actividades pendientes y completadas localmente
         let currentActivityId = null; // ID de la actividad actualmente en votación
 
         // --- Funciones de Gestión de Actividades ---
@@ -600,6 +673,7 @@
                         newActivity.id = docRef.id; // Asigna el ID de Firestore al objeto local
                         activities.push(newActivity);
                         renderActivities(); // Vuelve a renderizar las actividades pendientes
+                        renderPastActivities(); // Vuelve a renderizar las actividades realizadas (aunque no haya cambios aquí, es buena práctica)
                         // Limpiar el formulario
                         document.getElementById('activity-title').value = '';
                         document.getElementById('candidates').value = '';
@@ -622,7 +696,7 @@
             const activityListDiv = document.querySelector('.activity-list');
             // Filtrar solo las actividades pendientes
             const pendingActivities = activities.filter(activity => activity.status === 'pending');
-            
+
             activityListDiv.innerHTML = '<h2>Actividades Pendientes</h2>'; // Reinicia el contenido
 
             if (pendingActivities.length === 0) {
@@ -633,6 +707,8 @@
             pendingActivities.forEach(activity => {
                 const activityCard = document.createElement('div');
                 activityCard.classList.add('activity-card');
+                // Escapa comillas dobles en el JSON de candidatos para el onclick
+                const candidatesJsonString = JSON.stringify(activity.candidates).replace(/"/g, '&quot;');
                 activityCard.innerHTML = `
                     <h3>${activity.title}</h3>
                     <div class="activity-details">
@@ -640,7 +716,7 @@
                         <p><strong>Fecha:</strong> ${activity.date}</p>
                     </div>
                     <div class="activity-buttons" id="buttons-${activity.id}">
-                        <button onclick="iniciarVotacion('${activity.id}', '${activity.title}', ['${activity.candidates.join("','")}'])">Realizar Votación</button>
+                        <button onclick="iniciarVotacion('${activity.id}', '${activity.title}', ${candidatesJsonString})">Realizar Votación</button>
                         <button onclick="cancelarActividad('${activity.id}')">Cancelar</button>
                     </div>
                 `;
@@ -660,6 +736,7 @@
                         // Eliminar la actividad del array local
                         activities = activities.filter(activity => activity.id !== id);
                         renderActivities(); // Vuelve a renderizar las actividades pendientes
+                        renderPastActivities(); // Actualiza la tabla de realizadas por si acaso
                         alert('Actividad cancelada.');
                     }).catch((error) => {
                         console.error("Error al cancelar la actividad: ", error);
@@ -679,16 +756,18 @@
             const completedActivities = activities.filter(activity => activity.status === 'completed');
 
             if (completedActivities.length === 0) {
-                pastActivitiesBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--gray);">No hay actividades realizadas.</td></tr>';
+                pastActivitiesBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--gray); padding: 20px;">No hay actividades realizadas.</td></tr>';
                 return;
             }
 
             completedActivities.forEach(activity => {
                 const row = pastActivitiesBody.insertRow();
+                // Escapa comillas dobles en el JSON de votos para el onclick
+                const votesJsonString = JSON.stringify(activity.votes || {}).replace(/"/g, '&quot;');
                 row.innerHTML = `
                     <td>${activity.title}</td>
                     <td>${activity.date}</td>
-                    <td><button onclick="mostrarResultados('${activity.id}', '${activity.title}', '${JSON.stringify(activity.votes).replace(/"/g, '&quot;')}')">Resultados</button></td>
+                    <td><button onclick="mostrarResultados('${activity.id}', '${activity.title}', '${votesJsonString}')">Resultados</button></td>
                 `;
             });
         }
@@ -716,10 +795,10 @@
                 const currentTotalVotes = initialVotes[candidate] || 0; // Obtener votos actuales, o 0 si no existen
                 row.innerHTML = `
                     <td>${candidate}</td>
-                    <td><input type="number" id="votes-input-${candidate}" value="0" min="0"></td>
-                    <td><button onclick="incrementVote('${candidate}')">+</button></td>
-                    <td><button onclick="decrementVote('${candidate}')">-</button></td>
-                    <td id="total-votes-${candidate}">${currentTotalVotes}</td>
+                    <td><input type="number" id="votes-input-${candidate.replace(/\s/g, '-')}" value="0" min="0"></td>
+                    <td><button onclick="incrementVote('${candidate.replace(/\s/g, '-')}')">+</button></td>
+                    <td><button onclick="decrementVote('${candidate.replace(/\s/g, '-')}')">-</button></td>
+                    <td id="total-votes-${candidate.replace(/\s/g, '-')}" data-current-total="${currentTotalVotes}">${currentTotalVotes}</td>
                 `;
             });
 
@@ -728,21 +807,19 @@
 
         /**
          * Incrementa la cantidad de votos a añadir/quitar para un candidato.
-         * @param {string} candidate - El nombre del candidato.
+         * @param {string} candidateIdSafe - El ID del candidato (seguro para el DOM).
          */
-        function incrementVote(candidate) {
-            const inputElement = document.getElementById(`votes-input-${candidate}`);
+        function incrementVote(candidateIdSafe) {
+            const inputElement = document.getElementById(`votes-input-${candidateIdSafe}`);
             inputElement.value = parseInt(inputElement.value) + 1;
-            // No se actualiza el total de votos del candidato en tiempo real con este input,
-            // solo cuando se registran los votos finales.
         }
 
         /**
          * Decrementa la cantidad de votos a añadir/quitar para un candidato.
-         * @param {string} candidate - El nombre del candidato.
+         * @param {string} candidateIdSafe - El ID del candidato (seguro para el DOM).
          */
-        function decrementVote(candidate) {
-            const inputElement = document.getElementById(`votes-input-${candidate}`);
+        function decrementVote(candidateIdSafe) {
+            const inputElement = document.getElementById(`votes-input-${candidateIdSafe}`);
             const currentValue = parseInt(inputElement.value);
             if (currentValue > 0) {
                 inputElement.value = currentValue - 1;
@@ -765,12 +842,24 @@
                 return;
             }
 
-            const newVotes = {};
+            const newVotes = { ...activityToUpdate.votes }; // Copia los votos existentes
+            let totalVotesAdded = 0; // Para verificar si se añadió algo
+
             activityToUpdate.candidates.forEach(candidate => {
-                const inputElement = document.getElementById(`votes-input-${candidate}`);
+                // Generar el ID seguro para el DOM, que es como se guardó en el HTML
+                const candidateIdSafe = candidate.replace(/\s/g, '-');
+                const inputElement = document.getElementById(`votes-input-${candidateIdSafe}`);
                 const votesToAdd = parseInt(inputElement.value) || 0;
-                newVotes[candidate] = (activityToUpdate.votes[candidate] || 0) + votesToAdd;
+
+                if (votesToAdd > 0) {
+                    newVotes[candidate] = (newVotes[candidate] || 0) + votesToAdd;
+                    totalVotesAdded += votesToAdd;
+                }
             });
+
+            if (totalVotesAdded === 0 && !confirm('No se han añadido nuevos votos. ¿Desea marcar la actividad como completada sin votos?')) {
+                return; // Si el usuario cancela, no hacer nada
+            }
 
             // Actualizar la actividad en Firestore
             activitiesCollection.doc(currentActivityId).update({
@@ -784,7 +873,8 @@
                 activityToUpdate.status = 'completed';
 
                 // Recargar las listas para reflejar los cambios
-                fetchActivities(); // Esto recargará y renderizará ambas listas
+                renderActivities(); // Esto actualizará las pendientes
+                renderPastActivities(); // Esto actualizará las realizadas
 
                 closeVotingModal();
                 alert('Votación registrada con éxito. La actividad ha sido marcada como realizada.');
@@ -817,16 +907,20 @@
             const resultsTableBody = document.getElementById('results-table-body');
             resultsTableBody.innerHTML = ''; // Limpiar filas anteriores
 
-            // Convertir el objeto de votos en un array y ordenar por votos (opcional)
+            // Convertir el objeto de votos en un array y ordenar por votos de mayor a menor
             const sortedCandidates = Object.keys(votes).sort((a, b) => votes[b] - votes[a]);
 
-            sortedCandidates.forEach(candidate => {
-                const row = resultsTableBody.insertRow();
-                row.innerHTML = `
-                    <td>${candidate}</td>
-                    <td>${votes[candidate]}</td>
-                `;
-            });
+            if (sortedCandidates.length === 0 || Object.values(votes).every(v => v === 0)) {
+                resultsTableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--gray); padding: 20px;">Aún no hay resultados de votación para esta actividad.</td></tr>';
+            } else {
+                sortedCandidates.forEach(candidate => {
+                    const row = resultsTableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${candidate}</td>
+                        <td>${votes[candidate]}</td>
+                    `;
+                });
+            }
 
             document.getElementById('resultsModal').style.display = 'flex'; // Usar flex para centrar
         }
@@ -842,17 +936,17 @@
 
         /**
          * Carga todas las actividades desde Firestore al iniciar la página.
+         * Escucha cambios en la colección 'activities' para actualizaciones en tiempo real.
          */
-        async function fetchActivities() {
-            try {
-                const snapshot = await activitiesCollection.get();
+        function fetchActivities() {
+            activitiesCollection.onSnapshot(snapshot => {
                 activities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderActivities();
                 renderPastActivities();
-            } catch (error) {
+            }, error => {
                 console.error("Error al cargar las actividades: ", error);
                 alert("Error al cargar las actividades. Por favor, recargue la página.");
-            }
+            });
         }
 
         /**
