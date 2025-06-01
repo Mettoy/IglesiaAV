@@ -24,11 +24,11 @@
             left: 0;
             top: 0;
             transition: transform 0.3s ease;
-            overflow-y: auto; /* Enable scrolling for many links */
-            z-index: 9; /* Ensure sidebar is above content but below toggle */
+            overflow-y: auto;
+            z-index: 9;
         }
         .sidebar.hide { transform: translateX(-100%); }
-        .sidebar.show { transform: translateX(0); } /* Added for explicit show state */
+        .sidebar.show { transform: translateX(0); }
 
         .sidebar img {
             width: 120px;
@@ -50,23 +50,22 @@
             background-color: #1f214d;
             cursor: pointer;
         }
-        /* Style for active link */
         .sidebar a.active {
             background-color: #1f214d;
             border-left: 5px solid #f7c948;
-            padding-left: 25px; /* Adjust padding due to border */
+            padding-left: 25px;
         }
         .content {
             margin-left: 250px;
             padding: 20px;
             flex-grow: 1;
-            transition: margin-left 0.3s ease; /* Smooth transition for content */
+            transition: margin-left 0.3s ease;
         }
         .content.full-width {
             margin-left: 0;
         }
         .menu-toggle {
-            position: fixed; /* Fixed position for toggle button */
+            position: fixed;
             top: 15px;
             left: 15px;
             background-color: #f7c948;
@@ -84,18 +83,17 @@
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
-            margin-top: 60px; /* Space for the menu toggle */
+            margin-top: 60px;
         }
         canvas {
             background-color: #fff;
             border-radius: 8px;
             padding: 10px;
-            width: 380px !important; /* Increased size for better readability */
-            height: 380px !important; /* Increased size */
+            width: 380px !important;
+            height: 380px !important;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+            box-sizing: border-box;
         }
-        /* Message for no data */
         .no-data-message {
             background-color: #fff;
             border-radius: 8px;
@@ -112,7 +110,6 @@
             box-sizing: border-box;
         }
 
-        /* Media query for responsiveness */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -124,10 +121,10 @@
                 margin-left: 0;
             }
             .menu-toggle {
-                left: 15px; /* Adjust position for small screens */
+                left: 15px;
             }
             canvas, .no-data-message {
-                width: 90vw !important; /* Adjust for smaller screens */
+                width: 90vw !important;
                 height: 90vw !important;
                 max-width: 380px !important;
                 max-height: 380px !important;
@@ -173,9 +170,9 @@
     </div>
 
     <script>
-        // --- CRUCIAL SETUP: REPLACE THESE WITH YOUR ACTUAL SUPABASE CREDENTIALS ---
-        const supabaseUrl = 'YOUR_SUPABASE_URL'; // Example: https://abcde12345.supabase.co
-        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'; // Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        // SUPABASE CREDENTIALS - NOW PROVIDED!
+        const supabaseUrl = 'https://xyptydnouyddzvrffaby.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFjKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o';
         const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         // Global chart instances to destroy them before re-rendering
@@ -194,8 +191,9 @@
         // Function to get active user from Supabase (assuming email in localStorage for simplicity)
         async function obtenerUsuarioActivo() {
             const userEmail = localStorage.getItem('usuarioActivo');
+            console.log("Attempting to get active user. Email from localStorage:", userEmail); // Debugging
             if (!userEmail) {
-                console.log("No active user found, redirecting to login.");
+                console.log("No active user found in localStorage, redirecting to index.html.");
                 window.location.href = "index.html"; // Redirect to login if no user is active
                 return null;
             }
@@ -207,21 +205,21 @@
                     .eq('email', userEmail)
                     .single();
                 
-                if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found (not necessarily an error)
-                    console.error("Error fetching user:", error.message);
-                    window.location.href = "index.html"; // Redirect on actual error
+                if (error) {
+                    // PGRST116 means no rows found, which is not an error in this context
+                    if (error.code !== 'PGRST116') {
+                        console.error("Error fetching user from 'usuarios' table:", error.message);
+                    } else {
+                        console.log("User email found in localStorage but not in 'usuarios' table.");
+                    }
+                    window.location.href = "index.html"; // Redirect on any error or if user not found
                     return null;
                 }
                 
-                if (usuarioActivo) {
-                    return usuarioActivo;
-                } else {
-                    console.log("User not found in DB, redirecting to login.");
-                    window.location.href = "index.html"; // If user not found, redirect to login
-                    return null;
-                }
+                console.log("Active user fetched successfully:", usuarioActivo); // Debugging
+                return usuarioActivo;
             } catch (e) {
-                console.error("Exception fetching user:", e.message);
+                console.error("Exception fetching user:", e.message); // Catch network or other JS errors
                 window.location.href = "index.html";
                 return null;
             }
@@ -229,6 +227,7 @@
 
         // Function to load the logo
         async function cargarLogo() {
+            console.log("Attempting to load logo from 'configuracion' table."); // Debugging
             try {
                 const { data, error } = await supabase
                     .from('configuracion')
@@ -237,10 +236,11 @@
 
                 if (data && data.logo) {
                     document.getElementById("logo").src = data.logo;
+                    console.log("Logo loaded:", data.logo); // Debugging
                 } else if (error && error.code !== 'PGRST116') {
-                    console.error("Error loading logo:", error.message);
+                    console.error("Error loading logo from 'configuracion' table:", error.message);
                 } else {
-                    console.log("No custom logo found, using default.");
+                    console.log("No custom logo found in 'configuracion' table, using default."); // Debugging
                 }
             } catch (e) {
                 console.error("Exception loading logo:", e.message);
@@ -265,11 +265,12 @@
                     reader.onload = e => document.getElementById('logo').src = e.target.result;
                     reader.readAsDataURL(file);
 
-                    const fileName = `church_logo_${Date.now()}_${file.name}`; // Unique filename for safety
+                    const fileName = `church_logo_${Date.now()}_${file.name}`;
                     try {
+                        console.log("Uploading logo to Supabase storage..."); // Debugging
                         const { error: uploadError } = await supabase.storage
                             .from('logos')
-                            .upload(fileName, file, { upsert: false }); // Do not upsert if filename is unique
+                            .upload(fileName, file, { upsert: false });
 
                         if (uploadError) {
                             alert("Error al subir el logo: " + uploadError.message);
@@ -287,19 +288,20 @@
                         }
 
                         const logoUrl = publicUrlData.publicUrl;
+                        console.log("New logo public URL:", logoUrl); // Debugging
 
-                        // Check if a config row exists, if not, insert, otherwise update
                         const { data: existingConfig, error: fetchConfigError } = await supabase
                             .from('configuracion')
                             .select('id')
                             .limit(1)
                             .single();
                         
-                        let configId = '1'; // Default ID if no config exists or it's empty
+                        let configId = '1';
                         if(existingConfig) {
-                            configId = existingConfig.id; // Use existing ID if present
+                            configId = existingConfig.id;
                         }
                         
+                        console.log("Updating 'configuracion' table with new logo URL. Config ID:", configId); // Debugging
                         const { error: updateError } = await supabase
                             .from('configuracion')
                             .upsert({ id: configId, logo: logoUrl }, { onConflict: 'id' });
@@ -311,7 +313,7 @@
                         }
 
                         alert("Logo actualizado con éxito.");
-                        cargarLogo(); // Refresh logo to ensure latest is shown
+                        cargarLogo();
                     } catch (e) {
                         console.error("Exception in cambiarLogo:", e.message);
                         alert("Ocurrió un error inesperado al cambiar el logo.");
@@ -329,19 +331,19 @@
             const menuLinksDiv = document.getElementById('menuLinks');
             const userInfoDiv = document.getElementById('userInfo');
             
-            // Clear current links, but keep static links for default fallback
-            // menuLinksDiv.innerHTML = ''; 
-            
             if (!usuario) {
-                userInfoDiv.textContent = "Usuario Desconocido";
-                // Show a default set of links or none if not authenticated
-                return; 
+                userInfoDiv.textContent = "Usuario Desconocido (Inicie Sesión)";
+                // All static links will be hidden by default if no user or user not found
+                document.querySelectorAll('.sidebar-link').forEach(link => link.style.display = 'none');
+                document.querySelector('.logout').style.display = 'none'; // Hide logout if no user
+                return;
             }
             
             userInfoDiv.textContent = `${usuario.nombre} - ${usuario.rol}`;
+            console.log("Updating menu for user role:", usuario.rol); // Debugging
 
-            // Hide all static links first
             document.querySelectorAll('.sidebar-link').forEach(link => link.style.display = 'none');
+            document.querySelector('.logout').style.display = 'block'; // Ensure logout is visible if authenticated
 
             const allowedLinks = [];
 
@@ -368,11 +370,10 @@
                 );
             }
 
-            // Show allowed links and add active class
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 const href = link.getAttribute('href');
                 if (allowedLinks.includes(href)) {
-                    link.style.display = 'block'; // Show the link
+                    link.style.display = 'block';
                     if (window.location.pathname.includes(href.split('/').pop())) {
                         link.classList.add('active');
                     } else {
@@ -384,45 +385,57 @@
 
         // Function to render or update a chart
         function renderChart(chartId, type, data, options, chartInstance) {
-            const ctx = document.getElementById(chartId);
-            if (!ctx) {
-                console.error(`Canvas element with ID '${chartId}' not found.`);
+            let ctx = document.getElementById(chartId);
+            const parentContainer = ctx ? ctx.parentElement : null;
+
+            if (!ctx || !parentContainer) {
+                console.error(`Canvas element or its container with ID '${chartId}' not found.`);
                 return null;
             }
 
+            // Destroy existing chart instance if it exists
             if (chartInstance) {
-                chartInstance.destroy(); // Destroy existing chart instance to prevent overlaps
+                chartInstance.destroy();
             }
 
-            if (data.datasets[0].data.every(val => val === 0) && data.labels.length === 0) {
-                // If all data is zero or empty, show a message instead of an empty chart
-                const parent = ctx.parentElement;
-                parent.innerHTML = `<div class="no-data-message">No hay datos suficientes para mostrar este gráfico.</div>`;
+            // Check if there is data to render a chart
+            // For pie chart, check if any data point is > 0
+            const hasData = data.datasets && data.datasets.length > 0 && 
+                            data.datasets[0].data && data.datasets[0].data.some(val => val > 0);
+            
+            if (!hasData) {
+                // If no data, display a message
+                parentContainer.innerHTML = `<div class="no-data-message">No hay datos suficientes para mostrar este gráfico.</div>`;
                 return null; // No chart instance to return
             } else {
-                // If there was a 'no-data-message', remove it and re-add canvas
-                if (ctx.tagName !== 'CANVAS') {
-                    const newCanvas = document.createElement('canvas');
-                    newCanvas.id = chartId;
-                    ctx.parentElement.replaceChild(newCanvas, ctx);
-                    ctx = newCanvas; // Update ctx to the new canvas
+                // If there was a 'no-data-message', replace it with a new canvas
+                if (parentContainer.querySelector('.no-data-message')) {
+                    parentContainer.innerHTML = `<canvas id="${chartId}"></canvas>`;
+                    ctx = document.getElementById(chartId); // Get reference to the newly created canvas
                 }
             }
+            
+            // Create and return the new chart instance
             return new Chart(ctx, { type, data, options });
         }
 
 
         // Function to load member statistics (Sociedad and Miembro Asistencia)
         async function cargarEstadisticasMiembros() {
+            console.log("Attempting to fetch 'miembros' data for charts."); // Debugging
             try {
                 const { data: miembros, error } = await supabase
                     .from('miembros')
                     .select('nombre, sociedad, asistencia');
 
                 if (error) {
-                    console.error("Error fetching miembros data:", error.message);
+                    console.error("Error fetching 'miembros' data:", error.message);
+                    // Force display of "no data" message for charts if error
+                    renderChart('sociedadChart', 'pie', { labels: [], datasets: [{ data: [] }] }, {}, sociedadChartInstance);
+                    renderChart('asistenciaMiembrosChart', 'bar', { labels: [], datasets: [{ data: [] }] }, {}, asistenciaMiembrosChartInstance);
                     return;
                 }
+                console.log("'miembros' data fetched:", miembros); // Debugging
 
                 // --- Sociedad Chart (Pie) ---
                 const conteoSociedad = { "Jóvenes": 0, "Damas": 0, "Caballeros": 0, "Niños": 0, "General": 0 };
@@ -431,8 +444,7 @@
                     if (conteoSociedad[sociedadKey] !== undefined) {
                         conteoSociedad[sociedadKey]++;
                     } else {
-                        // If a society not defined, add it to "General"
-                        conteoSociedad["General"]++;
+                        conteoSociedad["General"]++; // If a society not defined, add it to "General"
                     }
                 });
 
@@ -453,9 +465,7 @@
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: {
-                                color: '#0b0c2a'
-                            }
+                            labels: { color: '#0b0c2a' }
                         },
                         title: {
                             display: true,
@@ -468,7 +478,7 @@
 
                 // --- Miembro Asistencia Chart (Bar) ---
                 miembros.sort((a, b) => (b.asistencia || 0) - (a.asistencia || 0));
-                const topMiembros = miembros.slice(0, 10);
+                const topMiembros = miembros.slice(0, 10); // Show top 10 for readability
 
                 asistenciaMiembrosChartInstance = renderChart('asistenciaMiembrosChart', 'bar', {
                     labels: topMiembros.map(m => m.nombre.split(' ')[0]),
@@ -501,11 +511,15 @@
 
             } catch (e) {
                 console.error("Exception in cargarEstadisticasMiembros:", e.message);
+                // Also force "no data" messages if a major exception occurs
+                renderChart('sociedadChart', 'pie', { labels: [], datasets: [{ data: [] }] }, {}, sociedadChartInstance);
+                renderChart('asistenciaMiembrosChart', 'bar', { labels: [], datasets: [{ data: [] }] }, {}, asistenciaMiembrosChartInstance);
             }
         }
 
         // Function to load and display activity attendance statistics
         async function cargarEstadisticasActividades() {
+            console.log("Attempting to fetch 'actividades' data for charts."); // Debugging
             try {
                 const { data: actividades, error } = await supabase
                     .from('actividades')
@@ -514,9 +528,12 @@
                     .limit(7);
 
                 if (error) {
-                    console.error("Error fetching actividades data:", error.message);
+                    console.error("Error fetching 'actividades' data:", error.message);
+                    // Force display of "no data" message for charts if error
+                    renderChart('actividadesAsistenciaChart', 'bar', { labels: [], datasets: [{ data: [] }] }, {}, actividadesAsistenciaChartInstance);
                     return;
                 }
+                console.log("'actividades' data fetched:", actividades); // Debugging
 
                 const labels = actividades.map(a => `${a.nombre_actividad} (${new Date(a.fecha).toLocaleDateString('es-ES')})`);
                 const data = actividades.map(a => a.asistencia_total || 0);
@@ -552,6 +569,8 @@
 
             } catch (e) {
                 console.error("Exception in cargarEstadisticasActividades:", e.message);
+                // Also force "no data" message if a major exception occurs
+                renderChart('actividadesAsistenciaChart', 'bar', { labels: [], datasets: [{ data: [] }] }, {}, actividadesAsistenciaChartInstance);
             }
         }
 
@@ -563,11 +582,12 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async () => {
-            // First, load basic UI elements and user info
+            // It's good practice to ensure a user is "logged in" before trying to fetch sensitive data
+            // For now, `obtenerUsuarioActivo` handles redirection if no user is found.
             await cargarLogo();
             await actualizarMenu();
             
-            // Then, load charts, which depend on data from Supabase
+            // Load charts
             await cargarEstadisticasMiembros();
             await cargarEstadisticasActividades();
         });
