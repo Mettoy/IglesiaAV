@@ -6,9 +6,8 @@
     <title>Dashboard Iglesia</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css">
+    
     <style>
-        /* Estilos específicos para este dashboard */
         body {
             display: flex;
             min-height: 100vh;
@@ -27,14 +26,14 @@
         }
         #sidebar.collapsed .sidebar-header h3,
         #sidebar.collapsed .sidebar-header img {
-            display: none; /* Ocultar en modo colapsado */
+            display: none;
         }
         #sidebar.collapsed .list-unstyled.components li a span {
-            display: none; /* Ocultar texto del menú en modo colapsado */
+            display: none;
         }
         #sidebar.collapsed .list-unstyled.components li a i {
             margin-right: 0;
-            font-size: 1.5em; /* Iconos más grandes en modo colapsado */
+            font-size: 1.5em;
         }
         #sidebar.collapsed .sidebar-header {
             padding: 10px;
@@ -210,20 +209,29 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="js/config.js"></script>
     <script>
-        // Inicializa Firebase usando la configuración de config.js
+        // CONFIGURACIÓN DE FIREBASE (antes estaba en config.js)
+        // ¡CAMBIA ESTOS VALORES POR LOS DE TU PROYECTO FIREBASE REAL!
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY", // <-- Reemplaza esto
+            authDomain: "TU_AUTH_DOMAIN", // <-- Reemplaza esto
+            projectId: "TU_PROJECT_ID", // <-- Reemplaza esto
+            storageBucket: "TU_STORAGE_BUCKET", // <-- Reemplaza esto
+            messagingSenderId: "TU_MESSAGING_SENDER_ID", // <-- Reemplaza esto
+            appId: "TU_APP_ID", // <-- Reemplaza esto
+            // measurementId: "TU_MEASUREMENT_ID" // Opcional, si usas Google Analytics
+        };
+
+        // Inicializa Firebase usando la configuración
         let app;
         try {
             app = firebase.initializeApp(firebaseConfig);
-            window.auth = app.auth();
+            window.auth = app.auth(); // Auth es necesario para el signOut, aunque el acceso sea público
             window.db = app.firestore();
             console.log('Firebase inicializado correctamente.');
         } catch (error) {
             console.error('Error al inicializar Firebase:', error);
             alert('Error al conectar con Firebase. Por favor, revisa la consola para más detalles.');
-            // Si hay un error crítico, podrías redirigir o mostrar un mensaje claro
-            // window.location.href = 'error.html';
         }
 
         // Definiciones de funciones de Chart.js y carga de datos
@@ -294,7 +302,7 @@
 
                 snapshot.forEach(doc => {
                     const miembro = doc.data();
-                    if (miembro.nombre && typeof miembro.asistencia === 'number') { // Asegura que asistencia sea un número
+                    if (miembro.nombre && typeof miembro.asistencia === 'number') {
                         asistenciaData.push({
                             nombre: miembro.nombre,
                             asistencia: miembro.asistencia
@@ -302,7 +310,6 @@
                     }
                 });
 
-                // Ordenar por asistencia de mayor a menor y tomar el top 7
                 asistenciaData.sort((a, b) => b.asistencia - a.asistencia);
                 const top7 = asistenciaData.slice(0, 7);
 
@@ -433,6 +440,8 @@
         async function cargarLogo() {
             if (!window.db) { console.error("Firestore no está inicializado."); return; }
             try {
+                // Asume que la colección 'configuracion' y el documento 'appConfig'
+                // están en el mismo proyecto Firebase que el resto de las colecciones.
                 const configDocRef = window.db.collection('configuracion').doc('appConfig');
                 const docSnap = await configDocRef.get();
 
@@ -455,10 +464,9 @@
             }
         }
 
-        // Inmediatamente después de la inicialización de Firebase, carga todo
-        // No necesitamos onAuthStateChanged ni verificación de rol si todo es público.
+        // Carga de todos los datos y gráficos al cargar el DOM.
+        // Ya no dependemos de la autenticación, ya que el acceso es público.
         window.addEventListener('DOMContentLoaded', () => {
-            // Asegúrate de que window.db esté disponible antes de intentar cargar datos
             if (window.db) {
                 cargarEstadisticasSociedad();
                 cargarEstadisticasAsistenciaMiembros();
@@ -469,8 +477,7 @@
             }
         });
 
-
-        // Botón de cerrar sesión (opcional, si todavía quieres permitir a la gente loguearse y desloguearse aunque el contenido sea público)
+        // Botón de cerrar sesión (mantenido por si se usa en otras partes de la app)
         document.getElementById('logoutBtn').addEventListener('click', async (e) => {
             e.preventDefault();
             try {
@@ -497,7 +504,6 @@
         window.addEventListener('resize', function() {
             // Puedes añadir lógica aquí si necesitas ajustar algo al redimensionar
         });
-
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
