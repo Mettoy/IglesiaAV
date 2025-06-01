@@ -72,6 +72,8 @@
             margin: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
         }
         .main-content h2 {
             color: #333;
@@ -124,6 +126,120 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+
+        /* Table styles */
+        .discipulos-table-container {
+            margin-top: 30px;
+            flex-grow: 1; /* Allows the table to take available space */
+            overflow-x: auto; /* For horizontal scrolling if table is too wide */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: #333;
+        }
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Status button styles */
+        .status-button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white; /* Default text color */
+            min-width: 100px; /* Ensure consistent width */
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .status-button.discipulando { background-color: #3498db; } /* Blue */
+        .status-button.en-pausa { background-color: #f39c12; }    /* Yellow/Orange */
+        .status-button.de-baja { background-color: #e74c3c; }      /* Red */
+        .status-button.completado { background-color: #27ae60; }   /* Green */
+        .status-button.no-status { background-color: #95a5a6; color: #333;} /* Grey for initial empty state */
+
+        /* Dropdown for status */
+        .status-dropdown {
+            display: none; /* Hidden by default */
+            position: absolute;
+            background-color: white;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 10;
+            border-radius: 5px;
+            top: 0; /* Position relative to the button */
+            left: 0;
+            transform: translateY(calc(100% + 5px)); /* Position below the button */
+        }
+        .status-dropdown button {
+            color: black;
+            padding: 8px 10px;
+            text-decoration: none;
+            display: block;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .status-dropdown button:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Search bar and pagination styles */
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 10px; /* Space between items */
+        }
+        .search-bar input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 250px;
+            font-size: 16px;
+        }
+        .pagination-controls button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 5px;
+            transition: background-color 0.3s ease;
+        }
+        .pagination-controls button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .pagination-controls button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        .pagination-controls span {
+            font-weight: bold;
+            margin: 0 10px;
+        }
     </style>
 </head>
 <body>
@@ -151,16 +267,6 @@
                 <input type="date" id="fechaInicio" required>
             </div>
             <div class="form-group">
-                <label for="estadoDiscipulado">Estado:</label>
-                <select id="estadoDiscipulado" required>
-                    <option value="">Seleccione un estado</option>
-                    <option value="activo">Activo</option>
-                    <option value="completado">Completado</option>
-                    <option value="pausado">Pausado</option>
-                    <option value="abandonado">Abandonado</option>
-                </select>
-            </div>
-            <div class="form-group">
                 <label for="observaciones">Observaciones:</label>
                 <input type="text" id="observaciones">
             </div>
@@ -169,6 +275,34 @@
             </div>
         </form>
         <div id="message" class="message"></div>
+
+        <hr> <h2>Discipulados Registrados</h2>
+        <div class="table-controls">
+            <div class="search-bar">
+                <input type="text" id="searchDiscipulo" placeholder="Buscar por nombre...">
+            </div>
+            <div class="pagination-controls">
+                <button id="prevPage">Anterior</button>
+                <span id="currentPageInfo">Página 1</span>
+                <button id="nextPage">Siguiente</button>
+            </div>
+        </div>
+
+        <div class="discipulos-table-container">
+            <table id="discipulosTable">
+                <thead>
+                    <tr>
+                        <th>Nombre del Discípulo</th>
+                        <th>Fecha de Inicio</th>
+                        <th>Estado</th>
+                        <th>Observaciones</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -192,10 +326,21 @@
         const discipuladoForm = document.getElementById('discipuladoForm');
         const nombreDiscipuloInput = document.getElementById('nombreDiscipulo');
         const fechaInicioInput = document.getElementById('fechaInicio');
-        const estadoDiscipuladoSelect = document.getElementById('estadoDiscipulado');
         const observacionesInput = document.getElementById('observaciones');
         const messageDiv = document.getElementById('message');
         const btnInicio = document.getElementById('btnInicio');
+        const discipulosTableBody = document.querySelector('#discipulosTable tbody');
+        const searchDiscipuloInput = document.getElementById('searchDiscipulo');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const currentPageInfoSpan = document.getElementById('currentPageInfo');
+
+        // Pagination variables
+        const pageSize = 20;
+        let currentPage = 1;
+        let lastVisible = null; // Used for pagination cursor
+        let firstVisible = null; // Used for previous pagination
+        let currentQuery = null; // To store the current Firestore query
 
         // Event listener for "Inicio" button
         btnInicio.addEventListener('click', () => {
@@ -212,30 +357,205 @@
             }, 3000); // Hide after 3 seconds
         }
 
+        // Function to render disciple data in the table
+        async function renderDiscipulosTable(querySnapshot) {
+            discipulosTableBody.innerHTML = ''; // Clear existing rows
+            const rows = [];
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                const row = `
+                    <tr data-id="${doc.id}">
+                        <td>${data.nombreDiscipulo}</td>
+                        <td>${data.fechaInicio ? new Date(data.fechaInicio.toDate()).toLocaleDateString() : 'N/A'}</td>
+                        <td>
+                            <div class="status-container">
+                                <button class="status-button ${data.estado || 'no-status'}" data-status="${data.estado || ''}">
+                                    ${data.estado ? data.estado.charAt(0).toUpperCase() + data.estado.slice(1).replace('-', ' ') : 'Seleccionar Estado'}
+                                </button>
+                                <div class="status-dropdown">
+                                    <button data-value="discipulando">Discipulando</button>
+                                    <button data-value="en-pausa">En Pausa</button>
+                                    <button data-value="de-baja">De Baja</button>
+                                    <button data-value="completado">Completado</button>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${data.observaciones || ''}</td>
+                        <td>
+                            <button onclick="deleteDiscipulo('${doc.id}')">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+                rows.push(row);
+            });
+            discipulosTableBody.innerHTML = rows.join('');
+
+            // Set last and first visible documents for pagination
+            if (querySnapshot.docs.length > 0) {
+                lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+                firstVisible = querySnapshot.docs[0];
+            } else {
+                lastVisible = null;
+                firstVisible = null;
+            }
+
+            updatePaginationButtons(querySnapshot.docs.length);
+        }
+
+        // Function to fetch and display disciples
+        async function fetchDiscipulos(direction = 'next', searchTerm = '') {
+            let query = db.collection('discipulados').orderBy('timestamp', 'desc');
+
+            if (searchTerm) {
+                // For search, we need to adapt the query.
+                // Firestore doesn't support full-text search.
+                // We'll do a basic "starts with" search.
+                // This requires an exact match for the beginning of the string.
+                // For more advanced search, consider a third-party solution like Algolia or ElasticSearch.
+                query = query.where('nombreDiscipulo', '>=', searchTerm)
+                             .where('nombreDiscipulo', '<=', searchTerm + '\uf8ff');
+                currentPage = 1; // Reset pagination for new search
+                lastVisible = null;
+                firstVisible = null;
+            }
+
+            if (direction === 'next' && lastVisible) {
+                query = query.startAfter(lastVisible);
+            } else if (direction === 'prev' && firstVisible) {
+                query = query.endBefore(firstVisible);
+            }
+
+            currentQuery = query.limit(pageSize);
+
+            try {
+                const snapshot = await currentQuery.get();
+                renderDiscipulosTable(snapshot);
+                currentPageInfoSpan.textContent = `Página ${currentPage}`;
+            } catch (error) {
+                console.error("Error al cargar discipulados: ", error);
+                showMessage('Error al cargar discipulados: ' + error.message, 'error');
+            }
+        }
+
+        // Update pagination button states
+        function updatePaginationButtons(currentResultsCount) {
+            // Disable 'Previous' if on the first page
+            prevPageBtn.disabled = currentPage === 1;
+
+            // Disable 'Next' if there are fewer results than the page size,
+            // indicating it's the last page or no more results.
+            nextPageBtn.disabled = currentResultsCount < pageSize;
+        }
+
+        // Pagination event listeners
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                fetchDiscipulos('prev', searchDiscipuloInput.value);
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            currentPage++;
+            fetchDiscipulos('next', searchDiscipuloInput.value);
+        });
+
+        // Search functionality
+        searchDiscipuloInput.addEventListener('input', () => {
+            currentPage = 1; // Reset page on new search
+            lastVisible = null; // Reset pagination cursor
+            firstVisible = null;
+            fetchDiscipulos('next', searchDiscipuloInput.value);
+        });
+
         // Handle form submission
         discipuladoForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const nombreDiscipulo = nombreDiscipuloInput.value;
             const fechaInicio = fechaInicioInput.value;
-            const estadoDiscipulado = estadoDiscipuladoSelect.value;
             const observaciones = observacionesInput.value;
 
             try {
                 await db.collection("discipulados").add({
                     nombreDiscipulo: nombreDiscipulo,
                     fechaInicio: firebase.firestore.Timestamp.fromDate(new Date(fechaInicio)),
-                    estado: estadoDiscipulado,
+                    estado: 'discipulando', // Default status when registering
                     observaciones: observaciones,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 showMessage('Discipulado registrado exitosamente!', 'success');
                 discipuladoForm.reset(); // Clear the form
+                fetchDiscipulos(); // Reload data to show the new entry
             } catch (error) {
                 console.error("Error al registrar discipulado: ", error);
                 showMessage('Error al registrar discipulado: ' + error.message, 'error');
             }
         });
+
+        // Event delegation for status button and dropdown
+        discipulosTableBody.addEventListener('click', async (event) => {
+            const target = event.target;
+
+            // Handle status button click to toggle dropdown
+            if (target.classList.contains('status-button')) {
+                const dropdown = target.nextElementSibling;
+                if (dropdown && dropdown.classList.contains('status-dropdown')) {
+                    // Hide all other open dropdowns first
+                    document.querySelectorAll('.status-dropdown').forEach(d => {
+                        if (d !== dropdown) d.style.display = 'none';
+                    });
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                }
+            }
+
+            // Handle status dropdown option click
+            else if (target.parentNode.classList.contains('status-dropdown') && target.tagName === 'BUTTON') {
+                const newStatus = target.dataset.value;
+                const docId = target.closest('tr').dataset.id;
+                const statusButton = target.closest('.status-container').querySelector('.status-button');
+
+                try {
+                    await db.collection('discipulados').doc(docId).update({
+                        estado: newStatus
+                    });
+
+                    // Update button text and class
+                    statusButton.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace('-', ' ');
+                    statusButton.className = `status-button ${newStatus}`;
+                    
+                    // Hide the dropdown
+                    target.closest('.status-dropdown').style.display = 'none';
+                    showMessage('Estado actualizado exitosamente!', 'success');
+                } catch (error) {
+                    console.error("Error al actualizar estado: ", error);
+                    showMessage('Error al actualizar estado: ' + error.message, 'error');
+                }
+            }
+        });
+
+        // Hide dropdowns when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.status-container')) {
+                document.querySelectorAll('.status-dropdown').forEach(dropdown => {
+                    dropdown.style.display = 'none';
+                });
+            }
+        });
+
+        // Function to delete a disciple
+        async function deleteDiscipulo(id) {
+            if (confirm('¿Está seguro de que desea eliminar este discipulado?')) {
+                try {
+                    await db.collection('discipulados').doc(id).delete();
+                    showMessage('Discipulado eliminado exitosamente!', 'success');
+                    fetchDiscipulos(); // Reload data after deletion
+                } catch (error) {
+                    console.error("Error al eliminar discipulado: ", error);
+                    showMessage('Error al eliminar discipulado: ' + error.message, 'error');
+                }
+            }
+        }
 
         // Function to close session (example, integrate with your actual auth flow)
         async function cerrarSesion() {
@@ -247,6 +567,11 @@
                 alert("Hubo un error al cerrar sesión.");
             }
         }
+
+        // Initial load of disciples when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDiscipulos(); // Load first page of disciples
+        });
 
         // Basic authentication check (optional, but recommended for protected routes)
         auth.onAuthStateChanged(user => {
