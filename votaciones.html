@@ -793,12 +793,14 @@
             candidates.forEach(candidate => {
                 const row = votingTableBody.insertRow();
                 const currentTotalVotes = initialVotes[candidate] || 0; // Obtener votos actuales, o 0 si no existen
+                // Generar un ID seguro para el DOM reemplazando espacios por guiones
+                const candidateIdSafe = candidate.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, ''); // Eliminar caracteres no alfanuméricos excepto guiones
                 row.innerHTML = `
                     <td>${candidate}</td>
-                    <td><input type="number" id="votes-input-${candidate.replace(/\s/g, '-')}" value="0" min="0"></td>
-                    <td><button onclick="incrementVote('${candidate.replace(/\s/g, '-')}')">+</button></td>
-                    <td><button onclick="decrementVote('${candidate.replace(/\s/g, '-')}')">-</button></td>
-                    <td id="total-votes-${candidate.replace(/\s/g, '-')}" data-current-total="${currentTotalVotes}">${currentTotalVotes}</td>
+                    <td><input type="number" id="votes-input-${candidateIdSafe}" value="0" min="0"></td>
+                    <td><button onclick="incrementVote('${candidateIdSafe}')">+</button></td>
+                    <td><button onclick="decrementVote('${candidateIdSafe}')">-</button></td>
+                    <td id="total-votes-${candidateIdSafe}" data-current-total="${currentTotalVotes}">${currentTotalVotes}</td>
                 `;
             });
 
@@ -807,7 +809,7 @@
 
         /**
          * Incrementa la cantidad de votos a añadir/quitar para un candidato.
-         * @param {string} candidateIdSafe - El ID del candidato (seguro para el DOM).
+         * @param {string} candidateIdSafe - El ID del input de votos del candidato (seguro para el DOM).
          */
         function incrementVote(candidateIdSafe) {
             const inputElement = document.getElementById(`votes-input-${candidateIdSafe}`);
@@ -816,7 +818,7 @@
 
         /**
          * Decrementa la cantidad de votos a añadir/quitar para un candidato.
-         * @param {string} candidateIdSafe - El ID del candidato (seguro para el DOM).
+         * @param {string} candidateIdSafe - El ID del input de votos del candidato (seguro para el DOM).
          */
         function decrementVote(candidateIdSafe) {
             const inputElement = document.getElementById(`votes-input-${candidateIdSafe}`);
@@ -847,7 +849,7 @@
 
             activityToUpdate.candidates.forEach(candidate => {
                 // Generar el ID seguro para el DOM, que es como se guardó en el HTML
-                const candidateIdSafe = candidate.replace(/\s/g, '-');
+                const candidateIdSafe = candidate.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
                 const inputElement = document.getElementById(`votes-input-${candidateIdSafe}`);
                 const votesToAdd = parseInt(inputElement.value) || 0;
 
