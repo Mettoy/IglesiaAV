@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>Panel Admin</h1>
+        </div>
+        <a href="miembros.html" class="sidebar-link">Miembros</a>
+        <a href="registrar.html" class="sidebar-link">Dar acceso</a>
+        <a href="diezmo.html" class="sidebar-link">Diezmos</a>
+        <a href="actividades.html" class="sidebar-link active">Actividades</a>
+        <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
+        <a href="reportes.html" class="sidebar-link">Reportes</a>
+        <a href="votaciones.html" class="sidebar-link">Votaciones</a>
+        <a href="discipulado.html" class="sidebar-link">Discipulado</a>
+        <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
+    </div>
+
+    <div class="main-content">
+        <header class="header">
+            <h2>Gestión de Actividades</h2>
+        </header>
+
+        <div class="summary-section">
+            <h3>Resumen Mensual de Asistencia</h3>
+            <div class="month-selector">
+                <button id="prevMonth" class="nav-button">&lt;</button>
+                <span id="currentMonthYear"></span>
+                <button id="nextMonth" class="nav-button">&gt;</button>
+            </div>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h4>Total Actividades</h4>
+                    <p id="totalActivitiesMonth">0</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Promedio Asistencia</h4>
+                    <p id="averageAttendanceMonth">0</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Total Damas</h4>
+                    <p id="totalDamasMonth">0</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Total Caballeros</h4>
+                    <p id="totalCaballerosMonth">0</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Total Niños</h4>
+                    <p id="totalNinosMonth">0</p>
+                </div>
+            </div>
+        </div>
+
+        <button id="openModalBtn" class="add-button">Registrar Nueva Actividad</button>
+
+        <div class="table-container">
+            <h3>Registros de Actividades</h3>
+            <table id="activitiesTable">
+                <thead>
+                    <tr>
+                        <th>Actividad</th>
+                        <th>Fecha</th>
+                        <th>Damas</th>
+                        <th>Caballeros</th>
+                        <th>Niños</th>
+                        <th>Asistencia Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="activityModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Registrar Actividad</h2>
+            <form id="activityForm">
+                <div class="form-group">
+                    <label for="activityName">ACTIVIDAD:</label>
+                    <input type="text" id="activityName" required>
+                </div>
+                <div class="form-group">
+                    <label for="activityDate">Fecha:</label>
+                    <input type="date" id="activityDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="attendanceDamas">Asistencia Damas:</label>
+                    <input type="number" id="attendanceDamas" min="0" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="attendanceCaballeros">Asistencia Caballeros:</label>
+                    <input type="number" id="attendanceCaballeros" min="0" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="attendanceNinos">Asistencia Niños:</label>
+                    <input type="number" id="attendanceNinos" min="0" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Asistencia Total:</label>
+                    <span id="totalAttendanceDisplay">0</span>
+                </div>
+                <button type="submit">Guardar Actividad</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
