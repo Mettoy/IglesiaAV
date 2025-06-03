@@ -4,9 +4,453 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Actividades</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* Variables de color */
+        :root {
+            --dark-blue: #0A0A2A; /* Azul ultra oscuro */
+            --gold: #FFD700;     /* Dorado */
+            --light-gold: #FFECB3; /* Dorado más claro para texto y etiquetas */
+            --gray-bg: #1A1A3A; /* Fondo principal más claro que el sidebar */
+            --light-text: #E0E0E0; /* Texto general claro */
+            --hover-gold: #FFC107; /* Dorado para estados hover */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--gray-bg);
+            color: var(--light-text);
+            overflow-x: hidden; /* Prevenir scroll horizontal */
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: var(--dark-blue);
+            color: var(--light-text);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+            position: fixed;
+            height: 100%;
+            overflow-y: auto; /* Para menús largos */
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+
+        .sidebar-header h1 {
+            color: var(--gold);
+            font-size: 1.8em;
+            margin: 0;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); /* Efecto de brillo sutil */
+        }
+
+        .sidebar-link {
+            padding: 15px 25px;
+            text-decoration: none;
+            color: var(--light-text);
+            display: block;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border-left: 5px solid transparent; /* Para el indicador de activo/hover */
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--gold);
+            border-left-color: var(--gold);
+        }
+
+        .sidebar-link.active {
+            background-color: rgba(255, 215, 0, 0.2);
+            color: var(--gold);
+            border-left-color: var(--gold);
+            font-weight: bold;
+        }
+
+        .logout {
+            padding: 15px 25px;
+            color: var(--light-gold);
+            cursor: pointer;
+            margin-top: auto; /* Empuja el botón de cerrar sesión hacia abajo */
+            border-top: 1px solid rgba(255, 215, 0, 0.2);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .logout:hover {
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--hover-gold);
+        }
+
+        /* Contenido Principal */
+        .main-content {
+            margin-left: 250px; /* Igual al ancho del sidebar */
+            padding: 20px;
+            flex-grow: 1;
+            width: calc(100% - 250px); /* Asegura que no haya desbordamiento */
+        }
+
+        .header {
+            background-color: var(--dark-blue);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h2 {
+            color: var(--gold);
+            margin: 0;
+            font-size: 2em;
+        }
+
+        /* Sección de Resumen Mensual */
+        .summary-section {
+            background-color: var(--dark-blue);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .summary-section h3 {
+            color: var(--light-gold);
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .month-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-button {
+            background-color: var(--gold);
+            color: var(--dark-blue);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background-color: var(--hover-gold);
+        }
+
+        #currentMonthYear {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--gold);
+            margin: 0 20px;
+        }
+
+        .summary-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-around;
+        }
+
+        .summary-card {
+            background-color: var(--gray-bg);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            flex: 1 1 calc(33% - 40px); /* Para 3 columnas en pantallas grandes */
+            min-width: 180px; /* Asegura un tamaño mínimo para la tarjeta */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .summary-card h4 {
+            color: var(--light-gold);
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .summary-card p {
+            color: var(--gold);
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* Botón de Añadir */
+        .add-button {
+            background-color: var(--gold);
+            color: var(--dark-blue);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 25px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: block;
+            width: fit-content; /* Se ajusta al contenido */
+            margin-left: auto;
+            margin-right: auto; /* Centra el botón */
+        }
+
+        .add-button:hover {
+            background-color: var(--hover-gold);
+            transform: translateY(-2px); /* Pequeño efecto de elevación */
+        }
+
+        /* Tabla de Actividades */
+        .table-container {
+            background-color: var(--dark-blue);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            overflow-x: auto; /* Permite scroll horizontal en tablas grandes */
+        }
+
+        .table-container h3 {
+            color: var(--light-gold);
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 10px;
+        }
+
+        #activitiesTable {
+            width: 100%;
+            border-collapse: collapse; /* Elimina el espacio entre celdas */
+            margin-top: 15px;
+        }
+
+        #activitiesTable th,
+        #activitiesTable td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+            color: var(--light-text);
+        }
+
+        #activitiesTable th {
+            background-color: rgba(255, 215, 0, 0.1);
+            color: var(--gold);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        #activitiesTable tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.1); /* Cebra para filas */
+        }
+
+        #activitiesTable tbody tr:hover {
+            background-color: rgba(255, 215, 0, 0.05); /* Efecto hover en filas */
+        }
+
+        /* Modal Styling */
+        .modal {
+            display: none; /* Oculto por defecto, se muestra con JS */
+            position: fixed; /* Se mantiene en la ventana de visualización */
+            z-index: 1000; /* Alto z-index para estar sobre todo */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Habilita el scroll si el contenido es grande */
+            background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente */
+            display: flex; /* Para centrar el modal-content */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--gray-bg);
+            margin: auto;
+            padding: 30px;
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px; /* Ancho máximo para el modal */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+            position: relative;
+            animation: fadeIn 0.3s ease-out; /* Animación de entrada */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-button {
+            color: var(--gold);
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--hover-gold);
+            text-decoration: none;
+        }
+
+        .modal-content h2 {
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--light-gold);
+            font-weight: bold;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="number"] {
+            width: calc(100% - 20px); /* Ajusta el ancho para el padding */
+            padding: 10px;
+            border: 1px solid var(--gold);
+            border-radius: 5px;
+            background-color: var(--dark-blue);
+            color: var(--light-text);
+            font-size: 1em;
+            box-sizing: border-box; /* Incluye padding y borde en el ancho */
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="date"]:focus,
+        .form-group input[type="number"]:focus {
+            outline: none;
+            border-color: var(--hover-gold);
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        }
+
+        #totalAttendanceDisplay {
+            display: block;
+            margin-top: 5px;
+            font-size: 1.2em;
+            color: var(--gold);
+            font-weight: bold;
+        }
+
+        .modal-content button[type="submit"] {
+            background-color: var(--gold);
+            color: var(--dark-blue);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            display: block;
+            width: 100%;
+            margin-top: 25px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .modal-content button[type="submit"]:hover {
+            background-color: var(--hover-gold);
+            transform: translateY(-2px);
+        }
+
+        /* Ajustes Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                box-shadow: none;
+                flex-direction: row; /* Menú horizontal en móviles */
+                justify-content: space-around;
+                padding: 10px 0;
+                flex-wrap: wrap; /* Para que los enlaces se envuelvan si son muchos */
+            }
+
+            .sidebar-header {
+                display: none; /* Ocultar el título del panel en móviles para ahorrar espacio */
+            }
+
+            .sidebar-link, .logout {
+                flex: 1 1 auto; /* Permite que los enlaces se ajusten al espacio */
+                text-align: center;
+                padding: 10px 5px; /* Menos padding horizontal */
+                border-left: none; /* Eliminar el borde lateral */
+                border-bottom: 3px solid transparent; /* Nuevo indicador inferior */
+            }
+
+            .sidebar-link.active {
+                border-left-color: transparent;
+                border-bottom-color: var(--gold); /* Usar el borde inferior como indicador */
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding-top: 20px; /* Espacio para el menú fijo en la parte superior */
+            }
+
+            .summary-cards {
+                flex-direction: column; /* Tarjetas de resumen en columna */
+                align-items: center;
+            }
+
+            .summary-card {
+                flex: 1 1 90%;
+                max-width: 300px;
+            }
+
+            .table-container {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar-link {
+                font-size: 0.9em;
+                padding: 8px 3px;
+            }
+
+            .header h2 {
+                font-size: 1.5em;
+            }
+
+            .summary-section h3, .table-container h3 {
+                font-size: 1.2em;
+            }
+
+            .add-button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar">
@@ -115,6 +559,251 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Configuración de Firebase - ¡Asegúrate de que esta configuración sea la de tu proyecto!
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
+            authDomain: "iglesia-adoracion-viva.firebaseapp.com",
+            databaseURL: "https://iglesia-adoracion-viva-default-rtdb.firebaseio.com",
+            projectId: "iglesia-adoracion-viva",
+            storageBucket: "iglesia-adoracion-viva.firebasestorage.app",
+            messagingSenderId: "815332010058",
+            appId: "1:815332010058:web:d2afff616469349d88deb3",
+            measurementId: "G-43MZP6V55D"
+        };
+
+        // Inicializa Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(); // Obtén una instancia de Firestore
+
+        // Referencias del DOM
+        const openModalBtn = document.getElementById('openModalBtn');
+        const activityModal = document.getElementById('activityModal');
+        const closeButton = document.querySelector('.close-button');
+        const activityForm = document.getElementById('activityForm');
+        const attendanceDamasInput = document.getElementById('attendanceDamas');
+        const attendanceCaballerosInput = document.getElementById('attendanceCaballeros');
+        const attendanceNinosInput = document.getElementById('attendanceNinos');
+        const totalAttendanceDisplay = document.getElementById('totalAttendanceDisplay');
+        const activitiesTableBody = document.querySelector('#activitiesTable tbody');
+
+        const currentMonthYearSpan = document.getElementById('currentMonthYear');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        const totalActivitiesMonthElem = document.getElementById('totalActivitiesMonth');
+        const averageAttendanceMonthElem = document.getElementById('averageAttendanceMonth');
+        const totalDamasMonthElem = document.getElementById('totalDamasMonth');
+        const totalCaballerosMonthElem = document.getElementById('totalCaballerosMonth');
+        const totalNinosMonthElem = document.getElementById('totalNinosMonth');
+
+        // Variables para el control de meses
+        let currentMonth = new Date().getMonth(); // 0-11
+        let currentYear = new Date().getFullYear();
+
+        // --- Funciones para manejar el Modal ---
+        openModalBtn.onclick = function() {
+            activityModal.style.display = 'flex'; // Usamos 'flex' para el centrado CSS
+            // Reiniciar valores del formulario al abrir
+            activityForm.reset();
+            totalAttendanceDisplay.textContent = '0';
+            // Establecer la fecha actual por defecto en el input de fecha
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Mes + 1 y asegurar 2 dígitos
+            const day = today.getDate().toString().padStart(2, '0'); // Asegurar 2 dígitos
+            document.getElementById('activityDate').value = `${year}-${month}-${day}`;
+        };
+
+        closeButton.onclick = function() {
+            activityModal.style.display = 'none';
+        };
+
+        // Cerrar modal al hacer clic fuera del contenido
+        window.onclick = function(event) {
+            if (event.target == activityModal) {
+                activityModal.style.display = 'none';
+            }
+        };
+
+        // Cálculo de Asistencia Total en tiempo real
+        function calculateTotalAttendance() {
+            const damas = parseInt(attendanceDamasInput.value) || 0;
+            const caballeros = parseInt(attendanceCaballerosInput.value) || 0;
+            const ninos = parseInt(attendanceNinosInput.value) || 0;
+            const total = damas + caballeros + ninos;
+            totalAttendanceDisplay.textContent = total;
+        }
+
+        // Escuchadores para calcular el total al cambiar los inputs
+        attendanceDamasInput.addEventListener('input', calculateTotalAttendance);
+        attendanceCaballerosInput.addEventListener('input', calculateTotalAttendance);
+        attendanceNinosInput.addEventListener('input', calculateTotalAttendance);
+
+        // Función para cerrar sesión (simulada)
+        function cerrarSesion() {
+            alert('Cerrando sesión...');
+            // Aquí iría la lógica real de Firebase Authentication para cerrar sesión:
+            /*
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'login.html'; // Redirigir a la página de login
+            }).catch((error) => {
+                console.error("Error al cerrar sesión: ", error);
+                alert("No se pudo cerrar la sesión.");
+            });
+            */
+        }
+
+        // --- Lógica de Firebase y Renderizado de Datos ---
+
+        // Función para guardar actividad en Firestore
+        async function saveActivity(activity) {
+            try {
+                await db.collection('actividades').add(activity); // Aquí se guarda
+                console.log("Actividad guardada con éxito!");
+                activityModal.style.display = 'none';
+                // Recargar actividades para el mes actual después de guardar
+                loadActivities(currentMonth, currentYear);
+            } catch (e) {
+                console.error("Error al añadir actividad: ", e);
+                alert("Hubo un error al guardar la actividad. Intenta de nuevo.");
+            }
+        }
+
+        // Manejar el envío del formulario
+        activityForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevenir el envío tradicional del formulario
+
+            const activityName = document.getElementById('activityName').value;
+            const activityDateStr = document.getElementById('activityDate').value; // Formato YYYY-MM-DD
+
+            // Convertir la fecha a un objeto Date y luego a Timestamp de Firestore
+            // Es importante añadir 'T00:00:00' para evitar problemas de zona horaria
+            const activityDate = firebase.firestore.Timestamp.fromDate(new Date(activityDateStr + 'T00:00:00'));
+
+            const attendanceDamas = parseInt(attendanceDamasInput.value) || 0;
+            const attendanceCaballeros = parseInt(attendanceCaballerosInput.value) || 0;
+            const attendanceNinos = parseInt(attendanceNinosInput.value) || 0;
+            const totalAttendance = attendanceDamas + attendanceCaballeros + attendanceNinos;
+
+            const newActivity = {
+                name: activityName,
+                date: activityDate,
+                damas: attendanceDamas,
+                caballeros: attendanceCaballeros,
+                ninos: attendanceNinos,
+                total: totalAttendance,
+                // Opcional: añadir un timestamp de creación para ordenar o auditar
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            saveActivity(newActivity);
+        });
+
+        // Función para cargar y mostrar actividades de un mes específico
+        async function loadActivities(month, year) {
+            activitiesTableBody.innerHTML = ''; // Limpiar la tabla antes de cargar nuevas actividades
+            let totalActivitiesCount = 0;
+            let totalDamas = 0;
+            let totalCaballeros = 0;
+            let totalNinos = 0;
+            let totalOverallAttendance = 0;
+
+            // Calcular el inicio y fin del mes para la consulta de Firestore
+            const startOfMonth = new Date(year, month, 1);
+            // El último día del mes es el día 0 del siguiente mes
+            const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999); // Último milisegundo del último día
+
+            try {
+                const querySnapshot = await db.collection('actividades')
+                    .where('date', '>=', startOfMonth)
+                    .where('date', '<=', endOfMonth)
+                    .orderBy('date', 'asc') // Ordenar por fecha ascendente
+                    .get();
+
+                if (querySnapshot.empty) {
+                    activitiesTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--light-gold);">No hay actividades registradas para este mes.</td></tr>';
+                } else {
+                    querySnapshot.forEach(doc => {
+                        const data = doc.data();
+                        const row = activitiesTableBody.insertRow();
+
+                        // Convertir Timestamp de Firestore a objeto Date de JavaScript
+                        const dateObj = data.date.toDate();
+                        // Formatear la fecha para mostrarla de manera legible
+                        const formattedDate = dateObj.toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+
+                        row.insertCell().textContent = data.name;
+                        row.insertCell().textContent = formattedDate;
+                        row.insertCell().textContent = data.damas;
+                        row.insertCell().textContent = data.caballeros;
+                        row.insertCell().textContent = data.ninos;
+                        row.insertCell().textContent = data.total;
+
+                        // Sumar para el resumen mensual
+                        totalActivitiesCount++;
+                        totalDamas += data.damas;
+                        totalCaballeros += data.caballeros;
+                        totalNinos += data.ninos;
+                        totalOverallAttendance += data.total;
+                    });
+                }
+                // Actualizar los datos del resumen mensual
+                updateMonthlySummary(totalActivitiesCount, totalDamas, totalCaballeros, totalNinos, totalOverallAttendance);
+
+            } catch (error) {
+                console.error("Error al cargar actividades: ", error);
+                activitiesTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error al cargar actividades. Por favor, revisa la consola para más detalles.</td></tr>';
+            }
+        }
+
+        // Función para actualizar los elementos del DOM con el resumen mensual
+        function updateMonthlySummary(count, damas, caballeros, ninos, totalAttendance) {
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+            ];
+            currentMonthYearSpan.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+            totalActivitiesMonthElem.textContent = count;
+            totalDamasMonthElem.textContent = damas;
+            totalCaballerosMonthElem.textContent = caballeros;
+            totalNinosMonthElem.textContent = ninos;
+
+            const average = count > 0 ? (totalAttendance / count).toFixed(1) : 0; // Promedio con un decimal
+            averageAttendanceMonthElem.textContent = average;
+        }
+
+        // Navegación de meses (botones anterior/siguiente)
+        prevMonthBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11; // Diciembre
+                currentYear--;
+            }
+            loadActivities(currentMonth, currentYear);
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0; // Enero
+                currentYear++;
+            }
+            loadActivities(currentMonth, currentYear);
+        });
+
+
+        // Cargar actividades al iniciar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            calculateTotalAttendance(); // Para mostrar el total inicial del formulario (0)
+            loadActivities(currentMonth, currentYear); // Carga las actividades del mes actual al cargar la página
+        });
+    </script>
 </body>
 </html>
