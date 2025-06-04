@@ -523,6 +523,47 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(255, 215, 0, 0.5);
         }
+
+        /* --- Confirmation Message CSS --- */
+        .confirmation-message {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50; /* Green for success */
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 3000;
+            font-size: 1.1em;
+            font-weight: bold;
+            animation: slideInFromRight 0.5s ease-out forwards;
+        }
+
+        .confirmation-message.error {
+            background-color: #f44336; /* Red for error */
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -618,13 +659,15 @@
         </div>
     </div>
 
+    <div id="confirmationMessage" class="confirmation-message"></div>
+
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script>
         // --- Configuración de Firebase ---
         const firebaseConfig = {
-            apiKey: "AIzaSyAhFOi7rQhuVauaNMTKqyLPFqwWPqkxb3U", // ¡Reemplaza con tu propia apiKey!
+            apiKey: "TU_API_KEY_DE_FIREBASE", // ¡IMPORTANTE: Reemplaza con tu propia apiKey!
             authDomain: "iglesia-adoracion-viva-182e6.firebaseapp.com",
             projectId: "iglesia-adoracion-viva-182e6",
             storageBucket: "iglesia-adoracion-viva-182e6.firebasestorage.app",
@@ -640,6 +683,22 @@
 
         let activities = []; // Almacena actividades pendientes y completadas localmente
         let currentActivityId = null; // ID de la actividad actualmente en votación
+
+        // --- Función para mostrar mensajes al usuario ---
+        function showMessage(message, isError = false) {
+            const msgBox = document.getElementById('confirmationMessage');
+            msgBox.textContent = message;
+            msgBox.className = 'confirmation-message'; // Reset classes
+            if (isError) {
+                msgBox.classList.add('error');
+            }
+            msgBox.style.display = 'block';
+
+            // Hide after 3 seconds
+            setTimeout(() => {
+                msgBox.style.display = 'none';
+            }, 3000);
+        }
 
         // --- Funciones de Gestión de Actividades ---
 
@@ -669,20 +728,18 @@
                 activitiesCollection.add(newActivity)
                     .then((docRef) => {
                         console.log("Actividad guardada con ID: ", docRef.id);
-                        // The `onSnapshot` listener will handle updating the `activities` array and rendering.
-                        // No need to push here manually if onSnapshot is always active.
                         // Limpiar el formulario
                         document.getElementById('activity-title').value = '';
                         document.getElementById('candidates').value = '';
                         document.getElementById('activity-date').value = '';
-                        alert('Actividad guardada con éxito.');
+                        showMessage('Actividad guardada con éxito.');
                     })
                     .catch((error) => {
                         console.error("Error al añadir la actividad: ", error);
-                        alert("Error al guardar la actividad. Por favor, inténtelo de nuevo.");
+                        showMessage('Error al guardar la actividad. Por favor, inténtelo de nuevo.', true);
                     });
             } else {
-                alert('Por favor, complete todos los campos (Título, Candidatos y Fecha).');
+                showMessage('Por favor, complete todos los campos (Título, Candidatos y Fecha).', true);
             }
         }
 
@@ -730,11 +787,10 @@
                 activitiesCollection.doc(id).delete()
                     .then(() => {
                         console.log("Actividad cancelada exitosamente!");
-                        // The `onSnapshot` listener will handle updating the `activities` array and rendering.
-                        alert('Actividad cancelada.');
+                        showMessage('Actividad cancelada.');
                     }).catch((error) => {
                         console.error("Error al cancelar la actividad: ", error);
-                        alert("Error al cancelar la actividad. Por favor, inténtelo de nuevo.");
+                        showMessage('Error al cancelar la actividad. Por favor, inténtelo de nuevo.', true);
                     });
             }
         }
@@ -817,7 +873,7 @@
         function decrementVote(candidateIdSafe) {
             const inputElement = document.getElementById(`votes-input-${candidateIdSafe}`);
             const currentValue = parseInt(inputElement.value);
-            if (currentValue > 0) { // Prevent negative votes
+            if (currentValue > 0) { // Evitar votos negativos
                 inputElement.value = currentValue - 1;
             }
         }
@@ -827,43 +883,42 @@
          */
         async function registrarVotos() {
             if (!currentActivityId) {
-                alert('No hay actividad seleccionada para registrar votos.');
+                showMessage('No hay actividad seleccionada para registrar votos.', true);
                 return;
             }
 
-            const activityToUpdate = activities.find(act => act.id === currentActivityId);
-            if (!activityToUpdate) {
-                alert('Actividad no encontrada.');
+            const currentActivityIndex = activities.findIndex(act => act.id === currentActivityId);
+            if (currentActivityIndex === -1) {
+                showMessage('La actividad no se encontró en la lista local.', true);
                 return;
             }
 
-            const newVotes = { ...activityToUpdate.votes }; // Clonar los votos existentes
+            const updatedVotes = { ...activities[currentActivityIndex].votes }; // Copia los votos existentes
 
-            // Recorrer las filas de la tabla de votación para obtener los votos ingresados
             const votingTableBody = document.getElementById('voting-table-body');
-            for (const row of votingTableBody.rows) {
+            const rows = votingTableBody.querySelectorAll('tr');
+
+            rows.forEach(row => {
                 const candidateName = row.cells[0].textContent;
                 const inputElement = row.querySelector('input[type="number"]');
-                const votesToAdd = parseInt(inputElement.value);
+                const votesToAdd = parseInt(inputElement.value) || 0;
 
-                if (!isNaN(votesToAdd) && votesToAdd > 0) {
-                    newVotes[candidateName] = (newVotes[candidateName] || 0) + votesToAdd;
-                }
-            }
+                // Actualiza el objeto de votos
+                updatedVotes[candidateName] = (updatedVotes[candidateName] || 0) + votesToAdd;
+            });
 
             try {
+                // Actualizar la actividad en Firestore
                 await activitiesCollection.doc(currentActivityId).update({
-                    votes: newVotes,
-                    status: 'completed'
+                    votes: updatedVotes,
+                    status: 'completed' // Marcar la actividad como completada
                 });
-                console.log("Votos registrados y actividad marcada como completada.");
-
-                // The `onSnapshot` listener will handle updating the `activities` array and rendering.
-                closeVotingModal();
-                alert('Votación registrada exitosamente.');
+                console.log("Votos registrados y actividad completada exitosamente.");
+                showMessage('Votos registrados con éxito y actividad marcada como completada.');
+                closeVotingModal(); // Cerrar el modal de votación
             } catch (error) {
-                console.error("Error al registrar votos: ", error);
-                alert("Error al registrar los votos. Por favor, inténtelo de nuevo.");
+                console.error("Error al registrar los votos: ", error);
+                showMessage('Error al registrar los votos. Por favor, inténtelo de nuevo.', true);
             }
         }
 
@@ -873,14 +928,14 @@
          */
         function closeVotingModal() {
             document.getElementById('votingModal').style.display = 'none';
-            currentActivityId = null;
+            currentActivityId = null; // Reiniciar el ID de la actividad actual
         }
 
         // --- Funciones del Modal de Resultados ---
 
         /**
-         * Muestra los resultados de una actividad en el modal de resultados.
-         * @param {string} activityId - El ID de la actividad.
+         * Abre el modal de resultados y muestra los votos por candidato.
+         * @param {string} activityId - El ID de la actividad (no usado directamente aquí, pero útil para contexto).
          * @param {string} activityTitle - El título de la actividad.
          * @param {string} votesJsonString - String JSON de los votos.
          */
@@ -889,23 +944,28 @@
             const resultsTableBody = document.getElementById('results-table-body');
             resultsTableBody.innerHTML = ''; // Limpiar filas anteriores
 
-            const votes = JSON.parse(votesJsonString);
+            let votes = {};
+            try {
+                // Desescapar comillas dobles antes de parsear
+                votes = JSON.parse(votesJsonString.replace(/&quot;/g, '"'));
+            } catch (e) {
+                console.error("Error parsing votes JSON:", e);
+                resultsTableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--gray); padding: 20px;">Error al cargar resultados.</td></tr>';
+                document.getElementById('resultsModal').style.display = 'flex';
+                return;
+            }
 
             if (Object.keys(votes).length === 0) {
-                resultsTableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--gray); padding: 20px;">No hay resultados de votación disponibles.</td></tr>';
+                resultsTableBody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--gray); padding: 20px;">No hay votos registrados para esta actividad.</td></tr>';
             } else {
-                // Convertir el objeto de votos a un array de pares [candidato, votos] y ordenar por votos descendente
-                const sortedVotes = Object.entries(votes).sort(([, votesA], [, votesB]) => votesB - votesA);
-
-                sortedVotes.forEach(([candidate, totalVotes]) => {
+                for (const candidate in votes) {
                     const row = resultsTableBody.insertRow();
                     row.innerHTML = `
                         <td>${candidate}</td>
-                        <td>${totalVotes}</td>
+                        <td>${votes[candidate]}</td>
                     `;
-                });
+                }
             }
-
             document.getElementById('resultsModal').style.display = 'flex'; // Mostrar el modal
         }
 
@@ -916,43 +976,32 @@
             document.getElementById('resultsModal').style.display = 'none';
         }
 
-        // --- Funciones de Carga Inicial y Escucha de Firebase ---
-
-        /**
-         * Carga las actividades desde Firestore al iniciar la página.
-         */
-        function loadActivities() {
-            // Listen for real-time updates from Firestore
-            activitiesCollection.onSnapshot(snapshot => {
-                activities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log("Actividades cargadas:", activities); // For debugging
-                renderActivities();
-                renderPastActivities();
-            }, (error) => {
-                console.error("Error al cargar las actividades: ", error);
-                alert("Error al cargar las actividades. Por favor, intente recargar la página.");
-            });
-        }
-
-        // Llamar a la función para cargar actividades cuando se cargue el DOM
-        document.addEventListener('DOMContentLoaded', loadActivities);
-
-        // --- Función para Cerrar Sesión (ejemplo, se necesita Firebase Auth para una implementación completa) ---
+        // --- Manejo de la Sesión (Placeholder) ---
         function cerrarSesion() {
-            if (confirm('¿Estás seguro de que quieres cerrar tu sesión?')) {
-                // Aquí iría la lógica de Firebase Authentication para cerrar sesión:
-                // firebase.auth().signOut().then(() => {
-                //     alert('Sesión cerrada.');
-                //     window.location.href = 'login.html'; // Redirige a la página de login
-                // }).catch((error) => {
-                //     console.error("Error al cerrar sesión: ", error);
-                //     alert("Error al cerrar sesión. Por favor, inténtelo de nuevo.");
-                // });
-                alert('Funcionalidad de cerrar sesión no implementada en este demo.');
-                // Para este demo, simplemente redirigiremos o haremos algo simple si no hay autenticación.
-                // window.location.href = 'login.html'; // Ejemplo: Redirigir a una página de inicio de sesión
-            }
+            alert('Cerrar sesión (funcionalidad a implementar).');
+            // Aquí iría la lógica de cierre de sesión de Firebase Auth
         }
+
+        // --- Listener en tiempo real de Firestore ---
+        // Este listener se ejecutará cada vez que haya un cambio en la colección 'activities'
+        activitiesCollection.onSnapshot(snapshot => {
+            activities = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            console.log("Actividades actualizadas:", activities);
+            renderActivities(); // Vuelve a renderizar actividades pendientes
+            renderPastActivities(); // Vuelve a renderizar actividades realizadas
+        }, error => {
+            console.error("Error al obtener actualizaciones de Firestore:", error);
+            showMessage("Error al cargar las actividades. Recargue la página.", true);
+        });
+
+        // Cargar actividades al inicio
+        document.addEventListener('DOMContentLoaded', () => {
+            // La función onSnapshot ya maneja la carga inicial, así que no se necesita una llamada explícita aquí.
+            // Si la página se recarga, onSnapshot la poblará.
+        });
     </script>
 </body>
 </html>
