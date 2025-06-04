@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión Eclesiástica - Reportes</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/9.X.X/firebase-app-compat.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/9.X.X/firebase-firestore-compat.js" defer></script>
-
-    <style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script> <style>
         /* * ESTILOS CSS
          * Esta sección contiene todo el CSS para el diseño de la interfaz.
          */
@@ -525,6 +524,7 @@
          */
 
         // Configuración de Firebase - ¡IMPORTANTE! REEMPLAZA CON TU CONFIGURACIÓN REAL
+        // Asegúrate de que estas credenciales son las correctas para tu proyecto Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k",
             authDomain: "iglesia-adoracion-viva.firebaseapp.com",
@@ -541,6 +541,7 @@
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore(); // Referencia a la instancia de Firestore
+        const auth = firebase.auth(); // Referencia a la instancia de Auth
 
         // Referencias a elementos del DOM
         const reportCategorySelect = document.getElementById('reportCategory');
@@ -554,6 +555,7 @@
          * Muestra el spinner de carga en el área de vista previa.
          */
         function showLoading() {
+            reportContentToPrintDiv.innerHTML = ''; // Limpia el contenido antes de mostrar el spinner
             loadingOverlay.style.display = 'flex';
         }
 
@@ -588,18 +590,38 @@
 
         /**
          * Convierte una cadena de fecha YYYY-MM-DD a un Timestamp de Firestore.
+         * Se asegura de que sea el inicio del día en la zona horaria local.
          * @param {string} dateString - La cadena de fecha.
          * @returns {firebase.firestore.Timestamp|null} - El Timestamp de Firestore o null si la cadena es vacía/inválida.
          */
-        const getFirestoreTimestamp = (dateString) => {
+        const getFirestoreTimestampStartOfDay = (dateString) => {
             if (!dateString) return null;
-            const date = new Date(dateString + 'T00:00:00'); // Añade T00:00:00 para evitar problemas de zona horaria
+            const date = new Date(dateString);
+            date.setHours(0, 0, 0, 0); // Establece la hora al inicio del día
             if (isNaN(date.getTime())) {
-                console.warn("Fecha inválida para Timestamp:", dateString);
+                console.warn("Fecha inválida para Timestamp (inicio del día):", dateString);
                 return null;
             }
             return firebase.firestore.Timestamp.fromDate(date);
         };
+
+        /**
+         * Convierte una cadena de fecha YYYY-MM-DD a un Timestamp de Firestore.
+         * Se asegura de que sea el final del día en la zona horaria local.
+         * @param {string} dateString - La cadena de fecha.
+         * @returns {firebase.firestore.Timestamp|null} - El Timestamp de Firestore o null si la cadena es vacía/inválida.
+         */
+        const getFirestoreTimestampEndOfDay = (dateString) => {
+            if (!dateString) return null;
+            const date = new Date(dateString);
+            date.setHours(23, 59, 59, 999); // Establece la hora al final del día
+            if (isNaN(date.getTime())) {
+                console.warn("Fecha inválida para Timestamp (fin del día):", dateString);
+                return null;
+            }
+            return firebase.firestore.Timestamp.fromDate(date);
+        };
+
 
         /**
          * Formatea un Timestamp de Firestore a una cadena de fecha legible (DD/MM/YYYY).
@@ -629,14 +651,17 @@
         // --- Lógica del Sidebar ---
 
         /**
-         * Cierra la sesión del usuario (simulado).
-         * Aquí deberías integrar la lógica real de Firebase Authentication.
+         * Cierra la sesión del usuario utilizando Firebase Authentication.
          */
         function cerrarSesion() {
             if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-                alert('Cerrando sesión...');
-                // firebase.auth().signOut().then(() => { window.location.href = 'login.html'; });
-                window.location.href = 'login.html'; // Redirige a la página de login (simulado)
+                auth.signOut().then(() => {
+                    alert('Sesión cerrada correctamente.');
+                    window.location.href = 'login.html'; // Redirige a la página de login
+                }).catch((error) => {
+                    console.error("Error al cerrar sesión:", error);
+                    alert("Error al cerrar sesión: " + error.message);
+                });
             }
         }
 
@@ -648,6 +673,7 @@
         reportCategorySelect.addEventListener('change', function() {
             const selectedCategory = this.value;
             reportOptionsDiv.innerHTML = ''; // Limpia opciones anteriores
+            reportContentToPrintDiv.innerHTML = '<p class="placeholder-text-center">El contenido del reporte aparecerá aquí. Utiliza el botón "Generar Reporte" para visualizarlo.</p>'; // Limpia vista previa
 
             if (selectedCategory === 'miembros' || selectedCategory === 'diezmos' || selectedCategory === 'ofrendas') {
                 reportOptionsDiv.innerHTML = `
@@ -665,8 +691,8 @@
                     <div class="form-group">
                         <label for="discipuladoType">Tipo de Discipulado:</label>
                         <select id="discipuladoType" class="form-control">
-                            <option value="todos">Todos</option>
-                            <option value="bautizado">Bautizados</option>
+                            <option value="todos">Todos los Discipulados</option>
+                            <option value="bautizado">Miembros Bautizados</option>
                             <option value="nuevo_creyente">Nuevos Creyentes</option>
                             </select>
                     </div>
@@ -677,289 +703,295 @@
         });
 
         /**
+         * Función principal para generar el reporte basado en la categoría seleccionada y los filtros.
+         */
+        async function generarReporte() {
+            const category = reportCategorySelect.value;
+            if (!category) {
+                alert('Por favor, selecciona un tipo de reporte.');
+                return;
+            }
+
+            showLoading(); // Muestra el spinner de carga
+
+            let options = {};
+            if (category === 'miembros' || category === 'diezmos' || category === 'ofrendas') {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+
+                if (!validateDateRange(startDate, endDate)) {
+                    hideLoading();
+                    return;
+                }
+                options.startDate = startDate;
+                options.endDate = endDate;
+            } else if (category === 'discipulado') {
+                options.discipuladoType = document.getElementById('discipuladoType').value;
+            }
+
+            try {
+                const reportHtml = await cargarDatosReporte(category, options);
+                reportContentToPrintDiv.innerHTML = reportHtml;
+            } catch (error) {
+                console.error('Error al generar el reporte:', error);
+                reportContentToPrintDiv.innerHTML = `<p class="placeholder-text-center" style="color: red;">Error al cargar los datos del reporte: ${error.message}. Verifica la consola para más detalles.</p>`;
+            } finally {
+                hideLoading(); // Oculta el spinner al finalizar (éxito o error)
+            }
+        }
+
+
+        /**
          * Carga los datos de Firestore y genera el HTML del reporte según la categoría y opciones de filtrado.
          * @param {string} category - Categoría del reporte (e.g., 'miembros', 'diezmos').
          * @param {object} options - Objeto con opciones de filtrado (startDate, endDate, discipuladoType).
-         * @returns {string} - El HTML generado para mostrar el reporte.
+         * @returns {Promise<string>} - Una promesa que resuelve con el HTML generado para mostrar el reporte.
          */
         async function cargarDatosReporte(category, options) {
             let reportHtml = '';
             let title = '';
             let data = [];
+            let queryRef;
 
-            try {
-                switch (category) {
-                    case 'miembros':
-                        title = 'Reporte de Miembros Activos';
-                        let miembrosRef = db.collection('miembros');
+            switch (category) {
+                case 'miembros':
+                    title = 'Reporte de Miembros';
+                    queryRef = db.collection('miembros');
 
-                        if (options.startDate) {
-                            miembrosRef = miembrosRef.where('fecha_ingreso', '>=', getFirestoreTimestamp(options.startDate));
-                        }
-                        if (options.endDate) {
-                            const endDate = new Date(options.endDate);
-                            endDate.setHours(23, 59, 59, 999); // Incluye todo el día de fin
-                            miembrosRef = miembrosRef.where('fecha_ingreso', '<=', firebase.firestore.Timestamp.fromDate(endDate));
-                        }
+                    if (options.startDate) {
+                        queryRef = queryRef.where('fecha_ingreso', '>=', getFirestoreTimestampStartOfDay(options.startDate));
+                    }
+                    if (options.endDate) {
+                        queryRef = queryRef.where('fecha_ingreso', '<=', getFirestoreTimestampEndOfDay(options.endDate));
+                    }
 
-                        const miembrosSnapshot = await miembrosRef.orderBy('nombre').get();
-                        data = miembrosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const miembrosSnapshot = await queryRef.orderBy('nombre').get();
+                    data = miembrosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                        if (data.length === 0) {
-                            reportHtml = `<p class="placeholder-text-center">No se encontraron miembros para el periodo seleccionado.</p>`;
-                        } else {
-                            reportHtml = `
-                                <h3>${title}</h3>
-                                <p>Periodo: <strong>${options.startDate || 'Inicio'}</strong> a <strong>${options.endDate || 'Hoy'}</strong></p>
-                                <table>
-                                    <thead>
+                    if (data.length === 0) {
+                        reportHtml = `<p class="placeholder-text-center">No se encontraron miembros para el periodo seleccionado.</p>`;
+                    } else {
+                        reportHtml = `
+                            <h3>${title}</h3>
+                            <p>Periodo: <strong>${options.startDate || 'Todo el tiempo'}</strong> a <strong>${options.endDate || 'Todo el tiempo'}</strong></p>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre Completo</th>
+                                        <th>Fecha Ingreso</th>
+                                        <th>Estado</th>
+                                        <th>Teléfono</th>
+                                        <th>Email</th>
+                                        <th>Dirección</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.map(m => `
                                         <tr>
-                                            <th>ID</th>
-                                            <th>Nombre Completo</th>
-                                            <th>Fecha Ingreso</th>
-                                            <th>Estado</th>
-                                            <th>Teléfono</th>
-                                            <th>Email</th>
+                                            <td>${m.id}</td>
+                                            <td>${m.nombre || 'N/A'} ${m.apellido || ''}</td>
+                                            <td>${formatFirestoreTimestamp(m.fecha_ingreso)}</td>
+                                            <td>${m.estado || 'Activo'}</td>
+                                            <td>${m.telefono || 'N/A'}</td>
+                                            <td>${m.email || 'N/A'}</td>
+                                            <td>${m.direccion || 'N/A'}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${data.map(m => `
-                                            <tr>
-                                                <td>${m.id}</td>
-                                                <td>${m.nombre || 'N/A'} ${m.apellido || ''}</td>
-                                                <td>${formatFirestoreTimestamp(m.fecha_ingreso)}</td>
-                                                <td>${m.estado || 'Activo'}</td>
-                                                <td>${m.telefono || 'N/A'}</td>
-                                                <td>${m.email || 'N/A'}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                                <div class="report-footer">Total de Miembros: <strong>${data.length}</strong></div>
-                            `;
-                        }
-                        break;
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <div class="report-footer">Total de Miembros: <strong>${data.length}</strong></div>
+                        `;
+                    }
+                    break;
 
-                    case 'diezmos':
-                        title = 'Reporte de Diezmos';
-                        let diezmosRef = db.collection('diezmos');
+                case 'diezmos':
+                    title = 'Reporte de Diezmos';
+                    queryRef = db.collection('diezmos');
 
-                        if (options.startDate) {
-                            diezmosRef = diezmosRef.where('fecha_diezmo', '>=', getFirestoreTimestamp(options.startDate));
-                        }
-                        if (options.endDate) {
-                            const endDate = new Date(options.endDate);
-                            endDate.setHours(23, 59, 59, 999);
-                            diezmosRef = diezmosRef.where('fecha_diezmo', '<=', firebase.firestore.Timestamp.fromDate(endDate));
-                        }
+                    if (options.startDate) {
+                        queryRef = queryRef.where('fecha_diezmo', '>=', getFirestoreTimestampStartOfDay(options.startDate));
+                    }
+                    if (options.endDate) {
+                        queryRef = queryRef.where('fecha_diezmo', '<=', getFirestoreTimestampEndOfDay(options.endDate));
+                    }
 
-                        const diezmosSnapshot = await diezmosRef.orderBy('fecha_diezmo').get();
-                        data = diezmosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const diezmosSnapshot = await queryRef.orderBy('fecha_diezmo').get();
+                    data = diezmosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                        let totalDiezmos = 0;
-                        if (data.length === 0) {
-                            reportHtml = `<p class="placeholder-text-center">No se encontraron diezmos para el periodo seleccionado.</p>`;
-                        } else {
-                            reportHtml = `
-                                <h3>${title}</h3>
-                                <p>Periodo: <strong>${options.startDate || 'Inicio'}</strong> a <strong>${options.endDate || 'Hoy'}</strong></p>
-                                <table>
-                                    <thead>
+                    let totalDiezmos = 0;
+                    if (data.length === 0) {
+                        reportHtml = `<p class="placeholder-text-center">No se encontraron diezmos para el periodo seleccionado.</p>`;
+                    } else {
+                        reportHtml = `
+                            <h3>${title}</h3>
+                            <p>Periodo: <strong>${options.startDate || 'Todo el tiempo'}</strong> a <strong>${options.endDate || 'Todo el tiempo'}</strong></p>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID Transacción</th>
+                                        <th>Miembro (ID)</th>
+                                        <th>Monto</th>
+                                        <th>Fecha</th>
+                                        <th>Notas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.map(d => {
+                                        totalDiezmos += parseFloat(d.monto || 0);
+                                        return `
                                         <tr>
-                                            <th>ID</th>
-                                            <th>Miembro</th>
-                                            <th>Monto</th>
-                                            <th>Fecha</th>
-                                            <th>Notas</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${data.map(d => {
-                                            totalDiezmos += parseFloat(d.monto || 0);
-                                            return `
-                                            <tr>
-                                                <td>${d.id}</td>
-                                                <td>${d.nombre_miembro || 'N/A'}</td>
-                                                <td>$${(parseFloat(d.monto || 0)).toFixed(2)}</td>
-                                                <td>${formatFirestoreTimestamp(d.fecha_diezmo)}</td>
-                                                <td>${d.notas || 'N/A'}</td>
-                                            </tr>`;
-                                        }).join('')}
-                                    </tbody>
-                                </table>
-                                <div class="report-footer">Total Diezmos: <strong>$${totalDiezmos.toFixed(2)}</strong></div>
-                            `;
-                        }
-                        break;
+                                            <td>${d.id}</td>
+                                            <td>${d.miembro_id || 'N/A'}</td> <td>$${(parseFloat(d.monto || 0)).toFixed(2)}</td>
+                                            <td>${formatFirestoreTimestamp(d.fecha_diezmo)}</td>
+                                            <td>${d.notas || 'N/A'}</td>
+                                        </tr>`;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                            <div class="report-footer">Total Diezmos: <strong>$${totalDiezmos.toFixed(2)}</strong></div>
+                        `;
+                    }
+                    break;
 
-                    case 'ofrendas':
-                        title = 'Reporte de Ofrendas';
-                        let ofrendasRef = db.collection('ofrendas');
+                case 'ofrendas':
+                    title = 'Reporte de Ofrendas';
+                    queryRef = db.collection('ofrendas');
 
-                        if (options.startDate) {
-                            ofrendasRef = ofrendasRef.where('fecha_ofrenda', '>=', getFirestoreTimestamp(options.startDate));
-                        }
-                        if (options.endDate) {
-                            const endDate = new Date(options.endDate);
-                            endDate.setHours(23, 59, 59, 999);
-                            ofrendasRef = ofrendasRef.where('fecha_ofrenda', '<=', firebase.firestore.Timestamp.fromDate(endDate));
-                        }
+                    if (options.startDate) {
+                        queryRef = queryRef.where('fecha_ofrenda', '>=', getFirestoreTimestampStartOfDay(options.startDate));
+                    }
+                    if (options.endDate) {
+                        queryRef = queryRef.where('fecha_ofrenda', '<=', getFirestoreTimestampEndOfDay(options.endDate));
+                    }
 
-                        const ofrendasSnapshot = await ofrendasRef.orderBy('fecha_ofrenda').get();
-                        data = ofrendasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const ofrendasSnapshot = await queryRef.orderBy('fecha_ofrenda').get();
+                    data = ofrendasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                        let totalOfrendas = 0;
-                        if (data.length === 0) {
-                            reportHtml = `<p class="placeholder-text-center">No se encontraron ofrendas para el periodo seleccionado.</p>`;
-                        } else {
-                            reportHtml = `
-                                <h3>${title}</h3>
-                                <p>Periodo: <strong>${options.startDate || 'Inicio'}</strong> a <strong>${options.endDate || 'Hoy'}</strong></p>
-                                <table>
-                                    <thead>
+                    let totalOfrendas = 0;
+                    if (data.length === 0) {
+                        reportHtml = `<p class="placeholder-text-center">No se encontraron ofrendas para el periodo seleccionado.</p>`;
+                    } else {
+                        reportHtml = `
+                            <h3>${title}</h3>
+                            <p>Periodo: <strong>${options.startDate || 'Todo el tiempo'}</strong> a <strong>${options.endDate || 'Todo el tiempo'}</strong></p>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID Transacción</th>
+                                        <th>Monto</th>
+                                        <th>Fecha</th>
+                                        <th>Tipo de Ofrenda</th>
+                                        <th>Notas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.map(o => {
+                                        totalOfrendas += parseFloat(o.monto || 0);
+                                        return `
                                         <tr>
-                                            <th>ID</th>
-                                            <th>Monto</th>
-                                            <th>Fecha</th>
-                                            <th>Tipo</th>
-                                            <th>Notas</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${data.map(o => {
-                                            totalOfrendas += parseFloat(o.monto || 0);
-                                            return `
-                                            <tr>
-                                                <td>${o.id}</td>
-                                                <td>$${(parseFloat(o.monto || 0)).toFixed(2)}</td>
-                                                <td>${formatFirestoreTimestamp(o.fecha_ofrenda)}</td>
-                                                <td>${o.tipo || 'General'}</td>
-                                                <td>${o.notas || 'N/A'}</td>
-                                            </tr>`;
-                                        }).join('')}
-                                    </tbody>
-                                </table>
-                                <div class="report-footer">Total Ofrendas: <strong>$${totalOfrendas.toFixed(2)}</strong></div>
-                            `;
-                        }
-                        break;
+                                            <td>${o.id}</td>
+                                            <td>$${(parseFloat(o.monto || 0)).toFixed(2)}</td>
+                                            <td>${formatFirestoreTimestamp(o.fecha_ofrenda)}</td>
+                                            <td>${o.tipo || 'General'}</td> <td>${o.notas || 'N/A'}</td>
+                                        </tr>`;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                            <div class="report-footer">Total Ofrendas: <strong>$${totalOfrendas.toFixed(2)}</strong></div>
+                        `;
+                    }
+                    break;
 
-                    case 'discipulado':
-                        title = 'Reporte de Discipulado';
-                        let discipuladoRef = db.collection('miembros'); // Los datos de discipulado están en la colección de miembros
+                case 'discipulado':
+                    title = 'Reporte de Discipulado';
+                    queryRef = db.collection('discipulado'); // Asumiendo una colección 'discipulado'
 
-                        if (options.discipuladoType && options.discipuladoType !== 'todos') {
-                            // Asume que 'bautizado' y 'nuevo_creyente' son campos booleanos en el documento del miembro
-                            discipuladoRef = discipuladoRef.where(options.discipuladoType, '==', true);
-                        }
+                    if (options.discipuladoType && options.discipuladoType !== 'todos') {
+                         // Asumimos un campo 'estado_discipulado' o 'tipo_discipulado'
+                        queryRef = queryRef.where('tipo_discipulado', '==', options.discipuladoType);
+                    }
 
-                        const discipuladoSnapshot = await discipuladoRef.orderBy('nombre').get();
-                        data = discipuladoSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const discipuladoSnapshot = await queryRef.orderBy('miembro_nombre').get(); // Asumiendo un campo 'miembro_nombre'
+                    data = discipuladoSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                        if (data.length === 0) {
-                            reportHtml = `<p class="placeholder-text-center">No se encontraron miembros para el tipo de discipulado seleccionado.</p>`;
-                        } else {
-                            const discipuladoTypeText = options.discipuladoType === 'bautizado' ? 'Bautizados' :
-                                                        (options.discipuladoType === 'nuevo_creyente' ? 'Nuevos Creyentes' : 'Todos');
-                            reportHtml = `
-                                <h3>${title} - ${discipuladoTypeText}</h3>
-                                <table>
-                                    <thead>
+                    if (data.length === 0) {
+                        reportHtml = `<p class="placeholder-text-center">No se encontraron registros de discipulado para el tipo seleccionado.</p>`;
+                    } else {
+                        reportHtml = `
+                            <h3>${title}</h3>
+                            <p>Tipo: <strong>${options.discipuladoType === 'bautizado' ? 'Miembros Bautizados' : options.discipuladoType === 'nuevo_creyente' ? 'Nuevos Creyentes' : 'Todos los Discipulados'}</strong></p>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID Registro</th>
+                                        <th>Miembro</th>
+                                        <th>Tipo Discipulado</th>
+                                        <th>Fecha Inicio</th>
+                                        <th>Fecha Fin</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.map(d => `
                                         <tr>
-                                            <th>ID</th>
-                                            <th>Nombre Completo</th>
-                                            <th>Teléfono</th>
-                                            <th>Email</th>
-                                            <th>Bautizado</th>
-                                            <th>Nuevo Creyente</th>
-                                            <th>Fecha de Bautismo</th>
+                                            <td>${d.id}</td>
+                                            <td>${d.miembro_nombre || 'N/A'}</td>
+                                            <td>${d.tipo_discipulado || 'N/A'}</td>
+                                            <td>${formatFirestoreTimestamp(d.fecha_inicio)}</td>
+                                            <td>${d.fecha_fin ? formatFirestoreTimestamp(d.fecha_fin) : 'N/A'}</td>
+                                            <td>${d.estado || 'Activo'}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${data.map(m => `
-                                            <tr>
-                                                <td>${m.id}</td>
-                                                <td>${m.nombre || 'N/A'} ${m.apellido || ''}</td>
-                                                <td>${m.telefono || 'N/A'}</td>
-                                                <td>${m.email || 'N/A'}</td>
-                                                <td>${m.bautizado ? 'Sí' : 'No'}</td>
-                                                <td>${m.nuevo_creyente ? 'Sí' : 'No'}</td>
-                                                <td>${formatFirestoreTimestamp(m.fecha_bautismo)}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                                <div class="report-footer">Total de Registros: <strong>${data.length}</strong></div>
-                            `;
-                        }
-                        break;
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <div class="report-footer">Total de Registros de Discipulado: <strong>${data.length}</strong></div>
+                        `;
+                    }
+                    break;
 
-                    default:
-                        reportHtml = `<p class="placeholder-text-center">Selecciona un tipo de reporte para generar.</p>`;
-                        break;
-                }
-            } catch (error) {
-                console.error("Error al cargar datos para el reporte:", error);
-                reportHtml = `<p class="placeholder-text-center" style="color: red;">Error al cargar el reporte: ${error.message}. Por favor, verifica la consola para más detalles y asegúrate de que tienes los permisos e índices de Firebase correctos.</p>`;
+                default:
+                    reportHtml = `<p class="placeholder-text-center">Selecciona una categoría de reporte válida.</p>`;
+                    break;
             }
             return reportHtml;
         }
 
         /**
-         * Función principal para generar el reporte basado en la selección del usuario.
-         */
-        async function generarReporte() {
-            showLoading();
-            reportContentToPrintDiv.innerHTML = ''; // Limpiar contenido previo
-
-            const category = reportCategorySelect.value;
-            let options = {};
-
-            if (!category) {
-                reportContentToPrintDiv.innerHTML = `<p class="placeholder-text-center">Por favor, selecciona una categoría de reporte.</p>`;
-                hideLoading();
-                return;
-            }
-
-            if (category === 'miembros' || category === 'diezmos' || category === 'ofrendas') {
-                const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
-                if (!validateDateRange(startDate, endDate)) {
-                    hideLoading();
-                    return;
-                }
-                options = { startDate, endDate };
-            } else if (category === 'discipulado') {
-                const discipuladoType = document.getElementById('discipuladoType').value;
-                options = { discipuladoType };
-            }
-
-            const generatedHtml = await cargarDatosReporte(category, options);
-            reportContentToPrintDiv.innerHTML = generatedHtml;
-            hideLoading();
-        }
-
-        /**
-         * Imprime el contenido actual del área de vista previa como un PDF.
+         * Imprime el contenido actual del reporte como un PDF.
+         * Utiliza la librería html2pdf.js.
          */
         function printCurrentReportAsPdf() {
             const element = document.getElementById('reportContentToPrint');
-            const category = reportCategorySelect.value;
-            let filename = `Reporte_${category || 'General'}_${new Date().toLocaleDateString('es-ES').replace(/\//g, '-')}.pdf`;
-
-            if (element.children.length === 0 || element.querySelector('.placeholder-text-center:not(.loading-overlay .placeholder-text-center)')) {
-                alert('No hay un reporte generado para imprimir. Por favor, genera un reporte primero.');
+            if (!element || element.innerHTML.trim() === '' || element.querySelector('.placeholder-text-center')) {
+                alert('Por favor, genera un reporte primero antes de intentar imprimir.');
                 return;
             }
 
+            // Oculta el spinner de carga si está visible antes de generar el PDF
+            hideLoading();
+
             html2pdf(element, {
                 margin: 10,
-                filename: filename,
+                filename: `reporte_${reportCategorySelect.value || 'general'}_${new Date().toISOString().slice(0,10)}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true },
-                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             });
         }
+
+        // --- Inicialización al cargar la página ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Puedes añadir aquí una comprobación de autenticación si lo deseas
+            // auth.onAuthStateChanged(user => {
+            //     if (!user) {
+            //         window.location.href = 'login.html'; // Redirige si no hay usuario logueado
+            //     }
+            // });
+            // Carga las opciones iniciales si hay una categoría seleccionada por defecto
+            reportCategorySelect.dispatchEvent(new Event('change'));
+        });
+
     </script>
 </body>
 </html>
