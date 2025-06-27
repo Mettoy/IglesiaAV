@@ -1,947 +1,104 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gestión de Miembros - Iglesia ICCI Adoración Viva</title>
-<link rel="icon" type="blob:https://mega.nz/b82ef05c-0bbc-4be8-b8a9-86183510b3cf"/>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
-<style>
-    /* Estilos base (azul oscuro con dorado) */
-    body {
-        margin:0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #121B2A;
-        color: #E6C68D;
-    }
-    #menu {
-        width: 220px;
-        height: 100vh;
-        background: #0A1424;
-        position: fixed;
-        top: 0;
-        left: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding-top: 1rem;
-        border-right: 2px solid #E6C68D;
-    }
-    #menu h1 {
-        font-size: 1.5rem;
-        margin-bottom: 2rem;
-        cursor:pointer;
-        text-align: center; /* Centrar el título */
-    }
-    #menu button, #menu a.sidebar-link {
-        margin: 0.5rem 0;
-        padding: 0.5rem 1rem;
-        background: #E6C68D;
-        color: #0A1424;
-        border:none;
-        border-radius: 5px;
-        font-weight: bold;
-        cursor: pointer;
-        width: 90%;
-        text-align: center;
-        text-decoration: none; /* Para los enlaces */
-        display: block; /* Para que ocupen todo el ancho definido */
-    }
-    #menu a.sidebar-link:hover, #menu button:hover {
-        background: #D9B36B; /* Un tono un poco más oscuro al pasar el ratón */
-    }
-    .logout {
-        margin-top: auto; /* Empuja el botón de cerrar sesión al final */
-        margin-bottom: 1rem;
-        background: #4A0E0E; /* Rojo para cerrar sesión */
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        cursor: pointer;
-        width: 90%;
-        text-align: center;
-        font-weight: bold;
-    }
-    .logout:hover {
-        background: #6C1E1E;
-    }
+// ** Archivo: script.js (o el nombre de tu archivo JavaScript) **
 
-    #main {
-        margin-left: 230px;
-        padding: 1rem 2rem;
-    }
-    h2 {
-        margin-bottom: 1rem;
-        color: #E6C68D;
-    }
-    #search-container {
-        margin-bottom: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-    }
-    #search {
-        padding: 0.4rem 0.6rem;
-        font-size: 1rem;
-        border-radius: 5px;
-        border: none;
-        flex-grow: 1;
-        max-width: 300px;
-        color: #0A1424;
-    }
-    #addMemberBtnMain {
-        background: #E6C68D;
-        color: #0A1424;
-        border: none;
-        padding: 0.5rem 1rem;
-        font-weight: bold;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        background: #1F2D45;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    th, td {
-        padding: 10px 12px;
-        text-align: left;
-        border-bottom: 1px solid #2E3B5B;
-        color: #E6C68D;
-    }
-    th {
-        background-color: #223353;
-    }
-    tr:hover {
-        background-color: #2E3B5B;
-    }
-    img.photo-cell {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        border-radius: 50%;
-    }
-    button.action-btn {
-        background-color: #E6C68D;
-        color: #0A1424;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-        margin-right: 5px;
-        white-space: nowrap; /* Evita que el texto del botón se rompa */
-    }
-    button.action-btn:hover {
-        opacity: 0.9;
-    }
+// 1. Configuración de Firebase
+// ¡IMPORTANTE! Reemplaza esto con tu propia configuración de Firebase.
+// Puedes encontrar esto en tu consola de Firebase > Configuración del proyecto > Tus apps.
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
 
-    /* Modal */
-    #modalOverlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0,0,0,0.6);
-        display: none; /* Oculto por defecto */
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-    #modal {
-        background: #1B2A46;
-        padding: 20px;
-        border-radius: 10px;
-        width: 95%;
-        max-width: 800px;
-        max-height: 90vh;
-        overflow-y: auto;
-        color: #E6C68D;
-        box-shadow: 0 0 10px #E6C68D;
-        position: relative;
-    }
-    #modal h3 {
-        margin-top: 0;
-    }
-    #modalClose {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: #E6C68D;
-        color: #0A1424;
-        border: none;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        font-weight: bold;
-        cursor: pointer;
-        line-height: 1; /* Centrar el 'x' */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    form > div.section-tabs {
-        display: flex;
-        margin-bottom: 15px;
-    }
-    form > div.section-tabs button {
-        flex: 1;
-        padding: 10px;
-        background: #223353;
-        border: none;
-        color: #E6C68D;
-        font-weight: bold;
-        cursor: pointer;
-        border-radius: 5px 5px 0 0;
-        border-bottom: 3px solid transparent;
-        transition: background 0.3s, color 0.3s, border-bottom-color 0.3s;
-    }
-    form > div.section-tabs button.active {
-        background: #E6C68D;
-        color: #0A1424;
-        border-bottom-color: #0A1424;
-    }
-    form > div.section-content {
-        background: #223353;
-        padding: 15px;
-        border-radius: 0 5px 5px 5px;
-    }
-    label {
-        display: block;
-        margin: 10px 0 4px;
-        font-weight: bold;
-    }
-    input[type=text], input[type=date], input[type=number], select, input[type=email], textarea {
-        width: calc(100% - 12px); /* Ajuste para padding */
-        padding: 6px;
-        border-radius: 5px;
-        border: none;
-        font-size: 1rem;
-        color: #0A1424;
-        background-color: #E6C68D; /* Color del input */
-    }
-    input[type=file] {
-        color: #E6C68D;
-        padding: 6px 0;
-    }
-    #fam-list {
-        margin-top: 10px;
-        max-height: 120px; /* Un poco más de altura */
-        overflow-y: auto;
-        background: #1B2A46;
-        border-radius: 5px;
-        padding: 5px;
-        border: 1px solid #2E3B5B;
-    }
-    #fam-list div {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 5px;
-        background: #15203D;
-        padding: 3px 8px;
-        border-radius: 5px;
-        border: 1px solid #2E3B5B;
-    }
-    #fam-list div span {
-        word-break: break-word;
-        flex-grow: 1; /* Permite que el texto ocupe el espacio */
-    }
-    #fam-list button.remove-fam-btn {
-        background: #E64E4E;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        padding: 2px 6px;
-        font-weight: bold;
-        margin-left: 10px;
-    }
-    #formActions {
-        margin-top: 15px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-    #formActions button {
-        padding: 8px 15px;
-        border-radius: 5px;
-        border: none;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    #saveBtn {
-        background: #E6C68D;
-        color: #0A1424;
-    }
-    #cancelBtn {
-        background: #555;
-        color: #E6C68D;
-    }
-    #pagination {
-        margin-top: 15px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        align-items: center;
-    }
-    #pagination button {
-        background: #E6C68D;
-        border: none;
-        border-radius: 5px;
-        padding: 5px 10px;
-        cursor: pointer;
-        font-weight: bold;
-        color: #0A1424;
-    }
-    #pagination button:disabled {
-        background: #999;
-        cursor: not-allowed;
-        opacity: 0.7;
-    }
-    /* Estilos para las pestañas de estado de miembros */
-    #member-status-tabs {
-        margin-top: 1rem;
-        display: flex;
-        gap: 10px;
-        margin-bottom: 1rem;
-    }
-    #member-status-tabs button {
-        padding: 0.5rem 1rem;
-        background: #2E3B5B;
-        color: #E6C68D;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: background 0.3s, color 0.3s;
-    }
-    #member-status-tabs button.active {
-        background: #E6C68D;
-        color: #0A1424;
-    }
+// Inicializa Firebase
+firebase.initializeApp(firebaseConfig);
 
-    /* --- ESTILOS PARA LA HOJA DE IMPRESIÓN --- */
-    @media print {
-        /* Oculta todo excepto el área de impresión */
-        body > *:not(#print-area) {
-            display: none !important;
-        }
+// Obtén referencias a los servicios de Firebase
+const db = firebase.firestore();
+const firebaseStorage = firebase.storage(); // Referencia al servicio de Storage
 
-        #print-area {
-            display: block !important; /* Muestra el área de impresión */
-            width: 210mm; /* Ancho de una hoja A4 */
-            min-height: 297mm; /* Alto de una hoja A4 */
-            margin: 0;
-            padding: 20mm; /* Margen de impresión */
-            color: #000; /* Texto negro */
-            background-color: #fff; /* Fondo blanco */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 10.5pt; /* Tamaño de fuente ligeramente más pequeño para impresión */
-            box-sizing: border-box; /* Incluye padding en el ancho/alto */
-        }
-        
-        /* Encabezado con logos y título */
-        #print-area .header-print {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #ccc; /* Línea separadora */
-            text-align: center;
-        }
-        #print-area .header-print img {
-            max-width: 70px; /* Tamaño de los logos */
-            max-height: 70px;
-            object-fit: contain;
-            vertical-align: middle;
-        }
-        #print-area .header-print h1 {
-            font-size: 1.6rem; /* Tamaño del título principal */
-            margin: 0 20px;
-            flex-grow: 1; /* Permite que el título ocupe el espacio central */
-            text-align: center;
-            color: #000;
-        }
+// Variables globales para el manejo de miembros y paginación
+let members = []; // Almacena todos los miembros obtenidos de Firestore
+let filteredMembers = []; // Miembros después de aplicar filtros de búsqueda/estado
+let currentPage = 1;
+const pageSize = 10; // Número de miembros por página
+let currentMemberStatusFilter = 'activo'; // Filtro inicial por defecto
+let editingMemberId = null; // Para saber si estamos editando o añadiendo un nuevo miembro
 
-        /* Título de la hoja de miembro */
-        #print-area .sheet-title {
-            font-size: 1.8rem;
-            text-align: center;
-            margin-bottom: 30px;
-            color: #333;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
 
-        /* Estilos generales para las secciones */
-        #print-area .section-print {
-            border: 1px solid #ccc;
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #f9f9f9; /* Fondo suave para secciones */
-        }
-        #print-area .section-print h2 {
-            font-size: 1.3rem;
-            margin-top: 0;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-            color: #444;
-            font-weight: 600;
-        }
-        #print-area p {
-            margin-bottom: 8px;
-            line-height: 1.5;
-            color: #333;
-        }
-        #print-area strong {
-            color: #222;
-        }
+// Variables para elementos DOM (se inicializarán en DOMContentLoaded)
+let modalOverlay, modal, memberForm, fotoInput, fotoPreview, nombreInput, fechaNacimientoInput, edadInput,
+    codigoInput, telefonoInput, direccionInput, emailInput, asociacionSelect, fechaMembresiaInput, statusSelect,
+    nombreFamiliarInput, addFamiliarBtn, famList, estadoCivilSelect, nombreConyugeInput,
+    fechaConversionInput, lugarConversionInput, fechaBautizoInput, lugarBautizoInput,
+    fechaBautizoEspInput, lugarBautizoEspInput, cursosBiblicosInput, lugarCursosBiblicosInput,
+    donesTalentosInput, areasServirInput, membersTableBody, searchInput, addMemberBtn,
+    tabActivos, tabDeBaja, prevPageBtn, nextPageBtn, pageInfo; // Añadidos para paginación
 
-        /* Estilo para la cuadrícula de información */
-        #print-area .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Dos columnas fluidas */
-            gap: 10px 20px;
-        }
 
-        /* Sección de Información Personal con Foto */
-        #print-area .personal-section {
-            display: flex;
-            flex-wrap: wrap; /* Permite que los elementos se envuelvan si no hay espacio */
-            gap: 20px;
-            align-items: flex-start; /* Alinea los elementos al inicio */
-        }
-        #print-area .personal-info-content {
-            flex: 1; /* Ocupa el espacio restante */
-            min-width: 280px; /* Mínimo para el contenido de texto */
-        }
-        #print-area .personal-section .photo-container {
-            width: 130px; /* Tamaño fijo para la foto de miembro */
-            height: 130px;
-            border: 1px solid #ccc;
-            background-color: #eee;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            border-radius: 5px;
-            flex-shrink: 0; /* Evita que la foto se encoja */
-        }
-        #print-area .personal-section .photo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+document.addEventListener('DOMContentLoaded', () => {
+    // 2. Obtener referencias a los elementos del DOM
+    // Contenedores del Modal
+    modalOverlay = document.getElementById('modalOverlay');
+    modal = document.getElementById('modal');
+    memberForm = document.getElementById('memberForm');
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.getElementById('cancelBtn').addEventListener('click', closeModal);
 
-        /* Listado de familiares */
-        #print-area .fam-list-print {
-            border: 1px solid #ddd;
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            min-height: 40px; /* Espacio visible incluso si no hay familiares */
-        }
-        #print-area .fam-list-print span {
-            display: block;
-            margin-bottom: 3px;
-            color: #333;
-            padding-left: 10px;
-            position: relative;
-        }
-        #print-area .fam-list-print span::before {
-            content: '•';
-            position: absolute;
-            left: 0;
-            color: #888;
-        }
+    // Campos del formulario
+    fotoInput = document.getElementById('fotoInput');
+    fotoPreview = document.getElementById('fotoPreview');
+    nombreInput = document.getElementById('nombreInput');
+    fechaNacimientoInput = document.getElementById('fechaNacimientoInput');
+    edadInput = document.getElementById('edadInput');
+    codigoInput = document.getElementById('codigoInput');
+    telefonoInput = document.getElementById('telefonoInput');
+    direccionInput = document.getElementById('direccionInput');
+    emailInput = document.getElementById('emailInput');
+    asociacionSelect = document.getElementById('asociacionSelect');
+    fechaMembresiaInput = document.getElementById('fechaMembresiaInput');
+    statusSelect = document.getElementById('statusSelect');
 
-        /* Sección de firma */
-        #print-area .signature-section {
-            margin-top: 40px;
-            padding-top: 20px;
-            text-align: center;
-            font-size: 1.1rem;
-            color: #333;
-            border-top: 1px dashed #ccc; /* Línea discontinua */
-        }
-        #print-area .signature-line {
-            border-bottom: 1px solid #000;
-            width: 70%;
-            margin: 0 auto 15px; /* Más espacio */
-        }
-        #print-area .signature-section p {
-            margin-bottom: 5px;
-        }
+    // Sección familiar
+    nombreFamiliarInput = document.getElementById('nombreFamiliarInput');
+    addFamiliarBtn = document.getElementById('addFamiliarBtn');
+    famList = document.getElementById('fam-list');
+    estadoCivilSelect = document.getElementById('estadoCivilSelect');
+    nombreConyugeInput = document.getElementById('nombreConyugeInput');
 
-        /* Pie de página (opcional, si quieres añadir uno) */
-        /* @page {
-            @bottom-center {
-                content: "Página " counter(page) " de " counter(pages);
-            }
-        } */
-    }
+    // Sección espiritual
+    fechaConversionInput = document.getElementById('fechaConversionInput');
+    lugarConversionInput = document.getElementById('lugarConversionInput');
+    fechaBautizoInput = document.getElementById('fechaBautizoInput');
+    lugarBautizoInput = document.getElementById('lugarBautizoInput');
+    fechaBautizoEspInput = document.getElementById('fechaBautizoEspInput');
+    lugarBautizoEspInput = document.getElementById('lugarBautizoEspInput');
+    cursosBiblicosInput = document.getElementById('cursosBiblicosInput');
+    lugarCursosBiblicosInput = document.getElementById('lugarCursosBiblicosInput');
+    donesTalentosInput = document.getElementById('donesTalentosInput');
+    areasServirInput = document.getElementById('areasServirInput');
 
-    /* Responsive */
-    @media(max-width: 700px) {
-        #menu {
-            width: 100%; height: auto; flex-direction: row; padding: 0.5rem;
-            border-right: none; border-bottom: 2px solid #E6C68D;
-            position: relative;
-            flex-wrap: wrap; /* Permite que los botones se envuelvan */
-            justify-content: center;
-        }
-        #main {
-            margin-left: 0; padding: 1rem;
-        }
-        #menu button, #menu a.sidebar-link {
-            margin: 5px; /* Espacio entre botones */
-            flex: 0 0 calc(50% - 10px); /* Dos columnas en móvil */
-            box-sizing: border-box;
-        }
-        #menu h1 {
-            width: 100%; /* Ocupa todo el ancho en móvil */
-            margin: 10px 0;
-        }
-        .logout {
-            width: calc(100% - 20px); /* Ocupa el ancho completo */
-            margin: 10px auto;
-        }
-        #search-container {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        #search {
-            max-width: 100%;
-        }
-        table {
-            font-size: 0.8rem;
-        }
-        th, td {
-            padding: 8px 10px;
-        }
-        img.photo-cell {
-            width: 35px; height: 35px;
-        }
-        button.action-btn {
-            padding: 4px 8px;
-            margin-right: 3px;
-        }
-        #modal {
-            padding: 15px;
-        }
-        form > div.section-tabs {
-            flex-wrap: wrap;
-        }
-        form > div.section-tabs button {
-            flex: 0 0 100%; /* Una pestaña por línea en móvil */
-            border-radius: 5px; /* Bordes redondeados en todas las esquinas */
-            margin-bottom: 5px; /* Espacio entre pestañas */
-        }
-        form > div.section-tabs button.active {
-            border-bottom-color: transparent; /* No mostrar la línea inferior en móviles */
-        }
-    }
-</style>
-</head>
-<body>
+    // Elementos de la tabla y controles principales
+    membersTableBody = document.querySelector('#membersTable tbody');
+    searchInput = document.getElementById('search');
+    addMemberBtn = document.getElementById('addMemberBtnMain'); // Botón principal "Añadir Miembro"
 
-<div id="menu">
-    <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20(1).png" alt="Logo de la Iglesia" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 1rem;">
-    <h1>ADORACIÓN VIVA</h1>
-    <button id="btnInicio">Inicio</button>
-    <a href="miembros.html" class="sidebar-link">Miembros</a>
-    <a href="acceso.html" class="sidebar-link">Dar acceso</a>
-    <a href="diezmo.html" class="sidebar-link">Diezmos</a>
-    <a href="ofrendas.html" class="sidebar-link">Ofrendas</a>
-    <a href="reportes.html" class="sidebar-link">Reportes</a>
-    <a href="discipulado.html" class="sidebar-link">Discipulado</a>
-    <div class="logout" onclick="cerrarSesion()">Cerrar sesión</div>
-</div>
+    // Pestañas de estado de miembros
+    tabActivos = document.getElementById('tabActivos');
+    tabDeBaja = document.getElementById('tabDeBaja');
 
-<div id="main">
-    <h2>Gestión de Miembros</h2>
-    <div id="search-container">
-        <input type="text" id="search" placeholder="Buscar por nombre, código, dirección..." />
-        <button id="addMemberBtnMain">Añadir Miembro</button>
-    </div>
+    // Elementos de paginación
+    prevPageBtn = document.getElementById('prevPage');
+    nextPageBtn = document.getElementById('nextPage');
+    pageInfo = document.getElementById('pageInfo');
 
-    <div id="member-status-tabs">
-        <button id="tabActivos" class="active" data-status="activo">Miembros Activos</button>
-        <button id="tabDeBaja" data-status="baja">Miembros de Baja</button>
-    </div>
+    // --- Event Listeners ---
 
-    <table id="membersTable" aria-label="Tabla de miembros">
-        <thead>
-            <tr>
-                <th>Foto</th>
-                <th>Nombre Completo</th>
-                <th>Código</th>
-                <th>Edad</th>
-                <th>Dirección</th>
-                <th>Asociación</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            </tbody>
-    </table>
-    <div id="pagination"></div>
-</div>
-
-<div id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div id="modal">
-        <button id="modalClose" aria-label="Cerrar">&times;</button>
-        <h3 id="modalTitle">Añadir Miembro</h3>
-        <form id="memberForm">
-            <div class="section-tabs" role="tablist">
-                <button type="button" class="tab-btn active" data-section="personales" role="tab" aria-selected="true" aria-controls="personales-section" id="tab-personales">Personales</button>
-                <button type="button" class="tab-btn" data-section="familiares" role="tab" aria-selected="false" aria-controls="familiares-section" id="tab-familiares">Familiares</button>
-                <button type="button" class="tab-btn" data-section="espirituales" role="tab" aria-selected="false" aria-controls="espirituales-section" id="tab-espirituales">Espirituales</button>
-            </div>
-            <div class="section-content" tabindex="0">
-                <div id="personales-section" class="form-section" role="tabpanel" aria-labelledby="tab-personales">
-                    <label for="fotoInput">Foto del Miembro</label>
-                    <input type="file" id="fotoInput" accept="image/*" />
-                    <img id="fotoPreview" src="" alt="Foto previa" style="width:100px; height:100px; border-radius:50%; margin-top: 10px; display:none; object-fit: cover; border: 2px solid #E6C68D;" />
-                    
-                    <label for="nombreInput">Nombre Completo</label>
-                    <input type="text" id="nombreInput" required />
-                    
-                    <label for="fechaNacimientoInput">Fecha de Nacimiento</label>
-                    <input type="date" id="fechaNacimientoInput" required />
-                    
-                    <label for="edadInput">Edad</label>
-                    <input type="number" id="edadInput" readonly />
-                    
-                    <label for="codigoInput">Código</label>
-                    <input type="text" id="codigoInput" required />
-                    
-                    <label for="telefonoInput">Número de Teléfono</label>
-                    <input type="text" id="telefonoInput" placeholder="Ej. +505 8888 1234" />
-                    
-                    <label for="direccionInput">Dirección</label>
-                    <input type="text" id="direccionInput" placeholder="Calle, número, colonia, ciudad" />
-
-                    <label for="emailInput">Correo Electrónico</label>
-                    <input type="email" id="emailInput" placeholder="correo@ejemplo.com" />
-                    
-                    <label for="asociacionSelect">Asociación</label>
-                    <select id="asociacionSelect" required>
-                        <option value="" disabled selected>Seleccione</option>
-                        <option value="Damas">Damas</option>
-                        <option value="Caballeros">Caballeros</option>
-                        <option value="Jóvenes">Jóvenes</option>
-                        <option value="Niños">Niños</option>
-                        <option value="Ministerio Alabanza">Ministerio Alabanza</option>
-                        <option value="Ministerio de Ujieres">Ministerio de Ujieres</option>
-                        <option value="Liderazgo">Liderazgo</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-
-                    <label for="fechaMembresiaInput">Fecha de Membresía</label>
-                    <input type="date" id="fechaMembresiaInput" />
-
-                    <label for="statusSelect">Estado del Miembro</label>
-                    <select id="statusSelect" required>
-                        <option value="activo">Activo</option>
-                        <option value="baja">De Baja</option>
-                    </select>
-                </div>
-                <div id="familiares-section" class="form-section" style="display:none" role="tabpanel" aria-labelledby="tab-familiares">
-                    <label for="estadoCivilSelect">Estado Civil</label>
-                    <select id="estadoCivilSelect">
-                        <option value="" disabled selected>Seleccione</option>
-                        <option value="Soltero/a">Soltero/a</option>
-                        <option value="Casado/a">Casado/a</option>
-                        <option value="Divorciado/a">Divorciado/a</option>
-                        <option value="Viudo/a">Viudo/a</option>
-                    </select>
-
-                    <label for="nombreConyugeInput">Nombre del Cónyuge (si aplica)</label>
-                    <input type="text" id="nombreConyugeInput" placeholder="Nombre completo del cónyuge" />
-
-                    <label for="nombreFamiliarInput">Agregar Hijo/a u Otro Familiar</label>
-                    <input type="text" id="nombreFamiliarInput" placeholder="Ej. Juan Pérez (hijo), María López (madre)" />
-                    <button type="button" id="addFamiliarBtn" style="margin-top: 5px; background: #E6C68D; color: #0A1424; border:none; padding: 5px 10px; font-weight: bold; border-radius: 5px; cursor: pointer;">Añadir Familiar</button>
-                    <div id="fam-list" aria-live="polite" aria-relevant="additions removals"></div>
-                </div>
-                <div id="espirituales-section" class="form-section" style="display:none" role="tabpanel" aria-labelledby="tab-espirituales">
-                    <label for="fechaConversionInput">Fecha de Conversión</label>
-                    <input type="date" id="fechaConversionInput" />
-                    
-                    <label for="lugarConversionInput">Lugar de Conversión</label>
-                    <input type="text" id="lugarConversionInput" placeholder="Ej. Hogar, Iglesia, Evento" />
-                    
-                    <label for="fechaBautizoInput">Fecha de Bautizo en Agua</label>
-                    <input type="date" id="fechaBautizoInput" />
-                    
-                    <label for="lugarBautizoInput">Lugar de Bautizo en Agua</label>
-                    <input type="text" id="lugarBautizoInput" placeholder="Ej. Iglesia Central, Río Jordán" />
-                    
-                    <label for="fechaBautizoEspInput">Fecha de Bautizo del Espíritu Santo</label>
-                    <input type="date" id="fechaBautizoEspInput" />
-                    
-                    <label for="lugarBautizoEspInput">Lugar de Bautizo del Espíritu Santo</label>
-                    <input type="text" id="lugarBautizoEspInput" placeholder="Ej. Servicio de adoración, Campamento" />
-                    
-                    <label for="cursosBiblicosInput">Cursos Bíblicos Realizados</label>
-                    <textarea id="cursosBiblicosInput" rows="3" placeholder="Ej. Discipulado Nivel 1, Fundamentos de la Fe"></textarea>
-                    
-                    <label for="lugarCursosBiblicosInput">Lugar donde los recibió</label>
-                    <input type="text" id="lugarCursosBiblicosInput" placeholder="Ej. Instituto Bíblico, Célula" />
-
-                    <label for="donesTalentosInput">Dones o Talentos para Servir</label>
-                    <textarea id="donesTalentosInput" rows="3" placeholder="Ej. Canto, Instrumento, Liderazgo, Enseñanza, Organización, Evangelismo"></textarea>
-
-                    <label for="areasServirInput">Áreas donde le gustaría servir</label>
-                    <textarea id="areasServirInput" rows="3" placeholder="Ej. Equipo de Alabanza, Escuela Dominical, Evangelismo, Ujieres, Limpieza"></textarea>
-                </div>
-            </div>
-            <div id="formActions">
-                <button type="submit" id="saveBtn">Guardar</button>
-                <button type="button" id="cancelBtn">Cancelar</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div id="print-area" style="display:none;">
-    <div class="header-print">
-        <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20(1).png" alt="Logo Izquierdo" class="logo-left">
-        <h1>IGLESIA ICCI ADORACIÓN VIVA</h1>
-        <img src="https://azywyqozwwbfctxeokug.supabase.co/storage/v1/object/public/logos//download-removebg-preview%20(1).png" alt="Logo Derecho" class="logo-right">
-    </div>
-
-    <h2 class="sheet-title">HOJA DE MIEMBRO</h2>
-
-    <div class="section-print personal-section">
-        <div class="personal-info-content">
-            <h2>INFORMACIÓN PERSONAL</h2>
-            <p><strong>Nombre Completo:</strong> <span id="print-nombreCompleto"></span></p>
-            <p><strong>Fecha de Nacimiento:</strong> <span id="print-fechaNacimiento"></span></p>
-            <p><strong>Edad:</strong> <span id="print-edad"></span></p>
-            <p><strong>Código:</strong> <span id="print-codigo"></span></p>
-            <p><strong>Teléfono:</strong> <span id="print-telefono"></span></p>
-            <p><strong>Correo Electrónico:</strong> <span id="print-email"></span></p>
-            <p><strong>Dirección:</strong> <span id="print-direccion"></span></p>
-            <p><strong>Asociación:</strong> <span id="print-asociacion"></span></p>
-            <p><strong>Fecha de Membresía:</strong> <span id="print-fechaMembresia"></span></p>
-            <p><strong>Estado del Miembro:</strong> <span id="print-status"></span></p>
-        </div>
-        <div class="photo-container">
-            <img id="print-fotoMiembro" src="" alt="Foto del Miembro">
-        </div>
-    </div>
-
-    <div class="section-print">
-        <h2>INFORMACIÓN FAMILIAR</h2>
-        <p><strong>Estado Civil:</strong> <span id="print-estadoCivil"></span></p>
-        <p><strong>Nombre del Cónyuge:</strong> <span id="print-nombreConyuge"></span></p>
-        <p><strong>Familiares Añadidos:</strong></p>
-        <div id="print-familiaresList" class="fam-list-print">
-            </div>
-    </div>
-
-    <div class="section-print">
-        <h2>INFORMACIÓN ESPIRITUAL</h2>
-        <div class="info-grid">
-            <div>
-                <p><strong>Fecha de Conversión:</strong> <span id="print-fechaConversion"></span></p>
-                <p><strong>Lugar de Conversión:</strong> <span id="print-lugarConversion"></span></p>
-                <p><strong>Fecha de Bautizo en Agua:</strong> <span id="print-fechaBautizo"></span></p>
-                <p><strong>Lugar de Bautizo en Agua:</strong> <span id="print-lugarBautizo"></span></p>
-            </div>
-            <div>
-                <p><strong>Fecha Bautizo Espíritu Santo:</strong> <span id="print-fechaBautizoEsp"></span></p>
-                <p><strong>Lugar Bautizo Espíritu Santo:</strong> <span id="print-lugarBautizoEsp"></span></p>
-                <p><strong>Cursos Bíblicos Realizados:</strong> <span id="print-cursosBiblicos"></span></p>
-                <p><strong>Lugar Cursos Bíblicos:</strong> <span id="print-lugarCursosBiblicos"></span></p>
-            </div>
-        </div>
-        <p><strong>Dones o Talentos para Servir:</strong> <span id="print-donesTalentos"></span></p>
-        <p><strong>Áreas donde le gustaría servir:</strong> <span id="print-areasServir"></span></p>
-    </div>
-
-    <div class="section-print signature-section">
-        <h2>FIRMA PASTOR/A</h2>
-        <div class="signature-line"></div>
-        <p>Nombre del Pastor/a: ____________________________________________________</p>
-        <p>Firma del Pastor/a: ____________________________________________________ Fecha: ____/____/____</p>
-    </div>
-</div>
-
-<script>
-    // Firebase config (MANTÉN ESTAS CLAVES CORRECTAS DE TU PROYECTO)
-    const firebaseConfig = {
-        apiKey: "AIzaSyAyfPQzO7evryWcQ5d1lGV3z8aB-gFOh_k", // TU API KEY DE FIREBASE
-        authDomain: "iglesia-adoracion-viva.firebaseapp.com",
-        projectId: "iglesia-adoracion-viva",
-        storageBucket: "iglesia-adoracion-viva.appspot.com", // Asegúrate de que sea tu "storageBucket" de Firebase
-        messagingSenderId: "815332010058",
-        appId: "1:815332010058:web:d2afff616469349d88deb3",
-        measurementId: "G-43MZP6V55D"
-    };
-
-    // Inicializar Firebase
-    let db, firebaseStorage;
-    try {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore();
-        firebaseStorage = firebase.storage(); // Inicializar Firebase Storage
-        console.log("Firebase inicializado correctamente.");
-    } catch (error) {
-        console.error("Error al inicializar Firebase:", error);
-        alert("Error al inicializar Firebase. Revisa la consola para más detalles.");
-    }
-
-    // --- REMOVED SUPABASE INITIALIZATION FOR FILE STORAGE SIMPLICITY ---
-    // const SUPABASE_URL = "https://xyptydnouyddzvrffaby.supabase.co";
-    // const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5cHR5ZG5vdXlkZHp2cmZmYWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NjY1ODUsImV4cCI6MjA2MzU0MjU4NX0.KGoyFKsdI6N53QzNFJBPHfUGCGssHBSqfkPb4Q39-o";
-    // let supabase;
-    // try {
-    //     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    //     console.log("Supabase inicializado correctamente.");
-    // } catch (error) {
-    //     console.error("Error al inicializar Supabase:", error);
-    //     alert("Error al inicializar Supabase. Revisa la consola para más detalles.");
-    // }
-    // const SUPABASE_BUCKET = "ftmember";
-
-    // Variables globales
-    let members = [];
-    let filteredMembers = [];
-    let currentPage = 1;
-    const pageSize = 10; // Reducido para facilitar la paginación de prueba
-    let editingMemberId = null;
-    let currentMemberStatusFilter = 'activo';
-    let lastDoc = null; // Para paginación con startAfter
-
-    // Elementos DOM (se obtienen dentro de DOMContentLoaded para asegurar que existen)
-    let modalOverlay, modal, memberForm, fotoInput, fotoPreview, nombreInput, fechaNacimientoInput, edadInput,
-        codigoInput, telefonoInput, direccionInput, emailInput, asociacionSelect, fechaMembresiaInput, statusSelect,
-        nombreFamiliarInput, addFamiliarBtn, famList, estadoCivilSelect, nombreConyugeInput,
-        fechaConversionInput, lugarConversionInput, fechaBautizoInput, lugarBautizoInput,
-        fechaBautizoEspInput, lugarBautizoEspInput, cursosBiblicosInput, lugarCursosBiblicosInput,
-        donesTalentosInput, areasServirInput,
-        searchInput, membersTableBody, paginationDiv, addMemberBtnMain, modalClose, cancelBtn, saveBtn;
-
-    document.addEventListener('DOMContentLoaded', () => {
-        // Asignación de elementos DOM
-        modalOverlay = document.getElementById('modalOverlay');
-        modal = document.getElementById('modal');
-        memberForm = document.getElementById('memberForm');
-        fotoInput = document.getElementById('fotoInput');
-        fotoPreview = document.getElementById('fotoPreview');
-        nombreInput = document.getElementById('nombreInput');
-        fechaNacimientoInput = document.getElementById('fechaNacimientoInput');
-        edadInput = document.getElementById('edadInput');
-        codigoInput = document.getElementById('codigoInput');
-        telefonoInput = document.getElementById('telefonoInput');
-        direccionInput = document.getElementById('direccionInput');
-        emailInput = document.getElementById('emailInput');
-        asociacionSelect = document.getElementById('asociacionSelect');
-        fechaMembresiaInput = document.getElementById('fechaMembresiaInput');
-        statusSelect = document.getElementById('statusSelect'); // Nuevo select para estado del miembro
-
-        estadoCivilSelect = document.getElementById('estadoCivilSelect');
-        nombreConyugeInput = document.getElementById('nombreConyugeInput');
-        nombreFamiliarInput = document.getElementById('nombreFamiliarInput');
-        addFamiliarBtn = document.getElementById('addFamiliarBtn');
-        famList = document.getElementById('fam-list');
-
-        fechaConversionInput = document.getElementById('fechaConversionInput');
-        lugarConversionInput = document.getElementById('lugarConversionInput');
-        fechaBautizoInput = document.getElementById('fechaBautizoInput');
-        lugarBautizoInput = document.getElementById('lugarBautizoInput');
-        fechaBautizoEspInput = document.getElementById('fechaBautizoEspInput');
-        lugarBautizoEspInput = document.getElementById('lugarBautizoEspInput');
-        cursosBiblicosInput = document.getElementById('cursosBiblicosInput');
-        lugarCursosBiblicosInput = document.getElementById('lugarCursosBiblicosInput');
-        donesTalentosInput = document.getElementById('donesTalentosInput');
-        areasServirInput = document.getElementById('areasServirInput');
-
-        searchInput = document.getElementById('search');
-        membersTableBody = document.querySelector('#membersTable tbody');
-        paginationDiv = document.getElementById('pagination');
-        addMemberBtnMain = document.getElementById('addMemberBtnMain');
-        modalClose = document.getElementById('modalClose');
-        cancelBtn = document.getElementById('cancelBtn');
-        saveBtn = document.getElementById('saveBtn');
-
-        // Event Listeners
-        addMemberBtnMain.addEventListener('click', openAddMemberModal);
-        modalClose.addEventListener('click', closeModal);
-        cancelBtn.addEventListener('click', closeModal);
-        memberForm.addEventListener('submit', handleFormSubmit);
-        fotoInput.addEventListener('change', handleFotoChange);
-        fechaNacimientoInput.addEventListener('change', calculateAge);
-        addFamiliarBtn.addEventListener('click', addFamiliar);
-        searchInput.addEventListener('input', debounce(filterMembers, 300));
-
-        document.querySelectorAll('.tab-btn').forEach(button => {
-            button.addEventListener('click', (event) => {
-                showSection(event.target.dataset.section);
-            });
-        });
-
-        document.getElementById('tabActivos').addEventListener('click', () => setMemberStatusFilter('activo'));
-        document.getElementById('tabDeBaja').addEventListener('click', () => setMemberStatusFilter('baja'));
-        
-        // Cargar miembros al iniciar
-        loadMembers();
-    });
-
-    // Función para cerrar sesión (placeholder)
-    function cerrarSesion() {
-        alert("Función de cerrar sesión aún no implementada. Redirigiendo a inicio.");
-        window.location.href = "index.html"; // O tu página de login
-    }
-
-    // Mostrar sección del formulario
-    function showSection(sectionId) {
-        document.querySelectorAll('.form-section').forEach(section => {
-            section.style.display = 'none';
-        });
-        document.getElementById(`${sectionId}-section`).style.display = 'block';
-
-        document.querySelectorAll('.tab-btn').forEach(button => {
-            button.classList.remove('active');
-            button.setAttribute('aria-selected', 'false');
-        });
-        const activeTab = document.querySelector(`.tab-btn[data-section="${sectionId}"]`);
-        activeTab.classList.add('active');
-        activeTab.setAttribute('aria-selected', 'true');
-    }
-
-    // Calcular edad automáticamente
-    function calculateAge() {
-        const birthDate = new Date(fechaNacimientoInput.value);
-        if (isNaN(birthDate)) {
-            edadInput.value = '';
-            return;
-        }
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        edadInput.value = age;
-    }
-
-    // Previsualizar foto
-    function handleFotoChange() {
-        const file = fotoInput.files[0];
+    // Listener para previsualización de la foto
+    fotoInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -953,472 +110,531 @@
             fotoPreview.src = '';
             fotoPreview.style.display = 'none';
         }
-    }
+    });
 
-    // Añadir familiar
-    function addFamiliar() {
+    // Listener para cálculo de edad automático
+    fechaNacimientoInput.addEventListener('change', () => {
+        if (fechaNacimientoInput.value) {
+            edadInput.value = calculateAge(fechaNacimientoInput.value);
+        } else {
+            edadInput.value = '';
+        }
+    });
+
+    // Listener para añadir familiar
+    addFamiliarBtn.addEventListener('click', () => {
         const familiarName = nombreFamiliarInput.value.trim();
         if (familiarName) {
             const div = document.createElement('div');
-            div.innerHTML = `<span>${familiarName}</span> <button type="button" class="remove-fam-btn">&times;</button>`;
-            div.querySelector('.remove-fam-btn').addEventListener('click', () => {
-                famList.removeChild(div);
-            });
+            div.innerHTML = `<span>${familiarName}</span><button type="button" class="remove-fam-btn">&times;</button>`;
             famList.appendChild(div);
-            nombreFamiliarInput.value = '';
+            nombreFamiliarInput.value = ''; // Limpiar input
+
+            div.querySelector('.remove-fam-btn').addEventListener('click', function() {
+                this.parentElement.remove();
+            });
         }
-    }
+    });
 
-    // Abrir modal para añadir miembro
-    function openAddMemberModal() {
-        editingMemberId = null;
-        memberForm.reset();
-        fotoPreview.src = '';
-        fotoPreview.style.display = 'none';
-        famList.innerHTML = ''; // Limpiar lista de familiares
-        document.getElementById('modalTitle').textContent = 'Añadir Miembro';
-        saveBtn.textContent = 'Guardar';
-        statusSelect.value = 'activo'; // Por defecto activo al añadir
-        showSection('personales'); // Mostrar sección personal por defecto
-        modalOverlay.style.display = 'flex';
-    }
+    // Listener para el envío del formulario de miembro
+    memberForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    // Abrir modal para editar miembro
-    async function openEditMemberModal(memberId) {
-        editingMemberId = memberId;
-        document.getElementById('modalTitle').textContent = 'Editar Miembro';
-        saveBtn.textContent = 'Actualizar';
-        famList.innerHTML = ''; // Limpiar lista de familiares
-
-        try {
-            const doc = await db.collection('members').doc(memberId).get();
-            if (doc.exists) {
-                const data = doc.data();
-                nombreInput.value = data.nombreCompleto || '';
-                fechaNacimientoInput.value = data.fechaNacimiento || '';
-                calculateAge(); // Recalcular edad
-                codigoInput.value = data.codigo || '';
-                telefonoInput.value = data.telefono || '';
-                direccionInput.value = data.direccion || '';
-                emailInput.value = data.email || '';
-                asociacionSelect.value = data.asociacion || '';
-                fechaMembresiaInput.value = data.fechaMembresia || '';
-                statusSelect.value = data.status || 'activo'; // Cargar estado
-
-                if (data.fotoURL) {
-                    fotoPreview.src = data.fotoURL;
-                    fotoPreview.style.display = 'block';
-                } else {
-                    fotoPreview.src = '';
-                    fotoPreview.style.display = 'none';
-                }
-
-                // Familiares
-                estadoCivilSelect.value = data.estadoCivil || '';
-                nombreConyugeInput.value = data.nombreConyuge || '';
-                if (data.familiares && Array.isArray(data.familiares)) {
-                    data.familiares.forEach(fam => {
-                        const div = document.createElement('div');
-                        div.innerHTML = `<span>${fam}</span> <button type="button" class="remove-fam-btn">&times;</button>`;
-                        div.querySelector('.remove-fam-btn').addEventListener('click', () => {
-                            famList.removeChild(div);
-                        });
-                        famList.appendChild(div);
-                    });
-                }
-
-                // Espirituales
-                fechaConversionInput.value = data.fechaConversion || '';
-                lugarConversionInput.value = data.lugarConversion || '';
-                fechaBautizoInput.value = data.fechaBautizo || '';
-                lugarBautizoInput.value = data.lugarBautizo || '';
-                fechaBautizoEspInput.value = data.fechaBautizoEsp || '';
-                lugarBautizoEspInput.value = data.lugarBautizoEsp || '';
-                cursosBiblicosInput.value = data.cursosBiblicos || '';
-                lugarCursosBiblicosInput.value = data.lugarCursosBiblicos || '';
-                donesTalentosInput.value = data.donesTalentos || '';
-                areasServirInput.value = data.areasServir || '';
-
-                showSection('personales'); // Mostrar sección personal por defecto
-                modalOverlay.style.display = 'flex';
-            } else {
-                alert('Miembro no encontrado.');
-            }
-        } catch (error) {
-            console.error("Error al cargar miembro para edición:", error);
-            alert('Error al cargar datos del miembro. Consulta la consola.');
+        // Validar campos obligatorios
+        if (!nombreInput.value || !fechaNacimientoInput.value || !codigoInput.value || !asociacionSelect.value) {
+            alert('Por favor, complete todos los campos obligatorios (Nombre, Fecha de Nacimiento, Código, Asociación).');
+            return;
         }
-    }
-
-    // Cerrar modal
-    function closeModal() {
-        modalOverlay.style.display = 'none';
-        memberForm.reset();
-        fotoPreview.src = '';
-        fotoPreview.style.display = 'none';
-        famList.innerHTML = '';
-        editingMemberId = null;
-    }
-
-    // Manejar envío del formulario
-    async function handleFormSubmit(event) {
-        event.preventDefault();
 
         const memberData = {
-            nombreCompleto: nombreInput.value.trim(),
+            nombre: nombreInput.value,
             fechaNacimiento: fechaNacimientoInput.value,
-            edad: parseInt(edadInput.value),
-            codigo: codigoInput.value.trim(),
-            telefono: telefonoInput.value.trim(),
-            direccion: direccionInput.value.trim(),
-            email: emailInput.value.trim(),
+            edad: edadInput.value,
+            codigo: codigoInput.value,
+            telefono: telefonoInput.value,
+            direccion: direccionInput.value,
+            email: emailInput.value,
             asociacion: asociacionSelect.value,
             fechaMembresia: fechaMembresiaInput.value,
-            status: statusSelect.value, // Guardar el estado del miembro
+            status: statusSelect.value,
 
-            // Familiares
             estadoCivil: estadoCivilSelect.value,
-            nombreConyuge: nombreConyugeInput.value.trim(),
-            familiares: Array.from(famList.children).map(div => div.querySelector('span').textContent.trim()),
+            nombreConyuge: nombreConyugeInput.value,
+            familiares: Array.from(famList.children).map(li => li.querySelector('span').textContent),
 
-            // Espirituales
             fechaConversion: fechaConversionInput.value,
-            lugarConversion: lugarConversionInput.value.trim(),
+            lugarConversion: lugarConversionInput.value,
             fechaBautizo: fechaBautizoInput.value,
-            lugarBautizo: lugarBautizoInput.value.trim(),
+            lugarBautizo: lugarBautizoInput.value,
             fechaBautizoEsp: fechaBautizoEspInput.value,
-            lugarBautizoEsp: lugarBautizoEspInput.value.trim(),
-            cursosBiblicos: cursosBiblicosInput.value.trim(),
-            lugarCursosBiblicos: lugarCursosBiblicosInput.value.trim(),
-            donesTalentos: donesTalentosInput.value.trim(),
-            areasServir: areasServirInput.value.trim(),
-            // Añadir timestamp para ordenar
-            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            lugarBautizoEsp: lugarBautizoEspInput.value,
+            cursosBiblicos: cursosBiblicosInput.value,
+            lugarCursosBiblicos: lugarCursosBiblicosInput.value,
+            donesTalentos: donesTalentosInput.value,
+            areasServir: areasServirInput.value,
+            fotoUrl: '', // Se actualizará si se sube una foto
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         const fotoFile = fotoInput.files[0];
-        let fotoURL = fotoPreview.src === '' ? null : fotoPreview.src; // Mantener URL existente si no se sube nueva foto
+        let photoUrl = '';
 
-        try {
-            if (fotoFile) {
-                // Subir foto a Firebase Storage
-                const storageRef = firebaseStorage.ref(`member_photos/${Date.now()}_${fotoFile.name}`);
-                const snapshot = await storageRef.put(fotoFile);
-                fotoURL = await snapshot.ref.getDownloadURL();
-                console.log("Foto subida a Firebase Storage:", fotoURL);
+        if (fotoFile) {
+            try {
+                const storageRef = firebaseStorage.ref();
+                // Crea un nombre único para la foto
+                const photoName = `${codigoInput.value}_${Date.now()}_${fotoFile.name}`;
+                const photoRef = storageRef.child(`member_photos/${photoName}`);
+
+                const uploadTask = photoRef.put(fotoFile);
+
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        console.log('Upload is ' + progress + '% done');
+                        // Puedes mostrar el progreso al usuario aquí
+                    },
+                    (error) => {
+                        console.error('Error al subir la foto:', error);
+                        alert('Error al subir la foto. Inténtalo de nuevo.');
+                        // Manejo de errores más robusto aquí
+                    },
+                    async () => {
+                        photoUrl = await photoRef.getDownloadURL();
+                        memberData.fotoUrl = photoUrl;
+                        console.log('Foto subida, URL:', photoUrl);
+                        // Guarda/actualiza el miembro solo DESPUÉS de obtener la URL de la foto
+                        saveOrUpdateMember(memberData);
+                    }
+                );
+            } catch (error) {
+                console.error("Error en el proceso de carga de la foto:", error);
+                alert("Hubo un error al procesar la foto.");
             }
-
-            memberData.fotoURL = fotoURL; // Guardar la URL de la foto en los datos del miembro
-
+        } else {
+            // Si no se selecciona una nueva foto:
+            // Si estamos editando, intenta mantener la foto existente
             if (editingMemberId) {
-                await db.collection('members').doc(editingMemberId).update(memberData);
-                alert('Miembro actualizado con éxito!');
-            } else {
-                await db.collection('members').add(memberData);
-                alert('Miembro añadido con éxito!');
+                const existingMember = members.find(m => m.id === editingMemberId);
+                if (existingMember) {
+                    memberData.fotoUrl = existingMember.fotoUrl || '';
+                }
             }
-            closeModal();
-            loadMembers(); // Recargar la lista de miembros
-        } catch (error) {
-            console.error("Error al guardar/actualizar miembro:", error);
-            alert('Error al guardar el miembro. Consulta la consola para más detalles.');
+            // Procede a guardar/actualizar sin cargar una nueva foto
+            saveOrUpdateMember(memberData);
+        }
+    });
+
+    // Listener para el botón principal de "Añadir Miembro"
+    addMemberBtn.addEventListener('click', openAddMemberModal);
+
+    // Listener para la barra de búsqueda
+    searchInput.addEventListener('input', () => {
+        currentPage = 1; // Reiniciar a la primera página en la búsqueda
+        fetchMembers(currentMemberStatusFilter, searchInput.value);
+    });
+
+    // Listeners para las pestañas de estado
+    tabActivos.addEventListener('click', () => {
+        currentMemberStatusFilter = 'activo';
+        tabActivos.classList.add('active');
+        tabDeBaja.classList.remove('active');
+        currentPage = 1;
+        fetchMembers(currentMemberStatusFilter, searchInput.value);
+    });
+
+    tabDeBaja.addEventListener('click', () => {
+        currentMemberStatusFilter = 'baja';
+        tabDeBaja.classList.add('active');
+        tabActivos.classList.remove('active');
+        currentPage = 1;
+        fetchMembers(currentMemberStatusFilter, searchInput.value);
+    });
+
+    // Listeners para botones de paginación (asegúrate de que existan en tu HTML)
+    if (prevPageBtn) {
+        prevPageBtn.addEventListener('click', () => {
+            currentPage--;
+            renderMembers();
+            renderPagination();
+        });
+    }
+    if (nextPageBtn) {
+        nextPageBtn.addEventListener('click', () => {
+            currentPage++;
+            renderMembers();
+            renderPagination();
+        });
+    }
+
+
+    // --- Funciones Principales ---
+
+    // Abre el modal para añadir un nuevo miembro
+    function openAddMemberModal() {
+        memberForm.reset();
+        editingMemberId = null;
+        document.getElementById('modalTitle').textContent = 'Añadir Miembro';
+        fotoPreview.src = '';
+        fotoPreview.style.display = 'none';
+        famList.innerHTML = '';
+        statusSelect.value = 'activo'; // Default status for new member
+
+        showSection('personales'); // Mostrar la sección personal por defecto
+        // Asegúrate de que solo la pestaña activa tenga la clase 'active'
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.tab-btn[data-section="personales"]').classList.add('active');
+
+        modalOverlay.style.display = 'flex';
+    }
+
+    // Cierra el modal
+    function closeModal() {
+        modalOverlay.style.display = 'none';
+    }
+
+    // Cambia la sección visible dentro del modal
+    function showSection(sectionName) {
+        document.querySelectorAll('.form-section').forEach(section => {
+            section.style.display = 'none';
+        });
+        document.getElementById(`${sectionName}-section`).style.display = 'block';
+
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.classList.remove('active');
+            button.setAttribute('aria-selected', 'false');
+        });
+        const activeTab = document.querySelector(`.tab-btn[data-section="${sectionName}"]`);
+        if (activeTab) {
+            activeTab.classList.add('active');
+            activeTab.setAttribute('aria-selected', 'true');
         }
     }
 
-    // Cargar miembros desde Firestore
-    async function loadMembers(direction = 'start') {
-        membersTableBody.innerHTML = '<tr><td colspan="7">Cargando miembros...</td></tr>';
-        let query = db.collection('members')
-                      .where('status', '==', currentMemberStatusFilter) // Filtrar por estado
-                      .orderBy('nombreCompleto')
-                      .limit(pageSize);
-
-        if (direction === 'next' && lastDoc) {
-            query = query.startAfter(lastDoc);
-        } else if (direction === 'prev' && members.length > 0 && currentPage > 1) {
-            // Para paginación hacia atrás, necesitamos la lógica de `endBefore`
-            // o cargar todos y filtrar, lo cual puede ser costoso para muchos datos.
-            // Para simplificar, si se va hacia atrás, simplemente volvemos a cargar desde el inicio
-            // o se implementa una estrategia más avanzada de paginación bidireccional.
-            // Por ahora, para 'prev' simplemente recargamos la página anterior
-            // Esto es una simplificación y no la paginación más eficiente para Firestore.
-            // Una solución más robusta para 'prev' implicaría almacenar los docs anteriores
-            // o invertir el orden de la consulta y usar `endBefore`.
-            console.warn("La paginación 'prev' es una simplificación. Para grandes datasets, considera una estrategia más robusta (e.g., historial de `lastDoc` o `endBefore`).");
-            currentPage = Math.max(1, currentPage - 1);
-            loadMembersAtPage(currentPage); // Llamar a una función que cargue la página específica
-            return;
+    // Calcula la edad a partir de la fecha de nacimiento
+    function calculateAge(dob) {
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
         }
+        return age;
+    }
 
+    // Guarda o actualiza un miembro en Firestore
+    async function saveOrUpdateMember(memberData) {
         try {
-            const snapshot = await query.get();
+            if (editingMemberId) {
+                await db.collection('members').doc(editingMemberId).update(memberData);
+                alert('Miembro actualizado correctamente.');
+            } else {
+                await db.collection('members').add(memberData);
+                alert('Miembro añadido correctamente.');
+            }
+            closeModal();
+            fetchMembers(); // Actualiza la tabla después de guardar
+        } catch (error) {
+            console.error("Error al guardar/actualizar miembro:", error);
+            alert("Error al guardar el miembro. Revisa la consola.");
+        }
+    }
+
+    // Obtiene los miembros de Firestore y los filtra/muestra
+    async function fetchMembers(statusFilter = currentMemberStatusFilter, search = '') {
+        membersTableBody.innerHTML = '<tr><td colspan="7">Cargando miembros...</td></tr>';
+        try {
+            let query = db.collection('members').where('status', '==', statusFilter);
+            const snapshot = await query.orderBy('nombre').get();
             members = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            if (members.length > 0) {
-                lastDoc = snapshot.docs[snapshot.docs.length - 1]; // Guarda el último documento para la siguiente página
+            // Filtro de búsqueda en el lado del cliente (Firestore no tiene buena búsqueda de texto completo)
+            if (search) {
+                const searchTerm = search.toLowerCase();
+                filteredMembers = members.filter(member =>
+                    (member.nombre && member.nombre.toLowerCase().includes(searchTerm)) ||
+                    (member.codigo && member.codigo.toLowerCase().includes(searchTerm)) ||
+                    (member.direccion && member.direccion.toLowerCase().includes(searchTerm)) ||
+                    (member.asociacion && member.asociacion.toLowerCase().includes(searchTerm)) ||
+                    (member.telefono && member.telefono.toLowerCase().includes(searchTerm)) ||
+                    (member.email && member.email.toLowerCase().includes(searchTerm))
+                );
             } else {
-                lastDoc = null;
+                filteredMembers = [...members];
             }
-            
-            filterMembers(); // Aplicar búsqueda/filtrado después de cargar
+
+            renderMembers();
+            renderPagination();
 
         } catch (error) {
-            console.error("Error al cargar miembros:", error);
+            console.error("Error al obtener miembros:", error);
             membersTableBody.innerHTML = '<tr><td colspan="7">Error al cargar miembros.</td></tr>';
         }
     }
-    
-    // Función de paginación para ir a una página específica (simplificada)
-    async function loadMembersAtPage(page) {
-        let query = db.collection('members')
-                      .where('status', '==', currentMemberStatusFilter)
-                      .orderBy('nombreCompleto');
 
-        // Para ir a una página específica, necesitamos saltar 'n' documentos
-        // Firestore no tiene un `offset` directo. La forma más eficiente es cargar hasta esa página.
-        // Esto es menos eficiente si se salta a páginas muy lejanas sin un sistema de índices.
-        const allDocsSnapshot = await query.get();
-        const allDocs = allDocsSnapshot.docs;
-        const startIndex = (page - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        
-        members = allDocs.slice(startIndex, endIndex).map(doc => ({ id: doc.id, ...doc.data() }));
-
-        if (members.length > 0) {
-            lastDoc = allDocs[endIndex - 1] || allDocs[allDocs.length - 1]; // Asegurarse de tener el último doc para forward
-        } else {
-            lastDoc = null;
-        }
-        
-        filterMembers();
-        updatePaginationButtons(allDocs.length); // Actualizar botones con el total de docs
-    }
-
-
-    // Función para filtrar y renderizar miembros
-    function filterMembers() {
-        const searchTerm = searchInput.value.toLowerCase();
-        
-        // El filtrado por estado ya se hizo en `loadMembers` con `where('status', '==', ...)`.
-        // Ahora, aplicar el filtro de búsqueda localmente sobre los miembros cargados.
-        filteredMembers = members.filter(member => {
-            const nameMatch = member.nombreCompleto?.toLowerCase().includes(searchTerm);
-            const codeMatch = member.codigo?.toLowerCase().includes(searchTerm);
-            const addressMatch = member.direccion?.toLowerCase().includes(searchTerm);
-            return nameMatch || codeMatch || addressMatch;
-        });
-        
-        renderMembers();
-        updatePaginationButtons(); // Los botones de paginación deben reflejar el TOTAL de miembros activos/de baja
-                                   // no solo los actualmente filtrados por búsqueda local.
-                                   // Esto requiere una consulta de conteo o cargar todos los activos/baja inicialmente.
-                                   // Para este ejemplo, simplificamos y la paginación avanza por lotes reales.
-    }
-
-    // Renderizar miembros en la tabla
+    // Renderiza los miembros en la tabla
     function renderMembers() {
         membersTableBody.innerHTML = '';
-        if (filteredMembers.length === 0) {
-            membersTableBody.innerHTML = `<tr><td colspan="7">No se encontraron miembros ${currentMemberStatusFilter === 'activo' ? 'activos' : 'de baja'} con esa búsqueda.</td></tr>`;
-            updatePaginationButtons(0); // No hay miembros, deshabilitar paginación
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const membersToDisplay = filteredMembers.slice(start, end);
+
+        if (membersToDisplay.length === 0) {
+            membersTableBody.innerHTML = '<tr><td colspan="7">No hay miembros para mostrar con el filtro actual.</td></tr>';
             return;
         }
 
-        filteredMembers.forEach(member => {
+        membersToDisplay.forEach(member => {
             const row = membersTableBody.insertRow();
             row.innerHTML = `
-                <td><img src="${member.fotoURL || 'https://via.placeholder.com/50?text=No+Foto'}" alt="Foto" class="photo-cell"></td>
-                <td>${member.nombreCompleto || ''}</td>
-                <td>${member.codigo || ''}</td>
-                <td>${member.edad || ''}</td>
-                <td>${member.direccion || ''}</td>
-                <td>${member.asociacion || ''}</td>
+                <td><img src="${member.fotoUrl || 'https://via.placeholder.com/50'}" alt="Foto" class="photo-cell"></td>
+                <td>${member.nombre}</td>
+                <td>${member.codigo}</td>
+                <td>${member.edad || calculateAge(member.fechaNacimiento) || 'N/A'}</td>
+                <td>${member.direccion || 'N/A'}</td>
+                <td>${member.asociacion || 'N/A'}</td>
                 <td>
-                    <button class="action-btn" onclick="openEditMemberModal('${member.id}')">Editar</button>
-                    <button class="action-btn" onclick="confirmDeleteMember('${member.id}', '${member.nombreCompleto}')" style="background-color: #E64E4E;">Eliminar</button>
-                    <button class="action-btn" onclick="generatePrintSheet('${member.id}')">Imprimir Hoja</button>
-                    ${member.status === 'activo' ?
-                        `<button class="action-btn" onclick="updateMemberStatus('${member.id}', 'baja')" style="background-color: #f0ad4e;">Dar de Baja</button>` :
-                        `<button class="action-btn" onclick="updateMemberStatus('${member.id}', 'activo')" style="background-color: #5cb85c;">Activar</button>`
-                    }
+                    <button class="action-btn view-btn" data-id="${member.id}">Ver</button>
+                    <button class="action-btn edit-btn" data-id="${member.id}">Editar</button>
+                    <button class="action-btn delete-btn" data-id="${member.id}">Eliminar</button>
+                    <button class="action-btn print-btn" data-id="${member.id}">Imprimir</button>
                 </td>
             `;
         });
-        // La actualización de los botones de paginación se hará después de loadMembers para reflejar el estado actual de la consulta
-        updatePaginationButtons();
+
+        // Adjuntar event listeners a los botones de acción de cada fila
+        membersTableBody.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', (e) => viewMember(e.target.dataset.id));
+        });
+        membersTableBody.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', (e) => editMember(e.target.dataset.id));
+        });
+        membersTableBody.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', (e) => deleteMember(e.target.dataset.id));
+        });
+        membersTableBody.querySelectorAll('.print-btn').forEach(button => {
+            button.addEventListener('click', (e) => printMemberSheet(e.target.dataset.id));
+        });
     }
 
-    // Actualizar botones de paginación
-    async function updatePaginationButtons() {
-        paginationDiv.innerHTML = '';
+    // Renderiza los controles de paginación
+    function renderPagination() {
+        const totalPages = Math.ceil(filteredMembers.length / pageSize);
+        // Clear existing pagination elements
+        if (prevPageBtn) prevPageBtn.remove();
+        if (nextPageBtn) nextPageBtn.remove();
+        if (pageInfo) pageInfo.remove();
 
-        const prevButton = document.createElement('button');
-        prevButton.textContent = 'Anterior';
-        prevButton.disabled = currentPage === 1;
-        prevButton.addEventListener('click', () => {
-            currentPage--;
-            loadMembersAtPage(currentPage); // Va a la página anterior
-        });
-        paginationDiv.appendChild(prevButton);
+        const paginationDiv = document.getElementById('pagination');
+        if (!paginationDiv) return; // Exit if pagination div doesn't exist
 
-        const pageInfo = document.createElement('span');
-        pageInfo.textContent = `Página ${currentPage}`;
-        paginationDiv.appendChild(pageInfo);
+        if (totalPages > 1) {
+            prevPageBtn = document.createElement('button');
+            prevPageBtn.id = 'prevPage';
+            prevPageBtn.textContent = 'Anterior';
+            prevPageBtn.disabled = currentPage === 1;
+            prevPageBtn.addEventListener('click', () => {
+                currentPage--;
+                renderMembers();
+                renderPagination();
+            });
+            paginationDiv.appendChild(prevPageBtn);
 
-        const nextButton = document.createElement('button');
-        nextButton.textContent = 'Siguiente';
-        // Comprobar si hay más documentos después del último documento cargado
-        const nextQuery = db.collection('members')
-                            .where('status', '==', currentMemberStatusFilter)
-                            .orderBy('nombreCompleto')
-                            .startAfter(lastDoc)
-                            .limit(1); // Solo necesitamos saber si existe al menos uno más
-        
-        try {
-            const nextSnapshot = await nextQuery.get();
-            nextButton.disabled = nextSnapshot.empty; // Deshabilitar si no hay más documentos
-        } catch (error) {
-            console.error("Error al verificar siguiente página:", error);
-            nextButton.disabled = true;
+            pageInfo = document.createElement('span');
+            pageInfo.id = 'pageInfo';
+            pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+            paginationDiv.appendChild(pageInfo);
+
+            nextPageBtn = document.createElement('button');
+            nextPageBtn.id = 'nextPage';
+            nextPageBtn.textContent = 'Siguiente';
+            nextPageBtn.disabled = currentPage === totalPages;
+            nextPageBtn.addEventListener('click', () => {
+                currentPage++;
+                renderMembers();
+                renderPagination();
+            });
+            paginationDiv.appendChild(nextPageBtn);
         }
-
-        nextButton.addEventListener('click', () => {
-            currentPage++;
-            loadMembers('next'); // Carga la siguiente página usando startAfter
-        });
-        paginationDiv.appendChild(nextButton);
     }
 
-    // Eliminar miembro
-    async function confirmDeleteMember(id, name) {
-        if (confirm(`¿Estás seguro de que quieres eliminar a ${name}?`)) {
+
+    // Edita un miembro: abre el modal y precarga los datos
+    async function editMember(id) {
+        editingMemberId = id;
+        document.getElementById('modalTitle').textContent = 'Editar Miembro';
+        const doc = await db.collection('members').doc(id).get();
+        if (doc.exists) {
+            const data = doc.data();
+            nombreInput.value = data.nombre || '';
+            fechaNacimientoInput.value = data.fechaNacimiento || '';
+            edadInput.value = data.edad || calculateAge(data.fechaNacimiento) || '';
+            codigoInput.value = data.codigo || '';
+            telefonoInput.value = data.telefono || '';
+            direccionInput.value = data.direccion || '';
+            emailInput.value = data.email || '';
+            asociacionSelect.value = data.asociacion || '';
+            fechaMembresiaInput.value = data.fechaMembresia || '';
+            statusSelect.value = data.status || 'activo';
+
+            if (data.fotoUrl) {
+                fotoPreview.src = data.fotoUrl;
+                fotoPreview.style.display = 'block';
+            } else {
+                fotoPreview.src = '';
+                fotoPreview.style.display = 'none';
+            }
+
+            estadoCivilSelect.value = data.estadoCivil || '';
+            nombreConyugeInput.value = data.nombreConyuge || '';
+            famList.innerHTML = '';
+            (data.familiares || []).forEach(fam => {
+                const div = document.createElement('div');
+                div.innerHTML = `<span>${fam}</span><button type="button" class="remove-fam-btn">&times;</button>`;
+                famList.appendChild(div);
+                div.querySelector('.remove-fam-btn').addEventListener('click', function() {
+                    this.parentElement.remove();
+                });
+            });
+
+            fechaConversionInput.value = data.fechaConversion || '';
+            lugarConversionInput.value = data.lugarConversion || '';
+            fechaBautizoInput.value = data.fechaBautizo || '';
+            lugarBautizoInput.value = data.lugarBautizo || '';
+            fechaBautizoEspInput.value = data.fechaBautizoEsp || '';
+            lugarBautizoEspInput.value = data.lugarBautizoEsp || '';
+            cursosBiblicosInput.value = data.cursosBiblicos || '';
+            lugarCursosBiblicosInput.value = data.lugarCursosBiblicos || '';
+            donesTalentosInput.value = data.donesTalentos || '';
+            areasServirInput.value = data.areasServir || '';
+
+            showSection('personales');
+            modalOverlay.style.display = 'flex';
+        } else {
+            alert('Miembro no encontrado.');
+        }
+    }
+
+    // Elimina un miembro (y opcionalmente su foto de Storage)
+    async function deleteMember(id) {
+        if (confirm('¿Estás seguro de que quieres eliminar a este miembro? Esta acción es irreversible.')) {
             try {
-                // Opcional: Eliminar la foto de Firebase Storage
-                // Primero, obtén la URL de la foto del miembro
-                const doc = await db.collection('members').doc(id).get();
-                if (doc.exists && doc.data().fotoURL) {
-                    const fotoURL = doc.data().fotoURL;
-                    const storageRef = firebaseStorage.refFromURL(fotoURL);
-                    await storageRef.delete().then(() => {
-                        console.log("Foto eliminada de Storage:", fotoURL);
-                    }).catch((error) => {
-                        console.warn("No se pudo eliminar la foto de Storage (puede que ya no exista o no haya permisos):", error);
-                    });
+                const memberDoc = await db.collection('members').doc(id).get();
+                if (memberDoc.exists && memberDoc.data().fotoUrl) {
+                    const photoUrl = memberDoc.data().fotoUrl;
+                    try {
+                        const photoRef = firebaseStorage.refFromURL(photoUrl);
+                        await photoRef.delete();
+                        console.log("Foto eliminada de Storage.");
+                    } catch (storageError) {
+                        // Puede que la foto ya no exista o no se tenga permiso para eliminarla
+                        console.warn("No se pudo eliminar la foto de Storage:", storageError);
+                    }
                 }
 
                 await db.collection('members').doc(id).delete();
-                alert('Miembro eliminado con éxito!');
-                loadMembers();
+                alert('Miembro eliminado correctamente.');
+                fetchMembers(); // Re-fetch para actualizar la tabla
             } catch (error) {
                 console.error("Error al eliminar miembro:", error);
-                alert('Error al eliminar el miembro. Consulta la consola.');
+                alert("Error al eliminar el miembro. Revisa la consola.");
             }
         }
     }
 
-    // Debounce function for search input
-    function debounce(func, delay) {
-        let timeout;
-        return function(...args) {
-            const context = this;
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(context, args), delay);
-        };
-    }
-
-    // Set member status filter
-    async function setMemberStatusFilter(status) {
-        currentMemberStatusFilter = status;
-        document.querySelectorAll('#member-status-tabs button').forEach(button => {
-            button.classList.remove('active');
-        });
-        document.querySelector(`#tab${status.charAt(0).toUpperCase() + status.slice(1)}`).classList.add('active');
-        currentPage = 1; // Reiniciar paginación al cambiar de filtro
-        lastDoc = null; // Reiniciar lastDoc
-        await loadMembers();
-    }
-
-    // Función para generar la hoja de impresión de un miembro
-    async function generatePrintSheet(memberId) {
-        try {
-            const doc = await db.collection('members').doc(memberId).get();
-            if (doc.exists) {
-                const data = doc.data();
-
-                document.getElementById('print-nombreCompleto').textContent = data.nombreCompleto || 'N/A';
-                document.getElementById('print-fechaNacimiento').textContent = data.fechaNacimiento ? new Date(data.fechaNacimiento).toLocaleDateString('es-ES') : 'N/A';
-                document.getElementById('print-edad').textContent = data.edad !== undefined ? data.edad : 'N/A';
-                document.getElementById('print-codigo').textContent = data.codigo || 'N/A';
-                document.getElementById('print-telefono').textContent = data.telefono || 'N/A';
-                document.getElementById('print-email').textContent = data.email || 'N/A';
-                document.getElementById('print-direccion').textContent = data.direccion || 'N/A';
-                document.getElementById('print-asociacion').textContent = data.asociacion || 'N/A';
-                document.getElementById('print-fechaMembresia').textContent = data.fechaMembresia ? new Date(data.fechaMembresia).toLocaleDateString('es-ES') : 'N/A';
-                document.getElementById('print-status').textContent = data.status === 'activo' ? 'Activo' : 'De Baja';
-
-
-                const fotoPrintElement = document.getElementById('print-fotoMiembro');
-                if (data.fotoURL) {
-                    fotoPrintElement.src = data.fotoURL;
-                    fotoPrintElement.style.display = 'block';
-                } else {
-                    fotoPrintElement.src = 'https://via.placeholder.com/130?text=No+Foto';
-                    fotoPrintElement.style.display = 'block';
-                }
-
-                document.getElementById('print-estadoCivil').textContent = data.estadoCivil || 'N/A';
-                document.getElementById('print-nombreConyuge').textContent = data.nombreConyuge || 'N/A';
-
-                const familiaresListPrint = document.getElementById('print-familiaresList');
-                familiaresListPrint.innerHTML = '';
-                if (data.familiares && Array.isArray(data.familiares) && data.familiares.length > 0) {
-                    data.familiares.forEach(fam => {
-                        const span = document.createElement('span');
-                        span.textContent = fam;
-                        familiaresListPrint.appendChild(span);
-                    });
-                } else {
-                    familiaresListPrint.innerHTML = '<span>Ninguno</span>';
-                }
-
-                document.getElementById('print-fechaConversion').textContent = data.fechaConversion ? new Date(data.fechaConversion).toLocaleDateString('es-ES') : 'N/A';
-                document.getElementById('print-lugarConversion').textContent = data.lugarConversion || 'N/A';
-                document.getElementById('print-fechaBautizo').textContent = data.fechaBautizo ? new Date(data.fechaBautizo).toLocaleDateString('es-ES') : 'N/A';
-                document.getElementById('print-lugarBautizo').textContent = data.lugarBautizo || 'N/A';
-                document.getElementById('print-fechaBautizoEsp').textContent = data.fechaBautizoEsp ? new Date(data.fechaBautizoEsp).toLocaleDateString('es-ES') : 'N/A';
-                document.getElementById('print-lugarBautizoEsp').textContent = data.lugarBautizoEsp || 'N/A';
-                document.getElementById('print-cursosBiblicos').textContent = data.cursosBiblicos || 'N/A';
-                document.getElementById('print-lugarCursosBiblicos').textContent = data.lugarCursosBiblicos || 'N/A';
-                document.getElementById('print-donesTalentos').textContent = data.donesTalentos || 'N/A';
-                document.getElementById('print-areasServir').textContent = data.areasServir || 'N/A';
-
-                // Disparar la impresión
-                window.print();
-
-            } else {
-                alert('Miembro no encontrado para imprimir.');
-            }
-        } catch (error) {
-            console.error("Error al generar hoja de impresión:", error);
-            alert('Error al generar la hoja de impresión. Consulta la consola.');
+    // Previsualiza los datos de un miembro para impresión (no lo imprime directamente)
+    async function viewMember(id) {
+        const doc = await db.collection('members').doc(id).get();
+        if (doc.exists) {
+            const data = doc.data();
+            populatePrintArea(data); // Llena el área de impresión con los datos
+            // Aquí puedes decidir si quieres mostrar un modal de "vista detallada"
+            // Por ahora, solo lo prepara para la impresión.
+            alert("Miembro listo para previsualización de impresión. Usa el botón 'Imprimir' para ver el diseño.");
+        } else {
+            alert('Miembro no encontrado para visualizar.');
         }
     }
 
-    // Actualizar el estado de un miembro (activo/baja)
-    async function updateMemberStatus(memberId, newStatus) {
-        if (confirm(`¿Estás seguro de que quieres cambiar el estado de este miembro a "${newStatus === 'activo' ? 'activo' : 'de baja'}"?`)) {
-            try {
-                await db.collection('members').doc(memberId).update({ status: newStatus });
-                alert('Estado del miembro actualizado con éxito!');
-                loadMembers(); // Recargar la lista con el filtro actual
-            } catch (error) {
-                console.error("Error al actualizar estado del miembro:", error);
-                alert('Error al actualizar el estado del miembro. Consulta la consola.');
-            }
+    // Llena el área oculta de impresión con los datos del miembro
+    function populatePrintArea(memberData) {
+        document.getElementById('print-nombreCompleto').textContent = memberData.nombre || 'N/A';
+        document.getElementById('print-fechaNacimiento').textContent = memberData.fechaNacimiento || 'N/A';
+        document.getElementById('print-edad').textContent = memberData.edad || calculateAge(memberData.fechaNacimiento) || 'N/A';
+        document.getElementById('print-codigo').textContent = memberData.codigo || 'N/A';
+        document.getElementById('print-telefono').textContent = memberData.telefono || 'N/A';
+        document.getElementById('print-email').textContent = memberData.email || 'N/A';
+        document.getElementById('print-direccion').textContent = memberData.direccion || 'N/A';
+        document.getElementById('print-asociacion').textContent = memberData.asociacion || 'N/A';
+        document.getElementById('print-fechaMembresia').textContent = memberData.fechaMembresia || 'N/A';
+        document.getElementById('print-status').textContent = (memberData.status === 'activo' ? 'Activo' : 'De Baja') || 'N/A';
+
+        const printFotoMiembro = document.getElementById('print-fotoMiembro');
+        if (memberData.fotoUrl) {
+            printFotoMiembro.src = memberData.fotoUrl;
+            printFotoMiembro.style.display = 'block';
+        } else {
+            printFotoMiembro.src = 'https://via.placeholder.com/130';
+            printFotoMiembro.style.display = 'block';
+        }
+
+        document.getElementById('print-estadoCivil').textContent = memberData.estadoCivil || 'N/A';
+        document.getElementById('print-nombreConyuge').textContent = memberData.nombreConyuge || 'N/A';
+
+        const printFamiliaresList = document.getElementById('print-familiaresList');
+        printFamiliaresList.innerHTML = '';
+        if (memberData.familiares && memberData.familiares.length > 0) {
+            memberData.familiares.forEach(fam => {
+                const span = document.createElement('span');
+                span.textContent = fam;
+                printFamiliaresList.appendChild(span);
+            });
+        } else {
+            printFamiliaresList.textContent = 'No hay familiares registrados.';
+        }
+
+        document.getElementById('print-fechaConversion').textContent = memberData.fechaConversion || 'N/A';
+        document.getElementById('print-lugarConversion').textContent = memberData.lugarConversion || 'N/A';
+        document.getElementById('print-fechaBautizo').textContent = memberData.fechaBautizo || 'N/A';
+        document.getElementById('print-lugarBautizo').textContent = memberData.lugarBautizo || 'N/A';
+        document.getElementById('print-fechaBautizoEsp').textContent = memberData.fechaBautizoEsp || 'N/A';
+        document.getElementById('print-lugarBautizoEsp').textContent = memberData.lugarBautizoEsp || 'N/A';
+        document.getElementById('print-cursosBiblicos').textContent = memberData.cursosBiblicos || 'N/A';
+        document.getElementById('print-lugarCursosBiblicos').textContent = memberData.lugarCursosBiblicos || 'N/A';
+        document.getElementById('print-donesTalentos').textContent = memberData.donesTalentos || 'N/A';
+        document.getElementById('print-areasServir').textContent = memberData.areasServir || 'N/A';
+    }
+
+    // Imprime la ficha del miembro
+    async function printMemberSheet(id) {
+        const doc = await db.collection('members').doc(id).get();
+        if (doc.exists) {
+            const data = doc.data();
+            populatePrintArea(data); // Llena el área oculta de impresión
+            window.print(); // Activa el diálogo de impresión del navegador
+        } else {
+            alert('Miembro no encontrado para imprimir.');
         }
     }
 
-</script>
 
-</body>
-</html>
+    // --- Funcionalidades adicionales (placeholders) ---
+
+    // Función para cerrar sesión (necesita Firebase Authentication)
+    window.cerrarSesion = function() {
+        // Aquí iría la lógica de firebase.auth().signOut()
+        alert('Sesión cerrada. (Funcionalidad de autenticación real no implementada en este ejemplo)');
+        // window.location.href = 'login.html'; // Redirigir a tu página de login
+    };
+
+    // Función para ir a la página de inicio/dashboard (si la tienes)
+    document.getElementById('btnInicio').addEventListener('click', () => {
+        alert('Redirigiendo a Inicio. (Funcionalidad no implementada en este ejemplo)');
+        // window.location.href = 'dashboard.html'; // Redirigir a tu dashboard
+    });
+
+    // --- Carga Inicial ---
+    fetchMembers(); // Carga los miembros al iniciar la página
+});
