@@ -1,67 +1,34 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
+/* En tu archivo CSS */
+#print-area {
+    display: none; /* Oculto por defecto */
+    /* Otros estilos para el diseño de la ficha de impresión */
     padding: 20px;
+    border: 1px solid #ccc;
+    margin: 20px auto;
+    max-width: 800px;
+    background-color: #fff;
 }
 
-.menu {
-    background-color: #333;
-    padding: 10px;
-}
-
-.menu ul {
-    list-style: none;
-    display: flex;
-    gap: 15px;
-}
-
-.menu a {
-    color: white;
-    text-decoration: none;
-}
-
-.barra-superior {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.boton-verde {
-    background-color: green;
-    color: white;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-}
-
-.tabla {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.tabla th, .tabla td {
-    border: 1px solid black;
-    padding: 8px;
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.modal-contenido {
-    background: white;
-    padding: 20px;
-    margin: 10% auto;
-    width: 50%;
-}
-
-.cerrar {
-    cursor: pointer;
-    float: right;
-    font-size: 20px;
+@media print {
+    body > *:not(#print-area) {
+        display: none !important; /* Oculta todo lo demás al imprimir */
+    }
+    #print-area {
+        display: block !important; /* Muestra solo el área de impresión */
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+    /* Ajustes específicos para impresión, como tamaños de fuente, márgenes, etc. */
+    img.photo-cell, #print-fotoMiembro {
+        width: 100px; /* Tamaño fijo para impresión */
+        height: 100px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
 }
